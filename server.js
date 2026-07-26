@@ -176,14 +176,8 @@ app.get('/', (req, res) => {
   res.send(`<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-MFTGNDMX');</script>
-<!-- End Google Tag Manager -->
 <meta charset="UTF-8">
+<meta name="google-site-verification" content="googleb92b2cd0a1a64ca9" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>صفقة استور - Safqa Store | منصة التسويق بالعمولة</title>
 <meta name="description" content="متجر صفقة استور (Safqa Store) - منصتك المتكاملة لتسوق أحدث المنتجات وأفضل العروض والأسعار أونلاين." />
@@ -286,10 +280,6 @@ textarea{min-height:90px;resize:vertical}
 </style>
 </head>
 <body>
-<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MFTGNDMX"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
 <header class="header">
   <div class="logo" id="ht">Safqa Store</div>
   <button class="cart-btn" onclick="go('cart')">🛒 السلة<span class="badge" id="cc">0</span></button>
@@ -519,7 +509,7 @@ function renderCart(){
   let total=0;
   list.innerHTML=cart.map((it,i)=>{
     total+=it.price*it.qty;
-    return '<div class="cart-item"><img src="'+(it.image||'')+'"><div class="info"><div class="name">'+it.name+'</div><div class="meta">'+stockLabel(it.stock,true)+'</div><div class="price">'+(it.price*it.qty).toLocaleString('ar-EG')+' ج.م <small style="color:var(--muted);font-weight:600">('+it.price+' × '+it.qty+')</small></div><div class="actions"><button class="qbtn" onclick="cartQty('+i+',-1)">−</button><span class="qval">'+it.qty+'</span><button class="qbtn" onclick="cartQty('+i+',1)">+</button><button class="rm" onclick="rmCart('+i+')">حذف</button></div></div></div>';
+    return '<div class="cart-item"><img src="'+(it.image||'')+'"><div class="info"><div class="name">'+it.name+'</div><div class="meta">'+stockLabel(it.stock,true)+'</div><div class="price">'+(it.price*it.qty).toLocaleString('ar-EG')+' ج.م <small style="color:var(--muted);font-weight:600">('+it.price+' × '+it.qty+')</small></div><div class="actions"><button class="qbtn" onclick="cartQty('+i,+'-1)">−</button><span class="qval">'+it.qty+'</span><button class="qbtn" onclick="cartQty('+i+',1)">+</button><button class="rm" onclick="rmCart('+i+')">حذف</button></div></div></div>';
   }).join('');
   document.getElementById('cartTotal').textContent=total.toLocaleString('ar-EG')+' ج.م';
 }
