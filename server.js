@@ -2,7 +2,7 @@ const express = require('express');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 const API_KEY = 'sk_9f6d15ecb31c980ae65661abca57d1e3f7c850811f78569955cb47dea4e46c46';
 const BASE_URL = 'https://api.safka-eg.com/api/v1/public';
 app.use(express.json());
@@ -29,6 +29,7 @@ function cat(n) {
 
 async function getProducts() {
   if (productsCache.length && Date.now() - lastFetch < 600000) return productsCache;
+  console.log('جاري جلب المنتجات...');
   let all = [];
   try {
     const r1 = await fetch(BASE_URL + '/products?page=1&size=50', { headers: { 'api-safka-key': API_KEY } });
@@ -44,6 +45,7 @@ async function getProducts() {
   all = all.map(p => { p._cat = cat(p.name); return p; });
   productsCache = all;
   lastFetch = Date.now();
+  console.log('تم تحميل ' + all.length + ' منتج');
   return all;
 }
 
@@ -170,15 +172,13 @@ app.post('/api/support', (req, res) => {
   data.tickets.unshift({ id: Date.now(), message: message.trim(), status: 'جديد', date: new Date().toISOString().slice(0, 10), reply: '' });
   save();
   res.json({ message: 'تم إرسال رسالتك للدعم ✓' });
-});
-
-app.get('/', (req, res) => {
+});app.get('/', (req, res) => {
   res.send(`<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Safqa Store</title>
+<title>Earnify | منصة التسويق بالعمولة</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--p:#0d9488;--pd:#0f766e;--bg:#f0f4f8;--card:#fff;--text:#0f172a;--muted:#64748b;--accent:#f59e0b;--danger:#ef4444;--ok:#10b981}
@@ -279,7 +279,7 @@ textarea{min-height:90px;resize:vertical}
 </head>
 <body>
 <header class="header">
-  <div class="logo" id="ht">Safqa Store</div>
+  <div class="logo" id="ht">Earnify</div>
   <button class="cart-btn" onclick="go('cart')">🛒 السلة<span class="badge" id="cc">0</span></button>
 </header>
 
@@ -375,7 +375,7 @@ textarea{min-height:90px;resize:vertical}
     <div class="pm-price" id="pm-price"></div>
     <div class="box"><div class="l">كود المنتج</div><div class="v" id="pm-code">—</div></div>
     <div class="box" id="pm-stock-box"><div class="l">المخزون</div><div class="v" id="pm-stock">—</div></div>
-    <div class="box note-box"><div class="l">ملاحظات المتجر</div><div class="v" id="pm-note">—</div></div>
+    <div class="box note-box"><div class="l">ملاحظات Earnify</div><div class="v" id="pm-note">—</div></div>
     <a class="drive" id="pm-drive" href="#" target="_blank" style="display:none">📁 صور وفيديوهات على الطبيعة</a>
     <div id="pm-desc" style="font-size:.88rem;line-height:1.7;color:#475569;margin:10px 0"></div>
 
@@ -403,7 +403,7 @@ textarea{min-height:90px;resize:vertical}
   <button data-p="support" onclick="go('support')"><span class="ic">💬</span>دعم</button>
 </nav><script>
 let products=[], priceList=[], cart=JSON.parse(localStorage.getItem('scart')||'[]'), cur=null, qty=1, submitting=false, cc='all', cs='', wM='vodafone';
-const titles={store:'Safqa Store',cart:'السلة',checkout:'إتمام الطلب',orders:'طلباتي',profile:'حسابي',withdraw:'سحب الأرباح',support:'الدعم'};
+const titles={store:'Earnify',cart:'السلة',checkout:'إتمام الطلب',orders:'طلباتي',profile:'حسابي',withdraw:'سحب الأرباح',support:'الدعم'};
 
 function updCC(){document.getElementById('cc').textContent=cart.reduce((s,i)=>s+(i.qty||1),0)}
 function go(p){
@@ -411,7 +411,7 @@ function go(p){
   document.getElementById('p-'+p).classList.add('active');
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   const n=document.querySelector('.nav button[data-p="'+p+'"]'); if(n) n.classList.add('active');
-  document.getElementById('ht').innerHTML='<div style="display:flex;align-items:center;gap:12px"><div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:900">S</div><div><div style="font-size:28px;font-weight:900;color:#fff">'+(titles[p]||'Safqa Store')+'</div><div style="font-size:12px;opacity:.9">Affiliate Marketing Platform</div></div></div>';
+  document.getElementById('ht').innerHTML='<div style="display:flex;align-items:center;gap:12px"><div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:900">E</div><div><div style="font-size:28px;font-weight:900;color:#fff">'+(titles[p]||'Earnify')+'</div><div style="font-size:12px;opacity:.9">Affiliate Marketing Platform</div></div></div>';
   if(p==='cart') renderCart();
   if(p==='orders') loadOrders();
   if(p==='profile'||p==='withdraw') loadMe();
@@ -525,7 +525,7 @@ async function loadPrices(){
   document.getElementById('gov').innerHTML='<option value="">اختر المحافظة</option>'+priceList.map(g=>'<option value="'+g.id+'" data-price="'+g.price+'">'+g.name+' ('+g.price+' ج.م)</option>').join('');
 }
 function onGov(){
-  const g=priceList.find(x=>x.id==document.getElementById('gov').value);
+  const g=priceList.find(x=>x.id===document.getElementById('gov').value);
   document.getElementById('city').innerHTML='<option value="">اختر المدينة</option>'+(g?(g.cities||[]).map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join(''):'');
   if(g) document.getElementById('shipInput').value=g.price;
   recalc();
@@ -535,7 +535,7 @@ function initCheckout(){
   const pTotal=cart.reduce((s,i)=>s+i.price*i.qty,0);
   const cTotal=cart.reduce((s,i)=>s+(i.cost||i.basePrice)*i.qty,0);
   document.getElementById('commInput').value=Math.max(0,pTotal-cTotal);
-  const g=priceList.find(x=>x.id==document.getElementById('gov').value);
+  const g=priceList.find(x=>x.id===document.getElementById('gov').value);
   if(g) document.getElementById('shipInput').value=g.price;
   else document.getElementById('shipInput').value=0;
 }
