@@ -1,13 +1,26 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const fs = require('fs');
+const path = require('path');
 const app = express();
 const PORT = 3000;
 const API_KEY = 'sk_9f6d15ecb31c980ae65661abca57d1e3f7c850811f78569955cb47dea4e46c46';
 const BASE_URL = 'https://api.safka-eg.com/api/v1/public';
 app.use(express.json());
 
-let productsCache = [], priceListCache = [], lastFetch = 0;
+app.use(express.static(__dirname));
+
+app.get('/googleb92b2cd0a1a64ca9.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'googleb92b2cd0a1a64ca9.html'));
+});
+
+app.get('/robots.txt', (req, res) => {
+  res.sendFile(path.join(__dirname, 'robots.txt'));
+});
+
+app.get('/sitemap.xml', (req, res) => {
+  res.sendFile(path.join(__dirname, 'sitemap.xml'));
+});let productsCache = [], priceListCache = [], lastFetch = 0;
 let data = { name: 'المسوق', phone: '01000000000', balance: 0, withdrawals: [], orders: [], tickets: [] };
 
 try { if (fs.existsSync('affiliate-data.json')) data = Object.assign(data, JSON.parse(fs.readFileSync('affiliate-data.json'))); } catch (e) {}
