@@ -29,7 +29,6 @@ function cat(n) {
 
 async function getProducts() {
   if (productsCache.length && Date.now() - lastFetch < 600000) return productsCache;
-  console.log('جاري جلب المنتجات...');
   let all = [];
   try {
     const r1 = await fetch(BASE_URL + '/products?page=1&size=50', { headers: { 'api-safka-key': API_KEY } });
@@ -45,7 +44,6 @@ async function getProducts() {
   all = all.map(p => { p._cat = cat(p.name); return p; });
   productsCache = all;
   lastFetch = Date.now();
-  console.log('تم تحميل ' + all.length + ' منتج');
   return all;
 }
 
@@ -174,13 +172,17 @@ app.post('/api/support', (req, res) => {
   res.json({ message: 'تم إرسال رسالتك للدعم ✓' });
 });
 
+// مسار صريح لإثبات ملكية جوجل عبر ملف HTML
+app.get('/googleb92b2cd0a1a64ca9.html', (req, res) => {
+  res.send('google-site-verification: googleb92b2cd0a1a64ca9.html');
+});
+
 app.get('/', (req, res) => {
   res.send(`<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="google-site-verification" content="RXlrseeEoohXmfqKjjyBXNsE0A92h_E8m6Ep1L0oFMM" />
 <title>صفقة استور - Safqa Store | منصة التسويق بالعمولة</title>
 <meta name="description" content="متجر صفقة استور (Safqa Store) - منصتك المتكاملة لتسوق أحدث المنتجات وأفضل العروض والأسعار أونلاين." />
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -529,7 +531,7 @@ async function loadPrices(){
   document.getElementById('gov').innerHTML='<option value="">اختر المحافظة</option>'+priceList.map(g=>'<option value="'+g.id+'" data-price="'+g.price+'">'+g.name+' ('+g.price+' ج.م)</option>').join('');
 }
 function onGov(){
-  const g=priceList.find(x=>x.id===document.getElementById('gov').value);
+  const g=priceList.find(x=>x.id==document.getElementById('gov').value);
   document.getElementById('city').innerHTML='<option value="">اختر المدينة</option>'+(g?(g.cities||[]).map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join(''):'');
   if(g) document.getElementById('shipInput').value=g.price;
   recalc();
@@ -539,7 +541,7 @@ function initCheckout(){
   const pTotal=cart.reduce((s,i)=>s+i.price*i.qty,0);
   const cTotal=cart.reduce((s,i)=>s+(i.cost||i.basePrice)*i.qty,0);
   document.getElementById('commInput').value=Math.max(0,pTotal-cTotal);
-  const g=priceList.find(x=>x.id===document.getElementById('gov').value);
+  const g=priceList.find(x=>x.id==document.getElementById('gov').value);
   if(g) document.getElementById('shipInput').value=g.price;
   else document.getElementById('shipInput').value=0;
 }
