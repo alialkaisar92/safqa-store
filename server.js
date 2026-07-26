@@ -177,10 +177,8 @@ app.get('/', (req, res) => {
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="google-site-verification" content="googleb92b2cd0a1a64ca9" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>صفقة استور - Safqa Store | منصة التسويق بالعمولة</title>
-<meta name="description" content="متجر صفقة استور (Safqa Store) - منصتك المتكاملة لتسوق أحدث المنتجات وأفضل العروض والأسعار أونلاين." />
+<title>Safqa Store</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--p:#0d9488;--pd:#0f766e;--bg:#f0f4f8;--card:#fff;--text:#0f172a;--muted:#64748b;--accent:#f59e0b;--danger:#ef4444;--ok:#10b981}
