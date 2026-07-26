@@ -172,7 +172,7 @@ app.post('/api/support', (req, res) => {
   res.json({ message: 'تم إرسال رسالتك للدعم ✓' });
 });
 
-// مسار صريح لإثبات ملكية جوجل عبر ملف HTML
+// مسار صريح لإثبات ملكية جوجل عبر ملف HTML[span_1](start_span)[span_1](end_span)
 app.get('/googleb92b2cd0a1a64ca9.html', (req, res) => {
   res.send('google-site-verification: googleb92b2cd0a1a64ca9.html');
 });
