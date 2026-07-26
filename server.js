@@ -2,7 +2,7 @@ const express = require('express');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const API_KEY = 'sk_9f6d15ecb31c980ae65661abca57d1e3f7c850811f78569955cb47dea4e46c46';
 const BASE_URL = 'https://api.safka-eg.com/api/v1/public';
 app.use(express.json());
@@ -172,12 +172,15 @@ app.post('/api/support', (req, res) => {
   data.tickets.unshift({ id: Date.now(), message: message.trim(), status: 'جديد', date: new Date().toISOString().slice(0, 10), reply: '' });
   save();
   res.json({ message: 'تم إرسال رسالتك للدعم ✓' });
-});app.get('/', (req, res) => {
+});
+
+app.get('/', (req, res) => {
   res.send(`<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="google-site-verification" content="RXlrseeEoohXmfqKjjyBXNsE0A92h_E8m6Ep1L0oFMM" />
 <title>Earnify | منصة التسويق بالعمولة</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
