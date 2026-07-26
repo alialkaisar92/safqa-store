@@ -1,0 +1,59 @@
+{
+  "users": [
+    {
+      "id": "44fff4a7-d343-4f29-816e-3c740a490fe3",
+      "name": "Admin",
+      "phone": "01000000000",
+      "email": "admin@safqa.com",
+      "password": "$2b$10$40RkzLq6G/pKInHd8CYA7eMfwE2pLZo2cs.dJM8lEAS6vfCmsAToO",
+      "role": "admin",
+      "balance": 0,
+      "createdAt": "2026-07-25T01:40:27.058Z"
+    },
+    {
+      "id": "162669e8-adb2-4146-92dd-e2a7fb2119e5",
+      "name": "alialkaisar200@gmail.com",
+      "phone": "01092876053",
+      "email": "",
+      "password": "$2b$10$6vE0bA/rAkXEWEtUfppyG.3pNx1DHR9lk.nGRTcJFmbJ8qe5dO8Di",
+      "role": "marketer",
+      "balance": 0,
+      "createdAt": "2026-07-25T01:50:02.269Z"
+    }
+  ],
+  "withdrawals": [],
+  "products": [
+    {
+      "id": "1",
+      "name": "أباجورة الإضاءة الكلاسيكية",
+      "nameEn": "classic light lamp",
+      "price": 190,
+      "image": "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=400",
+      "description": "إضاءة دافئة ومريحة للعين - قابلة للشحن عبر USB"
+    },
+    {
+      "id": "2",
+      "name": "ناموسية بيبي شيلد",
+      "nameEn": "baby shield net",
+      "price": 235,
+      "image": "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400",
+      "description": "ناموسية آمنة ومريحة للأطفال"
+    },
+    {
+      "id": "3",
+      "name": "سماعة بلوتوث محمولة",
+      "nameEn": "portable bluetooth speaker",
+      "price": 320,
+      "image": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400",
+      "description": "صوت قوي وبطارية طويلة الأمد"
+    },
+    {
+      "id": "4",
+      "name": "شاحن لاسلكي سريع",
+      "nameEn": "fast wireless charger",
+      "price": 150,
+      "image": "https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?w=400",
+      "description": "شحن سريع لجميع الأجهزة"
+    }
+  ]
+}
