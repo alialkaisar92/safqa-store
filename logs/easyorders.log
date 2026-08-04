@@ -1,0 +1,1016 @@
+{"ts":"2026-07-29T00:58:22.133Z","level":"info","msg":"bootstrap test"}
+{"ts":"2026-07-29T01:00:43.663Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T01:04:47.954Z","level":"warn","msg":"EasyOrders API error","method":"GET","path":"/products","status":400}
+{"ts":"2026-07-29T01:17:06.406Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T01:20:40.213Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T01:20:40.527Z","level":"info","msg":"Webhook processed","marketerId":1,"event_id":"h:25de6b691bf3eec23c36024b","type":"order.status_change"}
+{"ts":"2026-07-29T01:35:38.784Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T01:37:26.776Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T01:37:27.103Z","level":"info","msg":"Default marketer created","username":"marketer","password":"marketer123"}
+{"ts":"2026-07-29T01:37:27.612Z","level":"info","msg":"Marketer registered","username":"tester_1785289047483"}
+{"ts":"2026-07-29T01:37:27.740Z","level":"info","msg":"Marketer logged in","username":"marketer"}
+{"ts":"2026-07-29T01:40:11.377Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T01:40:11.678Z","level":"info","msg":"Marketer logged in","username":"marketer"}
+{"ts":"2026-07-29T01:44:48.976Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T01:46:21.644Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T01:50:31.874Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T02:04:44.047Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T02:04:44.144Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T02:04:45.438Z","level":"info","msg":"Marketer logged in","username":"marketer"}
+{"ts":"2026-07-29T02:25:32.321Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T02:25:32.441Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T02:25:33.717Z","level":"info","msg":"Marketer logged in","username":"marketer"}
+{"ts":"2026-07-29T02:27:10.975Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T02:27:11.020Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T02:28:37.833Z","level":"info","msg":"Marketer logged in","username":"marketer"}
+{"ts":"2026-07-29T02:31:24.554Z","level":"warn","msg":"EasyOrders API error","method":"GET","path":"/store","status":404}
+{"ts":"2026-07-29T02:31:24.579Z","level":"info","msg":"EasyOrders connected","marketerId":2,"storeName":null}
+{"ts":"2026-07-29T02:33:06.580Z","level":"info","msg":"Marketer registered","username":"محمد"}
+{"ts":"2026-07-29T02:33:06.708Z","level":"info","msg":"Marketer logged in","username":"محمد"}
+{"ts":"2026-07-29T02:33:44.326Z","level":"warn","msg":"EasyOrders API error","method":"GET","path":"/products","status":400}
+{"ts":"2026-07-29T02:33:45.491Z","level":"warn","msg":"EasyOrders API error","method":"GET","path":"/products","status":400}
+{"ts":"2026-07-29T02:33:55.563Z","level":"warn","msg":"EasyOrders API error","method":"GET","path":"/products","status":400}
+{"ts":"2026-07-29T02:33:56.561Z","level":"warn","msg":"EasyOrders API error","method":"GET","path":"/products","status":400}
+{"ts":"2026-07-29T02:37:12.348Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T02:37:12.354Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T02:37:12.356Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T03:16:04.070Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T03:16:04.173Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T04:12:16.598Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T04:12:16.738Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T04:15:54.906Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T04:15:54.987Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T04:36:57.422Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T04:36:57.570Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T04:43:15.544Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T04:43:15.637Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T04:53:17.784Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T04:53:17.819Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T04:53:17.821Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T05:03:16.878Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T05:03:16.903Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T05:03:16.904Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T05:04:57.260Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T05:04:57.364Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T05:15:27.729Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T05:15:27.876Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T05:34:35.862Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T05:34:35.968Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T05:44:37.987Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T05:44:37.998Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T05:44:38.000Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T07:46:13.569Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T07:46:13.608Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T07:46:13.610Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T10:45:04.520Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T10:45:04.540Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T10:45:04.541Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T11:06:13.390Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T11:06:13.427Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T11:06:13.429Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T11:16:12.809Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T11:16:12.817Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T11:16:12.820Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T11:26:12.727Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T11:26:12.734Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T11:26:12.736Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T11:40:40.028Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T11:40:40.038Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T11:40:40.040Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T11:50:39.608Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T11:50:39.613Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T11:50:39.614Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T12:00:39.984Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T12:00:39.992Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T12:00:39.993Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T12:13:42.099Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T12:13:42.144Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T12:13:42.146Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T12:23:41.902Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T12:23:41.911Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T12:23:41.913Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T12:33:42.051Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T12:33:42.057Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T12:33:42.058Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T12:47:53.083Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T12:47:53.091Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T12:47:53.093Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T12:57:53.294Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T12:57:53.301Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T12:57:53.303Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T13:07:53.107Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T13:07:53.113Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T13:07:53.114Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T13:21:57.467Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T13:21:57.472Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T13:21:57.474Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T13:31:57.237Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T13:31:57.245Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T13:31:57.247Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T13:41:57.782Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T13:41:57.823Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T13:41:57.825Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T13:55:09.413Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T13:55:09.447Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T13:55:09.448Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T14:05:09.124Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T14:05:09.136Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T14:05:09.138Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T17:24:13.459Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T17:24:13.578Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T17:34:21.138Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T17:34:21.150Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T17:34:21.152Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T17:35:05.404Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T17:35:05.486Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T17:40:51.325Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T17:40:51.385Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T17:50:53.807Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T17:50:53.820Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T17:50:53.822Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T17:52:28.441Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T17:52:28.575Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T18:00:45.615Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T18:00:45.676Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T18:10:58.459Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T18:10:58.485Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T18:10:58.486Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T18:20:57.622Z","level":"info","msg":"Products synced","marketerId":2,"count":101}
+{"ts":"2026-07-29T18:20:57.627Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T18:20:57.628Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T18:31:06.954Z","level":"error","msg":"EasyOrders request failed","method":"GET","path":"/products","error":"fetch failed","timeout":false}
+{"ts":"2026-07-29T18:31:07.011Z","level":"info","msg":"Order statuses synced","marketerId":2,"updated":0}
+{"ts":"2026-07-29T18:31:07.012Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T18:39:23.400Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T18:39:23.531Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T19:27:15.921Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T19:27:16.051Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T19:46:35.205Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T19:46:35.314Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T19:55:42.199Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T19:55:42.311Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T20:01:55.436Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T20:01:55.535Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T20:02:46.090Z","level":"warn","msg":"EasyOrders API error","method":"GET","path":"/store","status":404}
+{"ts":"2026-07-29T20:02:46.115Z","level":"info","msg":"EasyOrders connected","marketerId":5,"storeName":null}
+{"ts":"2026-07-29T20:03:59.503Z","level":"warn","msg":"EasyOrders API error","method":"GET","path":"/store","status":404}
+{"ts":"2026-07-29T20:03:59.511Z","level":"info","msg":"EasyOrders connected","marketerId":5,"storeName":null}
+{"ts":"2026-07-29T20:04:42.457Z","level":"warn","msg":"EasyOrders API error","method":"GET","path":"/store","status":404}
+{"ts":"2026-07-29T20:04:42.464Z","level":"info","msg":"EasyOrders connected","marketerId":5,"storeName":null}
+{"ts":"2026-07-29T20:07:45.505Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T20:07:45.630Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T20:14:27.384Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-29T20:14:27.549Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-29T20:24:30.153Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T20:24:30.166Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T20:24:30.167Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T20:34:29.281Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T20:34:29.313Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T20:34:29.314Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T20:44:29.137Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T20:44:29.143Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T20:44:29.144Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T20:56:06.338Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T20:56:06.376Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T20:56:06.378Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T21:10:33.506Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T21:10:33.622Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T21:10:33.624Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T21:20:32.079Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T21:20:32.114Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T21:20:32.115Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T21:42:03.789Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T21:42:03.838Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T21:42:03.841Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T21:52:01.669Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T21:52:01.733Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T21:52:01.736Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T22:02:03.066Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T22:02:03.080Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T22:02:03.081Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T22:22:10.800Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T22:22:10.965Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T22:22:10.966Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T22:39:02.099Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T22:39:02.131Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T22:39:02.132Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T22:55:51.530Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T22:55:51.574Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T22:55:51.575Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T23:05:51.611Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T23:05:51.648Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T23:05:51.649Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T23:15:51.547Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T23:15:51.578Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T23:15:51.579Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-29T23:25:51.278Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-29T23:25:51.285Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-29T23:25:51.286Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T00:06:19.269Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T00:06:19.554Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T00:08:14.569Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T00:08:14.638Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T00:10:42.922Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T00:10:42.972Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T00:15:56.331Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T00:15:56.390Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T00:23:53.105Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T00:23:53.227Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T00:30:42.122Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T00:30:42.225Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T00:40:44.757Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T00:40:44.774Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T00:40:44.776Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T00:40:52.625Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T00:40:52.726Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T00:48:17.283Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T00:48:17.338Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T00:58:19.788Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T00:58:19.802Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T00:58:19.803Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T01:05:55.198Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T01:05:55.304Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T01:13:18.410Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T01:13:18.487Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T01:23:20.817Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T01:23:20.828Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T01:23:20.830Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T01:33:19.733Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T01:33:19.738Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T01:33:19.739Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T01:41:29.328Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T01:41:29.458Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T01:51:31.868Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T01:51:31.881Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T01:51:31.882Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T02:01:30.967Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T02:01:30.974Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T02:01:30.975Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T02:03:07.732Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T02:03:07.849Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T02:10:46.077Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T02:10:46.182Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T02:18:24.238Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T02:18:24.326Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T02:21:02.803Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T02:21:02.871Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T02:29:00.451Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T02:29:00.548Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T02:41:59.340Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T02:41:59.351Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T02:41:59.353Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T02:46:37.689Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T02:46:37.790Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T02:56:40.013Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T02:56:40.031Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T02:56:40.033Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T03:06:39.160Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T03:06:39.176Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T03:06:39.177Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T03:09:17.439Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T03:09:17.570Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T03:19:19.648Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T03:19:19.662Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T03:19:19.664Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T03:22:38.057Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T03:22:38.111Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T03:32:40.031Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T03:32:40.038Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T03:32:40.040Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T03:33:53.166Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T03:33:53.220Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T03:40:31.271Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T03:40:31.359Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T03:49:54.814Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T03:49:54.918Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T03:59:58.894Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T03:59:58.906Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T03:59:58.908Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T04:02:27.818Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T04:02:27.912Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T04:12:30.170Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T04:12:30.181Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T04:12:30.183Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T04:22:31.171Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T04:22:31.215Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T04:22:31.224Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T04:30:51.177Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T04:30:51.270Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T04:40:26.738Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T04:40:26.841Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T04:50:29.233Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T04:50:29.251Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T04:50:29.253Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T04:54:31.282Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T04:54:31.332Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T05:04:33.013Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T05:04:33.024Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T05:04:33.025Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T05:14:32.594Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T05:14:32.605Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T05:14:32.608Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T06:59:24.436Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T06:59:24.540Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T07:57:54.949Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T07:57:54.958Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T07:57:54.959Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T08:38:08.016Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T08:38:08.046Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T08:38:08.048Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T09:41:09.778Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T09:41:09.836Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T09:41:09.839Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T09:54:59.911Z","level":"error","msg":"EasyOrders request failed","method":"GET","path":"/products","error":"fetch failed","timeout":false}
+{"ts":"2026-07-30T09:55:00.268Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T09:55:00.272Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T12:59:14.946Z","level":"warn","msg":"EasyOrders API error","method":"GET","path":"/store","status":404}
+{"ts":"2026-07-30T12:59:14.967Z","level":"info","msg":"EasyOrders connected","marketerId":5,"storeName":null}
+{"ts":"2026-07-30T13:00:15.076Z","level":"error","msg":"EasyOrders request failed","method":"GET","path":"/products","error":"fetch failed","timeout":false}
+{"ts":"2026-07-30T13:00:15.126Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T13:00:15.129Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T13:00:55.643Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T13:00:55.737Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T13:08:23.189Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T13:08:23.340Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T13:17:40.704Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T13:17:40.812Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T13:29:10.686Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T13:29:10.784Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T13:33:20.829Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T13:33:20.879Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T13:36:51.782Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T13:36:51.829Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T13:49:36.039Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T13:49:36.133Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T13:58:44.243Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T13:58:44.295Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T14:04:48.819Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T14:04:48.865Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T14:05:20.794Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T14:05:20.837Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T14:05:51.277Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T14:05:51.321Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T14:15:04.103Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T14:15:04.223Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T14:18:53.488Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T14:18:53.545Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T14:58:05.328Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T14:58:05.427Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T15:06:51.264Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T15:06:51.356Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T15:08:48.290Z","level":"warn","msg":"EasyOrders API error","method":"GET","path":"/store","status":404}
+{"ts":"2026-07-30T15:08:48.301Z","level":"info","msg":"EasyOrders connected","marketerId":5,"storeName":null}
+{"ts":"2026-07-30T15:10:08.674Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T15:10:08.720Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T15:20:11.337Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T15:20:11.349Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T15:20:11.350Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T15:26:49.562Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T15:26:49.666Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T15:36:52.077Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T15:36:52.088Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T15:36:52.091Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T15:46:51.210Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T15:46:51.255Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T15:46:51.257Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T15:56:51.299Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T15:56:51.344Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T15:56:51.347Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T16:06:51.222Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T16:06:51.244Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T16:06:51.245Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T16:16:50.769Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T16:16:50.774Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T16:16:50.775Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T16:26:51.195Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T16:26:51.235Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T16:26:51.237Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T16:36:50.901Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T16:36:50.908Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T16:36:50.910Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T16:50:56.126Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T16:50:56.157Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T16:50:56.159Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T17:05:41.191Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T17:05:41.232Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T17:05:41.234Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T17:15:41.271Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T17:15:41.278Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T17:15:41.279Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T17:25:41.272Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T17:25:41.304Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T17:25:41.306Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T17:35:41.761Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T17:35:41.788Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T17:35:41.789Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T17:43:33.416Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T17:43:33.550Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T18:16:26.235Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T18:16:26.319Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T18:18:56.867Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T18:18:56.933Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T18:22:00.279Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T18:22:00.332Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T18:32:02.742Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T18:32:02.771Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T18:32:02.773Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T18:42:01.709Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T18:42:01.717Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T18:42:01.718Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T18:42:29.499Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T18:42:29.560Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T18:44:36.735Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T18:44:36.780Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T18:50:13.021Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-30T18:50:13.082Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-30T19:00:16.398Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T19:00:16.431Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T19:00:16.433Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T19:10:14.936Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T19:10:14.993Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T19:10:14.994Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T19:22:29.866Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T19:22:29.897Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T19:22:29.899Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T19:38:49.961Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T19:38:50.023Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T19:38:50.024Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T19:48:49.375Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T19:48:49.404Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T19:48:49.406Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T20:32:37.618Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T20:32:37.655Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T20:32:37.656Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T20:44:44.847Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T20:44:44.878Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T20:44:44.879Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T20:54:44.405Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T20:54:44.431Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T20:54:44.434Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T21:04:44.687Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T21:04:44.697Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T21:04:44.698Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T21:14:44.546Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T21:14:44.567Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T21:14:44.568Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T21:24:44.548Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T21:24:44.577Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T21:24:44.579Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T21:34:44.667Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T21:34:44.692Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T21:34:44.693Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T21:51:33.142Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T21:51:33.169Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T21:51:33.170Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T22:01:31.903Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T22:01:31.935Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T22:01:31.937Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T22:22:25.621Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T22:22:25.634Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T22:22:25.635Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T22:54:27.775Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T22:54:27.890Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T22:54:27.892Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T23:04:24.262Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T23:04:24.301Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T23:04:24.301Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T23:14:24.121Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T23:14:24.125Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T23:14:24.126Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T23:26:32.022Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T23:26:32.053Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T23:26:32.054Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T23:36:31.989Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T23:36:32.010Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T23:36:32.011Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T23:46:31.719Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T23:46:31.745Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T23:46:31.745Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-30T23:56:31.938Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-30T23:56:31.943Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-30T23:56:31.943Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T00:04:14.022Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T00:04:14.109Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T00:09:04.944Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T00:09:04.995Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T00:19:06.830Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T00:19:06.839Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T00:19:06.840Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T00:21:45.096Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T00:21:45.148Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T02:29:47.105Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T02:29:47.213Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T02:38:23.828Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T02:38:23.876Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T02:42:14.152Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T02:42:14.195Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T02:45:03.606Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T02:45:03.646Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T02:55:06.619Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T02:55:06.636Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T02:55:06.638Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T03:05:04.927Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T03:05:04.939Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T03:05:04.941Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T03:15:04.931Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T03:15:04.937Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T03:15:04.939Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T03:16:47.964Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T03:16:48.066Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T03:26:49.896Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T03:26:49.913Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T03:26:49.915Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T03:32:44.028Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T03:32:44.138Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T03:38:47.065Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T03:38:47.120Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T03:48:49.298Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T03:48:49.306Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T03:48:49.307Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T03:49:50.533Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T03:49:50.584Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T04:00:44.690Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T04:00:44.733Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T04:00:44.735Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T04:10:44.437Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T04:10:44.443Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T04:10:44.444Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T04:16:26.306Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T04:16:26.396Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T04:26:28.164Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T04:26:28.183Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T04:26:28.186Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T04:36:27.932Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T04:36:27.940Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T04:36:27.942Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T04:43:09.414Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T04:43:09.503Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T04:53:11.189Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T04:53:11.203Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T04:53:11.205Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T04:57:58.024Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T04:57:58.079Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T05:07:15.560Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T05:07:15.665Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T05:16:16.480Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T05:16:16.543Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T05:33:51.923Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T05:33:51.950Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T05:33:51.951Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T05:43:50.554Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T05:43:50.560Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T05:43:50.561Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T05:53:50.523Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T05:53:50.531Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T05:53:50.532Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T07:49:23.073Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T07:49:23.148Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T07:49:23.149Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T10:45:05.084Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T10:45:05.113Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T10:45:05.114Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T11:05:08.564Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T11:05:08.610Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T11:05:08.612Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T11:15:08.307Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T11:15:08.312Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T11:15:08.314Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T11:25:08.352Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T11:25:08.395Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T11:25:08.397Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T11:37:47.855Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T11:37:47.883Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T11:37:47.884Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T11:47:47.902Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T11:47:47.909Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T11:47:47.910Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T11:57:47.586Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T11:57:47.594Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T11:57:47.595Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T12:10:07.819Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T12:10:07.863Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T12:10:07.864Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T12:20:05.498Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T12:20:05.505Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T12:20:05.507Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T12:30:05.383Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T12:30:05.391Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T12:30:05.392Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T12:40:05.658Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T12:40:05.665Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T12:40:05.665Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T12:51:47.570Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T12:51:47.594Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T12:51:47.595Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T13:01:47.226Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T13:01:47.233Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T13:01:47.234Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T13:11:47.431Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T13:11:47.437Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T13:11:47.438Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T13:25:16.402Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T13:25:16.416Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T13:25:16.418Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T13:35:16.452Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T13:35:16.458Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T13:35:16.459Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T13:45:16.346Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T13:45:16.352Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T13:45:16.353Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T13:59:03.202Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T13:59:03.218Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T13:59:03.219Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T14:09:02.975Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T14:09:02.985Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T14:09:02.986Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T14:19:03.096Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T14:19:03.103Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T14:19:03.104Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T14:32:33.040Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T14:32:33.044Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T14:32:33.045Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T14:42:33.014Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T14:42:33.024Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T14:42:33.025Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T14:52:34.888Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T14:52:34.945Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T14:52:34.952Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T15:02:33.219Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T15:02:33.271Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T15:02:33.273Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T15:21:18.453Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T15:21:18.493Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T15:21:18.495Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T15:31:19.328Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T15:31:19.342Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T15:31:19.343Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T16:27:49.435Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T16:27:49.567Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T16:27:49.568Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T16:45:03.509Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T16:45:03.543Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T16:45:03.544Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T17:03:34.938Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T17:03:34.969Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T17:03:34.970Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T17:16:51.021Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T17:16:51.027Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T17:16:51.028Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T17:50:40.934Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T17:50:40.973Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T17:50:40.975Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T18:00:41.123Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T18:00:41.239Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T18:00:41.240Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T18:10:41.434Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T18:10:41.454Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T18:10:41.458Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T18:20:40.579Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T18:20:40.587Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T18:20:40.589Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T18:30:40.297Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T18:30:40.300Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T18:30:40.301Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T18:50:49.798Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T18:50:49.823Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T18:50:49.824Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T19:00:48.892Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T19:00:48.922Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T19:00:48.923Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T19:10:49.176Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T19:10:49.198Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T19:10:49.199Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T19:23:05.015Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T19:23:05.056Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T19:23:05.058Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T20:05:00.073Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T20:05:00.087Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T20:05:00.088Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T20:10:04.765Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T20:10:04.857Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T20:10:47.610Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T20:10:47.648Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T20:15:26.882Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T20:15:26.934Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T20:17:35.767Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T20:17:35.812Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T20:26:14.802Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-07-31T20:26:14.892Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-07-31T20:38:51.541Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T20:38:51.586Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T20:38:51.589Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T20:48:51.110Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T20:48:51.126Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T20:48:51.129Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T20:58:50.850Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T20:58:50.881Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T20:58:50.882Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T21:08:50.777Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T21:08:50.796Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T21:08:50.797Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T21:20:02.625Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T21:20:02.651Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T21:20:02.652Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T21:30:03.470Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T21:30:03.511Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T21:30:03.512Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T21:40:03.237Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T21:40:03.283Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T21:40:03.284Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T21:50:02.986Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T21:50:03.006Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T21:50:03.008Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T22:00:02.911Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T22:00:02.942Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T22:00:02.943Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T22:11:27.330Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T22:11:27.359Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T22:11:27.360Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T22:21:55.271Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T22:21:55.387Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T22:21:55.389Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T22:50:30.340Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T22:50:30.497Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T22:50:30.500Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T23:00:29.088Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T23:00:29.126Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T23:00:29.127Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T23:10:29.181Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T23:10:29.215Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T23:10:29.216Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T23:20:29.190Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T23:20:29.214Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T23:20:29.215Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T23:30:29.540Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T23:30:29.575Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T23:30:29.576Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T23:40:29.246Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T23:40:29.277Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T23:40:29.279Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-07-31T23:50:29.700Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-07-31T23:50:29.730Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-07-31T23:50:29.731Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T00:00:29.541Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T00:00:29.570Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T00:00:29.571Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T00:10:29.520Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T00:10:29.539Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T00:10:29.540Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T00:26:10.076Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T00:26:10.102Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T00:26:10.103Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T00:36:07.262Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T00:36:07.299Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T00:36:07.299Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T00:46:06.763Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T00:46:06.773Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T00:46:06.774Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T00:56:07.124Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T00:56:07.135Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T00:56:07.136Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T01:06:07.250Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T01:06:07.259Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T01:06:07.260Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T01:16:07.653Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T01:16:07.662Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T01:16:07.662Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T01:28:00.364Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T01:28:00.400Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T01:28:00.401Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T01:38:00.388Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T01:38:00.426Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T01:38:00.427Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T01:48:00.472Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T01:48:00.501Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T01:48:00.502Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T01:58:00.424Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T01:58:00.458Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T01:58:00.460Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T02:08:00.638Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T02:08:00.674Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T02:08:00.675Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T02:18:00.505Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T02:18:00.533Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T02:18:00.533Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T02:28:00.270Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T02:28:00.278Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T02:28:00.281Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T02:38:00.390Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T02:38:00.397Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T02:38:00.398Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T02:48:00.207Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T02:48:00.212Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T02:48:00.213Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T02:58:01.948Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T02:58:01.956Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T02:58:01.956Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T03:08:00.997Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T03:08:01.027Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T03:08:01.029Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T03:18:00.758Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T03:18:00.781Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T03:18:00.782Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T03:28:00.272Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T03:28:00.280Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T03:28:00.281Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T03:38:00.624Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T03:38:00.632Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T03:38:00.633Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T03:48:01.576Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T03:48:01.590Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T03:48:01.596Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T03:58:00.514Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T03:58:00.520Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T03:58:00.521Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T04:08:01.079Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T04:08:01.103Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T04:08:01.105Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T04:18:00.808Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T04:18:00.838Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T04:18:00.839Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T04:28:01.303Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T04:28:01.331Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T04:28:01.339Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T04:38:40.296Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T04:38:40.345Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T04:38:40.346Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T04:48:39.411Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T04:48:39.418Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T04:48:39.419Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T04:58:39.918Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T04:58:39.962Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T04:58:39.963Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T05:08:39.646Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T05:08:39.656Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T05:08:39.657Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T05:37:05.582Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T05:37:05.643Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T05:37:05.644Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T06:10:40.594Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T06:10:40.652Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T06:10:40.653Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T07:04:43.618Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T07:04:43.657Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T07:04:43.657Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T10:42:17.702Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T10:42:17.751Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T10:42:17.752Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T10:52:35.716Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T10:52:36.165Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T10:52:36.166Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T11:01:28.809Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-01T11:01:28.910Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-08-01T11:11:53.212Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T11:11:53.251Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T11:11:53.254Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T11:28:39.634Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T11:28:39.691Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T11:28:39.692Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T11:38:36.418Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T11:38:36.511Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T11:38:36.512Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T11:48:36.608Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T11:48:36.652Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T11:48:36.653Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T11:58:36.273Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T11:58:36.311Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T11:58:36.314Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T12:08:36.401Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T12:08:36.425Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T12:08:36.426Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T12:18:36.192Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T12:18:36.220Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T12:18:36.221Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T12:28:36.796Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T12:28:36.848Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T12:28:36.851Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T12:38:36.800Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T12:38:36.816Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T12:38:36.817Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T12:48:36.068Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T12:48:36.080Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T12:48:36.081Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T12:58:35.743Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T12:58:35.746Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T12:58:35.747Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T13:08:36.308Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T13:08:36.350Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T13:08:36.351Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T13:21:04.187Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T13:21:04.220Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T13:21:04.221Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T13:31:04.606Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T13:31:04.639Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T13:31:04.640Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T13:41:04.159Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T13:41:04.182Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T13:41:04.182Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T13:51:05.288Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T13:51:05.318Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T13:51:05.319Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T14:05:56.710Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T14:05:56.915Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T14:05:56.915Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T14:36:39.944Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T14:36:39.997Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T14:36:39.998Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T14:50:54.636Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T14:50:54.675Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T14:50:54.676Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T15:07:04.667Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T15:07:04.678Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T15:07:04.679Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T15:17:04.664Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T15:17:04.704Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T15:17:04.705Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T15:27:04.927Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T15:27:04.963Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T15:27:04.964Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T15:37:23.096Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T15:37:23.134Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T15:37:23.135Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T16:17:41.521Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T16:17:41.599Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T16:17:41.599Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T16:45:11.267Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T16:45:11.299Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T16:45:11.300Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T17:35:02.263Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T17:35:02.806Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T17:35:02.810Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T17:35:05.457Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T17:35:05.462Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T17:35:05.463Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T18:22:39.946Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T18:22:40.244Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T18:22:40.245Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T18:32:37.577Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T18:32:37.616Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T18:32:37.618Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T18:42:38.792Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T18:42:38.820Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T18:42:38.821Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T19:05:35.152Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T19:05:35.218Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T19:05:35.219Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T19:17:35.071Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T19:17:35.120Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T19:17:35.121Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T19:27:34.777Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T19:27:34.812Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T19:27:34.813Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T19:37:34.957Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T19:37:34.988Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T19:37:34.989Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T19:55:09.163Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T19:55:09.204Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T19:55:09.204Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T20:22:37.100Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T20:22:37.151Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T20:22:37.153Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T20:32:39.893Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T20:32:39.901Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T20:32:39.902Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T20:42:39.602Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T20:42:39.614Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T20:42:39.615Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T20:52:40.091Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T20:52:40.120Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T20:52:40.121Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T21:05:01.011Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T21:05:01.047Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T21:05:01.048Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T21:15:00.961Z","level":"info","msg":"Products synced","marketerId":5,"count":101}
+{"ts":"2026-08-01T21:15:00.995Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T21:15:00.996Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-01T22:58:42.210Z","level":"error","msg":"EasyOrders request failed","method":"GET","path":"/products","error":"fetch failed","timeout":false}
+{"ts":"2026-08-01T22:58:42.677Z","level":"info","msg":"Order statuses synced","marketerId":5,"updated":0}
+{"ts":"2026-08-01T22:58:42.679Z","level":"info","msg":"Cron sync tick done","marketers":1}
+{"ts":"2026-08-03T12:19:08.544Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-03T12:19:08.611Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-08-03T16:50:19.029Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-03T16:50:19.440Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-08-03T17:12:53.399Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-03T17:12:53.486Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-08-03T17:15:31.927Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-03T17:15:31.988Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-08-03T17:25:10.212Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-03T17:25:10.303Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-08-03T18:07:58.029Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-03T18:07:58.129Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-08-03T23:36:17.769Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-03T23:36:17.865Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-08-04T00:27:54.869Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-04T00:27:54.961Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-08-04T02:43:29.319Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-04T02:43:29.426Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-08-04T03:02:10.463Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-04T03:02:10.565Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-08-04T03:07:24.910Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-04T03:07:25.030Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-08-04T03:11:19.249Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-04T03:11:19.299Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-08-04T04:34:35.069Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-04T04:34:35.170Z","level":"info","msg":"Cron scheduled","intervalMs":600000}
+{"ts":"2026-08-04T05:05:47.974Z","level":"info","msg":"Database initialized","path":"/data/data/com.termux/files/home/safqa-store/data/easyorders.db"}
+{"ts":"2026-08-04T05:05:48.031Z","level":"info","msg":"Cron scheduled","intervalMs":600000}

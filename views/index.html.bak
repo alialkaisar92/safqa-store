@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnify - المنتج الأصلي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tahoma', 'Segoe UI', sans-serif;
+        }
+        body {
+            background: #f4f6f9;
+        }
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 999;
+            background: rgba(10, 10, 20, 0.92);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #d4af37;
+            padding: 12px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s ease;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .logo i {
+            font-size: 32px;
+            color: #d4af37;
+        }
+        .logo span {
+            font-size: 28px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+        .logo span small {
+            font-size: 14px;
+            font-weight: 400;
+            color: #d4af37;
+            display: block;
+            margin-top: -5px;
+            letter-spacing: 2px;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 35px;
+            list-style: none;
+        }
+        .nav-links li a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 17px;
+            font-weight: 600;
+            transition: 0.3s;
+            position: relative;
+        }
+        .nav-links li a:hover {
+            color: #d4af37;
+        }
+        .nav-links li a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background: #d4af37;
+            transition: 0.3s;
+        }
+        .nav-links li a:hover::after {
+            width: 100%;
+        }
+        .btn-cta {
+            background: linear-gradient(145deg, #d4af37, #b8962c);
+            color: #0a0a14 !important;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 18px;
+            border: none;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-cta:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 35px rgba(212, 175, 55, 0.7);
+            color: #000 !important;
+        }
+        .btn-cta i {
+            font-size: 20px;
+        }
+        .menu-toggle {
+            display: none;
+            font-size: 30px;
+            color: #d4af37;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        @media (max-width: 992px) {
+            .header {
+                padding: 12px 20px;
+            }
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 75%;
+                max-width: 320px;
+                height: 100vh;
+                background: #0a0a14;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 30px;
+                transition: 0.5s cubic-bezier(0.77, 0, 0.18, 1);
+                border-left: 3px solid #d4af37;
+                padding: 40px 20px;
+            }
+            .nav-links.active {
+                right: 0;
+            }
+            .nav-links li a {
+                font-size: 22px;
+            }
+            .btn-cta {
+                padding: 15px 40px;
+                font-size: 20px;
+            }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 998;
+            }
+            .overlay.active {
+                display: block;
+            }
+            .menu-toggle {
+                display: block;
+                z-index: 1000;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+    <header class="header">
+        <a href="#" class="logo">
+            <i class="fas fa-bolt"></i>
+            <span>Trimix <small>الحل الأقوى</small></span>
+        </a>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#features">المميزات</a></li>
+            <li><a href="#reviews">التقييمات</a></li>
+            <li><a href="#guarantee">ضمان الجودة</a></li>
+            <li>
+                <a href="https://افليت-ترايمكس.com/خصم" class="btn-cta">
+                    <i class="fas fa-shopping-cart"></i> اطلب الآن
+                </a>
+            </li>
+        </ul>
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+    <div style="height: 100px;"></div>
+
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        const overlay = document.getElementById('overlay');
+
+        function toggleMenu() {
+            navLinks.classList.toggle('active');
+            overlay.classList.toggle('active');
+            const icon = menuToggle.querySelector('i');
+            if (navLinks.classList.contains('active')) {
+                icon.className = 'fas fa-times';
+            } else {
+                icon.className = 'fas fa-bars';
+            }
+        }
+
+        menuToggle.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+        document.querySelectorAll('.nav-links li a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 992) {
+                    toggleMenu();
+                }
+            });
+        });
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 992 && navLinks.classList.contains('active')) {
+                toggleMenu();
+            }
+        });
+    </script>
+</body>
+</html>

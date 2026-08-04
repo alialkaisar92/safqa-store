@@ -1,0 +1,49 @@
+<header style="position:sticky;top:0;z-index:999;background:linear-gradient(135deg,#0f172a,#1e293b);padding:16px 22px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 8px 25px rgba(0,0,0,.25);border-bottom:2px solid #22c55e;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div style="width:48px;height:48px;border-radius:14px;background:#22c55e;color:#fff;font-weight:bold;font-size:22px;display:flex;align-items:center;justify-content:center;">T</div>
+    <div>
+      <h2 style="margin:0;color:#fff;font-size:24px;">ترايمكس</h2>
+      <small style="color:#cbd5e1;">منصة التسويق بالعمولة</small>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;">
+    <button style="width:42px;height:42px;border:none;border-radius:50%;background:#22c55e;color:#fff;">👤</button>
+    <button style="width:42px;height:42px;border:none;border-radius:50%;background:#334155;color:#fff;">🔔</button>
+  </div>
+</header>
+    <div style="height: 100px;"></div>
+
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        const overlay = document.getElementById('overlay');
+
+        function toggleMenu() {
+            navLinks.classList.toggle('active');
+            overlay.classList.toggle('active');
+            const icon = menuToggle.querySelector('i');
+            if (navLinks.classList.contains('active')) {
+                icon.className = 'fas fa-times';
+            } else {
+                icon.className = 'fas fa-bars';
+            }
+        }
+
+        menuToggle.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+        document.querySelectorAll('.nav-links li a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 992) {
+                    toggleMenu();
+                }
+            });
+        });
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 992 && navLinks.classList.contains('active')) {
+                toggleMenu();
+            }
+        });
+    </script>
+</body>
+</html>
