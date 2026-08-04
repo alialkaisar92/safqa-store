@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة التصنيفات — سوّقلي</title>
+<style>
+  :root{
+    --bg:#0d1117; --card:#161b27; --card2:#1e2536;
+    --accent:#00b894; --accent2:#00d4aa;
+    --purple:#6c5ce7; --red:#ff7675; --amber:#fdcb6e;
+    --text:#e8eaf0; --muted:#8b93a7; --border:#2a3145;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Arial,sans-serif}
+  body{background:radial-gradient(1200px 600px at 80% -10%,rgba(0,184,148,.10),transparent),var(--bg);color:var(--text);min-height:100vh}
+  header{display:flex;align-items:center;gap:12px;padding:18px 26px;border-bottom:1px solid var(--border);background:rgba(22,27,39,.6);backdrop-filter:blur(8px);position:sticky;top:0;z-index:10}
+  header .back{color:var(--muted);text-decoration:none;font-size:.95rem;transition:color .2s}
+  header .back:hover{color:var(--accent2)}
+  header h1{font-size:1.25rem;font-weight:700;display:flex;align-items:center;gap:8px}
+  header h1 .ic{width:36px;height:36px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;font-size:1.1rem}
+  main{max-width:980px;margin:0 auto;padding:28px 20px}
+  .toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+  .toolbar p{color:var(--muted);font-size:.9rem}
+  .btn{border:none;cursor:pointer;font-weight:700;border-radius:12px;transition:transform .15s,box-shadow .2s,background .2s}
+  .btn:active{transform:scale(.96)}
+  .btn-add{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04120d;padding:12px 22px;font-size:.98rem;box-shadow:0 6px 18px -6px rgba(0,212,170,.5)}
+  .btn-add:hover{box-shadow:0 10px 26px -6px rgba(0,212,170,.7);transform:translateY(-1px)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s,box-shadow .2s;animation:pop .35s ease both}
+  .card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 14px 30px -14px rgba(0,184,148,.35)}
+  .card::before{content:'';position:absolute;top:0;right:0;width:100%;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:.7}
+  .card.inactive{opacity:.55}
+  .card .name{font-size:1.08rem;font-weight:700;margin-bottom:6px}
+  .card .meta{color:var(--muted);font-size:.82rem;display:flex;align-items:center;gap:6px;margin-bottom:14px}
+  .card .meta b{color:var(--accent2)}
+  .card .actions{display:flex;gap:8px}
+  .card .actions button{flex:1;padding:8px 0;border-radius:9px;border:1px solid var(--border);background:var(--card2);color:var(--text);cursor:pointer;font-size:.85rem;font-weight:600;transition:background .2s,border-color .2s}
+  .card .actions .edit:hover{background:var(--purple);border-color:var(--purple);color:#fff}
+  .card .actions .del:hover{background:var(--red);border-color:var(--red);color:#fff}
+  .badge{position:absolute;top:14px;left:14px;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(253,203,110,.15);color:var(--amber);border:1px solid rgba(253,203,110,.3)}
+  @keyframes pop{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .empty{grid-column:1/-1;text-align:center;padding:60px 0;color:var(--muted)}
+  .empty .big{font-size:3rem;margin-bottom:12px;opacity:.5}
+  /* Modal */
+  .backdrop{position:fixed;inset:0;background:rgba(5,8,14,.75);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:100;animation:fade .2s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .modal{background:var(--card);border:1px solid var(--border);border-radius:18px;width:min(440px,92vw);padding:26px;animation:rise .28s cubic-bezier(.2,.9,.3,1.2)}
+  @keyframes rise{from{opacity:0;transform:translateY(26px) scale(.96)}to{opacity:1;transform:none}}
+  .modal h2{font-size:1.15rem;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:6px;font-weight:600}
+  .field input,.field textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-size:.95rem;outline:none;transition:border-color .2s,box-shadow .2s}
+  .field input:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,184,148,.15)}
+  .field textarea{resize:vertical;min-height:70px}
+  .row{display:flex;gap:12px}
+  .row .field{flex:1}
+  .switch{display:flex;align-items:center;gap:10px;margin:4px 0 18px}
+  .switch input{width:44px;height:24px;appearance:none;background:var(--card2);border-radius:20px;position:relative;cursor:pointer;transition:background .2s;border:1px solid var(--border)}
+  .switch input:checked{background:var(--accent)}
+  .switch input::after{content:'';position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s}
+  .switch input:checked::after{transform:translateX(-20px)}
+  .switch span{font-size:.9rem}
+  .modal .btns{display:flex;gap:10px;margin-top:6px}
+  .modal .btns button{flex:1;padding:12px 0;border-radius:11px;font-weight:700;cursor:pointer;font-size:.95rem}
+  .save{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#04120d}
+  .cancel{background:transparent;border:1px solid var(--border);color:var(--muted)}
+  /* Toast */
+  #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card2);color:var(--text);padding:13px 26px;border-radius:12px;border:1px solid var(--accent);box-shadow:0 10px 30px -8px rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:200;font-weight:600}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast.err{border-color:var(--red)}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="/admin">→ العودة للوحة</a>
+  <h1><span class="ic">🗂️</span> إدارة التصنيفات</h1>
+</header>
+<main>
+  <div class="toolbar">
+    <p>نظّم منتجاتك في تصنيفات عشان العملاء يلاقوها بسهولة</p>
+    <button class="btn btn-add" onclick="openAdd()">＋ إضافة تصنيف</button>
+  </div>
+  <div id="grid" class="grid"></div>
+</main>
+
+<div id="backdrop" class="backdrop" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h2 id="mTitle">إضافة تصنيف</h2>
+    <div class="field">
+      <label>اسم التصنيف *</label>
+      <input id="fName" placeholder="مثال: إلكترونيات">
+    </div>
+    <div class="field">
+      <label>الوصف</label>
+      <textarea id="fDesc" placeholder="وصف قصير (اختياري)"></textarea>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>الترتيب</label>
+        <input id="fOrder" type="number" value="0">
+      </div>
+    </div>
+    <div class="switch">
+      <input type="checkbox" id="fActive" checked>
+      <span>نشط (ظاهر في المتجر)</span>
+    </div>
+    <div class="btns">
+      <button class="save" onclick="save()">حفظ</button>
+      <button class="cancel" onclick="closeModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var CATS=[], EDIT_ID=null;
+function authHeaders(){
+  var h={'Content-Type':'application/json'};
+  try{
+    var ops=JSON.parse(localStorage.getItem('sq_ops')||'{}');
+    if(ops.cred){h['Authorization']='Basic '+btoa(unescape(encodeURIComponent(ops.cred)));}
+    if(ops.token){h['x-sq-token']=ops.token;h['x-admin-token']=ops.token;}
+  }catch(e){}
+  return h;
+}
+function toast(msg,isErr){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.className=isErr?'show err':'show';
+  clearTimeout(t._tm); t._tm=setTimeout(function(){t.className='';},2400);
+}
+async function api(path,method,body){
+  var opt={method:method||'GET',headers:authHeaders()};
+  if(body!==undefined)opt.body=JSON.stringify(body);
+  var r=await fetch(path,opt); var j=await r.json().catch(function(){return{};});
+  if(!r.ok)throw new Error(j.error||'خطأ في الطلب');
+  return j;
+}
+function render(){
+  var g=document.getElementById('grid');
+  if(!CATS.length){g.innerHTML='<div class="empty"><div class="big">🗂️</div>مفيش تصنيفات لسه — ابدأ بإضافة واحد</div>';return;}
+  g.innerHTML=CATS.map(function(c,i){
+    return '<div class="card '+(c.active?'':'inactive')+'" style="animation-delay:'+(i*0.04)+'s">'
+      + (c.active?'':'<span class="badge">مخفي</span>')
+      + '<div class="name">'+esc(c.name)+'</div>'
+      + '<div class="meta">📦 <b>'+(c.products_count||0)+'</b> منتج</div>'
+      + '<div class="actions">'
+      + '<button class="edit" onclick="openEdit('+c.id+')">✏️ تعديل</button>'
+      + '<button class="del" onclick="del('+c.id+',\''+esc(c.name)+'\')">🗑 حذف</button>'
+      + '</div></div>';
+  }).join('');
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+async function load(){
+  try{ CATS=await api('/api/v2/categories/all'); render(); }
+  catch(e){ toast('فشل التحميل: '+e.message,1); }
+}
+function openAdd(){
+  EDIT_ID=null; document.getElementById('mTitle').textContent='إضافة تصنيف';
+  document.getElementById('fName').value=''; document.getElementById('fDesc').value='';
+  document.getElementById('fOrder').value='0'; document.getElementById('fActive').checked=true;
+  document.getElementById('backdrop').style.display='flex';
+  setTimeout(function(){document.getElementById('fName').focus();},80);
+}
+function openEdit(id){
+  var c=CATS.find(function(x){return x.id===id;}); if(!c)return;
+  EDIT_ID=id; document.getElementById('mTitle').textContent='تعديل: '+c.name;
+  document.getElementById('fName').value=c.name; document.getElementById('fDesc').value=c.description||'';
+  document.getElementById('fOrder').value=c.sort_order||0; document.getElementById('fActive').checked=!!c.active;
+  document.getElementById('backdrop').style.display='flex';
+}
+function closeModal(){document.getElementById('backdrop').style.display='none';}
+async function save(){
+  var name=document.getElementById('fName').value.trim();
+  if(!name){toast('اكتب اسم التصنيف',1);return;}
+  var body={name:name,description:document.getElementById('fDesc').value.trim(),
+    sort_order:parseInt(document.getElementById('fOrder').value)||0,
+    active:document.getElementById('fActive').checked?1:0};
+  try{
+    if(EDIT_ID){await api('/api/v2/categories/'+EDIT_ID,'PUT',body);toast('✅ تم التعديل');}
+    else{await api('/api/v2/categories','POST',body);toast('✅ تم الإضافة');}
+    closeModal(); load();
+  }catch(e){toast(e.message,1);}
+}
+async function del(id,name){
+  if(!confirm('هتحذف تصنيف "'+name+'"؟\nالمنتجات اللي فيه هتبقى من غير تصنيف.'))return;
+  try{await api('/api/v2/categories/'+id,'DELETE');toast('🗑 تم الحذف');load();}
+  catch(e){toast(e.message,1);}
+}
+load();
+</script>
+</body>
+</html>
