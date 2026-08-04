@@ -1,0 +1,26 @@
+
+.eh-hero{background:linear-gradient(135deg,var(--primary,#0f766e),#10b981);border-radius:18px;color:#fff;padding:22px;margin:14px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 12px 30px -14px rgba(15,118,110,.5)}
+.eh-hero b{font-size:1.05rem}
+.eh-hero small{opacity:.9;display:block;font-size:.78rem}
+.eh-hero .eh-cta{background:#fff;color:#0f766e;border:none;border-radius:12px;padding:10px 18px;font-weight:800;cursor:pointer;white-space:nowrap}
+.eh-trust{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.eh-trust div{background:#fff;border:1px solid rgba(15,118,110,.12);border-radius:12px;padding:10px 4px;text-align:center;font-size:.68rem;font-weight:700;color:#374151}
+.eh-trust i{font-style:normal;display:block;font-size:1.1rem;margin-bottom:3px}
+.card .eh-rate{position:absolute;top:8px;inset-inline-start:8px;background:rgba(0,0,0,.55);color:#ffd54f;border-radius:20px;padding:2px 8px;font-size:.68rem;font-weight:700}
+.card .eh-off{position:absolute;top:8px;inset-inline-end:8px;background:#ef4444;color:#fff;border-radius:20px;padding:2px 8px;font-size:.68rem;font-weight:700}
+.card .eh-comm{color:#0f766e;font-size:.72rem;font-weight:800;margin-top:2px}
+.card{position:relative}
+#ehTop{position:fixed;bottom:70px;inset-inline-start:14px;width:44px;height:44px;border-radius:50%;border:none;background:#0f766e;color:#fff;font-size:1.1rem;cursor:pointer;display:none;z-index:97;box-shadow:0 10px 24px -10px rgba(0,0,0,.4)}
+#ehTop.show{display:block}
+.eh-toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:#0f766e;color:#fff;padding:10px 22px;border-radius:50px;z-index:999;font-size:.85rem;box-shadow:0 10px 24px -10px rgba(0,0,0,.4)}
+.eh-qty{display:flex;align-items:center;gap:10px;margin:10px 0}
+.eh-qty button{width:32px;height:32px;border-radius:10px;border:1px solid rgba(15,118,110,.2);background:#fff;font-weight:800;cursor:pointer}
+.eh-qty b{min-width:24px;text-align:center}
+.eh-ship{background:#fff;border:1px solid rgba(15,118,110,.12);border-radius:14px;padding:14px;margin:12px 0}
+.eh-ship select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(15,118,110,.2);font-family:inherit}
+.eh-aff{background:linear-gradient(135deg,#0f766e,#10b981);color:#fff;border-radius:16px;padding:18px;margin:14px 0}
+.eh-aff .row{display:flex;gap:10px;margin-top:12px}
+.eh-aff .row div{flex:1;background:rgba(255,255,255,.14);border-radius:12px;padding:10px;text-align:center}
+.eh-aff b{display:block;font-size:1.1rem}
+.eh-aff small{font-size:.68rem;opacity:.9}
+.eh-aff .copylink{margin-top:12px;width:100%;background:#fff;color:#0f766e;border:none;border-radius:12px;padding:11px;font-weight:800;cursor:pointer}

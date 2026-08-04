@@ -326,6 +326,7 @@ body.chatfull header.header{display:none}
 body.chatfull .wa-wrap{height:calc(100vh - 62px);border-radius:0}
 .wa-back{background:none;border:none;color:#fff;font-size:22px}
 </style>
+<link rel="stylesheet" href="/store-enh.css">
 </head>
 <body>
 <header class="header">
@@ -680,6 +681,7 @@ document.getElementById('s').oninput=e=>{clearTimeout(window.t);window.t=setTime
 document.getElementById('cats').onclick=e=>{if(e.target.classList.contains('c')){document.querySelectorAll('.c').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');cc=e.target.dataset.c;renderP()}};
 updCC(); loadProducts(); loadPrices();
 </script>
+<script src="/store-enh.js" defer></script>
 </body>
 </html>`);
 });
