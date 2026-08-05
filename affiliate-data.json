@@ -26,6 +26,33 @@
       "details": "01092876053",
       "status": "تم التحويل",
       "date": "2026-07-28"
+    },
+    {
+      "id": 1785893156029,
+      "amount": 100,
+      "method": "vodafone",
+      "details": "01011112222",
+      "status": "approved",
+      "date": "2026-08-05",
+      "userId": 1785883645183,
+      "userName": "أحمد",
+      "userContact": "01011112222",
+      "userEarned": 320,
+      "userSales": 3,
+      "userSalesList": [
+        {
+          "name": "موبايل Nokia Flip",
+          "commission": 120
+        },
+        {
+          "name": "لعبة الباندا المضيئة",
+          "commission": 85
+        },
+        {
+          "name": "ساعة ذكية",
+          "commission": 115
+        }
+      ]
     }
   ],
   "orders": [
@@ -40,7 +67,7 @@
       "total": 685,
       "shipping": 500,
       "commission": 5,
-      "status": "ملغي",
+      "status": "تم التوصيل",
       "date": "2026-07-27",
       "address": "ع"
     },
@@ -51,7 +78,7 @@
       "phone": "01012345678",
       "price": 190,
       "commission": 45,
-      "status": "تم التسليم",
+      "status": "تم التحصيل",
       "date": "2026-07-20",
       "address": "القاهرة - مدينة نصر"
     },
@@ -62,7 +89,7 @@
       "phone": "01123456789",
       "price": 100,
       "commission": 25,
-      "status": "تم الشحن",
+      "status": "تم التحصيل",
       "date": "2026-07-22",
       "address": "الجيزة - الدقي"
     },
@@ -73,7 +100,7 @@
       "phone": "01234567890",
       "price": 350,
       "commission": 70,
-      "status": "تم التسليم",
+      "status": "تم التحصيل",
       "date": "2026-07-18",
       "address": "الإسكندرية - سموحة"
     },
@@ -84,7 +111,7 @@
       "phone": "01512345678",
       "price": 450,
       "commission": 90,
-      "status": "تم الشحن",
+      "status": "تم التحصيل",
       "date": "2026-07-24",
       "address": "المنصورة"
     },
@@ -95,7 +122,7 @@
       "phone": "01098765432",
       "price": 120,
       "commission": 30,
-      "status": "تم التسليم",
+      "status": "تم التحصيل",
       "date": "2026-07-15",
       "address": "طنطا"
     },
@@ -106,7 +133,7 @@
       "phone": "01112223334",
       "price": 280,
       "commission": 55,
-      "status": "تم التسليم",
+      "status": "تم التحصيل",
       "date": "2026-07-25",
       "address": "أسيوط"
     }
@@ -367,5 +394,21 @@
       ],
       "userName": "‪ali mohammed‬‏"
     }
+  },
+  "priceUp": 0,
+  "notifLog": [
+    {
+      "id": 1785895145129,
+      "date": "2026-08-05 01:59",
+      "headings": "",
+      "contents": "مرحبا",
+      "url": "/",
+      "image": "",
+      "schedule": ""
+    }
+  ],
+  "onesignal": {
+    "appId": "f283c3ca-8c41-49fe-800d-7a174920696d",
+    "restKey": ""
   }
 }

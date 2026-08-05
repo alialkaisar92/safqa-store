@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 const API_KEY = 'sk_9f6d15ecb31c980ae65661abca57d1e3f7c850811f78569955cb47dea4e46c46';
 const BASE_URL = 'https://api.safka-eg.com/api/v1/public';
 app.use(express.json({limit:'20mb'}));
@@ -87,13 +87,13 @@ async function getPriceList() {
   return priceListCache;
 }
 
-function mapProduct(p, up) {
+function mapProduct(p) {
   const prop = (p.properties && p.properties[0]) || {};
   const stock = typeof prop.value === 'number' ? prop.value : (prop.is_available === false ? 0 : 99);
   return {
     id: p._id,
     name: p.name || 'منتج',
-    price: Math.round((p.sale_price || 0) * (1 + (up || 0) / 100)),
+    price: p.sale_price || 0,
     cost: p.sale_price || 0,
     propertyId: prop._id || '',
     image: (p.images && p.images[0]) || p.image || '',
@@ -109,8 +109,7 @@ function mapProduct(p, up) {
 
 app.get('/api/products', async (req, res) => {
   const products = await getProducts();
-  let up=0;try{const dd=JSON.parse(fs.readFileSync(path.join(__dirname,'affiliate-data.json'),'utf8'));up=dd.priceUp||0;}catch(e){}
-  res.json(products.map(p=>mapProduct(p,up)));
+  res.json(products.map(mapProduct));
 });
 
 app.get('/api/price-list', async (req, res) => {
@@ -180,24 +179,13 @@ app.post('/api/withdraw', (req, res) => {
   const { amount, method, details } = req.body;
   if (!amount || amount <= 0) return res.json({ error: 'مبلغ غير صحيح' });
   if (!details) return res.json({ error: 'التفاصيل مطلوبة' });
-  const tok = req.headers['x-auth-token'];
-  let user=null, db=null;
-  try{ db=JSON.parse(fs.readFileSync(path.join(__dirname,'store-users.json'),'utf8')); if(tok&&db.tokens&&db.tokens[tok]) user=(db.users||[]).find(u=>u.id===db.tokens[tok]); }catch(e){}
-  if(user){
-    if(amount > (user.balance||0)) return res.json({ error: 'الرصيد غير كافي' });
-    const earned = user.balance||0;
-    user.balance = (user.balance||0) - amount;
-    fs.writeFileSync(path.join(__dirname,'store-users.json'), JSON.stringify(db,null,2));
-    data.withdrawals.push({ id: Date.now(), amount, method, details, status:'pending', date:new Date().toISOString().slice(0,10), userId:user.id, userName:user.name, userContact:user.contact, userEarned:earned, userSales:user.salesCount||0, userSalesList:user.sales||[] });
-    save();
-    return res.json({ message: 'تم إرسال طلب السحب ✓' });
-  }
   if (amount > data.balance) return res.json({ error: 'الرصيد غير كافي' });
   data.balance -= amount;
-  data.withdrawals.push({ id: Date.now(), amount, method, details, status: 'pending', date: new Date().toISOString().slice(0, 10), userName:data.name||'المسوق الرئيسي', userEarned:data.balance+amount });
+  data.withdrawals.push({ id: Date.now(), amount, method, details, status: 'pending', date: new Date().toISOString().slice(0, 10) });
   save();
   res.json({ message: 'تم إرسال طلب السحب ✓' });
 });
+
 app.post('/api/profile', (req, res) => {
   if (req.body.name) data.name = req.body.name;
   if (req.body.phone) data.phone = req.body.phone;
@@ -206,10 +194,9 @@ app.post('/api/profile', (req, res) => {
 });
 
 const CHAT_FILE=require('path').join(__dirname,'chat.json');
-function chatLoad(){try{var d=JSON.parse(require('fs').readFileSync(CHAT_FILE,'utf8'));if(Array.isArray(d))return{guest:d};return d||{}}catch(e){return{}}}
-function chatKey(req){var t=req.headers['x-auth-token'];if(t){try{var db=JSON.parse(require('fs').readFileSync(require('path').join(__dirname,'store-users.json'),'utf8'));if(db.tokens&&db.tokens[t])return 'u'+db.tokens[t]}catch(e){}}return 'guest'}
-app.get('/api/chat',(req,res)=>{var all=chatLoad();res.json(all[chatKey(req)]||[])});
-app.post('/api/chat',(req,res)=>{const b=req.body||{};const all=chatLoad();const k=chatKey(req);all[k]=all[k]||[];const m={id:Date.now(),from:b.from||'user',type:b.type||'text',text:b.text||'',data:b.data||'',time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})};all[k].push(m);require('fs').writeFileSync(CHAT_FILE,JSON.stringify(all));if(global.notifyChat)global.notifyChat();res.json({ok:true,m})});
+function chatLoad(){try{return JSON.parse(require('fs').readFileSync(CHAT_FILE,'utf8'))}catch(e){return[]}}
+app.get('/api/chat',(req,res)=>res.json(chatLoad()));
+app.post('/api/chat',(req,res)=>{const b=req.body||{};const all=chatLoad();const m={id:Date.now(),from:b.from||'user',type:b.type||'text',text:b.text||'',data:b.data||'',time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})};all.push(m);require('fs').writeFileSync(CHAT_FILE,JSON.stringify(all));res.json({ok:true,m});});
 
 app.post('/api/support', (req, res) => {
   const { message } = req.body;
@@ -644,7 +631,7 @@ async function submitOrder(){
   };
 
   try{
-    const r=await fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':(localStorage.getItem('etok')||'')},body:JSON.stringify(body)});
+    const r=await fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     const d=await r.json();
     msg.textContent=d.message||d.error; msg.className='msg '+(d.message?'ok':'err');
     if(d.message){cart=[];localStorage.setItem('scart','[]');updCC();setTimeout(()=>go('orders'),1200)}
@@ -668,7 +655,7 @@ async function loadMe(){
   document.getElementById('pPhone').value=me.phone||'';
 }
 async function saveProf(){
-  const r=await fetch('/api/profile',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':(localStorage.getItem('etok')||'')},body:JSON.stringify({name:document.getElementById('pName').value,phone:document.getElementById('pPhone').value})});
+  const r=await fetch('/api/profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:document.getElementById('pName').value,phone:document.getElementById('pPhone').value})});
   const d=await r.json(); document.getElementById('pMsg').textContent=d.message; document.getElementById('pMsg').className='msg ok';
 }
 function sw(el){document.querySelectorAll('.w').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');wM=el.dataset.m}
@@ -676,15 +663,15 @@ async function doWd(){
   const amount=Number(document.getElementById('wAmt').value), details=document.getElementById('wDet').value, msg=document.getElementById('wMsg');
   if(!amount||amount<=0){msg.textContent='أدخل مبلغ صحيح';msg.className='msg err';return}
   if(!details){msg.textContent='أدخل رقم المحفظة';msg.className='msg err';return}
-  const r=await fetch('/api/withdraw',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':(localStorage.getItem('etok')||'')},body:JSON.stringify({amount,method:wM,details})});
+  const r=await fetch('/api/withdraw',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount,method:wM,details})});
   const d=await r.json(); msg.textContent=d.message||d.error; msg.className='msg '+(d.message?'ok':'err');
   if(d.message){loadMe();document.getElementById('wAmt').value='';document.getElementById('wDet').value=''}
 }
 let waRec=null,waChunks=[];
-async function loadChat(){try{const d=await(await fetch('/api/chat',{headers:{'x-auth-token':(localStorage.getItem('etok')||'')}})).json();const b=document.getElementById('waBody');if(!b)return;b.innerHTML=(d||[]).map(m=>{let inner='';if(m.type==='image')inner='<img src="'+m.data+'" style="max-width:180px;border-radius:10px">';else if(m.type==='audio')inner='<audio controls src="'+m.data+'" style="width:200px"></audio>';else inner='<span>'+(m.text||'').replace(/</g,'&lt;')+'</span>';return '<div class="wa-msg '+(m.from==='user'?'me':'them')+'">'+inner+'<small>'+m.time+'</small></div>';}).join('');b.scrollTop=b.scrollHeight;}catch(e){}}
-async function waSend(){const t=document.getElementById('waText').value.trim();if(!t)return;await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':(localStorage.getItem('etok')||'')},body:JSON.stringify({from:'user',type:'text',text:t})});document.getElementById('waText').value='';loadChat();}
-document.getElementById('waFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':(localStorage.getItem('etok')||'')},body:JSON.stringify({from:'user',type:'image',data:r.result})});loadChat();};r.readAsDataURL(f);e.target.value='';};
-document.getElementById('waMic').onclick=async()=>{const btn=document.getElementById('waMic');if(waRec){waRec.stop();return;}try{const st=await navigator.mediaDevices.getUserMedia({audio:true});waRec=new MediaRecorder(st);waChunks=[];waRec.ondataavailable=e=>waChunks.push(e.data);waRec.onstop=async()=>{const blob=new Blob(waChunks,{type:'audio/webm'});const r=new FileReader();r.onload=async()=>{await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':(localStorage.getItem('etok')||'')},body:JSON.stringify({from:'user',type:'audio',data:r.result})});loadChat();};r.readAsDataURL(blob);st.getTracks().forEach(x=>x.stop());waRec=null;btn.textContent='🎤';btn.classList.remove('rec');};waRec.start();btn.textContent='⏹';btn.classList.add('rec');}catch(e){alert('فعّل الميكروفون أولاً');}};
+async function loadChat(){try{const d=await(await fetch('/api/chat')).json();const b=document.getElementById('waBody');if(!b)return;b.innerHTML=(d||[]).map(m=>{let inner='';if(m.type==='image')inner='<img src="'+m.data+'" style="max-width:180px;border-radius:10px">';else if(m.type==='audio')inner='<audio controls src="'+m.data+'" style="width:200px"></audio>';else inner='<span>'+(m.text||'').replace(/</g,'&lt;')+'</span>';return '<div class="wa-msg '+(m.from==='user'?'me':'them')+'">'+inner+'<small>'+m.time+'</small></div>';}).join('');b.scrollTop=b.scrollHeight;}catch(e){}}
+async function waSend(){const t=document.getElementById('waText').value.trim();if(!t)return;await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from:'user',type:'text',text:t})});document.getElementById('waText').value='';loadChat();}
+document.getElementById('waFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from:'user',type:'image',data:r.result})});loadChat();};r.readAsDataURL(f);e.target.value='';};
+document.getElementById('waMic').onclick=async()=>{const btn=document.getElementById('waMic');if(waRec){waRec.stop();return;}try{const st=await navigator.mediaDevices.getUserMedia({audio:true});waRec=new MediaRecorder(st);waChunks=[];waRec.ondataavailable=e=>waChunks.push(e.data);waRec.onstop=async()=>{const blob=new Blob(waChunks,{type:'audio/webm'});const r=new FileReader();r.onload=async()=>{await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from:'user',type:'audio',data:r.result})});loadChat();};r.readAsDataURL(blob);st.getTracks().forEach(x=>x.stop());waRec=null;btn.textContent='🎤';btn.classList.remove('rec');};waRec.start();btn.textContent='⏹';btn.classList.add('rec');}catch(e){alert('فعّل الميكروفون أولاً');}};
 setInterval(()=>{const p=document.getElementById('p-support');if(p&&p.classList.contains('active'))loadChat();},3000);
 document.getElementById('s').oninput=e=>{clearTimeout(window.t);window.t=setTimeout(()=>{cs=e.target.value;renderP()},180)};
 document.getElementById('cats').onclick=e=>{if(e.target.classList.contains('c')){document.querySelectorAll('.c').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');cc=e.target.dataset.c;renderP()}};
@@ -698,8 +685,6 @@ updCC(); loadProducts(); loadPrices();
 app.get('/home',(req,res)=>res.sendFile(require('path').join(__dirname,'landing.html')));
 
 require('./auth')(app);
-require('./admin')(app);
-require('./notify')(app);
 app.listen(PORT, () => {
   console.log('المتجر: http://localhost:' + PORT);
   getProducts();

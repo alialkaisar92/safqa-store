@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 const API_KEY = 'sk_9f6d15ecb31c980ae65661abca57d1e3f7c850811f78569955cb47dea4e46c46';
 const BASE_URL = 'https://api.safka-eg.com/api/v1/public';
 app.use(express.json({limit:'20mb'}));
@@ -180,24 +180,13 @@ app.post('/api/withdraw', (req, res) => {
   const { amount, method, details } = req.body;
   if (!amount || amount <= 0) return res.json({ error: 'مبلغ غير صحيح' });
   if (!details) return res.json({ error: 'التفاصيل مطلوبة' });
-  const tok = req.headers['x-auth-token'];
-  let user=null, db=null;
-  try{ db=JSON.parse(fs.readFileSync(path.join(__dirname,'store-users.json'),'utf8')); if(tok&&db.tokens&&db.tokens[tok]) user=(db.users||[]).find(u=>u.id===db.tokens[tok]); }catch(e){}
-  if(user){
-    if(amount > (user.balance||0)) return res.json({ error: 'الرصيد غير كافي' });
-    const earned = user.balance||0;
-    user.balance = (user.balance||0) - amount;
-    fs.writeFileSync(path.join(__dirname,'store-users.json'), JSON.stringify(db,null,2));
-    data.withdrawals.push({ id: Date.now(), amount, method, details, status:'pending', date:new Date().toISOString().slice(0,10), userId:user.id, userName:user.name, userContact:user.contact, userEarned:earned, userSales:user.salesCount||0, userSalesList:user.sales||[] });
-    save();
-    return res.json({ message: 'تم إرسال طلب السحب ✓' });
-  }
   if (amount > data.balance) return res.json({ error: 'الرصيد غير كافي' });
   data.balance -= amount;
-  data.withdrawals.push({ id: Date.now(), amount, method, details, status: 'pending', date: new Date().toISOString().slice(0, 10), userName:data.name||'المسوق الرئيسي', userEarned:data.balance+amount });
+  data.withdrawals.push({ id: Date.now(), amount, method, details, status: 'pending', date: new Date().toISOString().slice(0, 10) });
   save();
   res.json({ message: 'تم إرسال طلب السحب ✓' });
 });
+
 app.post('/api/profile', (req, res) => {
   if (req.body.name) data.name = req.body.name;
   if (req.body.phone) data.phone = req.body.phone;
@@ -209,7 +198,7 @@ const CHAT_FILE=require('path').join(__dirname,'chat.json');
 function chatLoad(){try{var d=JSON.parse(require('fs').readFileSync(CHAT_FILE,'utf8'));if(Array.isArray(d))return{guest:d};return d||{}}catch(e){return{}}}
 function chatKey(req){var t=req.headers['x-auth-token'];if(t){try{var db=JSON.parse(require('fs').readFileSync(require('path').join(__dirname,'store-users.json'),'utf8'));if(db.tokens&&db.tokens[t])return 'u'+db.tokens[t]}catch(e){}}return 'guest'}
 app.get('/api/chat',(req,res)=>{var all=chatLoad();res.json(all[chatKey(req)]||[])});
-app.post('/api/chat',(req,res)=>{const b=req.body||{};const all=chatLoad();const k=chatKey(req);all[k]=all[k]||[];const m={id:Date.now(),from:b.from||'user',type:b.type||'text',text:b.text||'',data:b.data||'',time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})};all[k].push(m);require('fs').writeFileSync(CHAT_FILE,JSON.stringify(all));if(global.notifyChat)global.notifyChat();res.json({ok:true,m})});
+app.post('/api/chat',(req,res)=>{const b=req.body||{};const all=chatLoad();const k=chatKey(req);all[k]=all[k]||[];const m={id:Date.now(),from:b.from||'user',type:b.type||'text',text:b.text||'',data:b.data||'',time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})};all[k].push(m);require('fs').writeFileSync(CHAT_FILE,JSON.stringify(all));res.json({ok:true,m})});
 
 app.post('/api/support', (req, res) => {
   const { message } = req.body;
@@ -699,7 +688,6 @@ app.get('/home',(req,res)=>res.sendFile(require('path').join(__dirname,'landing.
 
 require('./auth')(app);
 require('./admin')(app);
-require('./notify')(app);
 app.listen(PORT, () => {
   console.log('المتجر: http://localhost:' + PORT);
   getProducts();

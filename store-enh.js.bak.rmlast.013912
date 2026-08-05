@@ -1,6 +1,6 @@
 (function(){
 window.ehToast=function(m){var d=document.createElement("div");d.className="eh-toast";d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2200);};
-function header(){return;var h=document.querySelector(".header");if(!h||h.dataset.eh)return;h.dataset.eh="1";
+function header(){var h=document.querySelector(".header");if(!h||h.dataset.eh)return;h.dataset.eh="1";
 h.innerHTML='<div class="eh-brand"><span class="eh-logo">Earnify 💰</span><small>منصة التسويق بالعمولة</small></div>'
 +'<button class="eh-profile" onclick="go(\'account\')"><span class="eh-pname">أحمد محمد<small>✔ مسوق نشط</small></span><span class="eh-av">👤</span></button>'
 +'<button class="eh-cartb" onclick="go(\'cart\')">🛒<i>0</i></button>'
@@ -59,7 +59,7 @@ box:'<svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3
 bag:'<svg viewBox="0 0 24 24"><path d="M9 5h6l3 4c1.5 5-1.5 11-6 11s-7.5-6-6-11l3-4z"/><path d="M12 10v6"/><path d="M14.5 11.5c-.5-1-4.5-1-4.5 1s4 2 4 3-3.5 1.5-4.5.5"/></svg>',
 person:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>'
 };
-function nav(){return;var n=document.querySelector(".nav");if(!n||n.dataset.eh)return;n.dataset.eh="1";
+function nav(){var n=document.querySelector(".nav");if(!n||n.dataset.eh)return;n.dataset.eh="1";
 var items=[{id:"store",l:"الرئيسية",i:I.home},{id:"products",l:"المنتجات",i:I.grid},{id:"orders",l:"طلباتي",i:I.box},{id:"withdraw",l:"الأرباح",i:I.bag},{id:"account",l:"حسابي",i:I.person}];
 n.innerHTML=items.map(function(it,idx){return '<button class="eh-nitem'+(idx===0?" on":"")+'" data-id="'+it.id+'">'+it.i+"<span>"+it.l+"</span></button>";}).join("");
 n.querySelectorAll(".eh-nitem").forEach(function(b){b.onclick=function(){
@@ -76,7 +76,7 @@ function fix(){
  if(h&&!document.getElementById("ht")){var d=document.createElement("div");d.id="ht";d.style.display="none";h.appendChild(d);}
  document.querySelectorAll(".nav .eh-nitem").forEach(function(b){if(b.dataset.id==="account")b.dataset.id="profile";});
  var pp=document.querySelector(".eh-profile");if(pp)pp.onclick=function(){go("profile")};
- 
+ var bb=document.querySelector(".eh-bell");if(bb)bb.onclick=function(){go("profile")};
 }
 setInterval(fix,400);
 })();
@@ -111,87 +111,5 @@ function ehFindByBarcode(code){
 function wireBc(){var b=document.querySelector(".eh-search .bbtn");if(b&&!b.dataset.bc){b.dataset.bc="1";b.onclick=function(){ehScan();};}}
 setInterval(wireBc,500);
 })();
-(function(){
-function tok(){return localStorage.getItem('etok')||''}
-function uInfo(){try{return JSON.parse(localStorage.getItem('euser')||'null')}catch(e){return null}}
-function hdr(){return {'Content-Type':'application/json','x-auth-token':tok()}}
-function ensureModal(){if(document.getElementById('authModal'))return;
-var m=document.createElement('div');m.id='authModal';m.className='auth-ovl';
-m.innerHTML='<div class="auth-card"><button class="auth-x" onclick="authClose()">✕</button><div class="auth-tabs"><button id="atLogin" class="on" onclick="authTab(\'login\')">تسجيل دخول</button><button id="atReg" onclick="authTab(\'reg\')">إنشاء حساب</button></div><div id="authBody"></div><p class="auth-msg" id="authMsg"></p></div>';
-document.body.appendChild(m);}
-window.authOpen=function(tab){ensureModal();document.getElementById('authModal').style.display='flex';authTab(tab||'login')};
-window.authClose=function(){var m=document.getElementById('authModal');if(m)m.style.display='none'};
-window.authTab=function(t){var L=document.getElementById('atLogin'),R=document.getElementById('atReg');L.classList.toggle('on',t==='login');R.classList.toggle('on',t==='reg');document.getElementById('authMsg').textContent='';
-var b=document.getElementById('authBody');
-if(t==='login'){b.innerHTML='<label>رقم الهاتف أو الإيميل</label><input id="liC"><label>كلمة السر</label><input id="liP" type="password"><button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="doLogin()">دخول</button><p style="text-align:center;margin-top:10px;font-size:.8rem">معندكش حساب؟ <a href="#" onclick="authTab(\'reg\');return false" style="color:var(--p);font-weight:700">إنشاء حساب</a></p>';}
-else{b.innerHTML='<label>الاسم</label><input id="rgN"><label>رقم الهاتف أو الإيميل</label><input id="rgC"><label>كلمة السر (6+ أحرف)</label><input id="rgP" type="password"><button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="doReg()">إنشاء الحساب</button>';}};
-function msg(s,ok){var e=document.getElementById('authMsg');if(e){e.textContent=s;e.style.color=ok?'#16a34a':'#dc2626'}}
-window.doLogin=function(){fetch('/api/auth/login',{method:'POST',headers:hdr(),body:JSON.stringify({contact:document.getElementById('liC').value,password:document.getElementById('liP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok){localStorage.setItem('etok',d.token);localStorage.setItem('euser',JSON.stringify(d.user));authClose();authRender();ehToast('أهلاً '+d.user.name+' 👋')}else msg(d.error,false)})};
-window.doReg=function(){fetch('/api/auth/register',{method:'POST',headers:hdr(),body:JSON.stringify({name:document.getElementById('rgN').value,contact:document.getElementById('rgC').value,password:document.getElementById('rgP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok){localStorage.setItem('etok',d.token);localStorage.setItem('euser',JSON.stringify(d.user));authClose();authRender();ehToast('تم إنشاء حسابك ✅')}else msg(d.error,false)})};
-window.authLogout=function(){fetch('/api/auth/logout',{method:'POST',headers:hdr()}).then(function(){localStorage.removeItem('etok');localStorage.removeItem('euser');authRender();ehToast('تم تسجيل الخروج')})};
-function authRender(){var p=document.getElementById('p-profile');if(!p)return;
-var box=document.getElementById('authBox');if(!box){box=document.createElement('div');box.id='authBox';p.insertBefore(box,p.firstChild)}
-var u=uInfo();
-if(!tok()||!u){box.innerHTML='<div class="auth-inline"><b>👤 سجّل دخولك أو اعمل حساب جديد</b><p style="color:var(--mut);font-size:.8rem;margin:6px 0">عشان تتابع طلباتك ورصيدك</p><div class="row"><button class="btn btn-primary" onclick="authOpen(\'login\')">تسجيل دخول</button><button class="btn btn-ghost" onclick="authOpen(\'reg\')">إنشاء حساب</button></div></div>';}
-else{box.innerHTML='<div class="auth-inline"><b>أهلاً '+u.name+' 👋</b><p style="color:var(--mut);font-size:.8rem;margin:6px 0">'+u.contact+' • رصيدك '+(u.balance||0)+' ج.م</p><button class="btn btn-ghost" onclick="authLogout()">تسجيل خروج</button></div>';}}
-if(tok()){fetch('/api/auth/me',{headers:hdr()}).then(function(r){return r.json()}).then(function(d){if(!d.logged){localStorage.removeItem('etok');localStorage.removeItem('euser')}})}
-setInterval(authRender,1500);
-})();
-(function(){
-/* === الإشعارات === */
-function ensureNotif(){if(document.getElementById('ehNotif'))return;
-var p=document.createElement('div');p.id='ehNotif';p.style.cssText='position:fixed;top:64px;right:10px;left:10px;max-width:360px;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.25);z-index:220;display:none;padding:14px';
-p.innerHTML='<b style="font-size:.9rem">🔔 الإشعارات</b><div id="ehNotifList" style="margin-top:10px"></div>';
-document.body.appendChild(p);}
-function renderNotif(){var l=[{t:'تم شحن طلبك #1042',d:'منذ ساعة'},{t:'عمولة جديدة +45 ج.م',d:'منذ 3 ساعات'},{t:'منتج جديد متاح للتسويق',d:'أمس'}];
-document.getElementById('ehNotifList').innerHTML=l.map(function(n){return '<div style="border:1px solid #eee;border-radius:12px;padding:10px;margin-bottom:8px"><b style="font-size:.8rem">'+n.t+'</b><div style="color:#888;font-size:.68rem">'+n.d+'</div></div>';}).join('');}
-window.ehNotifToggle=function(){ensureNotif();var p=document.getElementById('ehNotif');var open=p.style.display==='block';p.style.display=open?'none':'block';if(!open)renderNotif();};
-function wireBell(){var b=document.querySelector('.eh-bell');if(b&&!b.dataset.nt){b.dataset.nt='1';b.onclick=function(e){e.stopPropagation();ehNotifToggle();};}}
-/* === خصوصية: المسجّل يشوف بياناته هو بس === */
-function isMember(){return !!localStorage.getItem('etok')}
-function gate(){
- if(!isMember())return;
- var op=document.getElementById('p-orders');
- if(op&&op.classList.contains('active')){var ol=document.getElementById('oList');if(ol){ol.innerHTML='<div style="text-align:center;padding:50px 0;color:#888">📦 لا توجد طلبات بعد<br><small style="color:#aaa">طلباتك هتظهر هنا أول ما تبيع</small></div>';}}
- var pp=document.getElementById('p-profile');
- if(pp&&pp.classList.contains('active')){var sg=pp.querySelector('.stat-grid');if(sg){var u=null;try{u=JSON.parse(localStorage.getItem('euser'))}catch(e){}
- sg.innerHTML='<div class="stat"><div class="l">رصيدك</div><div class="v">'+((u&&u.balance)||0)+' ج.م</div></div><div class="stat"><div class="l">طلباتك</div><div class="v">0</div></div>';}}
-}
-setInterval(function(){wireBell();gate();},800);
-})();
 
-(function(){document.addEventListener("click",function(e){var b=e.target.closest("[data-p=orders],[data-p=profile]");if(b&&localStorage.getItem("etok")){var ol=document.getElementById("oList");if(ol)ol.innerHTML="";}});})();
-(function(){function ping(){var t=localStorage.getItem('etok');if(t)fetch('/api/auth/ping',{method:'POST',headers:{'x-auth-token':t}})}if(localStorage.getItem('etok')){ping();setInterval(ping,30000)}})();
-(function(){
-function act(a){var t=localStorage.getItem('etok');if(!t)return;fetch('/api/auth/ping',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':t},body:JSON.stringify({action:a})}).catch(function(){});}
-function cur(){var a=document.querySelector('.page.active');return a?a.id.replace('p-',''):''}
-document.addEventListener('click',function(e){
- if(e.target.closest('.card'))act('بيشوف المنتجات');
- else if(e.target.closest('[data-p]'))act('في صفحة '+(e.target.closest('[data-p]').getAttribute('data-p')||''));
- else if(e.target.closest('button'))act('بيستخدم '+cur());
-},true);
-setInterval(function(){if(localStorage.getItem('etok'))act('نشط في '+cur())},15000);
-})();
-(function(){fetch('/api/admin/settings').then(function(r){return r.json()}).then(function(s){
- if(s.name){var l=document.querySelector('.eh-logo');if(l)l.textContent=s.name+' 💰';document.title=s.name;}
- if(s.announcement){var h=document.querySelector('.eh-hero h1, .eh-hero');if(h)h.innerHTML=s.announcement;}
-}).catch(function(){});})();
-(function(){var loaded=false;
-function loadOS(){if(loaded)return;loaded=true;
- fetch('/api/onesignal/config').then(function(r){return r.json()}).then(function(c){
-  var APPID=c.appId||'f283c3ca-8c41-49fe-800d-7a174920696d';
-  window.OneSignalDeferred=window.OneSignalDeferred||[];
-  var s=document.createElement('script');s.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';s.async=true;
-  s.onload=function(){OneSignalDeferred.push(function(OneSignal){
-   OneSignal.init({appId:APPID,notifyButton:false,autoResubscribe:true}).then(function(){return OneSignal.Slidedown.promptPush()}).then(function(){return OneSignal.getUser()}).then(function(u){
-    var id=u&&u.getPushSubscription?u.getPushSubscription().id:null;
-    if(id)fetch('/api/notifications/register',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':localStorage.getItem('etok')||''},body:JSON.stringify({playerId:id})});
-   }).catch(function(){});
-  });};
-  document.head.appendChild(s);
- }).catch(function(){});}
-function maybe(){if(localStorage.getItem('etok'))loadOS();}
-document.addEventListener('click',function(){maybe()},{once:true});
-setInterval(maybe,6000);
-var _ol=window.authLogout;window.authLogout=function(){fetch('/api/notifications/unlink',{method:'POST',headers:{'x-auth-token':localStorage.getItem('etok')||''}}).then(function(){if(_ol)_ol()});};
-})();
+(function(){var b=document.createElement("a");b.href="/eo";b.title="إنشاء متجري";b.style.cssText="position:fixed;bottom:76px;inset-inline-end:14px;width:48px;height:48px;border-radius:50%;background:#0f766e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;z-index:96;box-shadow:0 10px 24px -10px rgba(0,0,0,.4);text-decoration:none";b.textContent="🏪";document.body.appendChild(b);})();
