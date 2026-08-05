@@ -1,169 +1,34 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0a4f49">
-<title>سوقلي — تسجيل الدخول</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%}
-body{font-family:'Cairo',system-ui,sans-serif;background:#04201c;color:#0f172a;overflow-x:hidden}
-.page{min-height:100vh;min-height:100dvh;display:flex;align-items:stretch;justify-content:center;position:relative;
-  background:radial-gradient(125% 125% at 82% -10%,#0d5249 0%,#073029 46%,#04201c 100%)}
-/* جزيئات ألماس عائمة */
-.amb{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
-.amb i{position:absolute;color:rgba(94,234,212,.12);animation:fl linear infinite;will-change:transform}
-@keyframes fl{0%{transform:translateY(8vh) rotate(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-110vh) rotate(220deg);opacity:0}}
-.grain{position:fixed;inset:0;opacity:.045;pointer-events:none;z-index:0;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-/* الكارت */
-.card{position:relative;z-index:2;width:100%;display:grid;grid-template-columns:1fr;background:#fff;
-  animation:cardIn .55s cubic-bezier(.2,.85,.3,1.08) both}
-@keyframes cardIn{from{opacity:0;transform:translateY(22px) scale(.985)}to{opacity:1;transform:none}}
-@media(min-width:860px){
-  .page{align-items:center;padding:26px}
-  .card{grid-template-columns:1.04fr 1fr;max-width:940px;border-radius:30px;overflow:hidden;
-    box-shadow:0 50px 110px -34px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.04);max-height:94vh}
-}
-/* لوحة الهوية */
-.brand{position:relative;background:linear-gradient(158deg,#0F766E 0%,#0a4f49 58%,#06302b 100%);color:#fff;
-  padding:42px 32px 36px;display:flex;flex-direction:column;justify-content:space-between;gap:26px;overflow:hidden}
-.brand::before{content:"";position:absolute;width:340px;height:340px;right:-110px;bottom:-120px;border-radius:50%;
-  background:radial-gradient(circle,rgba(45,212,191,.4),transparent 64%)}
-.brand::after{content:"";position:absolute;width:200px;height:200px;left:-70px;top:-60px;border-radius:50%;
-  background:radial-gradient(circle,rgba(94,234,212,.22),transparent 66%)}
-.logo{position:relative;z-index:2;width:72px;height:72px;animation:glow 3.6s ease-in-out infinite}
-@keyframes glow{0%,100%{filter:drop-shadow(0 0 16px rgba(45,212,191,.5))}50%{filter:drop-shadow(0 0 38px rgba(94,234,212,.95))}}
-.brand h1{position:relative;z-index:2;font-size:clamp(2.4rem,7vw,3.4rem);font-weight:900;letter-spacing:-1.5px;line-height:.95;margin-top:18px}
-.brand .tag{position:relative;z-index:2;color:#a7f3d0;font-size:.98rem;line-height:1.75;max-width:300px;margin-top:10px;font-weight:600}
-.perks{position:relative;z-index:2;list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:6px}
-.perks li{display:flex;align-items:center;gap:13px;font-size:.92rem;font-weight:700;color:#d1fae5}
-.perks li b{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.13);display:grid;place-items:center;font-size:1.1rem;flex-shrink:0;backdrop-filter:blur(4px)}
-.wave{position:absolute;left:0;right:0;bottom:0;z-index:1;opacity:.55}
-@media(min-width:860px){.brand{padding:48px 42px}}
-/* الفورم */
-.form{padding:34px 26px 40px;display:flex;flex-direction:column;justify-content:center;overflow-y:auto}
-@media(min-width:860px){.form{padding:46px 46px}}
-.fhead{margin-bottom:22px}
-.fhead h2{font-size:1.55rem;font-weight:900;color:#0f2420;letter-spacing:-.5px}
-.fhead p{font-size:.86rem;color:#64748b;margin-top:5px;font-weight:600}
-.tabs{display:flex;background:#f1f5f9;border-radius:14px;padding:5px;margin-bottom:24px;gap:5px}
-.tabs button{flex:1;border:none;background:transparent;padding:12px 8px;border-radius:10px;font-family:inherit;
-  font-weight:800;font-size:.92rem;color:#64748b;cursor:pointer;transition:background .28s,color .28s,box-shadow .28s}
-.tabs button.on{background:linear-gradient(135deg,#14b8a6,#0d9488);color:#fff;box-shadow:0 6px 16px -6px rgba(13,148,136,.6)}
-.f{margin-bottom:15px}
-.f label{display:block;font-size:.78rem;font-weight:800;color:#475569;margin:0 2px 7px}
-.inw{position:relative}
-.inw .ic{position:absolute;top:50%;right:15px;transform:translateY(-50%);font-size:1.05rem;opacity:.55;pointer-events:none}
-.inw input{width:100%;padding:14px 46px 14px 16px;border:1.8px solid #e2e8f0;border-radius:13px;font-family:inherit;
-  font-size:.96rem;font-weight:600;outline:none;background:#fff;transition:border-color .2s,box-shadow .2s;color:#0f172a}
-.inw input:focus{border-color:#0F766E;box-shadow:0 0 0 4px rgba(15,118,110,.13)}
-.inw input.bad{border-color:#ef4444;animation:shk .4s}
-@keyframes shk{10%,90%{transform:translateX(-2px)}30%,70%{transform:translateX(5px)}50%{transform:translateX(-5px)}}
-.submit{margin-top:8px;width:100%;padding:15px;border:none;border-radius:14px;cursor:pointer;position:relative;overflow:hidden;
-  background:linear-gradient(135deg,#14b8a6,#0d9488);background-size:200% 100%;color:#fff;font-family:inherit;
-  font-weight:900;font-size:1.02rem;letter-spacing:.2px;transition:transform .15s;box-shadow:0 14px 30px -10px rgba(13,148,136,.62)}
-.submit:hover{background-image:linear-gradient(110deg,#0d9488 28%,#5eead4 50%,#0d9488 72%);animation:shm 1.1s linear}
-@keyframes shm{0%{background-position:180% 0}100%{background-position:-180% 0}}
-.submit:active{transform:scale(.985)}
-.submit:disabled{opacity:.72;cursor:wait}
-.submit .sp{display:none;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;
-  animation:spin .7s linear infinite;vertical-align:-4px;margin-inline-start:9px}
-.submit.ld .sp{display:inline-block}
-@keyframes spin{to{transform:rotate(360deg)}}
-.msg{margin-top:14px;padding:11px 14px;border-radius:12px;font-size:.85rem;font-weight:700;text-align:center;display:none}
-.msg.err{display:block;background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
-.msg.ok{display:block;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
-.guest{margin-top:18px;text-align:center}
-.guest a{color:#0F766E;font-weight:800;font-size:.86rem;text-decoration:none;border-bottom:2px solid rgba(15,118,110,.3);padding-bottom:1px}
-.guest a:hover{border-color:#0F766E}
-.hide{display:none !important}
-</style>
-</head>
-<body>
-<div class="page">
-  <div class="amb" id="amb"></div>
-  <div class="grain"></div>
-  <div class="card">
-    <div class="brand">
-      <svg class="logo" viewBox="0 0 100 100"><path d="M50 6 L92 42 L50 94 L8 42 Z" fill="#fff" opacity=".95"/><path d="M8 42 L92 42 L50 60 Z" fill="#0a4f49" opacity=".3"/><path d="M50 6 L8 42 L50 60 Z" fill="#5eead4" opacity=".42"/></svg>
-      <div>
-        <h1>سوقلي</h1>
-        <p class="tag">منصّتك للتسويق بالعمولة — سجّل دخولك عشان تتابع أرباحك وطلباتك وتكسب أكتر.</p>
-      </div>
-      <ul class="perks">
-        <li><b>💰</b>تتبّع عمولاتك لحظة بلحظة</li>
-        <li><b>🛍️</b>سلّة وطلبات محفوظة باسمك</li>
-        <li><b>🔔</b>إشعارات فورية على كل جديد</li>
-      </ul>
-      <svg class="wave" viewBox="0 0 400 70" preserveAspectRatio="none"><path d="M0 44 Q100 8 200 40 T400 34 L400 70 L0 70 Z" fill="rgba(255,255,255,.08)"/></svg>
-    </div>
-    <div class="form">
-      <div class="fhead"><h2 id="fTitle">تسجيل الدخول</h2><p id="fSub">أهلاً بعودتك — كمّل من حيث وقفت</p></div>
-      <div class="tabs">
-        <button id="tabL" class="on" type="button">تسجيل الدخول</button>
-        <button id="tabR" type="button">حساب جديد</button>
-      </div>
-      <form id="theForm" autocomplete="on" novalidate>
-        <div class="f"><label for="u">اسم المستخدم</label><div class="inw"><span class="ic">👤</span><input id="u" name="username" type="text" autocomplete="username" required></div></div>
-        <div class="f hide" id="nameF"><label for="nm">اسمك الظاهر</label><div class="inw"><span class="ic">✨</span><input id="nm" name="display_name" type="text" autocomplete="name"></div></div>
-        <div class="f"><label for="p">كلمة السر</label><div class="inw"><span class="ic">🔒</span><input id="p" name="password" type="password" autocomplete="current-password" required></div></div>
-        <button class="submit" id="sub" type="submit"><span class="sp"></span><span id="subTxt">دخول</span></button>
-        <div class="msg" id="msg"></div>
-      </form>
-      <div class="guest"><a href="/">متابعة كزائر بدون تسجيل ←</a></div>
-    </div>
-  </div>
+<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Earnify | تسجيل الدخول</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"><style>
+*{box-sizing:border-box}body{margin:0;font-family:Cairo;background:linear-gradient(135deg,#0f766e,#10b981);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:24px;padding:28px;max-width:400px;width:100%;box-shadow:0 30px 60px rgba(0,0,0,.25)}
+.logo{text-align:center;font-weight:900;font-size:1.5rem;color:#0f766e}
+.sub{text-align:center;color:#667085;font-size:.8rem;margin-bottom:8px}
+.tabs{display:flex;gap:8px;margin:18px 0}
+.tabs button{flex:1;padding:12px;border-radius:14px;border:1.5px solid #e5e7eb;background:#fff;font-weight:800;cursor:pointer;font-family:inherit}
+.tabs button.on{background:#0f766e;color:#fff;border-color:#0f766e}
+label{display:block;font-size:.8rem;font-weight:700;margin:12px 0 4px}
+input{width:100%;padding:13px;border:1.5px solid #e5e7eb;border-radius:12px;font-family:inherit}
+.go{width:100%;margin-top:16px;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#10b981,#0f766e);color:#fff;font-weight:800;font-size:1rem;cursor:pointer;font-family:inherit}
+.msg{text-align:center;font-size:.85rem;font-weight:700;margin-top:10px;min-height:1.2em}
+.back{text-align:center;margin-top:14px;font-size:.8rem}
+.back a{color:#0f766e;font-weight:700;text-decoration:none}
+</style></head><body>
+<div class="card">
+<div class="logo">💰 Earnify</div>
+<div class="sub">منصة التسويق بالعمولة</div>
+<div class="tabs"><button id="tL" class="on" onclick="tab('login')">تسجيل دخول</button><button id="tR" onclick="tab('reg')">إنشاء حساب</button></div>
+<div id="fbody"></div>
+<p class="msg" id="msg"></p>
+<div class="back"><a href="/">← الرجوع للمتجر</a> &nbsp;•&nbsp; <a href="/home">الصفحة الرئيسية</a></div>
 </div>
 <script>
-(function(){
-var TK='sq_user_token', US='sq_user', mode='login';
-var $=function(id){return document.getElementById(id);};
-function setMsg(t,k){var m=$('msg');m.className='msg'+(k?' '+k:'');m.textContent=t||'';}
-function bad(id){var e=$(id);if(!e)return;e.classList.add('bad');setTimeout(function(){e.classList.remove('bad');},520);}
-function setMode(m){
-  mode=m;
-  $('tabL').classList.toggle('on',m==='login');
-  $('tabR').classList.toggle('on',m==='register');
-  $('nameF').classList.toggle('hide',m!=='register');
-  $('fTitle').textContent=m==='register'?'إنشاء حساب جديد':'تسجيل الدخول';
-  $('fSub').textContent=m==='register'?'دقيقة واحدة وتبدأ تكسب مع سوقلي':'أهلاً بعودتك — كمّل من حيث وقفت';
-  $('subTxt').textContent=m==='register'?'إنشاء الحساب':'دخول';
-  $('p').setAttribute('autocomplete', m==='register'?'new-password':'current-password');
-  setMsg('','');
-}
-$('tabL').onclick=function(){setMode('login');};
-$('tabR').onclick=function(){setMode('register');};
-
-$('theForm').addEventListener('submit',function(ev){
-  ev.preventDefault();
-  var u=$('u').value.trim(), p=$('p').value, nm=($('nm').value.trim())||u;
-  setMsg('','');
-  if(!u){bad('u');setMsg('اكتب اسم المستخدم','err');return;}
-  if(!p){bad('p');setMsg('اكتب كلمة السر','err');return;}
-  var b=$('sub'), tx=$('subTxt'), old=tx.textContent;
-  b.classList.add('ld'); b.disabled=true; tx.textContent=mode==='register'?'جارٍ الإنشاء…':'جارٍ الدخول…';
-  var url=mode==='register'?'/api/auth/register':'/api/auth/login';
-  var body=mode==='register'?{username:u,password:p,display_name:nm}:{username:u,password:p};
-  fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
-    .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
-    .then(function(res){
-      if(!res.ok||!res.j.ok){setMsg(res.j.error||'حصل خطأ، حاول تاني','err');if(/كلمة السر/.test(res.j.error||''))bad('p');else bad('u');return;}
-      try{localStorage.setItem(TK,res.j.token);localStorage.setItem(US,JSON.stringify(res.j.user));}catch(e){}
-      setMsg(mode==='register'?'تم إنشاء حسابك ✓ جارٍ الدخول…':'تم الدخول ✓','ok');
-      setTimeout(function(){location.href='/';},650);
-    })
-    .catch(function(){setMsg('تعذّر الاتصال بالسيرفر','err');})
-    .finally(function(){b.classList.remove('ld');b.disabled=false;tx.textContent=old;});
-});
-
-/* جزيئات */
-(function(){var a=$('amb');if(!a)return;var em=['💎','✦','◇','✧','❖','◆'];for(var i=0;i<16;i++){var s=document.createElement('i');s.textContent=em[i%em.length];s.style.left=(Math.random()*96)+'%';s.style.fontSize=(12+Math.random()*26)+'px';s.style.animationDuration=(9+Math.random()*9)+'s';s.style.animationDelay=(-Math.random()*12)+'s';a.appendChild(s);}})();
-})();
-</script>
-</body>
-</html>
+function tab(t){document.getElementById('tL').classList.toggle('on',t==='login');document.getElementById('tR').classList.toggle('on',t==='reg');document.getElementById('msg').textContent='';
+var b=document.getElementById('fbody');
+if(t==='login'){b.innerHTML='<label>رقم الهاتف أو الإيميل</label><input id="liC"><label>كلمة السر</label><input id="liP" type="password"><button class="go" onclick="doLogin()">دخول 🔐</button><p style="text-align:center;font-size:.8rem;margin-top:12px">معندكش حساب؟ <a href="#" onclick="tab(\'reg\');return false" style="color:#0f766e;font-weight:700">إنشاء حساب</a></p>';}
+else{b.innerHTML='<label>الاسم</label><input id="rgN"><label>رقم الهاتف أو الإيميل</label><input id="rgC"><label>كلمة السر (6+ أحرف)</label><input id="rgP" type="password"><button class="go" onclick="doReg()">إنشاء الحساب والبدء 🚀</button>';}}
+function msg(s,ok){var e=document.getElementById('msg');e.textContent=s;e.style.color=ok?'#16a34a':'#dc2626'}
+function done(d){localStorage.setItem('etok',d.token);if(d.refresh)localStorage.setItem('ertok',d.refresh);localStorage.setItem('euser',JSON.stringify(d.user));location.href='/';}
+function doLogin(){fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contact:document.getElementById('liC').value,password:document.getElementById('liP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else msg(d.error,false)})}
+function doReg(){fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:document.getElementById('rgN').value,contact:document.getElementById('rgC').value,password:document.getElementById('rgP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else msg(d.error,false)})}
+tab('login');
+</script></body></html>

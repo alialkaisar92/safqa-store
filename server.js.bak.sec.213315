@@ -182,7 +182,7 @@ app.post('/api/withdraw', (req, res) => {
   if (!details) return res.json({ error: 'التفاصيل مطلوبة' });
   const tok = req.headers['x-auth-token'];
   let user=null, db=null;
-  try{ db=JSON.parse(fs.readFileSync(path.join(__dirname,'store-users.json'),'utf8')); var _pl=global.verifyJWT?global.verifyJWT(tok):null; if(_pl) user=(db.users||[]).find(u=>u.id===_pl.uid); }catch(e){}
+  try{ db=JSON.parse(fs.readFileSync(path.join(__dirname,'store-users.json'),'utf8')); if(tok&&db.tokens&&db.tokens[tok]) user=(db.users||[]).find(u=>u.id===db.tokens[tok]); }catch(e){}
   if(user){
     if(amount > (user.balance||0)) return res.json({ error: 'الرصيد غير كافي' });
     const earned = user.balance||0;
@@ -207,9 +207,9 @@ app.post('/api/profile', (req, res) => {
 
 const CHAT_FILE=require('path').join(__dirname,'chat.json');
 function chatLoad(){try{var d=JSON.parse(require('fs').readFileSync(CHAT_FILE,'utf8'));if(Array.isArray(d))return{guest:d};return d||{}}catch(e){return{}}}
-function chatKey(req){var pl=global.verifyJWT?global.verifyJWT(req.headers['x-auth-token']):null;return pl?('u'+pl.uid):null}
-app.get('/api/chat',(req,res)=>{var k=chatKey(req);if(!k)return res.json([]);var all=chatLoad();res.json(all[k]||[])});
-app.post('/api/chat',(req,res)=>{const b=req.body||{};const k=chatKey(req);if(!k)return res.status(401).json({error:'login'});const all=chatLoad();all[k]=all[k]||[];const m={id:Date.now(),from:b.from||'user',type:b.type||'text',text:b.text||'',data:b.data||'',time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})};all[k].push(m);require('fs').writeFileSync(CHAT_FILE,JSON.stringify(all));if(global.notifyChat)global.notifyChat();res.json({ok:true,m})});
+function chatKey(req){var t=req.headers['x-auth-token'];if(t){try{var db=JSON.parse(require('fs').readFileSync(require('path').join(__dirname,'store-users.json'),'utf8'));if(db.tokens&&db.tokens[t])return 'u'+db.tokens[t]}catch(e){}}return 'guest'}
+app.get('/api/chat',(req,res)=>{var all=chatLoad();res.json(all[chatKey(req)]||[])});
+app.post('/api/chat',(req,res)=>{const b=req.body||{};const all=chatLoad();const k=chatKey(req);all[k]=all[k]||[];const m={id:Date.now(),from:b.from||'user',type:b.type||'text',text:b.text||'',data:b.data||'',time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})};all[k].push(m);require('fs').writeFileSync(CHAT_FILE,JSON.stringify(all));if(global.notifyChat)global.notifyChat();res.json({ok:true,m})});
 
 app.post('/api/support', (req, res) => {
   const { message } = req.body;
@@ -342,7 +342,7 @@ body.chatfull .wa-wrap{height:calc(100vh - 62px);border-radius:0}
 </style>
 <link rel="stylesheet" href="/store-enh.css?v=3">
 </head>
-<body><div id="splash" style="position:fixed;inset:0;background:#f6f8f7;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px"><div style="width:46px;height:46px;border:4px solid #e2e8f0;border-top-color:#0f766e;border-radius:50%;animation:sp 1s linear infinite"></div><b style="color:#0f766e">Earnify</b><style>@keyframes sp{to{transform:rotate(360deg)}}</style></div>
+<body>
 <header class="header"><div id="ht" style="display:none"></div><div class="eh-brand"><span class="eh-logo">Earnify 💰</span><small>منصة التسويق بالعمولة</small></div><button class="eh-profile" onclick="go('profile')"><span class="eh-pname">حسابي<small>✔ مسوق</small></span><span class="eh-av">👤</span></button><button class="eh-cartb" onclick="go('cart')">🛒<i id="cc">0</i></button><button class="eh-bell" onclick="ehNotifToggle()">🔔<i>3</i></button></header>
 
 <div class="page active" id="p-store">
@@ -489,8 +489,7 @@ function stockLabel(s, avail){
 }
 
 async function loadProducts(){
-  const r=await fetch('/api/products'); products=(await r.json()).map(function(p){var sold=0;try{sold=(JSON.parse(localStorage.getItem('ssold')||'{}')[p.id])||0}catch(e){}
-p.stock=Math.max(0,(p.stock!=null?+p.stock:999)-sold);p.available=(p.available!=null?!!p.available:(p.stock>0));return p});
+  const r=await fetch('/api/products'); products=await r.json();
   const cats=['الكل',...new Set(products.map(p=>p.cat))];
   document.getElementById('cats').innerHTML=cats.map((c,i)=>'<button class="c'+(i===0?' active':'')+'" data-c="'+(c==='الكل'?'all':c)+'">'+c+'</button>').join('');
   renderP();
@@ -545,12 +544,10 @@ function chgQty(d){
   document.getElementById('stockHint').style.display=(qty>max)?'block':'none';
 }
 
-function toast(m){var t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#0f766e;color:#fff;padding:10px 22px;border-radius:50px;font-weight:700;z-index:9999;font-family:Cairo,serif;box-shadow:0 8px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove()},1800)}
 function addCart(){
-  if(window._adding)return;window._adding=true;
-  if(!cur||!cur.available){toast('نفد المخزون 😔');window._adding=false;return}
+  if(!cur||!cur.available) return;
   const sale=Number(document.getElementById('editPrice').value);
-  if(sale<Number(cur.price)){toast('السعر أقل من الحد الأدنى');window._adding=false;return}
+  if(sale<Number(cur.price)) return;
   if(qty>cur.stock){document.getElementById('stockHint').style.display='block';return}
   const exist=cart.find(x=>x.id===cur.id && x.price===sale);
   if(exist){
@@ -563,7 +560,7 @@ function addCart(){
   updCC();
   const btn=document.getElementById('btnAdd');
   btn.textContent='✓ تم الإضافة';
-  setTimeout(()=>{btn.textContent='🛒 أضف إلى السلة';window._adding=false;closeP()},800);
+  setTimeout(()=>{btn.textContent='🛒 أضف إلى السلة';closeP()},800);
 }
 
 function renderCart(){
@@ -650,7 +647,7 @@ async function submitOrder(){
     const r=await fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':(localStorage.getItem('etok')||'')},body:JSON.stringify(body)});
     const d=await r.json();
     msg.textContent=d.message||d.error; msg.className='msg '+(d.message?'ok':'err');
-    if(d.message){var sold={};try{sold=JSON.parse(localStorage.getItem('ssold')||'{}')}catch(e){}cart.forEach(function(i){sold[i.id]=(sold[i.id]||0)+i.qty});localStorage.setItem('ssold',JSON.stringify(sold));cart=[];localStorage.setItem('scart','[]');updCC();setTimeout(()=>go('orders'),1200)}
+    if(d.message){cart=[];localStorage.setItem('scart','[]');updCC();setTimeout(()=>go('orders'),1200)}
   }catch(e){msg.textContent='خطأ في الاتصال';msg.className='msg err'}
   submitting=false;
   document.getElementById('btnSubmit').disabled=false;

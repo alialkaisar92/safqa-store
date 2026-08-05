@@ -97,3 +97,6 @@ body{background:var(--bg)!important;color:var(--tx)!important}
 .nav button.active{color:var(--p);background:#e7f5f0}
 .header{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .eh-brand small{display:block;font-size:.64rem;color:var(--mut)}
+.stock-ok{color:#047857;background:#dcfce7;border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:800}
+.stock-low{color:#b45309;background:#fef3c7;border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:800}
+.stock-out{color:#b91c1c;background:#fee2e2;border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:800}

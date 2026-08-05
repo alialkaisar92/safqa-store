@@ -489,8 +489,7 @@ function stockLabel(s, avail){
 }
 
 async function loadProducts(){
-  const r=await fetch('/api/products'); products=(await r.json()).map(function(p){var sold=0;try{sold=(JSON.parse(localStorage.getItem('ssold')||'{}')[p.id])||0}catch(e){}
-p.stock=Math.max(0,(p.stock!=null?+p.stock:999)-sold);p.available=(p.available!=null?!!p.available:(p.stock>0));return p});
+  const r=await fetch('/api/products'); products=await r.json();
   const cats=['الكل',...new Set(products.map(p=>p.cat))];
   document.getElementById('cats').innerHTML=cats.map((c,i)=>'<button class="c'+(i===0?' active':'')+'" data-c="'+(c==='الكل'?'all':c)+'">'+c+'</button>').join('');
   renderP();
@@ -545,12 +544,10 @@ function chgQty(d){
   document.getElementById('stockHint').style.display=(qty>max)?'block':'none';
 }
 
-function toast(m){var t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#0f766e;color:#fff;padding:10px 22px;border-radius:50px;font-weight:700;z-index:9999;font-family:Cairo,serif;box-shadow:0 8px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove()},1800)}
 function addCart(){
-  if(window._adding)return;window._adding=true;
-  if(!cur||!cur.available){toast('نفد المخزون 😔');window._adding=false;return}
+  if(!cur||!cur.available) return;
   const sale=Number(document.getElementById('editPrice').value);
-  if(sale<Number(cur.price)){toast('السعر أقل من الحد الأدنى');window._adding=false;return}
+  if(sale<Number(cur.price)) return;
   if(qty>cur.stock){document.getElementById('stockHint').style.display='block';return}
   const exist=cart.find(x=>x.id===cur.id && x.price===sale);
   if(exist){
@@ -563,7 +560,7 @@ function addCart(){
   updCC();
   const btn=document.getElementById('btnAdd');
   btn.textContent='✓ تم الإضافة';
-  setTimeout(()=>{btn.textContent='🛒 أضف إلى السلة';window._adding=false;closeP()},800);
+  setTimeout(()=>{btn.textContent='🛒 أضف إلى السلة';closeP()},800);
 }
 
 function renderCart(){
@@ -650,7 +647,7 @@ async function submitOrder(){
     const r=await fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':(localStorage.getItem('etok')||'')},body:JSON.stringify(body)});
     const d=await r.json();
     msg.textContent=d.message||d.error; msg.className='msg '+(d.message?'ok':'err');
-    if(d.message){var sold={};try{sold=JSON.parse(localStorage.getItem('ssold')||'{}')}catch(e){}cart.forEach(function(i){sold[i.id]=(sold[i.id]||0)+i.qty});localStorage.setItem('ssold',JSON.stringify(sold));cart=[];localStorage.setItem('scart','[]');updCC();setTimeout(()=>go('orders'),1200)}
+    if(d.message){cart=[];localStorage.setItem('scart','[]');updCC();setTimeout(()=>go('orders'),1200)}
   }catch(e){msg.textContent='خطأ في الاتصال';msg.className='msg err'}
   submitting=false;
   document.getElementById('btnSubmit').disabled=false;

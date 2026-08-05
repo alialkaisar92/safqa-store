@@ -195,3 +195,21 @@ document.addEventListener('click',function(){maybe()},{once:true});
 setInterval(maybe,6000);
 var _ol=window.authLogout;window.authLogout=function(){fetch('/api/notifications/unlink',{method:'POST',headers:{'x-auth-token':localStorage.getItem('etok')||''}}).then(function(){if(_ol)_ol()});};
 })();
+(function(){
+window.AppState={user:null};
+function setSess(a,r,u){if(a)localStorage.setItem('etok',a);if(r)localStorage.setItem('ertok',r);if(u){localStorage.setItem('euser',JSON.stringify(u));AppState.user=u}}
+window.authClear=function(){localStorage.removeItem('etok');localStorage.removeItem('ertok');localStorage.removeItem('euser');AppState.user=null};
+window.authRefresh=function(cb){var r=localStorage.getItem('ertok');if(!r){authClear();return cb&&cb(false)}
+fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refresh:r})}).then(function(x){return x.json()}).then(function(d){if(d.ok){setSess(d.access,d.refresh,d.user);cb&&cb(true)}else{authClear();cb&&cb(false)}}).catch(function(){cb&&cb(false)})};
+fetch('/api/auth/me',{headers:{'x-auth-token':localStorage.getItem('etok')||''}}).then(function(r){if(r.status===401){authRefresh()}return r.json()}).then(function(d){if(d&&d.logged){AppState.user=d.user;localStorage.setItem('euser',JSON.stringify(d.user))}else if(d&&d.banned){authClear()}}).catch(function(){});
+setInterval(function(){if(localStorage.getItem('etok'))authRefresh()},20*60*1000);
+/* حراسة الصفحات الخاصة */
+function guard(){var t=localStorage.getItem('etok');
+['p-orders','p-withdraw','p-profile','p-support'].forEach(function(id){var p=document.getElementById(id);if(!p)return;var g=p.querySelector('.authgate');
+if(!t){if(!g){g=document.createElement('div');g.className='authgate';g.style.cssText='position:absolute;inset:0;background:#f6f8f7;z-index:50;display:flex;align-items:center;justify-content:center';g.innerHTML='<div style="text-align:center">🔒<br><b>سجّل دخولك أولاً</b><div style="margin-top:12px"><button class="btn btn-primary" onclick="authOpen(\'login\')">تسجيل دخول</button></div></div>';p.style.position='relative';p.appendChild(g)}}
+else if(g)g.remove();});}
+setInterval(guard,900);
+/* إزالة الـ Loader بعد تجهيز الواجهة */
+setTimeout(function(){var s=document.getElementById('splash');if(s)s.remove()},800);
+})();
+window.authOpen=function(){location.href='/login'};

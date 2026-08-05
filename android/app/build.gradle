@@ -1,0 +1,13 @@
+apply plugin:'com.android.application'
+android{
+ compileSdkVersion 33
+ defaultConfig{
+  applicationId "com.earnify.app"
+  minSdkVersion 21
+  targetSdkVersion 33
+  versionCode 1
+  versionName "1.0"
+  buildConfigField "String","APP_URL","\"https://earnaify.onrender.com/\""
+ }
+ buildTypes{release{minifyEnabled false}}
+}
