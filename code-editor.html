@@ -1,0 +1,38 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>💻 محرر الأكواد | Earnify</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%}
+body{display:flex;flex-direction:column;background:#1e1e1e;color:#d4d4d4;font-family:system-ui,sans-serif}
+.top{display:flex;align-items:center;gap:10px;background:#252526;padding:10px 14px;border-bottom:1px solid #333}
+.top a{color:#9cdcfe;text-decoration:none;font-size:.9rem}
+.top b{flex:1;color:#fff;font-size:.95rem}
+.top button{background:#0e639c;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:.78rem;font-weight:700;cursor:pointer}
+.top #pvBtn{background:#333}
+.tabs{display:flex;background:#252526;border-bottom:1px solid #333;overflow-x:auto}
+.tabs button{background:none;border:none;color:#969696;padding:10px 18px;font-size:.78rem;cursor:pointer;border-bottom:2px solid transparent;font-family:monospace;white-space:nowrap}
+.tabs button.on{color:#fff;border-bottom-color:#007acc;background:#1e1e1e}
+.main{flex:1;display:flex;min-height:0}
+#ed{flex:1;background:#1e1e1e;color:#d4d4d4;border:none;resize:none;padding:14px;font-family:"Courier New",monospace;font-size:.85rem;line-height:1.6;direction:ltr;text-align:left;white-space:pre;overflow:auto;outline:none}
+#pv{width:0;border:none;background:#fff;transition:width .3s}
+#pv.on{width:45%}
+.status{display:flex;gap:16px;background:#007acc;color:#fff;padding:6px 14px;font-size:.7rem}
+</style></head><body>
+<div class="top"><a href="/themes">→ رجوع</a><b>💻 محرر أكواد متجرك</b><button id="pvBtn" onclick="togglePv()">👁 معاينة</button><button onclick="save()">💾 حفظ (Ctrl+S)</button></div>
+<div class="tabs"><button class="on" data-t="css" onclick="tab('css',this)">🎨 style.css</button><button data-t="html" onclick="tab('html',this)">📄 index.html</button><button data-t="js" onclick="tab('js',this)">⚡ app.js</button></div>
+<div class="main"><textarea id="ed" spellcheck="false" placeholder="اكتب الكود هنا... يستقبل آلاف الأسطر"></textarea><iframe id="pv"></iframe></div>
+<div class="status"><span id="ln">0 سطر</span><span id="ch">0 حرف</span><span id="sv" style="margin-right:auto"></span></div>
+<script>
+var tok=localStorage.getItem('etok')||'';if(!tok)location.href='/login';
+var V={css:'',html:'',js:''},cur='css',myTheme={};
+fetch('/api/auth/me',{headers:{'x-auth-token':tok}}).then(r=>r.json()).then(d=>{var id=(d.user||{}).id;return fetch('/api/theme/'+id)}).then(r=>r.json()).then(d=>{myTheme=d.theme||{};V.css=myTheme.customCss||'';V.html=myTheme.customHtml||'';V.js=myTheme.customJs||'';ed.value=V.css;stat();});
+var ed=document.getElementById('ed');
+function tab(t,b){V[cur]=ed.value;cur=t;ed.value=V[t];document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));stat();ed.focus();}
+ed.addEventListener('input',function(){V[cur]=ed.value;stat();if(cur==='css')liveCss();});
+function stat(){var l=ed.value.split('\n').length;document.getElementById('ln').textContent=l+' سطر';document.getElementById('ch').textContent=ed.value.length+' حرف';}
+function liveCss(){var p=document.getElementById('pv');if(p.classList.contains('on'))p.contentWindow.postMessage({type:'themeLive',themeId:myTheme.activeTheme||'store-pro',settings:{customCss:V.css}},'*');}
+function togglePv(){var p=document.getElementById('pv');if(p.classList.contains('on')){p.classList.remove('on');}else{p.src='/shop?theme='+(myTheme.activeTheme||'store-pro');p.classList.add('on');setTimeout(liveCss,800);}}
+function save(){V[cur]=ed.value;
+ fetch('/api/my/theme',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':tok},body:JSON.stringify(Object.assign({},myTheme,{customCss:V.css,customHtml:V.html,customJs:V.js}))}).then(r=>r.json()).then(function(d){document.getElementById('sv').textContent=d.ok?'✅ تم الحفظ':'⚠️ خطأ';var p=document.getElementById('pv');if(p.classList.contains('on'))p.src=p.src;});}
+document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();save();}});
+</script></body></html>

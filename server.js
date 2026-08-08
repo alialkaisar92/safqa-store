@@ -227,6 +227,7 @@ app.post('/api/upload',(req,res)=>{const pl=global.verifyJWT?global.verifyJWT(re
 app.get('/api/theme/:id',(req,res)=>{try{const db=JSON.parse(require('fs').readFileSync(require('path').join(__dirname,'store-users.json'),'utf8'));const u=(db.users||[]).find(x=>String(x.id)===String(req.params.id));res.json({ok:true,theme:(u&&u.theme)||null,name:u?u.name:''});}catch(e){res.json({ok:true,theme:null,name:''});}});
 app.post('/api/my/theme',(req,res)=>{const pl=global.verifyJWT?global.verifyJWT(req.headers['x-auth-token']||''):null;if(!pl)return res.status(401).json({error:'login'});try{const fp=require('path').join(__dirname,'store-users.json');const db=JSON.parse(require('fs').readFileSync(fp,'utf8'));const u=(db.users||[]).find(x=>x.id===pl.uid);if(!u)return res.status(401).json({error:'login'});u.theme=req.body||{};require('fs').writeFileSync(fp,JSON.stringify(db,null,2));res.json({ok:true});}catch(e){res.json({error:'فشل الحفظ'});}});
 app.get('/themes/:file',(req,res)=>{var f=String(req.params.file).replace(/[^a-z0-9.-]/gi,'');res.sendFile(require('path').join(__dirname,'themes',f));});
+app.get('/code',(req,res)=>res.sendFile(require('path').join(__dirname,'code-editor.html')));
 app.get('/themes',(req,res)=>res.sendFile(require('path').join(__dirname,'themes-store.html')));
 app.get('/themes.js',(req,res)=>res.sendFile(require('path').join(__dirname,'themes.js')));
 app.get('/theme-engine.js',(req,res)=>res.sendFile(require('path').join(__dirname,'theme-engine.js')));
