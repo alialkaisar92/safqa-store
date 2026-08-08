@@ -49,6 +49,7 @@ input[type=color]{height:46px;padding:4px;cursor:pointer}
 <label>اسم المتجر</label><input type="text" id="tName" placeholder="مثال: متجر النخبة">
 <label>العنوان الرئيسي (الهيرو)</label><input type="text" id="tHero" placeholder="تسوّق أحدث المنتجات">
 <label>وصف قصير</label><input type="text" id="tSub" placeholder="شحن سريع • دفع عند الاستلام">
+<label>رقم واتساب (للزر العائم)</label><input type="text" id="tWa" placeholder="201xxxxxxxxx">
 <label>اللون الأساسي (أو اختار ثيم جاهز فوق)</label><input type="color" id="tColor" value="#0f766e">
 </div>
 <div class="card"><h3>🖼️ صورة الهيدر / اللوجو</h3><div class="up" onclick="pick('logoIn')">📤 اضغط لرفع صورة الهيدر</div><input type="file" id="logoIn" accept="image/*" hidden><img class="prev" id="logoPrev"></div>
@@ -75,14 +76,15 @@ fetch('/api/auth/me',{headers:{'x-auth-token':tok}}).then(r=>r.json()).then(func
  var u=d.user||{};myId=u.id||'';myLink.textContent=location.origin+'/r/'+myId;
  return fetch('/api/theme/'+myId);
 }).then(r=>r.json()).then(function(d){if(d.theme){TH=Object.assign(TH,d.theme);fill();markSel();}});
-function fill(){tName.value=TH.name||'';tHero.value=TH.hero||'';tSub.value=TH.sub||'';tColor.value=TH.color||'#0f766e';
+function fill(){tName.value=TH.name||'';tHero.value=TH.hero||'';tSub.value=TH.sub||'';# tWa
+ tWa.value=TH.whatsapp||'';tColor.value=TH.color||'#0f766e';
  if(TH.logo){logoPrev.src=TH.logo;logoPrev.style.display='block';}renderBans();}
 function renderBans(){banList.innerHTML=(TH.banners||[]).map(function(b,i){return '<img src="'+b+'" onclick="rmBan('+i+')">';}).join('');}
 function rmBan(i){TH.banners.splice(i,1);renderBans();}
 logoIn.onchange=e=>{var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=()=>{up(r.result).then(u=>{TH.logo=u;logoPrev.src=u;logoPrev.style.display='block';});};r.readAsDataURL(f);};
 banIn.onchange=e=>{var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=()=>{up(r.result).then(u=>{TH.banners=TH.banners||[];TH.banners.push(u);renderBans();});};r.readAsDataURL(f);};
 function up(b64){return fetch('/api/upload',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':tok},body:JSON.stringify({data:b64})}).then(r=>r.json()).then(d=>d.url);}
-function save(){TH.name=tName.value;TH.hero=tHero.value;TH.sub=tSub.value;TH.color=tColor.value;
+function save(){TH.name=tName.value;TH.hero=tHero.value;TH.sub=tSub.value;TH.color=tColor.value;TH.whatsapp=tWa.value;
  fetch('/api/my/theme',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':tok},body:JSON.stringify(TH)}).then(r=>r.json()).then(function(d){
   msg.textContent=d.ok?'✅ تم حفظ ونشر متجري بنجاح!':'⚠️ '+d.error;msg.style.color=d.ok?'#059669':'#dc2626';});}
 function copyL(){if(navigator.clipboard)navigator.clipboard.writeText(myLink.textContent);prompt('انسخ رابطك:',myLink.textContent);}

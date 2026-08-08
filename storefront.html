@@ -6,6 +6,14 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:Cairo,system-ui,sans-serif;background:var(--bg,#f7faf9);color:var(--tx,#0f172a);line-height:1.6}
 button{font-family:inherit;cursor:pointer;border:none}img{max-width:100%;display:block}a{text-decoration:none;color:inherit}
+
+#toolbar{background:var(--bg,#f7faf9);padding:10px 14px 0}
+.tb-search input{width:100%;border:1px solid var(--line,#e5e7eb);border-radius:14px;padding:12px 16px;font-size:.9rem;background:var(--card,#fff);color:var(--tx,#0f172a)}
+.tb-cats{display:flex;gap:8px;overflow-x:auto;padding:10px 0}
+.tb-cats .cc{flex:0 0 auto;background:var(--card,#fff);border:1px solid var(--line,#e5e7eb);border-radius:50px;padding:8px 16px;font-size:.78rem;font-weight:700;color:var(--mut,#5b6b7a)}
+.tb-cats .cc.on{background:var(--p,#0f766e);color:#fff;border-color:transparent}
+#waFloat{position:fixed;bottom:18px;left:18px;z-index:95;width:56px;height:56px;border-radius:50%;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.7rem;box-shadow:0 10px 24px rgba(0,0,0,.3);text-decoration:none;animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(37,211,102,.5)}70%{box-shadow:0 0 0 16px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}
 #themeCss{}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:flex-end;justify-content:center}
 .modal.on{display:flex}
@@ -24,7 +32,9 @@ input,select,textarea{width:100%;border:1px solid #ddd;border-radius:12px;paddin
 .cartb{position:relative}.cartb i{position:absolute;top:-6px;left:-6px;background:#ef4444;color:#fff;font-style:normal;font-size:.62rem;font-weight:800;border-radius:50px;min-width:17px;height:17px;display:flex;align-items:center;justify-content:center}
 </style><style id="themeCss"></style></head>
 <body>
-<div id="header"></div><main id="home"></main><div id="footer"></div><div id="mnav"></div>
+<div id="header"></div>
+<div id="toolbar"><div class="tb-search"><input id="q" placeholder="🔍 ابحث عن منتج..." oninput="doSearch(this.value)"></div><div class="tb-cats" id="catRow"></div></div>
+<a id="waFloat" target="_blank">💬</a><main id="home"></main><div id="footer"></div><div id="mnav"></div>
 
 <div class="modal" id="pm"><div class="sheet"><button class="x" onclick="closeM('pm')">✕</button><img class="pm-img" id="pmImg"><h3 id="pmName" style="margin-top:8px"></h3><div id="pmPrice" style="color:var(--p);font-weight:900;margin:5px 0"></div><p id="pmDesc" style="font-size:.83rem;color:#666"></p><div class="qty"><button onclick="chQ(-1)">−</button><b id="qV">1</b><button onclick="chQ(1)">+</button></div><button class="addbtn" onclick="addToCart()">🛒 أضف إلى السلة</button></div></div>
 <div class="modal" id="cm"><div class="sheet"><button class="x" onclick="closeM('cm')">✕</button><h3 style="margin-bottom:8px">🛒 السلة</h3><div id="cItems"></div><div class="tot"><span>الإجمالي</span><b id="cTot">0</b></div><button class="addbtn" onclick="openCo()">إتمام الطلب ❯</button></div></div>
@@ -47,7 +57,7 @@ function defCats(){return '<section class="cats-wrap"><h2 class="sec-t">تسوق
 function secHtml(id){
  if(id=='hero')return TH.hero();
  if(id=='categories')return TH.categories?TH.categories():defCats();
- if(id=='products')return wrap('كل المنتجات',cards(allIdx()));
+ if(id=='products')return '<section class="sec-wrap"><h2 class="sec-t" id="prodTitle">كل المنتجات</h2><div class="pgrid" id="mainGrid"></div></section>';
  if(id=='featured')return wrap(TH.tFeat||'منتجات مميزة',cards(range(0,4)));
  if(id=='best')return wrap('الأكثر مبيعاً',cards(range(4,8)));
  if(id=='flash')return wrap('⚡ عروض خاطفة',cards(range(8,12)));
@@ -60,7 +70,18 @@ function render(){if(!TH)return;
  document.getElementById('home').innerHTML=(TH.sections||['hero','products']).map(secHtml).join('');
  document.getElementById('footer').innerHTML=TH.footer();
  document.getElementById('mnav').innerHTML=TH.mobileNav?TH.mobileNav():'';
- document.title=(STORE.name||TH.name||'متجر إلكتروني');}
+ document.title=(STORE.name||TH.name||'متجر إلكتروني');postRender();}
+
+var curCat='الكل',curQ='';
+function postRender(){renderCats();renderGrid();setupWA();updCC();}
+function getCats(){var s={};P.forEach(function(p){s[p.category||p.cat||'عام']=1});return ['الكل'].concat(Object.keys(s));}
+function renderCats(){var e=document.getElementById('catRow');if(e)e.innerHTML=getCats().map(function(cc){return '<button class="cc'+(cc===curCat?' on':'')+'" onclick="setCat(\''+cc+'\')">'+cc+'</button>'}).join('');}
+function setCat(cc){curCat=cc;renderCats();renderGrid();}
+function doSearch(q){curQ=(q||'').trim();renderGrid();}
+function visIdx(){return allIdx().filter(function(i){var p=P[i];if(curCat!=='الكل'&&(p.category||p.cat||'عام')!==curCat)return false;if(curQ&&(p.name||'').indexOf(curQ)===-1)return false;return true});}
+function renderGrid(){var e=document.getElementById('mainGrid');if(!e||!TH)return;var v=visIdx();var tt=document.getElementById('prodTitle');if(tt)tt.textContent=(curCat!=='الكل'?curCat:(curQ?'نتائج البحث':'كل المنتجات'))+' ('+v.length+')';e.innerHTML=v.map(function(i){return TH.card(P[i],i)}).join('')||'<div style="grid-column:1/-1;text-align:center;padding:30px;color:#999">لا توجد منتجات مطابقة 🔍</div>';}
+function setupWA(){var n=STORE.whatsapp||STORE.phone||'201000000000';var a=document.getElementById('waFloat');if(a)a.href='https://wa.me/'+String(n).replace(/[^0-9]/g,'')+'?text='+encodeURIComponent('مرحباً 👋 أريد الاستفسار عن المنتجات');}
+
 fetch('/api/products').then(r=>r.json()).then(function(d){P=d||[];
  if(ref){fetch('/api/theme/'+ref).then(r=>r.json()).then(function(x){STORE=x.theme||{};boot(STORE.activeTheme||u.get('theme')||'store-pro');});}
  else boot(u.get('theme')||'store-pro');});
