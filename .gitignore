@@ -11,3 +11,4 @@ store-users.json
 chat.json
 chat.json.backup.*
 backups/
+uploads/
