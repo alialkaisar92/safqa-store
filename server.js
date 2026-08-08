@@ -222,7 +222,8 @@ app.post('/api/support', (req, res) => {
   data.tickets.unshift({ id: Date.now(), message: message.trim(), status: 'جديد', date: new Date().toISOString().slice(0, 10), reply: '' });
   save();
   res.json({ message: 'تم إرسال رسالتك للدعم ✓' });
-});app.get('/r/:id',(req,res)=>res.redirect('/store?ref='+req.params.id));
+});app.get('/shop',(req,res)=>res.sendFile(require('path').join(__dirname,'storefront.html')));
+app.get('/r/:id',(req,res)=>res.redirect('/shop?ref='+req.params.id));
 app.get('/store', (req, res) => {
   res.send(`<!DOCTYPE html>
 <html lang="ar" dir="rtl">
