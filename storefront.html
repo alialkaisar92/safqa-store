@@ -50,14 +50,14 @@ function range(a,b){var r=[];for(var i=a;i<b&&i<P.length;i++)r.push(i);return r}
 function allIdx(){return range(0,P.length)}
 var u=new URLSearchParams(location.search);var ref=u.get('ref')||'';if(ref)localStorage.setItem('sref',ref);
 function boot(tid){loadTheme(tid||'store-pro');}
-function loadTheme(id){var s=document.createElement('script');s.src='/themes/'+id+'.js?v=2';s.onload=function(){TH=window.THEME;document.getElementById('themeCss').textContent=TH.css||'';render();};s.onerror=function(){TH=window.THEME;render();};document.head.appendChild(s);}
+function loadTheme(id){var s=document.createElement('script');s.src='/themes/'+id+'.js?v=2';s.onload=function(){TH=window.THEME;document.getElementById('themeCss').textContent=TH.css||'';if(TH.cssUrl){var l=document.createElement('link');l.rel='stylesheet';l.href=TH.cssUrl;document.head.appendChild(l);}render();};s.onerror=function(){TH=window.THEME;render();};document.head.appendChild(s);}
 function cards(idx){return idx.map(function(i){return TH.card(P[i],i)}).join('')}
-function wrap(t,inner,cls){return '<section class="'+(cls||'sec-wrap')+'"><h2 class="sec-t">'+t+'</h2><div class="pgrid">'+inner+'</div></section>'}
+function wrap(t,inner,cls){return '<section class="'+(cls||TH.wrapClass||'sec-wrap')+'"><h2 class="'+(TH.titleClass||'sec-t')+'">'+t+'</h2><div class="'+(TH.gridClass||'pgrid')+'">'+inner+'</div></section>'}
 function defCats(){return '<section class="cats-wrap"><h2 class="sec-t">تسوق حسب التصنيف</h2><div class="cats">'+['إلكترونيات','أزياء','جمال','منزل','رياضة'].map(c=>'<span class="cat">'+c+'</span>').join('')+'</div></section>'}
 function secHtml(id){
  if(id=='hero')return TH.hero();
  if(id=='categories')return TH.categories?TH.categories():defCats();
- if(id=='products')return '<section class="sec-wrap"><h2 class="sec-t" id="prodTitle">كل المنتجات</h2><div class="pgrid" id="mainGrid"></div></section>';
+ if(id=='products')return '<section class="'+(TH.wrapClass||'sec-wrap')+'"><h2 class="'+(TH.titleClass||'sec-t')+'" id="prodTitle">كل المنتجات</h2><div class="'+(TH.gridClass||'pgrid')+'" id="mainGrid"></div></section>';
  if(id=='featured')return wrap(TH.tFeat||'منتجات مميزة',cards(range(0,4)));
  if(id=='best')return wrap('الأكثر مبيعاً',cards(range(4,8)));
  if(id=='flash')return wrap('⚡ عروض خاطفة',cards(range(8,12)));
@@ -65,7 +65,7 @@ function secHtml(id){
  if(id=='banner')return TH.banner?TH.banner():'';
  if(id=='newsletter')return TH.newsletter?TH.newsletter():'';
  return '';}
-function render(){if(!TH)return;
+function render(){if(!TH)return;var tb=document.getElementById('toolbar');if(tb)tb.style.display=TH.hideToolbar?'none':'';
  document.getElementById('header').innerHTML=TH.header();
  document.getElementById('home').innerHTML=(TH.sections||['hero','products']).map(secHtml).join('');
  document.getElementById('footer').innerHTML=TH.footer();

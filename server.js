@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 try{const _f=require('fs');const _ep=require('path').join(__dirname,'.env');if(_f.existsSync(_ep)){const _c=_f.readFileSync(_ep,'utf8');const _re=/^([A-Z0-9_]+)=(.*)$/gm;let _m;while((_m=_re.exec(_c))){if(process.env[_m[1]]===undefined)process.env[_m[1]]=_m[2].trim();}}}catch(_e){}
 const API_KEY = process.env.SAFKA_API_KEY || '';
 const BASE_URL = 'https://api.safka-eg.com/api/v1/public';
-app.use(express.json({limit:'20mb'}));
+app.use(express.json({limit:'50mb'}));
 app.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
 
 
