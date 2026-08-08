@@ -218,7 +218,7 @@ app.post('/api/support', (req, res) => {
   data.tickets.unshift({ id: Date.now(), message: message.trim(), status: 'جديد', date: new Date().toISOString().slice(0, 10), reply: '' });
   save();
   res.json({ message: 'تم إرسال رسالتك للدعم ✓' });
-});app.get('/', (req, res) => {
+});app.get('/store', (req, res) => {
   res.send(`<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -698,6 +698,7 @@ updCC(); loadProducts(); loadPrices();
 </html>`);
 });
 
+app.get('/',(req,res)=>res.sendFile(require('path').join(__dirname,'landing.html')));
 app.get('/home',(req,res)=>res.sendFile(require('path').join(__dirname,'landing.html')));
 
 require('./auth')(app);

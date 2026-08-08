@@ -57,6 +57,21 @@
   ],
   "orders": [
     {
+      "id": "6a747c9d4d956cf6086b4e45",
+      "serial": "sk-GOm1cq6zHc",
+      "products": [
+        "flip |  nokia 2720  موبايل"
+      ],
+      "customer": "ihh",
+      "phone": "01092876053",
+      "total": 1550,
+      "shipping": 500,
+      "commission": 200,
+      "status": "طلب استبدال",
+      "date": "2026-08-06",
+      "address": "iciviv"
+    },
+    {
       "id": "6a67e689a4ea385651459574",
       "serial": "sk-O3hjJHsRyK",
       "products": [
@@ -395,8 +410,15 @@
       "userName": "‪ali mohammed‬‏"
     }
   },
-  "priceUp": 0,
+  "priceUp": 20,
   "notifLog": [
+    {
+      "id": 1786149469878,
+      "date": "2026-08-08 00:37",
+      "headings": "📦 تحديث حالة طلب",
+      "contents": "حالة طلبك الآن: طلب استبدال",
+      "url": "/"
+    },
     {
       "id": 1785895145129,
       "date": "2026-08-05 01:59",
