@@ -80,7 +80,7 @@ function applyTheme(th,nm){
  if(th.logo){document.getElementById('hLogo').src=th.logo;document.getElementById('hLogo').style.display='block';}
  if(th.hero)document.getElementById('hHero').textContent=th.hero;
  if(th.sub)document.getElementById('hSub').textContent=th.sub;
- if(th.color){document.documentElement.style.setProperty('--p',th.color);document.documentElement.style.setProperty('--p2',th.color);}
+ if(th.color){document.documentElement.style.setProperty('--p',th.color);document.documentElement.style.setProperty('--p2',th.color2||th.color);}
  if(th.banners&&th.banners.length)document.getElementById('bans').innerHTML=th.banners.map(b=>'<img src="'+b+'">').join('');
 }
 fetch('/api/products').then(r=>r.json()).then(d=>{P=d||[];render();});
