@@ -222,7 +222,8 @@ app.post('/api/support', (req, res) => {
   data.tickets.unshift({ id: Date.now(), message: message.trim(), status: 'جديد', date: new Date().toISOString().slice(0, 10), reply: '' });
   save();
   res.json({ message: 'تم إرسال رسالتك للدعم ✓' });
-});app.get('/store', (req, res) => {
+});app.get('/r/:id',(req,res)=>res.redirect('/store?ref='+req.params.id));
+app.get('/store', (req, res) => {
   res.send(`<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -723,8 +724,8 @@ function clean(){
 if(cust){clean();setTimeout(clean,400);setTimeout(clean,1200);}
 if(tok){
   fetch('/api/auth/me',{headers:{'x-auth-token':tok}}).then(function(r){return r.json()}).then(function(me){
-    var id=me.id||me._id||'';if(!id)return;
-    var link=location.origin+'/store?ref='+id;
+    var u2=me.user||me;var id=u2.id||u2._id||'';if(!id)return;
+    var link=location.origin+'/r/'+id;
     var btn=document.createElement('button');
     btn.style.cssText='background:linear-gradient(135deg,#10b981,#0f766e);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer;margin-inline-start:6px';
     btn.textContent='🔗 رابطي';
