@@ -170,6 +170,9 @@ app.post('/api/create-order', async (req, res) => {
       address: b.client_address
     });
     save();
+    
+    // credit referring marketer
+    try{ if(b.ref){ const _dbp=require('path').join(__dirname,'store-users.json'); const _db=JSON.parse(require('fs').readFileSync(_dbp,'utf8')); const _mu=(_db.users||[]).find(u=>String(u.id)===String(b.ref)); if(_mu){ _mu.balance=(_mu.balance||0)+(b.commission||0); _mu.salesCount=(_mu.salesCount||0)+1; _mu.sales=_mu.sales||[]; _mu.sales.unshift({id:Date.now(),customer:b.client_name,commission:b.commission||0,date:new Date().toISOString().slice(0,10)}); require('fs').writeFileSync(_dbp,JSON.stringify(_db,null,2)); } } }catch(e){}
     res.json({ message: 'تم إنشاء الطلب بنجاح ✓', data: d.data });
   } catch (e) {
     console.error(e);
@@ -695,6 +698,46 @@ document.getElementById('cats').onclick=e=>{if(e.target.classList.contains('c'))
 updCC(); loadProducts(); loadPrices();
 </script>
 <script src="/store-enh.js?v=3" defer></script>
+<script>
+(function(){try{
+var u=new URLSearchParams(location.search);var ref=u.get('ref')||'';
+if(ref)localStorage.setItem('sref',ref);
+var sref=localStorage.getItem('sref')||'';var tok=localStorage.getItem('etok')||'';
+var cust=(ref||sref)?true:false;
+function clean(){
+  document.title='Earnify | متجر إلكتروني';
+  var sub=document.querySelector('.eh-brand small');if(sub)sub.textContent='متجر إلكتروني موثوق ✓';
+  document.querySelectorAll('label').forEach(function(l){
+    if((l.textContent||'').indexOf('عمولة المسوق')>-1){
+      var n=l.nextElementSibling;
+      if(n&&n.tagName==='INPUT'){n.value=n.value||20;n.dispatchEvent(new Event('input'));}
+      l.style.display='none';if(n)n.style.display='none';
+    }
+  });
+  document.querySelectorAll('.line,.section-title').forEach(function(el){
+    var t2=el.textContent||'';
+    if(t2.indexOf('عمولة المسوق')>-1)el.style.display='none';
+    if(t2.indexOf('الشحن والعمولة')>-1)el.textContent='② الشحن';
+  });
+}
+if(cust){clean();setTimeout(clean,400);setTimeout(clean,1200);}
+if(tok){
+  fetch('/api/auth/me',{headers:{'x-auth-token':tok}}).then(function(r){return r.json()}).then(function(me){
+    var id=me.id||me._id||'';if(!id)return;
+    var link=location.origin+'/store?ref='+id;
+    var btn=document.createElement('button');
+    btn.style.cssText='background:linear-gradient(135deg,#10b981,#0f766e);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer;margin-inline-start:6px';
+    btn.textContent='🔗 رابطي';
+    btn.onclick=function(){if(navigator.clipboard)navigator.clipboard.writeText(link);prompt('انسخ رابطك التسويقي وشاركه:',link);};
+    var cart=document.querySelector('.eh-cartb');if(cart&&cart.parentNode)cart.parentNode.insertBefore(btn,cart);
+  }).catch(function(){});
+}
+var _f=window.fetch;
+window.fetch=function(){try{var a=arguments;
+  if(a[1]&&a[1].body&&String(a[0]).indexOf('/api/create-order')>-1){var bb=JSON.parse(a[1].body);bb.ref=localStorage.getItem('sref')||'';a[1].body=JSON.stringify(bb);}
+}catch(e){}return _f.apply(this,arguments);};
+}catch(e){}})();
+</script>
 </body>
 </html>`);
 });
