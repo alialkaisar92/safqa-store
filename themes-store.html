@@ -51,6 +51,7 @@ iframe.pvif{width:100%;border:1px solid var(--line);border-radius:14px;backgroun
 .side input[type=color]{height:40px;padding:3px}
 .toast{position:fixed;bottom:20px;right:50%;transform:translateX(50%);background:var(--tx);color:#fff;border-radius:50px;padding:11px 22px;font-size:.85rem;font-weight:700;z-index:200;opacity:0;transition:.3s}
 .toast.on{opacity:1}
+.code{font-family:"Courier New",monospace;background:#0f172a;color:#7ee787;border:1px solid #1e293b;border-radius:10px;padding:10px;font-size:.72rem;width:100%;direction:ltr;text-align:left}
 </style></head><body>
 <div class="hd"><b>🎨 متجر الثيمات</b><a href="/store">→ رجوع</a></div>
 <div class="wrap">
@@ -73,6 +74,7 @@ iframe.pvif{width:100%;border:1px solid var(--line);border-radius:14px;backgroun
 <label>شكل الهيرو</label><select id="cHe" onchange="live()"><option value="large">كبير</option><option value="banner">بانر</option><option value="split">مقسم</option></select>
 <label>شكل كارت المنتج</label><select id="cC" onchange="live()"><option value="rounded">دائري</option><option value="soft">ناعم</option><option value="sharp">حاد</option><option value="luxury">فاخر</option></select>
 <label>شكل الأزرار</label><select id="cBu" onchange="live()"><option value="pill">دائرية</option><option value="sharp">حادة</option></select>
+<label>💻 CSS مخصص</label><textarea id="tCss" class="code" rows="4" oninput="live()" placeholder="/* عدّل أي شكل */"></textarea><label>💻 HTML إضافي</label><textarea id="tHtml" class="code" rows="2" placeholder="<div>عنصر إضافي</div>"></textarea><label>💻 JavaScript</label><textarea id="tJs" class="code" rows="2" placeholder="// وظيفة إضافية"></textarea>
 <button class="ba" style="width:100%;border-radius:12px;padding:12px;margin-top:14px;font-weight:800" onclick="saveCustom()">💾 حفظ التخصيص</button>
 </div><div class="main"><iframe class="pvif" id="cuF" height="520"></iframe></div></div></div></div>
 
@@ -110,11 +112,11 @@ function dev(b,w){document.querySelectorAll('.dbar button').forEach(x=>x.classLi
 function full(){window.open('/shop?theme='+cur,'_blank');}
 function openCu(id){cur=id;var t=getT(id);cuT.textContent='🎛️ تخصيص: '+t.name;
  cP.value=t.colors.primary;cS.value=t.colors.secondary;cB.value=t.colors.background;cR.value=parseInt(t.layout.radius);cH.value=t.layout.header;cHe.value=t.layout.hero;cC.value=t.layout.card;cBu.value=t.layout.button;
- cuF.src='/shop?theme='+id;op('cuM');}
+ tCss.value=myTheme.customCss||'';tHtml.value=myTheme.customHtml||'';tJs.value=myTheme.customJs||'';cuF.src='/shop?theme='+id;op('cuM');}
 function live(){var s={colors:{primary:cP.value,secondary:cS.value,background:cB.value},layout:{radius:cR.value+'px',header:cH.value,hero:cHe.value,card:cC.value,button:cBu.value}};
- cuF.contentWindow.postMessage({type:'themeLive',themeId:cur,settings:s},'*');}
+ s.customCss=tCss.value;cuF.contentWindow.postMessage({type:'themeLive',themeId:cur,settings:s},'*');}
 function saveCustom(){var s={colors:{primary:cP.value,secondary:cS.value,background:cB.value},layout:{radius:cR.value+'px',header:cH.value,hero:cHe.value,card:cC.value,button:cBu.value}};
- post({activeTheme:cur,themeSettings:s,previousTheme:myTheme.activeTheme||null},function(){myTheme.activeTheme=cur;myTheme.themeSettings=s;toast('💾 تم حفظ التخصيص');render();});}
+ post({activeTheme:cur,themeSettings:s,customCss:tCss.value,customHtml:tHtml.value,customJs:tJs.value,previousTheme:myTheme.activeTheme||null},function(){myTheme.activeTheme=cur;myTheme.themeSettings=s;myTheme.customCss=tCss.value;toast('💾 تم حفظ التخصيص');render();});}
 function askApply(id){pend=id;cfTxt.textContent='هل تريد تطبيق ثيم「'+getT(id).name+'」على متجرك؟ لن تفقد أي منتجات أو طلبات.';op('cfM');}
 function doApply(){var t=getT(pend);post({activeTheme:pend,themeSettings:myTheme.themeSettings||null,previousTheme:myTheme.activeTheme||null},function(){myTheme.previousTheme=myTheme.activeTheme;myTheme.activeTheme=pend;cl('cfM');toast('✅ تم تطبيق '+t.name);render();});}
 function post(body,cb){fetch('/api/my/theme',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':tok},body:JSON.stringify(Object.assign({},myTheme,body))}).then(r=>r.json()).then(cb);}

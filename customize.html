@@ -80,8 +80,7 @@ fetch('/api/auth/me',{headers:{'x-auth-token':tok}}).then(r=>r.json()).then(func
  var u=d.user||{};myId=u.id||'';myLink.textContent=location.origin+'/r/'+myId;
  return fetch('/api/theme/'+myId);
 }).then(r=>r.json()).then(function(d){if(d.theme){TH=Object.assign(TH,d.theme);fill();markSel();}});
-function fill(){tName.value=TH.name||'';tHero.value=TH.hero||'';tSub.value=TH.sub||'';# tWa
- tWa.value=TH.whatsapp||'';tColor.value=TH.color||'#0f766e';
+function fill(){tName.value=TH.name||'';tHero.value=TH.hero||'';tSub.value=TH.sub||'';tWa.value=TH.whatsapp||'';tColor.value=TH.color||'#0f766e';
  if(TH.logo){logoPrev.src=TH.logo;logoPrev.style.display='block';}renderBans();tCss.value=TH.customCss||'';tHtml.value=TH.customHtml||'';tJs.value=TH.customJs||'';}
 function renderBans(){banList.innerHTML=(TH.banners||[]).map(function(b,i){return '<img src="'+b+'" onclick="rmBan('+i+')">';}).join('');}
 function rmBan(i){TH.banners.splice(i,1);renderBans();}

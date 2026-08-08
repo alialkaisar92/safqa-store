@@ -87,7 +87,8 @@ fetch('/api/products').then(r=>r.json()).then(function(d){P=d||[];
  if(ref){fetch('/api/theme/'+ref).then(r=>r.json()).then(function(x){STORE=x.theme||{};boot(STORE.activeTheme||u.get('theme')||'store-pro');});}
  else boot(u.get('theme')||'store-pro');});
 window.addEventListener('message',function(e){var d=e.data||{};if(d.type==='themeLive'){if(TH)applyLive(d.settings);}});
-function applyLive(s){if(!TH)return;if(s.colors){var r=document.documentElement;if(s.colors.primary)r.style.setProperty('--p',s.colors.primary);if(s.colors.secondary)r.style.setProperty('--p2',s.colors.secondary);if(s.colors.background)r.style.setProperty('--bg',s.colors.background);}render();}
+function applyLive(s){if(!TH)return;if(s.customCss){var cc=document.getElementById('customCss');if(cc)cc.textContent=s.customCss;}
+if(s.colors){var r=document.documentElement;if(s.colors.primary)r.style.setProperty('--p',s.colors.primary);if(s.colors.secondary)r.style.setProperty('--p2',s.colors.secondary);if(s.colors.background)r.style.setProperty('--bg',s.colors.background);}render();}
 function openP(i){cur=P[i];qty=1;pmImg.src=cur.image||'';pmName.textContent=cur.name;pmPrice.textContent=fmt(cur.price);pmDesc.textContent=cur.desc||'';qV.textContent=1;openM('pm');}
 function chQ(d){qty=Math.max(1,qty+d);qV.textContent=qty;}
 function addToCart(){if(!cur)return;var ex=cart.find(c=>c.id===cur.id);if(ex)ex.qty+=qty;else cart.push({id:cur.id,name:cur.name,price:cur.price,image:cur.image,qty:qty});updCC();closeM('pm');openCart();}
