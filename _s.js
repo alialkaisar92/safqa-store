@@ -1,47 +1,4 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>متجر إلكتروني</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<style id="baseCss">
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:Cairo,system-ui,sans-serif;background:var(--bg,#f7faf9);color:var(--tx,#0f172a);line-height:1.6}
-button{font-family:inherit;cursor:pointer;border:none}img{max-width:100%;display:block}a{text-decoration:none;color:inherit}
 
-#toolbar{background:var(--bg,#f7faf9);padding:10px 14px 0}
-.tb-search input{width:100%;border:1px solid var(--line,#e5e7eb);border-radius:14px;padding:12px 16px;font-size:.9rem;background:var(--card,#fff);color:var(--tx,#0f172a)}
-.tb-cats{display:flex;gap:8px;overflow-x:auto;padding:10px 0}
-.tb-cats .cc{flex:0 0 auto;background:var(--card,#fff);border:1px solid var(--line,#e5e7eb);border-radius:50px;padding:8px 16px;font-size:.78rem;font-weight:700;color:var(--mut,#5b6b7a)}
-.tb-cats .cc.on{background:var(--p,#0f766e);color:#fff;border-color:transparent}
-#waFloat{position:fixed;bottom:18px;left:18px;z-index:95;width:56px;height:56px;border-radius:50%;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.7rem;box-shadow:0 10px 24px rgba(0,0,0,.3);text-decoration:none;animation:pulse 2s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(37,211,102,.5)}70%{box-shadow:0 0 0 16px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}
-#themeCss{}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:flex-end;justify-content:center}
-.modal.on{display:flex}
-.sheet{background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:560px;max-height:88vh;overflow:auto;padding:18px;color:#0f172a}
-.sheet .x{float:left;background:#f1f5f9;border-radius:50%;width:32px;height:32px}
-.pm-img{border-radius:14px;height:200px;object-fit:cover;width:100%;background:#eef5f2}
-.qty{display:flex;align-items:center;gap:14px;margin:12px 0}.qty button{width:36px;height:36px;border-radius:10px;background:#eef5f2;font-size:1.2rem}
-.addbtn{width:100%;background:var(--p,#0f766e);color:#fff;border-radius:14px;padding:13px;font-weight:800}
-.ci{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
-.ci img{width:52px;height:52px;border-radius:10px;object-fit:cover}.ci .n{flex:1;font-size:.78rem;font-weight:700}.ci .p{color:var(--p,#0f766e);font-weight:800}
-.ci button{background:#fee2e2;color:#dc2626;border-radius:8px;padding:4px 8px;font-size:.68rem}
-label{display:block;font-size:.78rem;font-weight:700;margin:10px 0 5px}
-input,select,textarea{width:100%;border:1px solid #ddd;border-radius:12px;padding:10px;font-family:inherit;font-size:.88rem}
-.tot{display:flex;justify-content:space-between;font-weight:800;margin:12px 0}.tot b{color:var(--p,#0f766e)}
-.msg{margin-top:10px;font-size:.84rem;font-weight:700;text-align:center}.msg.ok{color:#059669}.msg.err{color:#dc2626}
-.cartb{position:relative}.cartb i{position:absolute;top:-6px;left:-6px;background:#ef4444;color:#fff;font-style:normal;font-size:.62rem;font-weight:800;border-radius:50px;min-width:17px;height:17px;display:flex;align-items:center;justify-content:center}
-</style><style id="themeCss"></style><style id="customCss"></style></head>
-<body>
-<div id="header"></div>
-<div id="toolbar"><div class="tb-search"><input id="q" placeholder="🔍 ابحث عن منتج..." oninput="doSearch(this.value)"></div><div class="tb-cats" id="catRow"></div></div>
-<a id="waFloat" target="_blank">💬</a><main id="home"></main><div id="footer"></div><div id="mnav"></div>
-
-<div class="modal" id="pm"><div class="sheet"><button class="x" onclick="closeM('pm')">✕</button><img class="pm-img" id="pmImg"><h3 id="pmName" style="margin-top:8px"></h3><div id="pmPrice" style="color:var(--p);font-weight:900;margin:5px 0"></div><p id="pmDesc" style="font-size:.83rem;color:#666"></p><div class="qty"><button onclick="chQ(-1)">−</button><b id="qV">1</b><button onclick="chQ(1)">+</button></div><button class="addbtn" onclick="addToCart()">🛒 أضف إلى السلة</button></div></div>
-<div class="modal" id="cm"><div class="sheet"><button class="x" onclick="closeM('cm')">✕</button><h3 style="margin-bottom:8px">🛒 السلة</h3><div id="cItems"></div><div class="tot"><span>الإجمالي</span><b id="cTot">0</b></div><button class="addbtn" onclick="openCo()">إتمام الطلب ❯</button></div></div>
-<div class="modal" id="co"><div class="sheet"><button class="x" onclick="closeM('co')">✕</button><h3>📦 بيانات التوصيل</h3><label>الاسم</label><input id="fName"><label>الموبايل</label><input id="fPhone"><label>العنوان</label><textarea id="fAddr" rows="2"></textarea><label>المحافظة</label><select id="fGov"></select><div class="tot"><span>الإجمالي</span><b id="coTot">0</b></div><button class="addbtn" onclick="submitOrder()">✔ تأكيد الطلب</button><div class="msg" id="coMsg"></div></div></div>
-
-<script src="/themes.js"></script>
-<script>
 var P=[],cart=[],cur=null,qty=1,SH=50,COMM=20,TH=null,STORE={};
 var GOVS=['القاهرة','الجيزة','الإسكندرية','الدقهلية','الشرقية','الغربية','المنوفية','القليوبية','البحيرة','كفر الشيخ','دمياط','بورسعيد','الإسماعيلية','السويس','الفيوم','بني سويف','المنيا','أسيوط','سوهاج','قنا','الأقصر','أسوان'];
 fGov.innerHTML=GOVS.map(g=>'<option>'+g+'</option>').join('');
@@ -102,4 +59,3 @@ function submitOrder(){var m=coMsg;m.className='msg';if(!fName.value||!fPhone.va
  var items=cart.map(c=>({id:c.id,name:c.name,price:c.price,qty:c.qty}));var tot=cart.reduce((a,c)=>a+c.price*c.qty,0)+SH;
  fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':localStorage.getItem('etok')||''},body:JSON.stringify({client_name:fName.value,client_phone1:fPhone.value,client_address:fAddr.value,shipping_governorate:fGov.value,items:items,productNames:cart.map(c=>c.name),total:tot,commission:COMM,shipping_cost:SH,ref:localStorage.getItem('sref')||''})}).then(r=>r.json()).then(function(d){if(d.error){m.textContent='⚠️ '+d.error;m.className='msg err';}else{m.textContent='✅ تم استلام طلبك';m.className='msg ok';cart=[];updCC();setTimeout(()=>closeM('co'),1400);}}).catch(function(){m.textContent='⚠️ خطأ';m.className='msg err';});}
 function openM(id){document.getElementById(id).classList.add('on')}function closeM(id){document.getElementById(id).classList.remove('on')}
-</script></body></html>
