@@ -5,3 +5,9 @@ _*.log
 eo_boot.log
 tunnel.log
 nohup.out
+.env
+affiliate-data.json
+store-users.json
+chat.json
+chat.json.backup.*
+backups/
