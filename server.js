@@ -226,6 +226,9 @@ app.post('/api/support', (req, res) => {
 app.post('/api/upload',(req,res)=>{const pl=global.verifyJWT?global.verifyJWT(req.headers['x-auth-token']||''):null;if(!pl)return res.status(401).json({error:'login'});const b=req.body||{};if(typeof b.data!=='string'||b.data.indexOf('data:')!==0)return res.json({error:'صورة غير صالحة'});try{const fs=require('fs'),pt=require('path');const dir=pt.join(__dirname,'uploads');if(!fs.existsSync(dir))fs.mkdirSync(dir);const mt=(b.data.match(/^data:([^;]+);/)||[])[1]||'image/png';const ext=((mt.split('/')[1])||'png').replace(/[^a-z0-9]/gi,'')||'png';const fn='t'+Date.now()+'-'+Math.random().toString(36).slice(2,6)+'.'+ext;fs.writeFileSync(pt.join(dir,fn),Buffer.from((b.data.split(',')[1])||'','base64'));res.json({ok:true,url:'/uploads/'+fn});}catch(e){res.json({error:'فشل الرفع'});}});
 app.get('/api/theme/:id',(req,res)=>{try{const db=JSON.parse(require('fs').readFileSync(require('path').join(__dirname,'store-users.json'),'utf8'));const u=(db.users||[]).find(x=>String(x.id)===String(req.params.id));res.json({ok:true,theme:(u&&u.theme)||null,name:u?u.name:''});}catch(e){res.json({ok:true,theme:null,name:''});}});
 app.post('/api/my/theme',(req,res)=>{const pl=global.verifyJWT?global.verifyJWT(req.headers['x-auth-token']||''):null;if(!pl)return res.status(401).json({error:'login'});try{const fp=require('path').join(__dirname,'store-users.json');const db=JSON.parse(require('fs').readFileSync(fp,'utf8'));const u=(db.users||[]).find(x=>x.id===pl.uid);if(!u)return res.status(401).json({error:'login'});u.theme=req.body||{};require('fs').writeFileSync(fp,JSON.stringify(db,null,2));res.json({ok:true});}catch(e){res.json({error:'فشل الحفظ'});}});
+app.get('/themes',(req,res)=>res.sendFile(require('path').join(__dirname,'themes-store.html')));
+app.get('/themes.js',(req,res)=>res.sendFile(require('path').join(__dirname,'themes.js')));
+app.get('/theme-engine.js',(req,res)=>res.sendFile(require('path').join(__dirname,'theme-engine.js')));
 app.get('/customize',(req,res)=>res.sendFile(require('path').join(__dirname,'customize.html')));
 app.get('/shop',(req,res)=>res.sendFile(require('path').join(__dirname,'storefront.html')));
 app.get('/r/:id',(req,res)=>res.redirect('/shop?ref='+req.params.id));
@@ -736,7 +739,7 @@ if(tok){
     btn.style.cssText='background:linear-gradient(135deg,#10b981,#0f766e);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer;margin-inline-start:6px';
     btn.textContent='🔗 رابطي';
     btn.onclick=function(){if(navigator.clipboard)navigator.clipboard.writeText(link);prompt('انسخ رابطك التسويقي وشاركه:',link);};
-    var btn2=document.createElement('button');btn2.style.cssText='background:#fff;color:#0f766e;border:1px solid rgba(15,118,110,.2);border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer;margin-inline-start:6px';btn2.textContent='🎨 متجري';btn2.onclick=function(){location.href='/customize';};var cart=document.querySelector('.eh-cartb');if(cart&&cart.parentNode){cart.parentNode.insertBefore(btn2,cart);cart.parentNode.insertBefore(btn,cart);}
+    var btn2=document.createElement('button');btn2.style.cssText='background:#fff;color:#0f766e;border:1px solid rgba(15,118,110,.2);border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer;margin-inline-start:6px';btn2.textContent='🎨 الثيمات';btn2.onclick=function(){location.href='/themes';};var cart=document.querySelector('.eh-cartb');if(cart&&cart.parentNode){cart.parentNode.insertBefore(btn2,cart);cart.parentNode.insertBefore(btn,cart);}
   }).catch(function(){});
 }
 var _f=window.fetch;

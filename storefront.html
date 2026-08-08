@@ -80,7 +80,18 @@ body.th-rosa .hero{background:linear-gradient(135deg,#fbcfe8,#db2777)}
 body.th-rosa .pcard{border-radius:22px}
 body.th-rosa .pcard .pr{color:#db2777}
 body.th-rosa .addbtn,body.th-rosa .cartb{background:linear-gradient(135deg,#f472b6,#db2777)}
+
+body{font-family:var(--font,Cairo),system-ui,sans-serif}
+.hero h1{font-size:var(--hsize,1.35rem)}
+body[data-card="sharp"] .pcard{border-radius:6px}
+body[data-card="luxury"] .pcard{border:1px solid var(--p);border-radius:6px}
+body[data-card="soft"] .pcard{border-radius:24px}
+body[data-btn="sharp"] .addbtn,body[data-btn="sharp"] .cartb,body[data-btn="sharp"] .cta{border-radius:6px}
+body[data-header="minimal"] .hd{height:48px;padding:6px 12px}
+body[data-hero="split"] .hero{text-align:right}
+body[data-hero="banner"] .hero{padding:20px 18px}
 </style></head><body>
+<script src="/themes.js"></script><script src="/theme-engine.js"></script>
 <header class="hd"><div class="brand"><img class="hlogo" id="hLogo"><span class="hname" id="hName">Earnify Store</span></div><button class="cartb" onclick="openCart()">🛒<i id="cc">0</i></button></header>
 <div class="hero"><span class="tag">✨ عروض حصرية لفترة محدودة</span><h1 id="hHero">تسوّق أحدث المنتجات بأفضل الأسعار</h1><p id="hSub">شحن سريع • الدفع عند الاستلام • إرجاع مجاني</p><button class="cta" onclick="document.getElementById('g').scrollIntoView({behavior:'smooth'})">تسوّق الآن ❯</button></div>
 <div class="bans" id="bans"></div>
@@ -103,7 +114,7 @@ document.getElementById('ftY').textContent=new Date().getFullYear();
 var u=new URLSearchParams(location.search);var ref=u.get('ref')||'';if(ref)localStorage.setItem('sref',ref);
 var thp=u.get('theme')||'';if(thp){applyTheme({id:thp},'');}
 if(ref){fetch('/api/theme/'+ref).then(r=>r.json()).then(function(d){applyTheme(d.theme||{},d.name||'');}).catch(function(){});}
-function applyTheme(th,nm){document.body.className=th.id?('th-'+th.id):'';
+function applyTheme(th,nm){var tid=th.activeTheme||th.id||'';var T=(window.THEMES||[]).find(function(x){return x.id===tid});if(T&&window.ThemeEngine)ThemeEngine.apply(document,T,th.themeSettings||{});
  if(th.name||nm)document.getElementById('hName').textContent=th.name||nm;
  document.title=(th.name||nm||'متجر إلكتروني')+' | تسوّق الآن';
  if(th.logo){document.getElementById('hLogo').src=th.logo;document.getElementById('hLogo').style.display='block';}
@@ -131,4 +142,5 @@ function submitOrder(){var m=coMsg;m.className='msg';
  }).catch(function(){m.textContent='⚠️ خطأ في الاتصال';m.className='msg err';});}
 function openM(id){document.getElementById(id).classList.add('on');}
 function closeM(id){document.getElementById(id).classList.remove('on');}
+window.addEventListener('message',function(e){var d=e.data||{};if(d.type==='themeLive'){applyTheme({activeTheme:d.themeId,themeSettings:d.settings||{}},'');}});
 </script></body></html>
