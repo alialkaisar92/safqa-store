@@ -52,6 +52,34 @@ input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px
 .tot b{color:var(--p)}.empty{text-align:center;color:var(--mut);padding:36px 0;font-size:.88rem}
 .msg{margin-top:10px;font-size:.84rem;font-weight:700;text-align:center}.msg.ok{color:#059669}.msg.err{color:#dc2626}
 .ft{text-align:center;color:var(--mut);font-size:.72rem;padding:20px;border-top:1px solid var(--line);margin-top:10px}
+
+body.th-elite{background:#111827;color:#f9fafb}
+body.th-elite .hd{background:#111827;border-color:#1f2937}
+body.th-elite .hname{color:#ef4444}
+body.th-elite .hero{background:linear-gradient(135deg,#7f1d1d,#111827);border-radius:0}
+body.th-elite .hero h1{text-transform:uppercase;letter-spacing:1px}
+body.th-elite .pcard{background:#1f2937;border-color:#374151;border-radius:8px}
+body.th-elite .pcard .t{color:#f9fafb}
+body.th-elite .pcard .pr{color:#22c55e}
+body.th-elite .pcard .st{color:#9ca3af}
+body.th-elite .addbtn,body.th-elite .cartb{background:linear-gradient(135deg,#ef4444,#b91c1c)}
+body.th-elite .trust div,body.th-elite .sheet{background:#1f2937;color:#f9fafb}
+body.th-luxe{background:#0b0b0d;color:#e5e7eb}
+body.th-luxe .hd{background:#0b0b0d;border-color:#26262b}
+body.th-luxe .hname{color:#d4af37;font-family:Georgia,serif}
+body.th-luxe .hero{background:linear-gradient(135deg,#1a1a1d,#0b0b0d);border:1px solid #d4af37}
+body.th-luxe .hero h1{font-family:Georgia,serif;color:#d4af37}
+body.th-luxe .pcard{background:#141417;border:1px solid #d4af37;border-radius:4px}
+body.th-luxe .pcard .t{color:#e5e7eb}
+body.th-luxe .pcard .pr{color:#d4af37}
+body.th-luxe .addbtn,body.th-luxe .cartb{background:linear-gradient(135deg,#d4af37,#8a6d1f);color:#0b0b0d}
+body.th-luxe .trust div,body.th-luxe .sheet{background:#141417;color:#e5e7eb}
+body.th-rosa{background:#fff5f7}
+body.th-rosa .hname{color:#db2777}
+body.th-rosa .hero{background:linear-gradient(135deg,#fbcfe8,#db2777)}
+body.th-rosa .pcard{border-radius:22px}
+body.th-rosa .pcard .pr{color:#db2777}
+body.th-rosa .addbtn,body.th-rosa .cartb{background:linear-gradient(135deg,#f472b6,#db2777)}
 </style></head><body>
 <header class="hd"><div class="brand"><img class="hlogo" id="hLogo"><span class="hname" id="hName">Earnify Store</span></div><button class="cartb" onclick="openCart()">🛒<i id="cc">0</i></button></header>
 <div class="hero"><span class="tag">✨ عروض حصرية لفترة محدودة</span><h1 id="hHero">تسوّق أحدث المنتجات بأفضل الأسعار</h1><p id="hSub">شحن سريع • الدفع عند الاستلام • إرجاع مجاني</p><button class="cta" onclick="document.getElementById('g').scrollIntoView({behavior:'smooth'})">تسوّق الآن ❯</button></div>
@@ -73,14 +101,15 @@ var GOVS=['القاهرة','الجيزة','الإسكندرية','الدقهلي
 document.getElementById('fGov').innerHTML=GOVS.map(g=>'<option>'+g+'</option>').join('');
 document.getElementById('ftY').textContent=new Date().getFullYear();
 var u=new URLSearchParams(location.search);var ref=u.get('ref')||'';if(ref)localStorage.setItem('sref',ref);
+var thp=u.get('theme')||'';if(thp){applyTheme({id:thp},'');}
 if(ref){fetch('/api/theme/'+ref).then(r=>r.json()).then(function(d){applyTheme(d.theme||{},d.name||'');}).catch(function(){});}
-function applyTheme(th,nm){
+function applyTheme(th,nm){document.body.className=th.id?('th-'+th.id):'';
  if(th.name||nm)document.getElementById('hName').textContent=th.name||nm;
  document.title=(th.name||nm||'متجر إلكتروني')+' | تسوّق الآن';
  if(th.logo){document.getElementById('hLogo').src=th.logo;document.getElementById('hLogo').style.display='block';}
  if(th.hero)document.getElementById('hHero').textContent=th.hero;
  if(th.sub)document.getElementById('hSub').textContent=th.sub;
- if(th.color){document.documentElement.style.setProperty('--p',th.color);document.documentElement.style.setProperty('--p2',th.color2||th.color);}
+ if(!th.id&&th.color){document.documentElement.style.setProperty('--p',th.color);document.documentElement.style.setProperty('--p2',th.color2||th.color);}
  if(th.banners&&th.banners.length)document.getElementById('bans').innerHTML=th.banners.map(b=>'<img src="'+b+'">').join('');
 }
 fetch('/api/products').then(r=>r.json()).then(d=>{P=d||[];render();});

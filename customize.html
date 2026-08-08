@@ -25,6 +25,22 @@ input[type=color]{height:46px;padding:4px;cursor:pointer}
 .btn{width:100%;background:linear-gradient(135deg,var(--p2),var(--p));color:#fff;border-radius:14px;padding:14px;font-weight:800;font-size:1rem;margin-top:8px}
 .link{background:#eef5f2;border-radius:12px;padding:12px;font-size:.8rem;word-break:break-all;font-weight:700;color:var(--p);display:flex;gap:8px;align-items:center;justify-content:space-between}
 .msg{text-align:center;font-weight:700;font-size:.85rem;margin-top:10px}
+
+.tgrid{grid-template-columns:repeat(2,1fr)}
+.tcard{padding:10px}
+.pv{border-radius:10px;overflow:hidden;border:1px solid var(--line);margin-bottom:6px}
+.pv-hd{height:10px}
+.pv-hero{height:26px}
+.pv-grid{display:flex;gap:4px;padding:6px}
+.pv-grid i{flex:1;height:26px;border-radius:5px}
+.tcard .nm{font-size:.72rem;font-weight:800;color:var(--tx)}
+.tcard .cat{font-size:.6rem;color:var(--mut);display:block;margin:2px 0 6px}
+.tbtns{display:flex;gap:6px}
+.tbtns button{flex:1;border-radius:8px;padding:6px 0;font-size:.66rem;font-weight:800;cursor:pointer}
+.act{background:linear-gradient(135deg,var(--p2),var(--p));color:#fff;border:none}
+.prevw{background:#fff;border:1px solid var(--line);color:var(--p)}
+.free{position:absolute;top:6px;left:6px;background:rgba(16,185,129,.15);color:#059669;font-size:.58rem;font-weight:800;border-radius:50px;padding:2px 8px}
+.tcard{position:relative}
 </style></head><body>
 <div class="hd"><b>🎨 تخصيص متجري</b><a href="/store">→ رجوع للمتجر</a></div>
 <div class="wrap">
@@ -45,15 +61,14 @@ input[type=color]{height:46px;padding:4px;cursor:pointer}
 var tok=localStorage.getItem('etok')||'';if(!tok)location.href='/login';
 var TH={name:'',hero:'',sub:'',color:'#0f766e',color2:'#10b981',logo:'',banners:[]},myId='';
 var THEMES=[
-{n:'مودرن تيل',c:'#0f766e',c2:'#10b981'},
-{n:'رويال بلو',c:'#1e40af',c2:'#3b82f6'},
-{n:'لاكشري جولد',c:'#0f172a',c2:'#d4a017'},
-{n:'روز فاشن',c:'#be185d',c2:'#f472b6'},
-{n:'صن ست',c:'#c2410c',c2:'#f59e0b'},
-{n:'رويال فيولت',c:'#6d28d9',c2:'#a78bfa'}];
-function renderT(){tGrid.innerHTML=THEMES.map(function(t,i){return '<div class="tcard" id="tc'+i+'" onclick="pickT('+i+')"><div class="sw" style="background:linear-gradient(135deg,'+t.c2+','+t.c+')"></div><span>'+t.n+'</span></div>';}).join('');}
+{id:'modern',n:'مودرن',cat:'عام',bg:'#f7faf9',hd:'#0f766e',hero:'linear-gradient(135deg,#10b981,#0f766e)',card:'#fff'},
+{id:'elite',n:'ELITE Fit',cat:'الصحة واللياقة',bg:'#111827',hd:'#ef4444',hero:'linear-gradient(135deg,#7f1d1d,#111827)',card:'#1f2937'},
+{id:'luxe',n:'LUXE',cat:'ساعات ومجوهرات',bg:'#0b0b0d',hd:'#d4af37',hero:'linear-gradient(135deg,#1a1a1d,#0b0b0d)',card:'#141417'},
+{id:'rosa',n:'ROSA',cat:'ملابس وأزياء',bg:'#fff5f7',hd:'#db2777',hero:'linear-gradient(135deg,#fbcfe8,#db2777)',card:'#fff'}];
+function renderT(){tGrid.innerHTML=THEMES.map(function(t,i){return '<div class="tcard'+((TH.id===t.id)?' sel':'')+'" id="tc'+i+'"><span class="free">مجاني</span><div class="pv" style="background:'+t.bg+'"><div class="pv-hd" style="background:'+t.hd+'"></div><div class="pv-hero" style="background:'+t.hero+'"></div><div class="pv-grid"><i style="background:'+t.card+'"></i><i style="background:'+t.card+'"></i></div></div><div class="nm">'+t.n+'</div><span class="cat">'+t.cat+'</span><div class="tbtns"><button class="act" onclick="pickT('+i+')">تفعيل</button><button class="prevw" onclick="prevT('+i+')">👁 معاينة</button></div></div>';}).join('');}
 function markSel(){THEMES.forEach(function(t,i){var el=document.getElementById('tc'+i);if(el)el.className='tcard'+((t.c===TH.color&&t.c2===TH.color2)?' sel':'');});}
-function pickT(i){TH.color=THEMES[i].c;TH.color2=THEMES[i].c2;tColor.value=THEMES[i].c;markSel();save();}
+function pickT(i){TH.id=THEMES[i].id;TH.color=THEMES[i].hd;renderT();save();}
+function prevT(i){window.open(location.origin+'/shop?theme='+THEMES[i].id,'_blank');}
 renderT();
 function pick(id){document.getElementById(id).click();}
 fetch('/api/auth/me',{headers:{'x-auth-token':tok}}).then(r=>r.json()).then(function(d){
