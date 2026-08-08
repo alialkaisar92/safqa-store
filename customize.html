@@ -41,6 +41,7 @@ input[type=color]{height:46px;padding:4px;cursor:pointer}
 .prevw{background:#fff;border:1px solid var(--line);color:var(--p)}
 .free{position:absolute;top:6px;left:6px;background:rgba(16,185,129,.15);color:#059669;font-size:.58rem;font-weight:800;border-radius:50px;padding:2px 8px}
 .tcard{position:relative}
+.code{font-family:"Courier New",monospace;background:#0f172a;color:#7ee787;border:1px solid #1e293b;border-radius:12px;padding:12px;font-size:.75rem;width:100%;direction:ltr;text-align:left}
 </style></head><body>
 <div class="hd"><b>🎨 تخصيص متجري</b><a href="/store">→ رجوع للمتجر</a></div>
 <div class="wrap">
@@ -55,6 +56,9 @@ input[type=color]{height:46px;padding:4px;cursor:pointer}
 <div class="card"><h3>🖼️ صورة الهيدر / اللوجو</h3><div class="up" onclick="pick('logoIn')">📤 اضغط لرفع صورة الهيدر</div><input type="file" id="logoIn" accept="image/*" hidden><img class="prev" id="logoPrev"></div>
 <div class="card"><h3>🎯 بنرات العروض</h3><div class="up" onclick="pick('banIn')">➕ أضف بنر جديد</div><input type="file" id="banIn" accept="image/*" hidden><div class="bans" id="banList"></div></div>
 <div class="card"><h3>🔗 رابطك بعد النشر</h3><div class="link"><span id="myLink">...</span><button class="btn" style="width:auto;padding:8px 14px;margin:0" onclick="copyL()">نسخ</button></div><button class="btn" onclick="openL()">👁️ معاينة متجري</button></div>
+<div class="card"><h3>💻 تخصيص بالكود (للمحترفين)</h3><label>CSS مخصص — عدّل أي شكل</label><textarea id="tCss" class="code" rows="6" placeholder="/* مثال: */
+.hero{border-radius:0}
+.pcard{border:2px solid gold}"></textarea><label>HTML إضافي — أضف أي عنصر</label><textarea id="tHtml" class="code" rows="3" placeholder="<div style='text-align:center;padding:10px'>رسالتك هنا</div>"></textarea><label>JavaScript — أضف أي وظيفة</label><textarea id="tJs" class="code" rows="3" placeholder="// مثال: console.log('متجري')"></textarea></div>
 <button class="btn" onclick="save()">💾 حفظ ونشر متجري</button>
 <div class="msg" id="msg"></div>
 </div>
@@ -78,13 +82,13 @@ fetch('/api/auth/me',{headers:{'x-auth-token':tok}}).then(r=>r.json()).then(func
 }).then(r=>r.json()).then(function(d){if(d.theme){TH=Object.assign(TH,d.theme);fill();markSel();}});
 function fill(){tName.value=TH.name||'';tHero.value=TH.hero||'';tSub.value=TH.sub||'';# tWa
  tWa.value=TH.whatsapp||'';tColor.value=TH.color||'#0f766e';
- if(TH.logo){logoPrev.src=TH.logo;logoPrev.style.display='block';}renderBans();}
+ if(TH.logo){logoPrev.src=TH.logo;logoPrev.style.display='block';}renderBans();tCss.value=TH.customCss||'';tHtml.value=TH.customHtml||'';tJs.value=TH.customJs||'';}
 function renderBans(){banList.innerHTML=(TH.banners||[]).map(function(b,i){return '<img src="'+b+'" onclick="rmBan('+i+')">';}).join('');}
 function rmBan(i){TH.banners.splice(i,1);renderBans();}
 logoIn.onchange=e=>{var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=()=>{up(r.result).then(u=>{TH.logo=u;logoPrev.src=u;logoPrev.style.display='block';});};r.readAsDataURL(f);};
 banIn.onchange=e=>{var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=()=>{up(r.result).then(u=>{TH.banners=TH.banners||[];TH.banners.push(u);renderBans();});};r.readAsDataURL(f);};
 function up(b64){return fetch('/api/upload',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':tok},body:JSON.stringify({data:b64})}).then(r=>r.json()).then(d=>d.url);}
-function save(){TH.name=tName.value;TH.hero=tHero.value;TH.sub=tSub.value;TH.color=tColor.value;TH.whatsapp=tWa.value;
+function save(){TH.name=tName.value;TH.hero=tHero.value;TH.sub=tSub.value;TH.color=tColor.value;TH.whatsapp=tWa.value;TH.customCss=tCss.value;TH.customHtml=tHtml.value;TH.customJs=tJs.value;
  fetch('/api/my/theme',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':tok},body:JSON.stringify(TH)}).then(r=>r.json()).then(function(d){
   msg.textContent=d.ok?'✅ تم حفظ ونشر متجري بنجاح!':'⚠️ '+d.error;msg.style.color=d.ok?'#059669':'#dc2626';});}
 function copyL(){if(navigator.clipboard)navigator.clipboard.writeText(myLink.textContent);prompt('انسخ رابطك:',myLink.textContent);}

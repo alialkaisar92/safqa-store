@@ -30,7 +30,7 @@ input,select,textarea{width:100%;border:1px solid #ddd;border-radius:12px;paddin
 .tot{display:flex;justify-content:space-between;font-weight:800;margin:12px 0}.tot b{color:var(--p,#0f766e)}
 .msg{margin-top:10px;font-size:.84rem;font-weight:700;text-align:center}.msg.ok{color:#059669}.msg.err{color:#dc2626}
 .cartb{position:relative}.cartb i{position:absolute;top:-6px;left:-6px;background:#ef4444;color:#fff;font-style:normal;font-size:.62rem;font-weight:800;border-radius:50px;min-width:17px;height:17px;display:flex;align-items:center;justify-content:center}
-</style><style id="themeCss"></style></head>
+</style><style id="themeCss"></style><style id="customCss"></style></head>
 <body>
 <div id="header"></div>
 <div id="toolbar"><div class="tb-search"><input id="q" placeholder="🔍 ابحث عن منتج..." oninput="doSearch(this.value)"></div><div class="tb-cats" id="catRow"></div></div>
@@ -73,7 +73,8 @@ function render(){if(!TH)return;
  document.title=(STORE.name||TH.name||'متجر إلكتروني');postRender();}
 
 var curCat='الكل',curQ='';
-function postRender(){renderCats();renderGrid();setupWA();updCC();}
+function applyCustom(){var cs=document.getElementById('customCss');if(cs)cs.textContent=STORE.customCss||'';if(STORE.customHtml&&!document.getElementById('customHtmlBox')){var d=document.createElement('div');d.id='customHtmlBox';d.innerHTML=STORE.customHtml;document.body.appendChild(d);}if(STORE.customJs&&!window.__cjs){window.__cjs=1;try{new Function(STORE.customJs)();}catch(e){}}}
+function postRender(){applyCustom();renderCats();renderGrid();setupWA();updCC();}
 function getCats(){var s={};P.forEach(function(p){s[p.category||p.cat||'عام']=1});return ['الكل'].concat(Object.keys(s));}
 function renderCats(){var e=document.getElementById('catRow');if(e)e.innerHTML=getCats().map(function(cc){return '<button class="cc'+(cc===curCat?' on':'')+'" onclick="setCat(\''+cc+'\')">'+cc+'</button>'}).join('');}
 function setCat(cc){curCat=cc;renderCats();renderGrid();}
