@@ -704,10 +704,10 @@ updCC(); loadProducts(); loadPrices();
 var u=new URLSearchParams(location.search);var ref=u.get('ref')||'';
 if(ref)localStorage.setItem('sref',ref);
 var sref=localStorage.getItem('sref')||'';var tok=localStorage.getItem('etok')||'';
-var cust=(ref||sref)?true:false;
+var cust=ref?true:(sref&&!tok);
 function clean(){
   document.title='Earnify | متجر إلكتروني';
-  var sub=document.querySelector('.eh-brand small');if(sub)sub.textContent='متجر إلكتروني موثوق ✓';
+  var sub=document.querySelector('.eh-brand small');if(sub)sub.textContent='متجر إلكتروني موثوق ✓';var lg=document.querySelector('.eh-logo');if(lg)lg.textContent='Earnify 🛍️';var bdg=document.querySelector('.eh-pname small');if(bdg)bdg.style.display='none';var bell=document.querySelector('.eh-bell');if(bell)bell.style.display='none';document.querySelectorAll('nav.nav button').forEach(function(b){var p=b.getAttribute('data-p');if(p==='orders'||p==='withdraw')b.style.display='none';});document.querySelectorAll('.stat').forEach(function(st){var lt=st.textContent||'';if(lt.indexOf('الرصيد')>-1||lt.indexOf('الطلبات')>-1)st.style.display='none';});document.querySelectorAll('button').forEach(function(bt){if((bt.textContent||'').indexOf('إتمام الطلب للعميل')>-1)bt.textContent='إتمام الطلب ✓';});
   document.querySelectorAll('label').forEach(function(l){
     if((l.textContent||'').indexOf('عمولة المسوق')>-1){
       var n=l.nextElementSibling;
@@ -721,7 +721,7 @@ function clean(){
     if(t2.indexOf('الشحن والعمولة')>-1)el.textContent='② الشحن';
   });
 }
-if(cust){clean();setTimeout(clean,400);setTimeout(clean,1200);}
+if(cust){clean();setInterval(clean,1000);}
 if(tok){
   fetch('/api/auth/me',{headers:{'x-auth-token':tok}}).then(function(r){return r.json()}).then(function(me){
     var u2=me.user||me;var id=u2.id||u2._id||'';if(!id)return;
