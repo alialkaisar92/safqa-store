@@ -353,28 +353,29 @@ body.chatfull .wa-wrap{height:calc(100vh - 62px);border-radius:0}
 </head>
 <body><div id="splash" style="position:fixed;inset:0;background:#f6f8f7;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px"><div style="width:46px;height:46px;border:4px solid #e2e8f0;border-top-color:#0f766e;border-radius:50%;animation:sp 1s linear infinite"></div><b style="color:#0f766e">Earnify</b><style>@keyframes sp{to{transform:rotate(360deg)}}</style></div>
 <style id="modernDash">
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Tajawal:wght@400;500;700;800;900&display=swap');
-:root{--mp:#6366f1;--mp2:#a855f7;--mbg:#f6f7fb;--mcard:#fff;--mtx:#0b1220;--mmut:#69728a;--mrad:22px;--msh:0 10px 40px -12px rgba(80,90,220,.18)}
-body{font-family:'IBM Plex Sans Arabic','Tajawal',system-ui,sans-serif !important;background:var(--mbg) !important;color:var(--mtx);letter-spacing:0}
-.header{background:rgba(255,255,255,.75) !important;backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(99,102,241,.12) !important;box-shadow:0 6px 30px -12px rgba(80,90,220,.15)}
-.eh-logo{font-weight:900 !important;font-size:1.45rem !important;background:linear-gradient(135deg,var(--mp),var(--mp2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.eh-brand small{color:var(--mmut) !important;font-size:.68rem !important;font-weight:600}
-.card,.stat{background:var(--mcard) !important;border:1px solid rgba(99,102,241,.1) !important;border-radius:var(--mrad) !important;box-shadow:var(--msh) !important;transition:transform .25s,box-shadow .25s}
-.card:active,.stat:active{transform:scale(.98)}
-.stat .v,.card .v{font-weight:900 !important;font-size:1.5rem !important;background:linear-gradient(135deg,var(--mp),var(--mp2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.stat .l,.card .l{color:var(--mmut) !important;font-size:.72rem !important;font-weight:600}
-.btn,.btn-primary{border-radius:16px !important;font-weight:800 !important;background:linear-gradient(135deg,var(--mp),var(--mp2)) !important;box-shadow:0 8px 24px -8px rgba(120,90,240,.5) !important;border:none !important;letter-spacing:.2px}
-.section-title{font-weight:900 !important;font-size:1.05rem !important;position:relative;padding-right:14px !important}
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Tajawal:wght@400;500;700;800;900&family=Changa:wght@600;700;800&display=swap');
+:root{--p:#6366f1;--p2:#a855f7;--mp:#6366f1;--mp2:#a855f7;--mbg:#f6f7fb;--mtx:#0b1220;--mmut:#69728a;--mrad:22px;--msh:0 10px 40px -12px rgba(80,90,220,.18)}
+*{font-family:'IBM Plex Sans Arabic','Tajawal',system-ui,sans-serif}
+body{background:var(--mbg)!important;color:var(--mtx)}
+.header{background:rgba(255,255,255,.75)!important;backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(99,102,241,.12)!important;box-shadow:0 6px 30px -12px rgba(80,90,220,.15)}
+.eh-logo{font-family:'Changa',sans-serif!important;font-weight:800!important;font-size:1.5rem!important;background:linear-gradient(135deg,var(--mp),var(--mp2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.eh-brand small{color:var(--mmut)!important;font-weight:600}
+.card,.stat{background:#fff!important;border:1px solid rgba(99,102,241,.1)!important;border-radius:var(--mrad)!important;box-shadow:var(--msh)!important}
+.stat .v,.card .v{font-family:'Changa',sans-serif!important;font-weight:800!important;background:linear-gradient(135deg,var(--mp),var(--mp2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.stat .l,.card .l{color:var(--mmut)!important;font-weight:600}
+.section-title,h2,h3{font-family:'Changa',sans-serif!important;font-weight:800!important}
+.section-title{position:relative;padding-right:14px!important}
 .section-title:before{content:"";position:absolute;right:0;top:15%;bottom:15%;width:4px;border-radius:4px;background:linear-gradient(180deg,var(--mp),var(--mp2))}
-input,select,textarea{border-radius:16px !important;border:1.5px solid rgba(99,102,241,.15) !important;background:#fbfcff !important;font-family:inherit !important;font-weight:600}
-input:focus{border-color:var(--mp) !important;box-shadow:0 0 0 4px rgba(99,102,241,.12) !important;outline:none}
-.nav{background:rgba(255,255,255,.9) !important;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid rgba(99,102,241,.12) !important;box-shadow:0 -8px 30px -12px rgba(80,90,220,.15)}
-.nav button{color:var(--mmut) !important;font-weight:700 !important;font-size:.66rem !important}
-.nav button.active{color:var(--mp) !important}
-.nav button.active span{font-weight:900}
-.eh-cartb,.eh-bell{border-radius:16px !important;background:linear-gradient(135deg,var(--mp),var(--mp2)) !important;box-shadow:0 6px 18px -6px rgba(120,90,240,.5)}
-.eh-profile{border-radius:16px !important}
-.eh-pname{font-weight:800 !important}
+.btn,.btn-primary,[class*="btn"]{border-radius:16px!important;font-weight:800!important;background:linear-gradient(135deg,var(--mp),var(--mp2))!important;color:#fff!important;border:none!important;box-shadow:0 8px 24px -8px rgba(120,90,240,.5)!important}
+[class*="hero"],[class*="banner"],[class*="Hero"]{background:linear-gradient(135deg,var(--mp),var(--mp2))!important;border-radius:var(--mrad)!important}
+[class*="chip"],[class*="cat"]{border-radius:50px!important;font-weight:700!important}
+[class*="chip"].on,[class*="cat"].on,[class*="chip"].active,[class*="cat"].active,[class*="chip"][class*="on"]{background:linear-gradient(135deg,var(--mp),var(--mp2))!important;color:#fff!important;border:none!important}
+[class*="badge"],[class*="comm"],[class*="off"]{background:linear-gradient(135deg,var(--mp),var(--mp2))!important;color:#fff!important}
+input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(99,102,241,.15)!important;background:#fbfcff!important;font-weight:600}
+.nav{background:rgba(255,255,255,.9)!important;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid rgba(99,102,241,.12)!important}
+.nav button{color:var(--mmut)!important;font-weight:700!important}
+.nav button.active{color:var(--mp)!important}
+.eh-cartb,.eh-bell{border-radius:16px!important;background:linear-gradient(135deg,var(--mp),var(--mp2))!important;box-shadow:0 6px 18px -6px rgba(120,90,240,.5)}
 </style>
 <header class="header"><div id="ht" style="display:none"></div><div class="eh-brand"><span class="eh-logo">Earnify 💰</span><small>منصة التسويق بالعمولة</small></div><button class="eh-profile" onclick="go('profile')"><span class="eh-pname">حسابي<small>✔ مسوق</small></span><span class="eh-av">👤</span></button><button class="eh-cartb" onclick="go('cart')">🛒<i id="cc">0</i></button><button class="eh-bell" onclick="ehNotifToggle()">🔔<i>3</i></button></header>
 
