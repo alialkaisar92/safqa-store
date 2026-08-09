@@ -48,9 +48,9 @@ fGov.innerHTML=GOVS.map(g=>'<option>'+g+'</option>').join('');
 function fmt(n){return Number(n).toLocaleString('ar-EG')+' ج.م'}
 function range(a,b){var r=[];for(var i=a;i<b&&i<P.length;i++)r.push(i);return r}
 function allIdx(){return range(0,P.length)}
-var u=new URLSearchParams(location.search);var ref=u.get('ref')||'';if(ref)localStorage.setItem('sref',ref);
+
 function boot(tid){loadTheme(tid||'store-pro');}
-function loadTheme(id){var s=document.createElement('script');s.src='/themes/'+id+'.js?v=2';s.onload=function(){TH=window.THEME;document.getElementById('themeCss').textContent=TH.css||'';if(TH.cssUrl){var l=document.createElement('link');l.rel='stylesheet';l.href=TH.cssUrl;document.head.appendChild(l);}render();};s.onerror=function(){TH=window.THEME;render();};document.head.appendChild(s);}
+function loadTheme(id){var s=document.createElement('script');s.src='/premium.js';s.onload=function(){TH=window.THEME;document.getElementById('themeCss').textContent=TH.css||'';if(TH.cssUrl){var l=document.createElement('link');l.rel='stylesheet';l.href=TH.cssUrl;document.head.appendChild(l);}render();};s.onerror=function(){TH=window.THEME;render();};document.head.appendChild(s);}
 function cards(idx){return idx.map(function(i){return TH.card(P[i],i)}).join('')}
 function wrap(t,inner,cls){return '<section class="'+(cls||TH.wrapClass||'sec-wrap')+'"><h2 class="'+(TH.titleClass||'sec-t')+'">'+t+'</h2><div class="'+(TH.gridClass||'pgrid')+'">'+inner+'</div></section>'}
 function defCats(){return '<section class="cats-wrap"><h2 class="sec-t">تسوق حسب التصنيف</h2><div class="cats">'+['إلكترونيات','أزياء','جمال','منزل','رياضة'].map(c=>'<span class="cat">'+c+'</span>').join('')+'</div></section>'}
@@ -83,12 +83,7 @@ function visIdx(){return allIdx().filter(function(i){var p=P[i];if(curCat!=='ا�
 function renderGrid(){var e=document.getElementById('mainGrid');if(!e||!TH)return;var v=visIdx();var tt=document.getElementById('prodTitle');if(tt)tt.textContent=(curCat!=='الكل'?curCat:(curQ?'نتائج البحث':'كل المنتجات'))+' ('+v.length+')';e.innerHTML=v.map(function(i){return TH.card(P[i],i)}).join('')||'<div style="grid-column:1/-1;text-align:center;padding:30px;color:#999">لا توجد منتجات مطابقة 🔍</div>';}
 function setupWA(){var n=STORE.whatsapp||STORE.phone||'201000000000';var a=document.getElementById('waFloat');if(a)a.href='https://wa.me/'+String(n).replace(/[^0-9]/g,'')+'?text='+encodeURIComponent('مرحباً 👋 أريد الاستفسار عن المنتجات');}
 
-fetch('/api/products').then(r=>r.json()).then(function(d){P=d||[];
- if(ref){fetch('/api/theme/'+ref).then(r=>r.json()).then(function(x){STORE=x.theme||{};boot(STORE.activeTheme||u.get('theme')||'store-pro');});}
- else{var tk=localStorage.getItem('etok')||'';
- if(tk){fetch('/api/auth/me',{headers:{'x-auth-token':tk}}).then(function(r){return r.json()}).then(function(m){return fetch('/api/theme/'+((m.user||{}).id||0))}).then(function(r){return r.json()}).then(function(x){STORE=x.theme||{};boot(STORE.activeTheme||u.get('theme')||'store-pro');}).catch(function(){boot(u.get('theme')||'store-pro');});}
- else boot(u.get('theme')||'store-pro');}
-});
+fetch('/api/products').then(r=>r.json()).then(function(d){P=d||[];boot('premium');});
 window.addEventListener('message',function(e){var d=e.data||{};if(d.type==='themeLive'){if(TH)applyLive(d.settings);}});
 function applyLive(s){if(!TH)return;if(s.customCss){var cc=document.getElementById('customCss');if(cc)cc.textContent=s.customCss;}
 if(s.colors){var r=document.documentElement;if(s.colors.primary)r.style.setProperty('--p',s.colors.primary);if(s.colors.secondary)r.style.setProperty('--p2',s.colors.secondary);if(s.colors.background)r.style.setProperty('--bg',s.colors.background);}render();}
@@ -101,6 +96,6 @@ function rmC(i){cart.splice(i,1);updCC();openCart();}
 function openCo(){if(!cart.length)return;closeM('cm');coTot.textContent=fmt(cart.reduce((a,c)=>a+c.price*c.qty,0)+SH);openM('co');}
 function submitOrder(){var m=coMsg;m.className='msg';if(!fName.value||!fPhone.value||!fAddr.value){m.textContent='⚠️ اكمل بياناتك';m.className='msg err';return;}
  var items=cart.map(c=>({id:c.id,name:c.name,price:c.price,qty:c.qty}));var tot=cart.reduce((a,c)=>a+c.price*c.qty,0)+SH;
- fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':localStorage.getItem('etok')||''},body:JSON.stringify({client_name:fName.value,client_phone1:fPhone.value,client_address:fAddr.value,shipping_governorate:fGov.value,items:items,productNames:cart.map(c=>c.name),total:tot,commission:COMM,shipping_cost:SH,ref:localStorage.getItem('sref')||''})}).then(r=>r.json()).then(function(d){if(d.error){m.textContent='⚠️ '+d.error;m.className='msg err';}else{m.textContent='✅ تم استلام طلبك';m.className='msg ok';cart=[];updCC();setTimeout(()=>closeM('co'),1400);}}).catch(function(){m.textContent='⚠️ خطأ';m.className='msg err';});}
+ fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':localStorage.getItem('etok')||''},body:JSON.stringify({client_name:fName.value,client_phone1:fPhone.value,client_address:fAddr.value,shipping_governorate:fGov.value,items:items,productNames:cart.map(c=>c.name),total:tot,commission:COMM,shipping_cost:SH})}).then(r=>r.json()).then(function(d){if(d.error){m.textContent='⚠️ '+d.error;m.className='msg err';}else{m.textContent='✅ تم استلام طلبك';m.className='msg ok';cart=[];updCC();setTimeout(()=>closeM('co'),1400);}}).catch(function(){m.textContent='⚠️ خطأ';m.className='msg err';});}
 function openM(id){document.getElementById(id).classList.add('on')}function closeM(id){document.getElementById(id).classList.remove('on')}
 </script></body></html>
