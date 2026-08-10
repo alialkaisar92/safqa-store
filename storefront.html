@@ -30,6 +30,14 @@ input,select,textarea{width:100%;border:1px solid #ddd;border-radius:12px;paddin
 .tot{display:flex;justify-content:space-between;font-weight:800;margin:12px 0}.tot b{color:var(--p,#0f766e)}
 .msg{margin-top:10px;font-size:.84rem;font-weight:700;text-align:center}.msg.ok{color:#059669}.msg.err{color:#dc2626}
 .cartb{position:relative}.cartb i{position:absolute;top:-6px;left:-6px;background:#ef4444;color:#fff;font-style:normal;font-size:.62rem;font-weight:800;border-radius:50px;min-width:17px;height:17px;display:flex;align-items:center;justify-content:center}
+
+.skel{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:14px}
+@media(min-width:700px){.skel{grid-template-columns:repeat(4,1fr)}}
+.skel-i{background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb}
+.skel-img{height:150px;background:linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 50%,#f3f4f6 75%);background-size:200% 100%;animation:sh 1.2s infinite}
+.skel-t{height:12px;background:#f3f4f6;margin:10px;border-radius:6px;animation:sh 1.2s infinite}
+.skel-p{height:14px;background:#f3f4f6;margin:10px;width:50%;border-radius:6px;animation:sh 1.2s infinite}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
 </style><style id="themeCss"></style><style id="customCss"></style></head>
 <body>
 <div id="header"></div>
@@ -57,7 +65,7 @@ function defCats(){return '<section class="cats-wrap"><h2 class="sec-t">تسوق
 function secHtml(id){
  if(id=='hero')return TH.hero();
  if(id=='categories')return TH.categories?TH.categories():defCats();
- if(id=='products')return '<section class="'+(TH.wrapClass||'sec-wrap')+'"><h2 class="'+(TH.titleClass||'sec-t')+'" id="prodTitle">كل المنتجات</h2><div class="'+(TH.gridClass||'pgrid')+'" id="mainGrid"></div></section>';
+ if(id=='products')return '<section class="'+(TH.wrapClass||'sec-wrap')+'"><h2 class="'+(TH.titleClass||'sec-t')+'" id="prodTitle">كل المنتجات</h2><div class="'+(TH.gridClass||'pgrid')+'" id="mainGrid"><div class="skel"><div class="skel-i"><div class="skel-img"></div><div class="skel-t"></div><div class="skel-p"></div></div><div class="skel-i"><div class="skel-img"></div><div class="skel-t"></div><div class="skel-p"></div></div><div class="skel-i"><div class="skel-img"></div><div class="skel-t"></div><div class="skel-p"></div></div><div class="skel-i"><div class="skel-img"></div><div class="skel-t"></div><div class="skel-p"></div></div></div></div>></div></section>';
  if(id=='featured')return wrap(TH.tFeat||'منتجات مميزة',cards(range(0,4)));
  if(id=='best')return wrap('الأكثر مبيعاً',cards(range(4,8)));
  if(id=='flash')return wrap('⚡ عروض خاطفة',cards(range(8,12)));
@@ -80,7 +88,7 @@ function renderCats(){var e=document.getElementById('catRow');if(e)e.innerHTML=g
 function setCat(cc){curCat=cc;renderCats();renderGrid();}
 function doSearch(q){curQ=(q||'').trim();renderGrid();}
 function visIdx(){return allIdx().filter(function(i){var p=P[i];if(curCat!=='الكل'&&(p.category||p.cat||'عام')!==curCat)return false;if(curQ&&(p.name||'').indexOf(curQ)===-1)return false;return true});}
-function renderGrid(){var e=document.getElementById('mainGrid');if(!e||!TH)return;var v=visIdx();var tt=document.getElementById('prodTitle');if(tt)tt.textContent=(curCat!=='الكل'?curCat:(curQ?'نتائج البحث':'كل المنتجات'))+' ('+v.length+')';e.innerHTML=v.map(function(i){return TH.card(P[i],i)}).join('')||'<div style="grid-column:1/-1;text-align:center;padding:30px;color:#999">لا توجد منتجات مطابقة 🔍</div>';}
+function renderGrid(){var e=document.getElementById('mainGrid');if(!e||!TH)return;var v=visIdx();var tt=document.getElementById('prodTitle');if(tt)tt.textContent=(curCat!=='الكل'?curCat:(curQ?'نتائج البحث':'كل المنتجات'))+' ('+v.length+')';var skel=e.querySelector('.skel');if(skel)skel.remove();e.innerHTML=v.map(function(i){return TH.card(P[i],i)}).join('')||'<div style="grid-column:1/-1;text-align:center;padding:30px;color:#999">لا توجد منتجات مطابقة 🔍</div>';}
 function setupWA(){var n=STORE.whatsapp||STORE.phone||'201000000000';var a=document.getElementById('waFloat');if(a)a.href='https://wa.me/'+String(n).replace(/[^0-9]/g,'')+'?text='+encodeURIComponent('مرحباً 👋 أريد الاستفسار عن المنتجات');}
 
 COMM=20;

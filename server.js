@@ -109,9 +109,22 @@ function mapProduct(p, up) {
 }
 
 app.get('/api/products', async (req, res) => {
-  const products = await getProducts();
-  let up=0;try{const dd=JSON.parse(fs.readFileSync(path.join(__dirname,'affiliate-data.json'),'utf8'));up=dd.priceUp||0;}catch(e){}
-  res.json(products.map(p=>mapProduct(p,up)));
+  const cfp=require('path').join(__dirname,'products-cache.json');
+  try{
+    if(require('fs').existsSync(cfp)){
+      const st=require('fs').statSync(cfp);
+      if(Date.now()-st.mtimeMs<10*60*1000){return res.json(JSON.parse(require('fs').readFileSync(cfp,'utf8')));}
+    }
+  }catch(e){}
+  try{
+    const r=await fetch('https://api.safka.app/api/v1/products?page=1&limit=500',{headers:{'x-api-key':process.env.SAFKA_API_KEY||''}});
+    const j=await r.json();const items=j.data||j.items||j||[];
+    try{require('fs').writeFileSync(cfp,JSON.stringify(items));}catch(e){}
+    res.json(items);
+  }catch(e){
+    try{if(require('fs').existsSync(cfp))return res.json(JSON.parse(require('fs').readFileSync(cfp,'utf8')));}catch(e2){}
+    res.json([]);
+  }
 });
 
 app.get('/api/price-list', async (req, res) => {
@@ -739,6 +752,17 @@ app.get('/',(req,res)=>res.sendFile(require('path').join(__dirname,'landing.html
 app.get('/home',(req,res)=>res.sendFile(require('path').join(__dirname,'landing.html')));
 
 require('./auth')(app);
+
+async function refreshProductsCache(){
+  try{
+    const r=await fetch('https://api.safka.app/api/v1/products?page=1&limit=500',{headers:{'x-api-key':process.env.SAFKA_API_KEY||''}});
+    const j=await r.json();const items=j.data||j.items||j||[];
+    require('fs').writeFileSync(require('path').join(__dirname,'products-cache.json'),JSON.stringify(items));
+    console.log('✅ Products cached:',items.length);
+  }catch(e){console.log('cache err:',e.message)}
+}
+refreshProductsCache();setInterval(refreshProductsCache,10*60*1000);
+
 require('./admin')(app);
 require('./notify')(app);
 app.listen(PORT, () => {
