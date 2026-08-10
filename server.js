@@ -108,200 +108,51 @@ function mapProduct(p, up) {
   };
 }
 
-app.get('/api/products',async (req,res)=>{
-  const categorize=(p)=>{const s=((p.name||'')+' '+(p.description||''));
- if(/خلاط|سخان|ميزان|سماع|ولاع|شاحن|usb|كهربائ|جهاز|ماكينة|موبايل|هاتف|ساع|بلوتوث|باور بانك/.test(s))return 'إلكترونيات';
- if(/لعب|طفل|أطفال|اطفال|تلوين|سبايدر|عروسة|بيبي/.test(s))return 'أطفال';
- if(/مطبخ|مريلة|فوطة|فوطه|غسال|تنظيف|مكبس|حامل|ركنة|دش|حنفية|مسند|مقلاه|طقم|خلاط مطبخ/.test(s))return 'منزل ومطبخ';
- if(/تنعيم|قدم|عطر|كريم|شعر|بشرة|ميكب|عناية/.test(s))return 'جمال وعناية';
- return 'أخرى';};
-const map=(arr)=>(arr||[]).map(p=>{const c=categorize(p);const prop=(p.properties&&p.properties[0])||{};return Object.assign({},p,{id:p._id||p.id,name:p.name,price:(p.sale_price!=null?p.sale_price:p.price),image:p.image||((p.images&&p.images[0])||''),desc:p.description||'',stock:(prop.min||0),available:p.is_active!==false,category:c,cat:c,propId:prop._id||'',propKey:prop.key||''});});});
+app.get('/api/products', async (req,res)=>{
   const fp=require('path').join(__dirname,'products-cache.json');
   try{
     if(require('fs').existsSync(fp)){
       let d=JSON.parse(require('fs').readFileSync(fp,'utf8'));
-      if(!Array.isArray(d))d=d.data||d.items||d.products||[];
-      if(d.length>=100)return res.json((d[0]&&d[0].price!=null)?d:map(d));
+      if(Array.isArray(d) && d.length>=100) return res.json(d);
+      if(d && Array.isArray(d.data) && d.data.length>=100) return res.json(d.data);
     }
   }catch(e){}
   try{
-    let all=[];let page=1;let pages=1;
+    const all=[];
+    let page=1, pages=1;
     while(page<=pages){
-      const r=await fetch(BASE_URL+'/products?page='+page+'&limit=100',{headers:{'api-safka-key':API_KEY}});
-      const j=await r.json();pages=j.pages||pages;
-      const arr=j.data||j.items||j.products||(Array.isArray(j)?j:[]);
-      if(!arr.length)break;all=all.concat(arr);page++;
+      const r=await fetch(BASE_URL+'/products?page='+page+'&size=100',{headers:{'api-safka-key':API_KEY}});
+      if(!r.ok) break;
+      const j=await r.json();
+      pages=j.pages||pages;
+      const arr=j.data||j.items||(Array.isArray(j)?j:[]);
+      if(!arr.length) break;
+      all.push.apply(all, arr);
+      page++;
     }
-    const mapped=map(all);
-    require('fs').writeFileSync(fp,JSON.stringify(mapped));
+    const mapped = all.map(function(p){
+      const c = typeof categorize==='function' ? categorize(p) : 'أخرى';
+      const prop = (p.properties && p.properties[0]) || {};
+      return Object.assign({}, p, {
+        id: p._id || p.id,
+        name: p.name,
+        price: (p.sale_price!=null ? p.sale_price : p.price),
+        image: p.image || ((p.images && p.images[0]) || ''),
+        desc: p.description || '',
+        stock: (prop.min || 0),
+        available: p.is_active !== false,
+        category: c, cat: c,
+        propId: prop._id || '',
+        propKey: prop.key || ''
+      });
+    });
+    try{ require('fs').writeFileSync(fp, JSON.stringify(mapped)); }catch(e){}
     res.json(mapped);
-  }catch(e){res.json([])}
-});
-app.get('/api/products',async (req, res) => {
-  const cfp=require('path').join(__dirname,'products-cache.json');
-  try{
-    if(require('fs').existsSync(cfp)){
-      const st=require('fs').statSync(cfp);
-      if(Date.now()-st.mtimeMs<10*60*1000){return res.json(JSON.parse(require('fs').readFileSync(cfp,'utf8')));}
-    }
-  }catch(e){}
-  try{
-    const r=await fetch('https://api.safka.app/api/v1/products?page=1&limit=500',{headers:{'x-api-key':process.env.SAFKA_API_KEY||''}});
-    const j=await r.json();const items=j.data||j.items||j||[];
-    try{require('fs').writeFileSync(cfp,JSON.stringify(items));}catch(e){}
-    res.json(items);
   }catch(e){
-    try{if(require('fs').existsSync(cfp))return res.json(JSON.parse(require('fs').readFileSync(cfp,'utf8')));}catch(e2){}
+    console.log('products fetch err:', e.message);
     res.json([]);
   }
 });
-
-app.get('/api/price-list',async (req, res) => {
-  const list = await getPriceList();
-  res.json(list.map(g => ({
-    id: g._id,
-    name: g.governorateNameAr || g.governorateName,
-    price: g.price,
-    cities: (g.cities || []).map(c => ({ id: c.id, name: c.city_name_ar }))
-  })));
-});
-
-app.get('/api/me', (req, res) => res.json(data));
-
-app.post('/api/create-order',async (req,res)=>{
-  const b=req.body||{};
-  const gov=(b.shipping_governorate||'').toString().trim();
-  // لو gov اسم، حولها إلى ID من price-list
-  let govId=gov;
-  try{
-    const pl=JSON.parse(require('fs').readFileSync(require('path').join(__dirname,'price-list-cache.json'),'utf8'));
-    const found=pl.find(x=>x._id===gov||(x.governorateNameAr||x.governorateName)===gov);
-    if(found)govId=found._id;
-  }catch(e){}
-  if(!govId||govId.length<10)return res.json({error:'اختر المحافظة'});
-  // شكل الـ items صح
-  const items=(b.items||[]).map(it=>({
-    product: it.product||it.id||it._id,
-    property: it.property||it.propId||'',
-    qty: Number(it.qty||it.quantity||1)
-  })).filter(x=>x.product);
-  if(!items.length)return res.json({error:'السلة فارغة'});
-  const commission=Number(b.commission)||0;
-  const total=Number(b.total)||0;
-  const body={
-    items:items,
-    client_name:b.client_name||'',
-    client_phone1:b.client_phone1||'',
-    client_phone2:b.client_phone2||'',
-    client_address:b.client_address||'',
-    shipping_governorate:govId,
-    city:b.city||'',
-    note:b.note||'',
-    commission:commission,
-    total:total
-  };
-  if(!body.client_name)return res.json({error:'اسم العميل مطلوب'});
-  if(!body.client_phone1)return res.json({error:'رقم الهاتف مطلوب'});
-  if(!body.client_address)return res.json({error:'العنوان مطلوب'});
-  console.log('ORDER body:',JSON.stringify(body));
-  let d=null;
-  try{
-    const r=await fetch(BASE_URL+'/orders',{method:'POST',headers:{'api-safka-key':API_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    d=await r.json();
-    console.log('SAFKA response:',r.status,JSON.stringify(d));
-    if(!r.ok)return res.json({error:d.errors?d.errors.map(e=>e.msg).join(', '):'فشل الطلب'});
-    res.json({ok:true,order:d.data||d});
-  }catch(e){res.json({error:'تعذر الاتصال بالخادم'});}
-});
-    }
-    b.commission = Number(b.commission)||0; b.shipping_cost = Number(b.shipping_cost)||0; b.total = Number(b.total)||0;
-    if (b.commission < 0) return res.json({ error: 'عمولة غير صحيحة' });
-    if (b.shipping_cost < 0) return res.json({ error: 'سعر شحن غير صحيح' });
-
-    const body = {
-      items: (b.items||[]).map(function(it){return Object.assign({},it,{product_id:it.product_id||it.id||it._id,quantity:it.quantity||it.qty||1});}),
-      client_name: b.client_name,
-      client_phone1: b.client_phone1,
-      client_phone2: '',
-      client_address: b.client_address,
-      shipping_governorate: b.shipping_governorate,
-      city: b.city || '',
-      total: b.total,
-      commission: b.commission,
-      shipping_cost: b.shipping_cost,
-      note: b.note || ''
-    };
-
-    let d=null,ok=false;
-    const variants=[
-      Object.assign({},body),
-      Object.assign({},body,{commission:0}),
-      (function(){var v=Object.assign({},body);delete v.commission;return v})(),
-      (function(){var v=Object.assign({},body);delete v.commission;delete v.shipping_cost;return v})()
-    ];
-    for(const vb of variants){
-      const r=await fetch(BASE_URL+'/orders',{method:'POST',headers:{'api-safka-key':API_KEY,'Content-Type':'application/json'},body:JSON.stringify(vb)});
-      d=await r.json();console.log('SAFKA order:',r.status,JSON.stringify(d));
-      if(r.ok){ok=true;break;}
-    }
-    if(!ok) return res.json({error:'تعذر إرسال الطلب حالياً، حاول مجدداً'});
-
-    data.orders.unshift({
-      id: d.data?._id || Date.now(),
-      serial: d.data?.serial_number || '',
-      products: b.productNames || [],
-      customer: b.client_name,
-      phone: b.client_phone1,
-      total: b.total,
-      shipping: b.shipping_cost,
-      commission: b.commission,
-      status: 'قيد التأكيد',
-      date: new Date().toISOString().slice(0, 10),
-      address: b.client_address
-    });
-    save();
-    
-    res.json({ message: 'تم إنشاء الطلب بنجاح ✓', data: d.data });
-  } catch (e) {
-    console.error(e);
-    res.json({ error: 'خطأ في السيرفر' });
-  }
-});
-
-app.post('/api/withdraw', (req, res) => {
-  const { amount, method, details } = req.body;
-  if (!amount || amount <= 0) return res.json({ error: 'مبلغ غير صحيح' });
-  if (!details) return res.json({ error: 'التفاصيل مطلوبة' });
-  const tok = req.headers['x-auth-token'];
-  let user=null, db=null;
-  try{ db=JSON.parse(fs.readFileSync(path.join(__dirname,'store-users.json'),'utf8')); var _pl=global.verifyJWT?global.verifyJWT(tok):null; if(_pl) user=(db.users||[]).find(u=>u.id===_pl.uid); }catch(e){}
-  if(user){
-    if(amount > (user.balance||0)) return res.json({ error: 'الرصيد غير كافي' });
-    const earned = user.balance||0;
-    user.balance = (user.balance||0) - amount;
-    fs.writeFileSync(path.join(__dirname,'store-users.json'), JSON.stringify(db,null,2));
-    data.withdrawals.push({ id: Date.now(), amount, method, details, status:'pending', date:new Date().toISOString().slice(0,10), userId:user.id, userName:user.name, userContact:user.contact, userEarned:earned, userSales:user.salesCount||0, userSalesList:user.sales||[] });
-    save();
-    return res.json({ message: 'تم إرسال طلب السحب ✓' });
-  }
-  if (amount > data.balance) return res.json({ error: 'الرصيد غير كافي' });
-  data.balance -= amount;
-  data.withdrawals.push({ id: Date.now(), amount, method, details, status: 'pending', date: new Date().toISOString().slice(0, 10), userName:data.name||'المسوق الرئيسي', userEarned:data.balance+amount });
-  save();
-  res.json({ message: 'تم إرسال طلب السحب ✓' });
-});
-app.post('/api/set-commission',(req,res)=>{const b=req.body||{};if(typeof b.commission==='number'&&b.commission>=0){data.commission=b.commission;save();res.json({ok:true});}else res.json({error:'قيمة غير صحيحة'});});
-app.post('/api/profile', (req, res) => {
-  if (req.body.name) data.name = req.body.name;
-  if (req.body.phone) data.phone = req.body.phone;
-  save();
-  res.json({ message: 'تم الحفظ', data });
-});
-
-const CHAT_FILE=require('path').join(__dirname,'chat.json');
-function chatLoad(){try{var d=JSON.parse(require('fs').readFileSync(CHAT_FILE,'utf8'));if(Array.isArray(d))return{guest:d};return d||{}}catch(e){return{}}}
-function chatKey(req){var pl=global.verifyJWT?global.verifyJWT(req.headers['x-auth-token']):null;return pl?('u'+pl.uid):null}
-app.get('/api/chat',(req,res)=>{var k=chatKey(req);if(!k)return res.json([]);var all=chatLoad();res.json(all[k]||[])});
 app.post('/api/chat',(req,res)=>{const b=req.body||{};const k=chatKey(req);if(!k)return res.status(401).json({error:'login'});const all=chatLoad();all[k]=all[k]||[];let d=b.data||'';if(typeof d==='string'&&d.indexOf('data:')===0){try{const _fs=require('fs'),_pt=require('path');const _dir=_pt.join(__dirname,'uploads');if(!_fs.existsSync(_dir))_fs.mkdirSync(_dir);const _mt=(d.match(/^data:([^;]+);/)||[])[1]||'bin';const _ext=((_mt.split('/')[1])||'bin').replace(/[^a-z0-9]/gi,'');const _fn=Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+_ext;_fs.writeFileSync(_pt.join(_dir,_fn),Buffer.from((d.split(',')[1])||'','base64'));d='/uploads/'+_fn;}catch(_e){}}const m={id:Date.now(),from:b.from||'user',type:b.type||'text',text:b.text||'',data:d,time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})};all[k].push(m);require('fs').writeFileSync(CHAT_FILE,JSON.stringify(all));if(global.notifyChat)global.notifyChat();res.json({ok:true,m})});
 
 app.post('/api/support', (req, res) => {
