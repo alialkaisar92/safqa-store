@@ -32,3 +32,21 @@ W.__SAFE_OK=true;
     }).catch(function(){});
   } catch(e) {}
 })();
+
+
+function openFilterSheet(){
+ var ex=document.getElementById('fsheet');if(ex){ex.remove();return;}
+ var cats=['الكل','إلكترونيات','أطفال','منزل ومطبخ','جمال وعناية','أخرى'];
+ var sh=document.createElement('div');sh.id='fsheet';
+ sh.style.cssText='position:fixed;bottom:0;right:0;left:0;background:#fff;border-radius:22px 22px 0 0;padding:18px 16px 26px;z-index:9999;box-shadow:0 -12px 40px rgba(0,0,0,.25)';
+ sh.innerHTML='<h3 style="margin-bottom:12px;font-size:1rem">🎛️ فلتر المنتجات</h3>'+cats.map(function(cc){return '<button data-c="'+cc+'" style="display:block;width:100%;margin:6px 0;padding:13px;border-radius:14px;border:1px solid #e5e7eb;background:#f8fafc;font-weight:700;font-size:.85rem">'+cc+'</button>'}).join('');
+ sh.querySelectorAll('button').forEach(function(b){b.onclick=function(){applyCat(b.getAttribute('data-c'));};});
+ document.body.appendChild(sh);
+}
+function applyCat(cc){
+ var sh=document.getElementById('fsheet');if(sh)sh.remove();
+ document.querySelectorAll('button').forEach(function(el){
+   var tx=(el.textContent||'').trim();
+   if(tx.indexOf(cc)>-1&&tx.length<cc.length+8){el.click();}
+ });
+}

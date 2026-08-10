@@ -19,7 +19,7 @@ q.innerHTML='<button onclick="document.getElementById(\'g\').scrollIntoView({beh
 h.parentNode.insertBefore(q,s);}
 function search(){var s=document.getElementById("s");if(!s||s.dataset.eh)return;s.dataset.eh="1";
 var w=document.createElement("div");w.className="eh-search";s.parentNode.insertBefore(w,s);w.appendChild(s);
-var f=document.createElement("button");f.className="fbtn";f.textContent="فلتر ⚙";f.onclick=function(){ehToast("الفلاتر قريباً")};w.appendChild(f);
+var f=document.createElement("button");f.className="fbtn";f.textContent="فلتر ⚙";openFilterSheet();w.appendChild(f);
 var b=document.createElement("button");b.className="bbtn";b.textContent="⌗";b.onclick=function(){ehToast("امسح الباركود 📷")};w.appendChild(b);}
 var IC={"الكل":"🛍️","أخرى":"📦","أطفال":"🧸","إلكترونيات":"📱","منزل":"🏠","جمال":"💄","أزياء":"👗","رياضة":"⚽"};
 function cats(){var old=document.getElementById("cats");if(!old)return;
@@ -213,3 +213,21 @@ setInterval(guard,900);
 setTimeout(function(){var s=document.getElementById('splash');if(s)s.remove()},800);
 })();
 window.authOpen=function(){location.href='/login'};
+
+
+function openFilterSheet(){
+ var ex=document.getElementById('fsheet');if(ex){ex.remove();return;}
+ var cats=['الكل','إلكترونيات','أطفال','منزل ومطبخ','جمال وعناية','أخرى'];
+ var sh=document.createElement('div');sh.id='fsheet';
+ sh.style.cssText='position:fixed;bottom:0;right:0;left:0;background:#fff;border-radius:22px 22px 0 0;padding:18px 16px 26px;z-index:9999;box-shadow:0 -12px 40px rgba(0,0,0,.25)';
+ sh.innerHTML='<h3 style="margin-bottom:12px;font-size:1rem">🎛️ فلتر المنتجات</h3>'+cats.map(function(cc){return '<button data-c="'+cc+'" style="display:block;width:100%;margin:6px 0;padding:13px;border-radius:14px;border:1px solid #e5e7eb;background:#f8fafc;font-weight:700;font-size:.85rem">'+cc+'</button>'}).join('');
+ sh.querySelectorAll('button').forEach(function(b){b.onclick=function(){applyCat(b.getAttribute('data-c'));};});
+ document.body.appendChild(sh);
+}
+function applyCat(cc){
+ var sh=document.getElementById('fsheet');if(sh)sh.remove();
+ document.querySelectorAll('button').forEach(function(el){
+   var tx=(el.textContent||'').trim();
+   if(tx.indexOf(cc)>-1&&tx.length<cc.length+8){el.click();}
+ });
+}
