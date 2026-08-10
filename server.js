@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 try{const _f=require('fs');const _ep=require('path').join(__dirname,'.env');if(_f.existsSync(_ep)){const _c=_f.readFileSync(_ep,'utf8');const _re=/^([A-Z0-9_]+)=(.*)$/gm;let _m;while((_m=_re.exec(_c))){if(process.env[_m[1]]===undefined)process.env[_m[1]]=_m[2].trim();}}}catch(_e){}
-const API_KEY = process.env.SAFKA_API_KEY || '';
+const API_KEY = process.env.SAFKA_API_KEY || 'sk_9f6d15ecb31c980ae65661abca57d1e3f7c850811f78569955cb47dea4e46c46';
 const BASE_URL='https://api.safka-eg.com/api/v1/public';
 app.use(express.json({limit:'50mb'}));
 app.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
@@ -708,6 +708,36 @@ refreshProductsCache();setInterval(refreshProductsCache,10*60*1000);
 
 require('./admin')(app);
 require('./notify')(app);
+
+app.get('/api/price-list', async (req,res)=>{
+  const fp=require('path').join(__dirname,'price-list-cache.json');
+  const norm=(arr)=>(arr||[]).map(x=>{
+    const name=x.governorateNameAr||x.governorateName||x.name||'';
+    return {
+      _id:x._id,
+      id:x._id,
+      name:name,
+      governorateNameAr:name,
+      price:x.price||0,
+      cities:(x.cities||[]).map(c=>({id:c.id,name:c.city_name_ar||c.city_name||c.name||''}))
+    };
+  });
+  try{
+    if(require('fs').existsSync(fp)){
+      const d=JSON.parse(require('fs').readFileSync(fp,'utf8'));
+      if(Array.isArray(d)&&d.length)return res.json(d[0]&&d[0].id?d:norm(d));
+    }
+  }catch(e){}
+  try{
+    const r=await fetch(BASE_URL+'/price-list?page=1&size=100',{headers:{'api-safka-key':API_KEY}});
+    const j=await r.json();
+    const arr=j.data||j.items||[];
+    const tr=norm(arr);
+    try{require('fs').writeFileSync(fp,JSON.stringify(tr));}catch(e){}
+    res.json(tr);
+  }catch(e){console.log('price-list err:',e.message);res.json([]);}
+});
+
 app.listen(PORT, () => {
   console.log('المتجر: http://localhost:' + PORT);
   getProducts();
