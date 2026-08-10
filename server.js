@@ -241,6 +241,7 @@ app.get('/api/theme/:id',(req,res)=>{try{const db=JSON.parse(require('fs').readF
 app.post('/api/my/theme',(req,res)=>{const pl=global.verifyJWT?global.verifyJWT(req.headers['x-auth-token']||''):null;if(!pl)return res.status(401).json({error:'login'});try{const fp=require('path').join(__dirname,'store-users.json');const db=JSON.parse(require('fs').readFileSync(fp,'utf8'));const u=(db.users||[]).find(x=>x.id===pl.uid);if(!u)return res.status(401).json({error:'login'});u.theme=req.body||{};require('fs').writeFileSync(fp,JSON.stringify(db,null,2));res.json({ok:true});}catch(e){res.json({error:'فشل الحفظ'});}});
 app.get('/premium.js',(req,res)=>res.sendFile(require('path').join(__dirname,'themes','premium.js')));
 app.get('/premium.css',(req,res)=>res.sendFile(require('path').join(__dirname,'themes','premium.css')));
+app.get('/products.js',(req,res)=>{res.type('js').sendFile(require('path').join(__dirname,'products.js'));});
 app.get('/shop',(req,res)=>{
   try{
     let html=require('fs').readFileSync(require('path').join(__dirname,'storefront.html'),'utf8');
