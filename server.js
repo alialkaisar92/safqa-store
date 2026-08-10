@@ -115,7 +115,7 @@ app.get('/api/products', async (req,res)=>{
     if(require('fs').existsSync(fp)){
       let d=JSON.parse(require('fs').readFileSync(fp,'utf8'));
       if(!Array.isArray(d))d=d.data||d.items||d.products||[];
-      if(d.length)return res.json((d[0]&&d[0].price!=null)?d:map(d));
+      if(d.length>=100)return res.json((d[0]&&d[0].price!=null)?d:map(d));
     }
   }catch(e){}
   try{
