@@ -231,3 +231,7 @@ function applyCat(cc){
    if(tx.indexOf(cc)>-1&&tx.length<cc.length+8){el.click();}
  });
 }
+
+window.__filterUser=0;
+if(typeof openFilterSheet==='function'){var _ofs=openFilterSheet;openFilterSheet=function(){window.__filterUser=1;_ofs();};}
+document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var s=document.getElementById('fsheet');if(s&&!window.__filterUser)s.remove();},400);});
