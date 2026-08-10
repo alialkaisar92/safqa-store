@@ -178,7 +178,7 @@ app.post('/api/create-order', async (req, res) => {
     if (typeof b.shipping_cost !== 'number' || b.shipping_cost < 0) return res.json({ error: 'سعر شحن غير صحيح' });
 
     const body = {
-      items: (b.items||[]).map(function(it){return {id:it.id,product_id:it.id,quantity:it.qty||it.quantity||1,price:it.price,name:it.name};}),
+      items: (b.items||[]).map(function(it){return Object.assign({},it,{product_id:it.product_id||it.id||it._id,quantity:it.quantity||it.qty||1});}),
       client_name: b.client_name,
       client_phone1: b.client_phone1,
       client_phone2: '',
