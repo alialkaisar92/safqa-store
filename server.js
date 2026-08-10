@@ -67,7 +67,7 @@ async function getProducts() {
     const pages = Math.min(d1.pages || 1, 8);
     for (let p = 2; p <= pages; p++) {
       const r = await fetch(BASE_URL + '/products?page=' + p + '&size=50', { headers: { 'api-safka-key': API_KEY } });
-      const d = await r.json();
+      const d = await r.json();console.log('SAFKA order:',r.status,JSON.stringify(d));
       all = all.concat(d.data || []);
     }
   } catch (e) { console.error(e.message); }
@@ -136,7 +136,7 @@ app.post('/api/create-order', async (req, res) => {
     if (typeof b.shipping_cost !== 'number' || b.shipping_cost < 0) return res.json({ error: 'سعر شحن غير صحيح' });
 
     const body = {
-      items: b.items,
+      items: (b.items||[]).map(function(it){return {id:it.id,product_id:it.id,quantity:it.qty||it.quantity||1,price:it.price,name:it.name};}),
       client_name: b.client_name,
       client_phone1: b.client_phone1,
       client_phone2: '',
@@ -145,6 +145,7 @@ app.post('/api/create-order', async (req, res) => {
       city: b.city || '',
       total: b.total,
       commission: b.commission,
+      shipping_cost: b.shipping_cost,
       note: b.note || ''
     };
 
@@ -154,7 +155,7 @@ app.post('/api/create-order', async (req, res) => {
       body: JSON.stringify(body)
     });
     const d = await r.json();
-    if (!r.ok) return res.json({ error: d.errors ? d.errors.map(e => e.msg).join(', ') : 'فشل إنشاء الطلب' });
+    if (!r.ok) return res.json({ error: d.errors ? d.errors.map(e => e.msg).join(', ') : 'فشل إنشاء الطلب', api: d });
 
     data.orders.unshift({
       id: d.data?._id || Date.now(),
