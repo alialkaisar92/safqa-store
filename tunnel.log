@@ -80,3 +80,5 @@
 2026-08-10T21:24:00Z INF Retrying connection in up to 1s connIndex=0 event=0 ip=198.41.200.73
 2026-08-10T21:24:02Z INF Tunnel connection curve preferences: [X25519MLKEM768 CurveID(65074) CurveP256] connIndex=0 event=0 ip=198.41.200.73
 2026-08-10T21:24:02Z INF Registered tunnel connection connIndex=0 connection=cc20edee-9838-4d34-9f6e-46d9be71494e event=0 ip=198.41.200.73 location=fco01 protocol=quic
+2026-08-10T21:29:46Z ERR  error="stream 113 canceled by remote with error code 0" connIndex=0 event=1 ingressRule=0 originService=http://localhost:3000
+2026-08-10T21:29:46Z ERR Request failed error="stream 113 canceled by remote with error code 0" connIndex=0 dest=https://farmers-glen-zealand-sympathy.trycloudflare.com/api/products event=0 ip=198.41.200.73 type=http
