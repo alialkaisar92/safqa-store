@@ -109,7 +109,13 @@ function mapProduct(p, up) {
 }
 
 app.get('/api/products', async (req,res)=>{
-  const map=(arr)=>(arr||[]).map(p=>({id:p._id||p.id,name:p.name,price:(p.sale_price!=null?p.sale_price:p.price),image:p.image||((p.images&&p.images[0])||''),desc:p.description||'',stock:((p.properties&&p.properties[0]&&p.properties[0].min)||0),available:p.is_active!==false,category:p.category||'عام',barcode:p.barcode||''}));
+  const categorize=(p)=>{const s=((p.name||'')+' '+(p.description||''));
+ if(/خلاط|سخان|ميزان|سماع|ولاع|شاحن|usb|كهربائ|جهاز|ماكينة|موبايل|هاتف|ساع|بلوتوث|باور بانك/.test(s))return 'إلكترونيات';
+ if(/لعب|طفل|أطفال|اطفال|تلوين|سبايدر|عروسة|بيبي/.test(s))return 'أطفال';
+ if(/مطبخ|مريلة|فوطة|فوطه|غسال|تنظيف|مكبس|حامل|ركنة|دش|حنفية|مسند|مقلاه|طقم|خلاط مطبخ/.test(s))return 'منزل ومطبخ';
+ if(/تنعيم|قدم|عطر|كريم|شعر|بشرة|ميكب|عناية/.test(s))return 'جمال وعناية';
+ return 'أخرى';};
+const map=(arr)=>(arr||[]).map(p=>({id:p._id||p.id,name:p.name,price:(p.sale_price!=null?p.sale_price:p.price),image:p.image||((p.images&&p.images[0])||''),desc:p.description||'',stock:((p.properties&&p.properties[0]&&p.properties[0].min)||0),available:p.is_active!==false,category:categorize(p),barcode:p.barcode||''}));
   const fp=require('path').join(__dirname,'products-cache.json');
   try{
     if(require('fs').existsSync(fp)){
