@@ -200,6 +200,7 @@ app.post('/api/withdraw', (req, res) => {
   save();
   res.json({ message: 'تم إرسال طلب السحب ✓' });
 });
+app.post('/api/set-commission',(req,res)=>{const b=req.body||{};if(typeof b.commission==='number'&&b.commission>=0){data.commission=b.commission;save();res.json({ok:true});}else res.json({error:'قيمة غير صحيحة'});});
 app.post('/api/profile', (req, res) => {
   if (req.body.name) data.name = req.body.name;
   if (req.body.phone) data.phone = req.body.phone;
@@ -433,7 +434,7 @@ input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(15,11
     <div class="stat"><div class="l">الطلبات</div><div class="v" id="oCnt">0</div></div>
   </div>
   <label>الاسم</label><input id="pName">
-  <label>رقم الهاتف</label><input id="pPhone">
+  <label>رقم الهاتف</label><input id="pPhone" style="margin-bottom:10px"><label style="display:block;font-size:.75rem;font-weight:700;margin:10px 0 5px">💰 عمولتك (تتخصم من سعر المنتج — مش بتظهر للعميل)</label><input id="pComm" inputmode="numeric">
   <button class="btn btn-primary" onclick="saveProf()" style="margin-top:14px">حفظ</button>
   <p class="msg" id="pMsg"></p>
 </div>
@@ -705,7 +706,7 @@ async function loadMe(){
   document.getElementById('pPhone').value=me.phone||'';
 }
 async function saveProf(){
-  const r=await fetch('/api/profile',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':(localStorage.getItem('etok')||'')},body:JSON.stringify({name:document.getElementById('pName').value,phone:document.getElementById('pPhone').value})});
+  const r=await fetch('/api/set-commission',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({commission:Number(document.getElementById('pComm').value)||0})});fetch('/api/profile',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':(localStorage.getItem('etok')||'')},body:JSON.stringify({name:document.getElementById('pName').value,phone:document.getElementById('pPhone').value})});
   const d=await r.json(); document.getElementById('pMsg').textContent=d.message; document.getElementById('pMsg').className='msg ok';
 }
 function sw(el){document.querySelectorAll('.w').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');wM=el.dataset.m}

@@ -83,6 +83,7 @@ function visIdx(){return allIdx().filter(function(i){var p=P[i];if(curCat!=='ا�
 function renderGrid(){var e=document.getElementById('mainGrid');if(!e||!TH)return;var v=visIdx();var tt=document.getElementById('prodTitle');if(tt)tt.textContent=(curCat!=='الكل'?curCat:(curQ?'نتائج البحث':'كل المنتجات'))+' ('+v.length+')';e.innerHTML=v.map(function(i){return TH.card(P[i],i)}).join('')||'<div style="grid-column:1/-1;text-align:center;padding:30px;color:#999">لا توجد منتجات مطابقة 🔍</div>';}
 function setupWA(){var n=STORE.whatsapp||STORE.phone||'201000000000';var a=document.getElementById('waFloat');if(a)a.href='https://wa.me/'+String(n).replace(/[^0-9]/g,'')+'?text='+encodeURIComponent('مرحباً 👋 أريد الاستفسار عن المنتجات');}
 
+fetch('/api/me').then(function(r){return r.json()}).then(function(m){COMM=(m&&m.commission)||0;}).catch(function(){});
 fetch('/api/products').then(r=>r.json()).then(function(d){P=d||[];boot('premium');});
 window.addEventListener('message',function(e){var d=e.data||{};if(d.type==='themeLive'){if(TH)applyLive(d.settings);}});
 function applyLive(s){if(!TH)return;if(s.customCss){var cc=document.getElementById('customCss');if(cc)cc.textContent=s.customCss;}
