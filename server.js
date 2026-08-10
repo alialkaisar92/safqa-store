@@ -108,7 +108,7 @@ function mapProduct(p, up) {
   };
 }
 
-app.get('/api/products', async (req,res)=>{
+app.get('/api/products',async (req,res)=>{
   const categorize=(p)=>{const s=((p.name||'')+' '+(p.description||''));
  if(/خلاط|سخان|ميزان|سماع|ولاع|شاحن|usb|كهربائ|جهاز|ماكينة|موبايل|هاتف|ساع|بلوتوث|باور بانك/.test(s))return 'إلكترونيات';
  if(/لعب|طفل|أطفال|اطفال|تلوين|سبايدر|عروسة|بيبي/.test(s))return 'أطفال';
@@ -137,7 +137,7 @@ const map=(arr)=>(arr||[]).map(p=>{const c=categorize(p);const prop=(p.propertie
     res.json(mapped);
   }catch(e){res.json([])}
 });
-app.get('/api/products', async (req, res) => {
+app.get('/api/products',async (req, res) => {
   const cfp=require('path').join(__dirname,'products-cache.json');
   try{
     if(require('fs').existsSync(cfp)){
@@ -156,7 +156,7 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
-app.get('/api/price-list', async (req, res) => {
+app.get('/api/price-list',async (req, res) => {
   const list = await getPriceList();
   res.json(list.map(g => ({
     id: g._id,
@@ -168,7 +168,7 @@ app.get('/api/price-list', async (req, res) => {
 
 app.get('/api/me', (req, res) => res.json(data));
 
-app.post('/api/create-order', async (req,res)=>{
+app.post('/api/create-order',async (req,res)=>{
   const b=req.body||{};
   const gov=(b.shipping_governorate||'').toString().trim();
   // لو gov اسم، حولها إلى ID من price-list
