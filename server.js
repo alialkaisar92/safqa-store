@@ -119,10 +119,14 @@ app.get('/api/products', async (req,res)=>{
     }
   }catch(e){}
   try{
-    const r=await fetch(BASE_URL+'/products?page=1&limit=500',{headers:{'api-safka-key':API_KEY}});
-    const j=await r.json();
-    let arr=j.data||j.items||j.products||(Array.isArray(j)?j:[]);
-    const mapped=map(arr);
+    let all=[];let page=1;let pages=1;
+    while(page<=pages){
+      const r=await fetch(BASE_URL+'/products?page='+page+'&limit=100',{headers:{'api-safka-key':API_KEY}});
+      const j=await r.json();pages=j.pages||pages;
+      const arr=j.data||j.items||j.products||(Array.isArray(j)?j:[]);
+      if(!arr.length)break;all=all.concat(arr);page++;
+    }
+    const mapped=map(all);
     require('fs').writeFileSync(fp,JSON.stringify(mapped));
     res.json(mapped);
   }catch(e){res.json([])}
