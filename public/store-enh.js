@@ -19,7 +19,7 @@ q.innerHTML='<button onclick="document.getElementById(\'g\').scrollIntoView({beh
 h.parentNode.insertBefore(q,s);}
 function search(){var s=document.getElementById("s");if(!s||s.dataset.eh)return;s.dataset.eh="1";
 var w=document.createElement("div");w.className="eh-search";s.parentNode.insertBefore(w,s);w.appendChild(s);
-var f=document.createElement("button");f.className="fbtn";f.textContent="فلتر ⚙";openFilterSheet();w.appendChild(f);
+var f=document.createElement("button");f.className="fbtn";f.textContent="فلتر ⚙";w.appendChild(f);
 var b=document.createElement("button");b.className="bbtn";b.textContent="⌗";b.onclick=function(){ehToast("امسح الباركود 📷")};w.appendChild(b);}
 var IC={"الكل":"🛍️","أخرى":"📦","أطفال":"🧸","إلكترونيات":"📱","منزل":"🏠","جمال":"💄","أزياء":"👗","رياضة":"⚽"};
 function cats(){var old=document.getElementById("cats");if(!old)return;
