@@ -92,7 +92,16 @@ function renderGrid(){var e=document.getElementById('mainGrid');if(!e||!TH)retur
 function setupWA(){var n=STORE.whatsapp||STORE.phone||'201000000000';var a=document.getElementById('waFloat');if(a)a.href='https://wa.me/'+String(n).replace(/[^0-9]/g,'')+'?text='+encodeURIComponent('مرحباً 👋 أريد الاستفسار عن المنتجات');}
 
 COMM=20;
-fetch('/api/products').then(r=>r.json()).then(function(d){P=d||[];boot('premium');});
+function startWith(data){P=data||[];boot('premium');}
+if(window.__PRODUCTS&&window.__PRODUCTS.length){
+  startWith(window.__PRODUCTS);
+  // background refresh للتحديثات
+  fetch('/api/products').then(function(r){return r.json()}).then(function(d){
+    if(d&&d.length&&JSON.stringify(d)!==JSON.stringify(P)){P=d;render();postRender();}
+  }).catch(function(){});
+}else{
+  fetch('/api/products').then(r=>r.json()).then(function(d){startWith(d)}).catch(function(){startWith([])});
+}
 window.addEventListener('message',function(e){var d=e.data||{};if(d.type==='themeLive'){if(TH)applyLive(d.settings);}});
 function applyLive(s){if(!TH)return;if(s.customCss){var cc=document.getElementById('customCss');if(cc)cc.textContent=s.customCss;}
 if(s.colors){var r=document.documentElement;if(s.colors.primary)r.style.setProperty('--p',s.colors.primary);if(s.colors.secondary)r.style.setProperty('--p2',s.colors.secondary);if(s.colors.background)r.style.setProperty('--bg',s.colors.background);}render();}

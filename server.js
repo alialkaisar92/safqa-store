@@ -241,7 +241,19 @@ app.get('/api/theme/:id',(req,res)=>{try{const db=JSON.parse(require('fs').readF
 app.post('/api/my/theme',(req,res)=>{const pl=global.verifyJWT?global.verifyJWT(req.headers['x-auth-token']||''):null;if(!pl)return res.status(401).json({error:'login'});try{const fp=require('path').join(__dirname,'store-users.json');const db=JSON.parse(require('fs').readFileSync(fp,'utf8'));const u=(db.users||[]).find(x=>x.id===pl.uid);if(!u)return res.status(401).json({error:'login'});u.theme=req.body||{};require('fs').writeFileSync(fp,JSON.stringify(db,null,2));res.json({ok:true});}catch(e){res.json({error:'فشل الحفظ'});}});
 app.get('/premium.js',(req,res)=>res.sendFile(require('path').join(__dirname,'themes','premium.js')));
 app.get('/premium.css',(req,res)=>res.sendFile(require('path').join(__dirname,'themes','premium.css')));
-app.get('/shop',(req,res)=>res.sendFile(require('path').join(__dirname,'storefront.html')));
+app.get('/shop',(req,res)=>{
+  try{
+    let html=require('fs').readFileSync(require('path').join(__dirname,'storefront.html'),'utf8');
+    let prods=[];
+    const cp=require('path').join(__dirname,'products-cache.json');
+    if(require('fs').existsSync(cp)){
+      try{prods=JSON.parse(require('fs').readFileSync(cp,'utf8'));}catch(e){prods=[];}
+    }
+    const inject='<script>window.__PRODUCTS='+JSON.stringify(prods)+';window.__EMBED=1;</script>';
+    html=html.replace('</head>',inject+'</head>');
+    res.type('html').send(html);
+  }catch(e){res.sendFile(require('path').join(__dirname,'storefront.html'));}
+});
 app.get('/store', (req, res) => {
   res.send(`<!DOCTYPE html>
 <html lang="ar" dir="rtl">
