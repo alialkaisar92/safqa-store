@@ -108,6 +108,25 @@ function mapProduct(p, up) {
   };
 }
 
+app.get('/api/products', async (req,res)=>{
+  const map=(arr)=>(arr||[]).map(p=>({id:p._id||p.id,name:p.name,price:(p.sale_price!=null?p.sale_price:p.price),image:p.image||((p.images&&p.images[0])||''),desc:p.description||'',stock:((p.properties&&p.properties[0]&&p.properties[0].min)||0),available:p.is_active!==false,category:p.category||'عام',barcode:p.barcode||''}));
+  const fp=require('path').join(__dirname,'products-cache.json');
+  try{
+    if(require('fs').existsSync(fp)){
+      let d=JSON.parse(require('fs').readFileSync(fp,'utf8'));
+      if(!Array.isArray(d))d=d.data||d.items||d.products||[];
+      if(d.length)return res.json((d[0]&&d[0].price!=null)?d:map(d));
+    }
+  }catch(e){}
+  try{
+    const r=await fetch(BASE_URL+'/products?page=1&limit=500',{headers:{'api-safka-key':API_KEY}});
+    const j=await r.json();
+    let arr=j.data||j.items||j.products||(Array.isArray(j)?j:[]);
+    const mapped=map(arr);
+    require('fs').writeFileSync(fp,JSON.stringify(mapped));
+    res.json(mapped);
+  }catch(e){res.json([])}
+});
 app.get('/api/products', async (req, res) => {
   const cfp=require('path').join(__dirname,'products-cache.json');
   try{
