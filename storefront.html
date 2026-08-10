@@ -93,7 +93,8 @@ function renderGrid(){var e=document.getElementById('mainGrid');if(!e||!TH)retur
 function setupWA(){var n=STORE.whatsapp||STORE.phone||'201000000000';var a=document.getElementById('waFloat');if(a)a.href='https://wa.me/'+String(n).replace(/[^0-9]/g,'')+'?text='+encodeURIComponent('مرحباً 👋 أريد الاستفسار عن المنتجات');}
 
 COMM=20;
-function startWith(data){P=data||[];boot('premium');}
+function startWith(data){P=data||[];fetch('/api/price-list').then(function(r){return r.json()}).then(function(g){window.__GOVS=g||[];}).catch(function(){window.__GOVS=[];});
+boot('premium');}
 if(window.__PRODUCTS&&window.__PRODUCTS.length){
   startWith(window.__PRODUCTS);
   // background refresh للتحديثات

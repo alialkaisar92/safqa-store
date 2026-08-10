@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 try{const _f=require('fs');const _ep=require('path').join(__dirname,'.env');if(_f.existsSync(_ep)){const _c=_f.readFileSync(_ep,'utf8');const _re=/^([A-Z0-9_]+)=(.*)$/gm;let _m;while((_m=_re.exec(_c))){if(process.env[_m[1]]===undefined)process.env[_m[1]]=_m[2].trim();}}}catch(_e){}
 const API_KEY = process.env.SAFKA_API_KEY || '';
-const BASE_URL = 'https://api.safka-eg.com/api/v1/public';
+const BASE_URL='https://api.safka-eg.com/api/v1/public';
 app.use(express.json({limit:'50mb'}));
 app.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
 
@@ -115,7 +115,7 @@ app.get('/api/products', async (req,res)=>{
  if(/مطبخ|مريلة|فوطة|فوطه|غسال|تنظيف|مكبس|حامل|ركنة|دش|حنفية|مسند|مقلاه|طقم|خلاط مطبخ/.test(s))return 'منزل ومطبخ';
  if(/تنعيم|قدم|عطر|كريم|شعر|بشرة|ميكب|عناية/.test(s))return 'جمال وعناية';
  return 'أخرى';};
-const map=(arr)=>(arr||[]).map(p=>{const c=categorize(p);return Object.assign({},p,{id:p._id||p.id,name:p.name,price:(p.sale_price!=null?p.sale_price:p.price),image:p.image||((p.images&&p.images[0])||''),desc:p.description||'',stock:((p.properties&&p.properties[0]&&p.properties[0].min)||0),available:p.is_active!==false,category:c,cat:c});});
+const map=(arr)=>(arr||[]).map(p=>{const c=categorize(p);const prop=(p.properties&&p.properties[0])||{};return Object.assign({},p,{id:p._id||p.id,name:p.name,price:(p.sale_price!=null?p.sale_price:p.price),image:p.image||((p.images&&p.images[0])||''),desc:p.description||'',stock:(prop.min||0),available:p.is_active!==false,category:c,cat:c,propId:prop._id||'',propKey:prop.key||''});});});
   const fp=require('path').join(__dirname,'products-cache.json');
   try{
     if(require('fs').existsSync(fp)){
@@ -168,11 +168,51 @@ app.get('/api/price-list', async (req, res) => {
 
 app.get('/api/me', (req, res) => res.json(data));
 
-app.post('/api/create-order', async (req, res) => {
-  try {
-    const b = req.body;
-    if (!b.client_name || !b.client_phone1 || !b.client_address || !b.shipping_governorate || !b.items || !b.items.length) {
-      return res.json({ error: 'بيانات ناقصة' });
+app.post('/api/create-order', async (req,res)=>{
+  const b=req.body||{};
+  const gov=(b.shipping_governorate||'').toString().trim();
+  // لو gov اسم، حولها إلى ID من price-list
+  let govId=gov;
+  try{
+    const pl=JSON.parse(require('fs').readFileSync(require('path').join(__dirname,'price-list-cache.json'),'utf8'));
+    const found=pl.find(x=>x._id===gov||(x.governorateNameAr||x.governorateName)===gov);
+    if(found)govId=found._id;
+  }catch(e){}
+  if(!govId||govId.length<10)return res.json({error:'اختر المحافظة'});
+  // شكل الـ items صح
+  const items=(b.items||[]).map(it=>({
+    product: it.product||it.id||it._id,
+    property: it.property||it.propId||'',
+    qty: Number(it.qty||it.quantity||1)
+  })).filter(x=>x.product);
+  if(!items.length)return res.json({error:'السلة فارغة'});
+  const commission=Number(b.commission)||0;
+  const total=Number(b.total)||0;
+  const body={
+    items:items,
+    client_name:b.client_name||'',
+    client_phone1:b.client_phone1||'',
+    client_phone2:b.client_phone2||'',
+    client_address:b.client_address||'',
+    shipping_governorate:govId,
+    city:b.city||'',
+    note:b.note||'',
+    commission:commission,
+    total:total
+  };
+  if(!body.client_name)return res.json({error:'اسم العميل مطلوب'});
+  if(!body.client_phone1)return res.json({error:'رقم الهاتف مطلوب'});
+  if(!body.client_address)return res.json({error:'العنوان مطلوب'});
+  console.log('ORDER body:',JSON.stringify(body));
+  let d=null;
+  try{
+    const r=await fetch(BASE_URL+'/orders',{method:'POST',headers:{'api-safka-key':API_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    d=await r.json();
+    console.log('SAFKA response:',r.status,JSON.stringify(d));
+    if(!r.ok)return res.json({error:d.errors?d.errors.map(e=>e.msg).join(', '):'فشل الطلب'});
+    res.json({ok:true,order:d.data||d});
+  }catch(e){res.json({error:'تعذر الاتصال بالخادم'});}
+});
     }
     b.commission = Number(b.commission)||0; b.shipping_cost = Number(b.shipping_cost)||0; b.total = Number(b.total)||0;
     if (b.commission < 0) return res.json({ error: 'عمولة غير صحيحة' });
