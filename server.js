@@ -174,8 +174,9 @@ app.post('/api/create-order', async (req, res) => {
     if (!b.client_name || !b.client_phone1 || !b.client_address || !b.shipping_governorate || !b.items || !b.items.length) {
       return res.json({ error: 'بيانات ناقصة' });
     }
-    if (typeof b.commission !== 'number' || b.commission < 0) return res.json({ error: 'عمولة غير صحيحة' });
-    if (typeof b.shipping_cost !== 'number' || b.shipping_cost < 0) return res.json({ error: 'سعر شحن غير صحيح' });
+    b.commission = Number(b.commission)||0; b.shipping_cost = Number(b.shipping_cost)||0; b.total = Number(b.total)||0;
+    if (b.commission < 0) return res.json({ error: 'عمولة غير صحيحة' });
+    if (b.shipping_cost < 0) return res.json({ error: 'سعر شحن غير صحيح' });
 
     const body = {
       items: (b.items||[]).map(function(it){return Object.assign({},it,{product_id:it.product_id||it.id||it._id,quantity:it.quantity||it.qty||1});}),
