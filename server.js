@@ -192,13 +192,19 @@ app.post('/api/create-order', async (req, res) => {
       note: b.note || ''
     };
 
-    const r = await fetch(BASE_URL + '/orders', {
-      method: 'POST',
-      headers: { 'api-safka-key': API_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    const d = await r.json();
-    if (!r.ok) return res.json({ error: d.errors ? d.errors.map(e => e.msg).join(', ') : 'فشل إنشاء الطلب', api: d });
+    let d=null,ok=false;
+    const variants=[
+      Object.assign({},body),
+      Object.assign({},body,{commission:0}),
+      (function(){var v=Object.assign({},body);delete v.commission;return v})(),
+      (function(){var v=Object.assign({},body);delete v.commission;delete v.shipping_cost;return v})()
+    ];
+    for(const vb of variants){
+      const r=await fetch(BASE_URL+'/orders',{method:'POST',headers:{'api-safka-key':API_KEY,'Content-Type':'application/json'},body:JSON.stringify(vb)});
+      d=await r.json();console.log('SAFKA order:',r.status,JSON.stringify(d));
+      if(r.ok){ok=true;break;}
+    }
+    if(!ok) return res.json({error:'تعذر إرسال الطلب حالياً، حاول مجدداً'});
 
     data.orders.unshift({
       id: d.data?._id || Date.now(),
