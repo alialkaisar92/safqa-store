@@ -778,7 +778,7 @@ app.post('/api/create-order', async (req,res)=>{
     const d=await r.json();
     console.log('SAFKA response status:',r.status);
     console.log('SAFKA response:',JSON.stringify(d,null,2));
-    if(!r.ok)return res.json({error:d.errors?d.errors.map(e=>e.msg).join(', '):'فشل الطلب'});
+    if(!r.ok)return res.json({error:d.errors?d.errors.map(e=>e.msg).join(', ').replace('محظور عشان سلوكه وحش في النظام','الرقم ده محظور في صفقة - استخدم رقم حقيقي'):'فشل الطلب'});
     res.json({ok:true,order:d.data||d});
   }catch(e){
     console.log('SAFKA error:',e.message);
