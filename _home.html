@@ -485,9 +485,9 @@ body{padding-bottom:0 !important}
   <input type="number" id="shipInput" min="1" value="50" oninput="recalc()">
   <p style="font-size:.75rem;color:var(--muted);margin-top:4px">الشحن إجباري — القيمة الافتراضية من المحافظة، وعدّلها حسب اتفاقك مع العميل (40، 50، …). لا يُسمح بالصفر.</p>
 
-  <label>عمولة المسوق (ج.م)</label>
-  <input type="number" id="commInput" min="0" value="0" oninput="recalc()">
-  <p style="font-size:.75rem;color:var(--muted);margin-top:4px">عدّل عمولتك — لا يُسمح بقيم سالبة</p>
+  <label>سعر البيع للعميل (ج.م) — شامل ربحك</label>
+  <input type="number" id="sellInput" min="0" value="0" oninput="recalc()">
+  <p style="font-size:.75rem;color:var(--muted);margin-top:4px">السعر الافتراضي = سعر المنتجات. زود عليه اللي انت عايزه — ده السعر اللي هيدفعه العميل وهو شامل ربحك.</p>
 
   <div class="summary" id="sumBox">
     <div class="line"><span>المنتجات</span><span id="sumProd">0</span></div>
@@ -1516,5 +1516,51 @@ if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',boot);else boo
 
 }catch(_notifyErr){console.warn("[notify] isolated:",_notifyErr&&_notifyErr.message);}
 
-</script></body>
+</script>
+<script>
+function initCheckout(){
+  if(!cart.length){go('cart');return;}
+  var pTotal=cart.reduce(function(s,i){return s+i.price*i.qty;},0);
+  var se=document.getElementById('sellInput');if(se&&!Number(se.value))se.value=pTotal;
+  var g=priceList.find(function(x){return x.id===document.getElementById('gov').value;});
+  if(g)document.getElementById('shipInput').value=g.price;
+  recalc();
+}
+function recalc(){
+  var pTotal=cart.reduce(function(s,i){return s+i.price*i.qty;},0);
+  var baseComm=cart.reduce(function(s,i){return s+((i.commission||0)*i.qty);},0);
+  var ship=Number(document.getElementById('shipInput').value);if(isNaN(ship)||ship<0)ship=0;
+  var sell=Number(document.getElementById('sellInput').value);if(isNaN(sell)||sell<pTotal)sell=pTotal;
+  var extra=sell-pTotal;var profit=extra+baseComm;
+  document.getElementById('sumProd').textContent=pTotal;
+  document.getElementById('sumShip').textContent=ship;
+  document.getElementById('sumComm').textContent=extra;
+  document.getElementById('sumTotal').textContent=sell+ship;
+  document.getElementById('sumProfit').textContent=profit;
+}
+function submitOrder(){
+  var name=document.getElementById('cName').value.trim();
+  var phone=document.getElementById('cPhone').value.trim();
+  var addr=document.getElementById('cAddress').value.trim();
+  var gov=document.getElementById('gov').value;
+  var city=document.getElementById('city').value;
+  if(!name||!phone||!addr||!gov){alert('❌ اكمل بيانات العميل واختار المحافظة');return;}
+  var pTotal=cart.reduce(function(s,i){return s+i.price*i.qty;},0);
+  var baseComm=cart.reduce(function(s,i){return s+((i.commission||0)*i.qty);},0);
+  var ship=Number(document.getElementById('shipInput').value)||0;
+  var sell=Math.max(Number(document.getElementById('sellInput').value)||pTotal,pTotal);
+  var items=cart.map(function(i){return {product:i.id||i._id,property:i.propId||i.property||'',qty:i.qty};});
+  var btn=document.getElementById('btnSubmit');btn.disabled=true;btn.textContent='⏳ جاري الإرسال...';
+  fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    client_name:name,client_phone1:phone,client_address:addr,
+    shipping_governorate:gov,city:city,items:items,
+    total:sell+ship,commission:(sell-pTotal)+baseComm,note:''
+  })}).then(function(r){return r.json();}).then(function(d){
+    btn.disabled=false;btn.textContent='تأكيد الطلب';
+    if(d.ok){alert('✅ تم إنشاء الطلب بنجاح رقم: '+((d.order&&d.order.serial_number)||''));cart=[];localStorage.setItem('scart','[]');location.reload();}
+    else alert('❌ '+(d.error||'فشل إرسال الطلب'));
+  }).catch(function(e){btn.disabled=false;btn.textContent='تأكيد الطلب';alert('❌ خطأ في الاتصال');});
+}
+</script>
+</body>
 </html>
