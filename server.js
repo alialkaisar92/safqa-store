@@ -738,6 +738,54 @@ app.get('/api/price-list', async (req,res)=>{
   }catch(e){console.log('price-list err:',e.message);res.json([]);}
 });
 
+
+app.post('/api/create-order', async (req,res)=>{
+  const b=req.body||{};
+  const gov=(b.shipping_governorate||'').toString().trim();
+  let govId=gov;
+  try{
+    const pl=JSON.parse(require('fs').readFileSync(require('path').join(__dirname,'price-list-cache.json'),'utf8'));
+    const found=pl.find(x=>x._id===gov||(x.governorateNameAr||x.governorateName)===gov);
+    if(found)govId=found._id;
+  }catch(e){}
+  if(!govId||govId.length<10)return res.json({error:'اختر المحافظة'});
+  const items=(b.items||[]).map(it=>({
+    product: it.product||it.id||it._id,
+    property: it.property||it.propId||'',
+    qty: Number(it.qty||it.quantity||1)
+  })).filter(x=>x.product);
+  if(!items.length)return res.json({error:'السلة فارغة'});
+  const commission=Number(b.commission)||0;
+  const total=Number(b.total)||0;
+  const body={
+    items:items,
+    client_name:b.client_name||'',
+    client_phone1:b.client_phone1||'',
+    client_phone2:b.client_phone2||'',
+    client_address:b.client_address||'',
+    shipping_governorate:govId,
+    city:b.city||'',
+    note:b.note||'',
+    commission:commission,
+    total:total
+  };
+  if(!body.client_name)return res.json({error:'اسم العميل مطلوب'});
+  if(!body.client_phone1)return res.json({error:'رقم الهاتف مطلوب'});
+  if(!body.client_address)return res.json({error:'العنوان مطلوب'});
+  console.log('SAFKA request body:',JSON.stringify(body));
+  try{
+    const r=await fetch(BASE_URL+'/orders',{method:'POST',headers:{'api-safka-key':API_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    console.log('SAFKA response status:',r.status);
+    console.log('SAFKA response:',JSON.stringify(d,null,2));
+    if(!r.ok)return res.json({error:d.errors?d.errors.map(e=>e.msg).join(', '):'فشل الطلب'});
+    res.json({ok:true,order:d.data||d});
+  }catch(e){
+    console.log('SAFKA error:',e.message);
+    res.json({error:'تعذر الاتصال بالخادم'});
+  }
+});
+
 app.listen(PORT, () => {
   console.log('المتجر: http://localhost:' + PORT);
   getProducts();
