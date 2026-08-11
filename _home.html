@@ -473,31 +473,29 @@ body{padding-bottom:0 !important}
 </div>
 
 <div class="page" id="p-checkout">
-  <div class="section-title">① بيانات العميل</div>
-  <label>اسم العميل</label><input id="cName" placeholder="الاسم الكامل">
-  <label>رقم التليفون</label><input id="cPhone" type="tel" placeholder="01xxxxxxxxx">
-  <label>العنوان بالتفصيل</label><input id="cAddress" placeholder="الشارع - المنطقة - علامة مميزة">
-  <label>المحافظة</label><select id="gov" onchange="onGov()"></select>
-  <label>المدينة</label><select id="city"><option value="">اختر المدينة</option></select>
-
-  <div class="section-title" style="margin-top:20px">② الشحن والعمولة</div>
-  <label>سعر الشحن (ج.م)</label>
-  <input type="number" id="shipInput" min="1" value="50" oninput="recalc()">
-  <p style="font-size:.75rem;color:var(--muted);margin-top:4px">الشحن إجباري — القيمة الافتراضية من المحافظة، وعدّلها حسب اتفاقك مع العميل (40، 50، …). لا يُسمح بالصفر.</p>
-
-  <label>سعر البيع للعميل (ج.م) — شامل ربحك</label>
-  <input type="number" id="sellInput" min="0" value="0" oninput="recalc()">
-  <p style="font-size:.75rem;color:var(--muted);margin-top:4px">السعر الافتراضي = سعر المنتجات. زود عليه اللي انت عايزه — ده السعر اللي هيدفعه العميل وهو شامل ربحك.</p>
-
-  <div class="summary" id="sumBox">
-    <div class="line"><span>المنتجات</span><span id="sumProd">0</span></div>
-    <div class="line"><span>الشحن</span><span id="sumShip">0</span></div>
-    <div class="line"><span>ربحك الإضافي</span><span id="sumComm">0</span></div>
-    <div class="line total"><span>الإجمالي على العميل</span><span id="sumTotal">0</span></div>
-    <div class="line comm"><span>صافي ربحك</span><span id="sumProfit">0</span></div>
-  </div>
-
-  <button class="btn btn-primary" id="btnSubmit" onclick="submitOrder()">تأكيد الطلب</button>
+  <div class="section-title">🛒 السلة</div>
+<div id="miniCart"></div>
+<div class="section-title" style="margin-top:18px">معلومات العميل</div>
+<label>اسم العميل</label><input id="cName" placeholder="الاسم الكامل">
+<label>رقم الهاتف الرئيسي</label><input id="cPhone" type="tel" placeholder="01xxxxxxxxx">
+<label>رقم الهاتف البديل</label><input id="cPhone2" type="tel" placeholder="اختياري">
+<label>العنوان التفصيلي</label><input id="cAddress" placeholder="الشارع - المنطقة - علامة مميزة">
+<label>المحافظة</label><select id="gov" onchange="onGov()"></select>
+<label>المدينة</label><select id="city"><option value="">اختر المدينة</option></select>
+<label>سعر البيع للعميل (ج.م) — شامل ربحك</label>
+<input type="number" id="sellInput" min="0" value="0" oninput="recalc()">
+<p style="font-size:.75rem;color:var(--muted);margin-top:4px">ده السعر اللي هيدفعه العميل. زود عليه اللي انت عايزه — الزيادة دي ربحك.</p>
+<label>سعر الشحن (ج.م)</label>
+<input type="number" id="shipInput" min="0" value="50" oninput="recalc()">
+<div class="summary" id="sumBox">
+<div class="line"><span>سعر المنتجات</span><span id="sumProd">0</span></div>
+<div class="line"><span>ربحك الإضافي</span><span id="sumComm">0</span></div>
+<div class="line"><span>الشحن</span><span id="sumShip">0</span></div>
+<div class="line total"><span>الإجمالي على العميل</span><span id="sumTotal">0</span></div>
+<div class="line comm"><span>صافي ربحك</span><span id="sumProfit">0</span></div>
+</div>
+<label>ملاحظات إضافية</label><input id="cNote" placeholder="اختياري">
+<button class="btn btn-primary" id="btnSubmit" onclick="submitOrder()">تأكيد الطلب</button>
   <p class="msg" id="oMsg"></p>
 </div>
 
