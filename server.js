@@ -391,13 +391,15 @@ input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(15,11
 #fsheet{border-radius:26px 26px 0 0!important;background:#fff!important;box-shadow:0 -20px 60px rgba(15,23,42,.2)!important}
 #fsheet h3{font-family:'Changa';color:var(--p)}
 #fsheet button{border-radius:16px!important;border:1.5px solid rgba(15,118,110,.15)!important;background:#f6faf8!important;color:var(--tx)!important;font-weight:700!important}
-#fsheet button:active{background:var(--p)!important;color:#fff!important}
-</style>
+  #fsheet button:active{background:var(--p)!important;color:#fff!important}
+  .store-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}.store-tools select,.store-tools button{border:1px solid rgba(15,118,110,.16);background:#fff;color:var(--tx);padding:9px 11px;border-radius:12px;font-family:inherit;font-weight:700;font-size:.76rem}.store-tools button.active{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff}.store-count{margin-right:auto;color:var(--mut);font-size:.72rem;font-weight:700}.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;margin-left:4px}
+  </style>
 <header class="header"><div id="ht" style="display:none"></div><div class="eh-brand"><span class="eh-logo">Rab7na 💰</span><small>منصة التسويق بالعمولة</small></div><button class="eh-profile" onclick="go('profile')"><span class="eh-pname">حسابي<small>✔ مسوق</small></span><span class="eh-av">👤</span></button><button class="eh-cartb" onclick="go('cart')">🛒<i id="cc">0</i></button><button class="eh-bell" onclick="ehNotifToggle()">🔔<i>3</i></button></header>
 
 <div class="page active" id="p-store">
   <input class="search" id="s" placeholder="ابحث عن منتج أو باركود...">
   <div class="cats" id="cats"></div>
+  <div class="store-tools"><select id="sorter" aria-label="ترتيب المنتجات" onchange="setSort(this.value)"><option value="featured">الأكثر ملاءمة</option><option value="price-low">السعر من الأقل</option><option value="price-high">السعر من الأعلى</option><option value="stock">الأعلى مخزونًا</option></select><button id="stockFilter" onclick="toggleStockFilter()">المتاح فقط</button><span class="store-count"><i class="live-dot"></i><b id="resultCount">0</b> منتج من Safka</span></div>
   <div class="grid" id="g"></div>
 </div>
 
@@ -515,7 +517,7 @@ input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(15,11
 </div>
 
 <nav class="nav"><button class="active" data-p="store" onclick="go('store')"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10v10h14V10"/></svg><span>الرئيسية</span></button><button data-p="products" onclick="go('store');setTimeout(function(){var g=document.getElementById('g');if(g)g.scrollIntoView({behavior:'smooth'})},200)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>المنتجات</span></button><button data-p="orders" onclick="go('orders')"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg><span>طلباتي</span></button><button data-p="withdraw" onclick="go('withdraw')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M15 9.5c-.5-1-5.5-1-5.5 1s5 2 5 3-4.5 1.5-5.5.5"/></svg><span>الأرباح</span></button><button data-p="profile" onclick="go('profile')"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>حسابي</span></button><button data-p="support" onclick="go('support')"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z"/></svg><span>دعم</span></button></nav><script>
-let products=[], priceList=[], cart=JSON.parse(localStorage.getItem('scart')||'[]'), cur=null, qty=1, submitting=false, cc='all', cs='', wM='vodafone';
+let products=[], priceList=[], cart=JSON.parse(localStorage.getItem('scart')||'[]'), cur=null, qty=1, submitting=false, cc='all', cs='', wM='vodafone', sortMode='featured', onlyAvailable=false;
 const titles={store:'Rab7na',cart:'السلة',checkout:'إتمام الطلب',orders:'طلباتي',profile:'حسابي',withdraw:'سحب الأرباح',support:'الدعم'};
 
 function updCC(){document.getElementById('cc').textContent=cart.reduce((s,i)=>s+(i.qty||1),0)}
@@ -541,14 +543,21 @@ function stockLabel(s, avail){
 async function loadProducts(){
   const r=await fetch('/api/products'); products=(await r.json()).map(function(p){var sold=0;try{sold=(JSON.parse(localStorage.getItem('ssold')||'{}')[p.id])||0}catch(e){}
 p.stock=Math.max(0,(p.stock!=null?+p.stock:999)-sold);p.available=(p.available!=null?!!p.available:(p.stock>0));return p});
-  const cats=['الكل',...new Set(products.map(p=>p.cat))];
+  const cats=['الكل',...new Set(products.map(p=>p.cat||p.category||'أخرى').filter(Boolean))];
   document.getElementById('cats').innerHTML=cats.map((c,i)=>'<button class="c'+(i===0?' active':'')+'" data-c="'+(c==='الكل'?'all':c)+'">'+c+'</button>').join('');
   renderP();
 }
+function setSort(v){sortMode=v||'featured';renderP()}
+function toggleStockFilter(){onlyAvailable=!onlyAvailable;const b=document.getElementById('stockFilter');if(b){b.classList.toggle('active',onlyAvailable);b.textContent=onlyAvailable?'عرض الكل':'المتاح فقط'}renderP()}
 function renderP(){
-  let f=products;
-  if(cc!=='all') f=f.filter(p=>p.cat===cc);
-  if(cs.trim()){const q=cs.trim().toLowerCase();f=f.filter(p=>p.name.toLowerCase().includes(q)||(p.barcode||'').toLowerCase().includes(q))}
+  let f=products.slice();
+  if(cc!=='all') f=f.filter(p=>(p.cat||p.category||'أخرى')===cc);
+  if(cs.trim()){const q=cs.trim().toLowerCase();f=f.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.barcode||'').toLowerCase().includes(q))}
+  if(onlyAvailable) f=f.filter(p=>p.available!==false&&Number(p.stock||0)>0);
+  if(sortMode==='price-low') f.sort((a,b)=>Number(a.price||0)-Number(b.price||0));
+  if(sortMode==='price-high') f.sort((a,b)=>Number(b.price||0)-Number(a.price||0));
+  if(sortMode==='stock') f.sort((a,b)=>Number(b.stock||0)-Number(a.stock||0));
+  const count=document.getElementById('resultCount');if(count)count.textContent=f.length;
   document.getElementById('g').innerHTML=f.map(p=>{
     const i=products.indexOf(p);
     return '<div class="card" onclick="openP('+i+')"><img src="'+(p.image||'')+'" alt="'+(p.name||'منتج Rab7na')+'" loading="lazy" decoding="async"><div class="b"><div class="t">'+p.name+'</div><div class="pr">'+Number(p.price).toLocaleString('ar-EG')+' ج.م</div><div class="stock">'+stockLabel(p.stock,p.available)+'</div></div></div>';
