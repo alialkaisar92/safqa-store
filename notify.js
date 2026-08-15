@@ -106,7 +106,7 @@ module.exports = function (app) {
     res.json({ appId: cfg.appId || '' });
   });
 
-  app.post('/api/onesignal/config', async (req, res) => {
+  app.post('/api/onesignal/config', global.requireAdmin, async (req, res) => {
     await saveMeta({ appId: req.body.appId || '', restKey: req.body.restKey || '' });
     res.json({ ok: true });
   });
@@ -128,17 +128,23 @@ module.exports = function (app) {
     } catch (e) { res.json({ ok: true }); }
   });
 
-  app.post('/api/notify', async (req, res) => {
-    const b = req.body || {};
-    if (b.to === 'one' && b.userId) return res.json(await notifyUser(b.userId, b.headings, b.contents, b.url, b.type));
-    if (b.to === 'group') {
-      const ids = (b.userIds || []).map(String);
+  app.post('/api/notify', global.requireAdmin, async (req, res) => {
+    try {
+      const b = req.body || {};
+      const title = String(b.headings || '').trim();
+      const body = String(b.contents || '').trim();
+      if (!title || !body) return res.status(400).json({ ok: false, error: 'أدخل عنوان الإشعار ونصه' });
+      if (b.to === 'one' && b.userId) return res.json(await notifyUser(b.userId, title, body, b.url, b.type));
       const users = await store.getUsers();
-      const selected = users.filter(u => ids.includes(String(u.id)) || (b.field && b.filter && String(u[b.field]) === String(b.filter)));
-      await Promise.all(selected.map(u => createNotification(u.id, { title: b.headings, body: b.contents, url: b.url, type: b.type })));
-      return res.json(await sendPush({ ids: selected.map(u => u.playerId).filter(Boolean), headings: b.headings, contents: b.contents, url: b.url, image: b.image, schedule: b.schedule }));
-    }
-    res.json(await sendPush({ headings: b.headings, contents: b.contents, url: b.url, image: b.image, schedule: b.schedule }));
+      let selected = users;
+      if (b.to === 'group') {
+        const ids = (b.userIds || []).map(String);
+        selected = users.filter(u => ids.includes(String(u.id)) || (b.field && b.filter && String(u[b.field]) === String(b.filter)));
+      }
+      if (!b.schedule) await Promise.all(selected.filter(u => u && u.id).map(u => createNotification(u.id, { title, body, url: b.url, type: b.type })));
+      const result = await sendPush({ ids: selected.map(u => u.playerId).filter(Boolean), headings: title, contents: body, url: b.url, image: b.image, schedule: b.schedule });
+      res.json({ ok: !!result.ok, deliveredTo: selected.length, push: result, scheduled: !!b.schedule });
+    } catch (e) { console.error('notify:', e.message); res.status(500).json({ ok: false, error: 'تعذر إرسال الإشعار حاليًا' }); }
   });
 
   app.get('/api/admin/notiflog', async (req, res) => {

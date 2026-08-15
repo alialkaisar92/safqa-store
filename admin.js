@@ -37,6 +37,8 @@ async function chats() { return store.getChats(); }
 async function writeData(d) { await store.saveAffiliateData(d); }
 async function writeUsers(u) { await store.saveUsers(u.users || []); }
 
+global.requireAdmin = requireAdmin;
+
 module.exports = function (app) {
   app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
   app.use('/api/admin', requireAdmin);
