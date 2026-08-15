@@ -44,7 +44,7 @@ app.get('/sitemap.xml', (req, res) => {
   res.sendFile(path.join(__dirname, 'sitemap.xml'));
 });
 // SEO helpers: public product pages use real cached product data only.
-const SEO_ORIGIN = process.env.PUBLIC_SITE_URL || 'https://safqa-store.vercel.app';
+const SEO_ORIGIN = process.env.PUBLIC_SITE_URL || 'https://rab7na-store.vercel.app';
 function seoEsc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function seoText(v){return String(v||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();}
 function sitemapSlug(p){
@@ -234,11 +234,11 @@ app.get('/store', (req, res) => {
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Rab7na | منصة التسويق بالعمولة</title>
 <meta name="description" content="اكتشف منتجات متنوعة وفرصًا للعمل كمسوق بالعمولة في مصر عبر Rab7na.">
-<link rel="canonical" href="https://safqa-store.vercel.app/store">
+<link rel="canonical" href="https://rab7na-store.vercel.app/store">
 <meta name="robots" content="index,follow,max-image-preview:large">
-<meta property="og:type" content="website"><meta property="og:site_name" content="Rab7na"><meta property="og:title" content="متجر Rab7na | منتجات للتسويق بالعمولة في مصر"><meta property="og:description" content="منتجات متنوعة للمسوقين بالعمولة في مصر."><meta property="og:url" content="https://safqa-store.vercel.app/store">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Rab7na","url":"https://safqa-store.vercel.app/","potentialAction":{"@type":"SearchAction","target":"https://safqa-store.vercel.app/store?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"متجر Rab7na","url":"https://safqa-store.vercel.app/store","isPartOf":{"@type":"WebSite","name":"Rab7na","url":"https://safqa-store.vercel.app/"}}</script>
+<meta property="og:type" content="website"><meta property="og:site_name" content="Rab7na"><meta property="og:title" content="متجر Rab7na | منتجات للتسويق بالعمولة في مصر"><meta property="og:description" content="منتجات متنوعة للمسوقين بالعمولة في مصر."><meta property="og:url" content="https://rab7na-store.vercel.app/store">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Rab7na","url":"https://rab7na-store.vercel.app/","potentialAction":{"@type":"SearchAction","target":"https://rab7na-store.vercel.app/store?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"متجر Rab7na","url":"https://rab7na-store.vercel.app/store","isPartOf":{"@type":"WebSite","name":"Rab7na","url":"https://rab7na-store.vercel.app/"}}</script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--p:#0d9488;--pd:#0f766e;--bg:#f0f4f8;--card:#fff;--text:#0f172a;--muted:#64748b;--accent:#f59e0b;--danger:#ef4444;--ok:#10b981}

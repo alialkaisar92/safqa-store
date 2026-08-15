@@ -7,4 +7,4 @@ Disallow: /account
 Disallow: /orders
 Disallow: /withdraw
 Disallow: /support
-Sitemap: https://safqa-store.vercel.app/sitemap.xml
+Sitemap: https://rab7na-store.vercel.app/sitemap.xml

@@ -1,5 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-cd ~/safqa-store
+cd ~/rab7na-store
 termux-wake-lock
 pkill -f "node server.js" 2>/dev/null
 pkill -f cloudflared 2>/dev/null
