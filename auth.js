@@ -80,15 +80,18 @@ module.exports = function (app) {
     try { await store.deleteToken(req.body && req.body.refresh); res.json({ ok: true }); }
     catch (e) { res.json({ ok: true }); }
   });
-  app.get('/api/auth/me', async (req, res) => {
+  const sessionHandler = async (req, res) => {
     try {
-      const pl = verify(req.headers['x-auth-token']); const u = pl && await store.getUser(pl.uid);
-      if (!u) return res.status(401).json({ logged: false });
-      if (u.banned) return res.json({ logged: false, banned: true });
+      const raw = req.headers['x-auth-token'] || String(req.headers.authorization || '').replace(/^Bearer\\s+/i, '');
+      const pl = verify(raw); const u = pl && await store.getUser(pl.uid);
+      if (!u) return res.status(401).json({ logged: false, authenticated: false });
+      if (u.banned) return res.json({ logged: false, authenticated: false, banned: true });
       u.lastSeen = Date.now(); await store.saveUser(u);
-      res.json({ logged: true, user: pub(u) });
-    } catch (e) { res.status(500).json({ logged: false }); }
-  });
+      res.json({ logged: true, authenticated: true, user: pub(u) });
+    } catch (e) { res.status(500).json({ logged: false, authenticated: false }); }
+  };
+  app.get('/api/auth/me', sessionHandler);
+  app.get('/api/auth/session', sessionHandler);
   app.post('/api/auth/ping', async (req, res) => {
     try {
       const pl = verify(req.headers['x-auth-token']); const u = pl && await store.getUser(pl.uid);
