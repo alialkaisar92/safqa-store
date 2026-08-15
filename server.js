@@ -342,7 +342,7 @@ textarea{min-height:90px;resize:vertical}
 .order-summary-card .summary-profit{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:12px 14px;background:#ecfdf5;border-radius:14px;color:#047857;font-weight:800}
 .order-summary-card .summary-profit strong{font-size:1.25rem}
 .checkout-hero{display:flex;align-items:center;gap:13px;padding:16px;margin:5px 0 18px;background:linear-gradient(135deg,#0f766e,#10b981);border-radius:20px;color:#fff;box-shadow:0 12px 25px rgba(15,118,110,.2)}
-.checkout-hero .hero-icon{width:46px;height:46px;border-radius:15px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px}.checkout-hero h2{margin:0;font-size:1.18rem}.checkout-hero p{margin:3px 0 0;font-size:.76rem;opacity:.88}.checkout-section{background:#fff;border:1px solid #e6eef0;border-radius:18px;padding:15px;margin:12px 0;box-shadow:0 5px 18px rgba(15,23,42,.04)}.checkout-section .section-title{margin-top:0!important}.checkout-note{display:flex;gap:8px;align-items:flex-start;background:#f8fafc;color:#64748b;border-radius:12px;padding:10px 12px;font-size:.76rem;line-height:1.6;margin-top:10px}.checkout-note b{color:#0f766e;white-space:nowrap}
+.checkout-hero .hero-icon{width:46px;height:46px;border-radius:15px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px}.checkout-hero h2{margin:0;font-size:1.18rem}.checkout-hero p{margin:3px 0 0;font-size:.76rem;opacity:.88}.checkout-section{background:#fff;border:1px solid #e6eef0;border-radius:18px;padding:15px;margin:12px 0;box-shadow:0 5px 18px rgba(15,23,42,.04)}.checkout-section .section-title{margin-top:0!important}.checkout-note{display:flex;gap:8px;align-items:flex-start;background:#f8fafc;color:#64748b;border-radius:12px;padding:10px 12px;font-size:.76rem;line-height:1.6;margin-top:10px}.checkout-note b{color:#0f766e;white-space:nowrap}.auto-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.auto-info{display:flex;flex-direction:column;gap:5px;padding:12px;border:1px solid #dbeafe;background:#f8fbff;border-radius:14px}.auto-info span{font-size:.72rem;color:#64748b}.auto-info strong{font-size:1rem;color:#0f766e}.profit-auto{border-color:#bbf7d0;background:#f0fdf4}.profit-auto strong{color:#047857}@media(max-width:430px){.auto-info-grid{grid-template-columns:1fr}}
 @media(max-width:520px){.order-summary-card{padding:15px 13px;border-radius:18px}.order-summary-card .summary-product img{width:56px;height:56px}.order-summary-card .summary-product .sp-name{font-size:.82rem}.order-summary-card .summary-product .sp-price{font-size:.85rem}.order-summary-card .summary-total strong{font-size:1.3rem}}
 .msg{text-align:center;margin-top:10px;font-weight:700;font-size:.9rem;min-height:24px}
 .msg.ok{color:var(--ok)}.msg.err{color:var(--danger)}
@@ -469,14 +469,9 @@ input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(15,11
   <label>المحافظة</label><select id="gov" onchange="onGov()"></select>
     <label>المدينة</label><select id="city"><option value="">اختر المدينة</option></select></div>
   <div class="checkout-section"><div class="section-title" style="margin-top:0">② الشحن والربح</div>
-  <label>سعر الشحن (ج.م)</label>
-  <input type="number" id="shipInput" min="0" value="0" oninput="recalc()">
-  <p style="font-size:.75rem;color:var(--muted);margin-top:4px">افتراضي من المحافظة — عدّله بحرية (0 = مجاني)</p>
-
-  <label>ربح المسوّق (ج.م)</label>
-  <input type="number" id="commInput" min="0" value="0" oninput="recalc()">
-  <p id="commHint" style="font-size:.75rem;color:var(--muted);margin-top:4px">يُحسب الربح من الفرق بين سعر البيع والسعر الأساسي</p>
-  <div class="checkout-note"><b>تنبيه مالي</b><span>المستحق من العميل هو سعر المنتجات مضافًا إليه الشحن. ربحك هو فرق السعر فقط ولا يُخصم من مبلغ العميل.</span></div></div>
+  <div class="auto-info-grid"><div class="auto-info"><span>الشحن حسب المحافظة</span><strong id="shipAuto">اختر المحافظة</strong></div><div class="auto-info profit-auto"><span>ربحك التلقائي</span><strong id="commAuto">0 ج.م</strong></div></div>
+  <p id="commHint" style="font-size:.75rem;color:var(--muted);margin-top:8px">يُحسب ربحك تلقائيًا من الفرق بين سعر البيع والسعر الأساسي. لتعديله، غيّر سعر البيع من تفاصيل المنتج.</p>
+  <div class="checkout-note"><b>توضيح مالي</b><span>اختيار المحافظة يضيف الشحن تلقائيًا. المستحق من العميل هو سعر البيع النهائي للمنتجات مضافًا إليه الشحن، وربحك هو الفرق بين سعر البيع والسعر الأساسي.</span></div></div>
 
   <div class="order-summary-card" id="sumBox">
     <div class="summary-head"><h3>ملخص الطلب</h3><span id="sumCount">0 منتج</span></div>
@@ -502,7 +497,7 @@ input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(15,11
     <div class="stat"><div class="l">الطلبات</div><div class="v" id="oCnt">0</div></div>
   </div>
   <label>الاسم</label><input id="pName">
-  <label>رقم الهاتف</label><input id="pPhone" style="margin-bottom:10px"><label style="display:block;font-size:.75rem;font-weight:700;margin:10px 0 5px">💰 عمولتك (تتخصم من سعر المنتج — مش بتظهر للعميل)</label><input id="pComm" inputmode="numeric">
+  <label>رقم الهاتف</label><input id="pPhone" style="margin-bottom:10px">
   <button class="btn btn-primary" onclick="saveProf()" style="margin-top:14px">حفظ</button>
   <p class="msg" id="pMsg"></p>
 </div>
@@ -704,21 +699,17 @@ async function loadPrices(){
   const r=await fetch('/api/price-list'); priceList=await r.json();
   document.getElementById('gov').innerHTML='<option value="">اختر المحافظة</option>'+priceList.map(g=>'<option value="'+g.id+'" data-price="'+g.price+'">'+g.name+' ('+g.price+' ج.م)</option>').join('');
 }
+function selectedGovernorate(){return priceList.find(x=>x.id===document.getElementById('gov').value)||null}
+function selectedShipping(){const g=selectedGovernorate();return g?Math.max(0,Number(g.price)||0):0}
 function onGov(){
-  const g=priceList.find(x=>x.id===document.getElementById('gov').value);
+  const g=selectedGovernorate();
   document.getElementById('city').innerHTML='<option value="">اختر المدينة</option>'+(g?(g.cities||[]).map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join(''):'');
-  if(g) document.getElementById('shipInput').value=g.price;
   recalc();
 }
 function maxCartCommission(){return cart.reduce((s,i)=>s+Math.max(0,Number(i.price||0)-Number(i.basePrice||i.cost||0))*(Number(i.qty)||1),0)}
 function initCheckout(){
   if(!cart.length){go('cart');return}
-  const maxComm=maxCartCommission();
-  const input=document.getElementById('commInput');
-  input.max=maxComm; input.value=maxComm;
-  const g=priceList.find(x=>x.id===document.getElementById('gov').value);
-  if(g) document.getElementById('shipInput').value=g.price;
-  else document.getElementById('shipInput').value=0;
+  recalc();
 }
 function renderOrderSummary(){
   const box=document.getElementById('sumItems'); if(!box)return;
@@ -729,14 +720,12 @@ function renderOrderSummary(){
 function recalc(){
   renderOrderSummary();
   const pTotal=cart.reduce((s,i)=>s+i.price*i.qty,0);
-  let ship=Number(document.getElementById('shipInput').value);
-  let comm=Number(document.getElementById('commInput').value);
-  const maxComm=maxCartCommission();
-  if(isNaN(ship)||ship<0) ship=0;
-  if(isNaN(comm)||comm<0) comm=0;
-  if(comm>maxComm){comm=maxComm;document.getElementById('commInput').value=maxComm}
-  document.getElementById('commInput').max=maxComm;
-  const hint=document.getElementById('commHint'); if(hint)hint.textContent='الحد الأقصى لربحك: '+maxComm.toLocaleString('ar-EG')+' ج.م — لا يمكن أن يتجاوز فرق السعر';
+  const ship=selectedShipping();
+  const comm=maxCartCommission();
+  const g=selectedGovernorate();
+  const shipAuto=document.getElementById('shipAuto'); if(shipAuto)shipAuto.textContent=g?(ship.toLocaleString('ar-EG')+' ج.م'):'اختر المحافظة';
+  const commAuto=document.getElementById('commAuto'); if(commAuto)commAuto.textContent=comm.toLocaleString('ar-EG')+' ج.م';
+  const hint=document.getElementById('commHint'); if(hint)hint.textContent='يُحسب ربحك تلقائيًا: '+comm.toLocaleString('ar-EG')+' ج.م — غيّر سعر البيع من تفاصيل المنتج لتعديل ربحك';
   document.getElementById('sumProd').textContent=pTotal.toLocaleString('ar-EG')+' ج.م';
   document.getElementById('sumShip').textContent=ship.toLocaleString('ar-EG')+' ج.م';
   document.getElementById('sumComm').textContent=comm.toLocaleString('ar-EG')+' ج.م';
@@ -753,12 +742,8 @@ async function submitOrder(){
   const address=document.getElementById('cAddress').value.trim();
   const gov=document.getElementById('gov').value;
   if(!name||!phone||!address||!gov){msg.textContent='أكمل بيانات العميل والمحافظة';msg.className='msg err';return}
-  let ship=Number(document.getElementById('shipInput').value);
-  let comm=Number(document.getElementById('commInput').value);
-  const maxComm=maxCartCommission();
-  if(isNaN(ship)||ship<0){msg.textContent='سعر شحن غير صحيح';msg.className='msg err';return}
-  if(isNaN(comm)||comm<0){msg.textContent='ربح غير صحيح';msg.className='msg err';return}
-  if(comm>maxComm){msg.textContent='الربح لا يمكن أن يتجاوز فرق السعر: '+maxComm.toLocaleString('ar-EG')+' ج.م';msg.className='msg err';return}
+  const ship=selectedShipping();
+  const comm=maxCartCommission();
   const pTotal=cart.reduce((s,i)=>s+i.price*i.qty,0);
 
   submitting=true;
@@ -799,8 +784,8 @@ async function loadMe(){
   document.getElementById('pPhone').value=me.phone||'';
 }
 async function saveProf(){
-  const r=await fetch('/api/set-commission',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({commission:Number(document.getElementById('pComm').value)||0})});fetch('/api/profile',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':(localStorage.getItem('etok')||'')},body:JSON.stringify({name:document.getElementById('pName').value,phone:document.getElementById('pPhone').value})});
-  const d=await r.json(); document.getElementById('pMsg').textContent=d.message; document.getElementById('pMsg').className='msg ok';
+  const r=await fetch('/api/profile',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':(localStorage.getItem('etok')||'')},body:JSON.stringify({name:document.getElementById('pName').value,phone:document.getElementById('pPhone').value})});
+  const d=await r.json(); document.getElementById('pMsg').textContent=d.message||d.error||'تم الحفظ'; document.getElementById('pMsg').className='msg '+(d.error?'err':'ok');
 }
 function sw(el){document.querySelectorAll('.w').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');wM=el.dataset.m}
 async function doWd(){
@@ -900,11 +885,17 @@ app.post('/api/create-order', async (req,res)=>{
     finalPrice: Number(it.finalPrice||it.salePrice||it.originalPrice||it.price||0)
   })).filter(x=>x.product);
   if(!items.length)return res.json({error:'السلة فارغة'});
-  const commission=Math.max(0,Number(b.commission)||0);
-  const shippingCost=Math.max(0,Number(b.shipping_cost)||0);
+  let shippingCost=0;
+  let shippingGovernorate;
+  try{
+    const pl=JSON.parse(require('fs').readFileSync(require('path').join(__dirname,'price-list-cache.json'),'utf8'));
+    shippingGovernorate=pl.find(x=>x._id===govId||x.id===govId);
+    if(!shippingGovernorate)return res.json({error:'المحافظة المختارة غير متاحة حاليًا'});
+    shippingCost=Math.max(0,Number(shippingGovernorate.price)||0);
+  }catch(e){return res.json({error:'تعذر التحقق من سعر الشحن، حاول مرة أخرى'});}
   const merchandiseTotal=items.reduce((sum,x)=>sum+Math.max(0,Number(x.finalPrice)||0)*(Number(x.qty)||1),0);
   const maxCommission=items.reduce((sum,x)=>sum+Math.max(0,(Number(x.finalPrice)||0)-(Number(x.originalPrice)||0))*(Number(x.qty)||1),0);
-  if(commission>maxCommission+0.01)return res.json({error:'العمولة أكبر من هامش الربح المسموح: '+maxCommission.toLocaleString('ar-EG')+' ج.م'});
+  const commission=maxCommission;
   const total=merchandiseTotal+shippingCost;
   const body={
     items:items,
@@ -931,7 +922,7 @@ app.post('/api/create-order', async (req,res)=>{
     if(!r.ok)return res.json({error:d.errors?d.errors.map(e=>e.msg).join(', ').replace('محظور عشان سلوكه وحش في النظام','الرقم ده محظور في rab7na - استخدم رقمًا حقيقيًا'):'فشل الطلب'});
     const customer=await currentUser(req);
     const external=d.data||d;
-    const savedOrder={id:external.id||external._id||Date.now(),serial:external.id||external._id||Date.now(),userId:customer&&customer.id||null,products:b.productNames||items.map(x=>x.product),items,client_name:body.client_name,client_phone1:body.client_phone1,client_address:body.client_address,status:'قيد التأكيد',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:Number(b.shipping_cost)||0,originalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.originalPrice||0)*(x.qty||1),0),finalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.finalPrice||0)*(x.qty||1),0),external:external};
+    const savedOrder={id:external.id||external._id||Date.now(),serial:external.id||external._id||Date.now(),userId:customer&&customer.id||null,products:b.productNames||items.map(x=>x.product),items,client_name:body.client_name,client_phone1:body.client_phone1,client_address:body.client_address,status:'قيد التأكيد',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:shippingCost,originalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.originalPrice||0)*(x.qty||1),0),finalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.finalPrice||0)*(x.qty||1),0),external:external};
     const affiliate=await readAffiliate();affiliate.orders=affiliate.orders||[];affiliate.orders.unshift(savedOrder);await saveAffiliate(affiliate);
     res.json({ok:true,message:'تم إرسال الطلب بنجاح',order:external});
   }catch(e){
