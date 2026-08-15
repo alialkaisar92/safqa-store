@@ -49,12 +49,15 @@ function clean(t){return t.replace(/^\S+\s/,'')}
 function go(s){clearInterval(window._uT);clearInterval(window._wT);clearInterval(window._cT);var _ac=document.getElementById('admChat');if(_ac)_ac.style.display='none';document.querySelectorAll('.drawer .it').forEach(function(x){x.classList.toggle('on',x.dataset.s===s)});sbClose();
 var t=SEC.find(function(x){return x.id===s});
 if(s==='stats')rStats();else if(s==='orders')rOrders();else if(s==='products')rProducts();else if(s==='users')rUsers();else if(s==='withdraw')rWithdraw();else if(s==='chat')rChat();else if(s==='notif')rNotif();else if(s==='settings')rSettings();else document.getElementById('view').innerHTML='<div class="panel"><h3>🚧 قسم «'+clean(t.t)+'»</h3><p style="color:var(--mut);font-size:.85rem">لسه بيتبنى — قولي「كمّل في قسم '+clean(t.t)+'」</p></div>';}
+function safeNum(v){var n=Number(v);return Number.isFinite(n)?n:0;
+}
+function money(v){return safeNum(v).toLocaleString('ar-EG');}
 function rStats(){fetch('/api/admin/stats').then(function(r){return r.json()}).then(function(d){
 var AR='ar-EG';
 var st='<div class="cards">'
 +'<div class="card"><b>'+d.orders+'</b><small>إجمالي الطلبات</small></div>'
 +'<div class="card"><b>'+d.sales+'</b><small>طلبات مسلّمة</small></div>'
-+'<div class="card"><b>'+d.commission.toLocaleString(AR)+' ج.م</b><small>إجمالي العمولات</small></div>'
++'<div class="card"><b>'+money(d.commission)+' ج.م</b><small>إجمالي العمولات</small></div>'
 +'<div class="card"><b>'+d.users+'</b><small>المستخدمون</small></div>'
 +'<div class="card"><b>'+d.products+'</b><small>المنتجات</small></div>'
 +'<div class="card"><b>'+d.withdrawals+'</b><small>سحوبات معلقة</small></div>'
