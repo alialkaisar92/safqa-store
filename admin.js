@@ -30,7 +30,7 @@ module.exports = function (app) {
         const u = await store.getUser(o.userId);
         if (u) { u.balance = (+u.balance || 0) + (+o.commission || 0); u.totalEarned = (+u.totalEarned || 0) + (+o.commission || 0); await store.saveUser(u); }
       }
-      if (global.sendPush) global.sendPush({ headings: 'تحديث حالة طلب', contents: 'حالة طلبك الآن: ' + b.status, url: '/' });
+      if (global.notifyUser && o.userId != null) global.notifyUser(o.userId, 'تحديث حالة طلب', 'حالة طلبك الآن: ' + b.status, '/', 'order-status');
       res.json({ ok: true });
     } catch (e) { console.error('order-status:', e.message); res.status(500).json({ error: 'تعذر تحديث الطلب' }); }
   });
