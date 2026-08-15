@@ -133,8 +133,16 @@ app.get('/api/products', async (req,res)=>{
   try{
     if(require('fs').existsSync(fp)){
       let d=JSON.parse(require('fs').readFileSync(fp,'utf8'));
-      if(Array.isArray(d) && d.length>=100) return res.json(d);
-      if(d && Array.isArray(d.data) && d.data.length>=100) return res.json(d.data);
+      const cached = Array.isArray(d) ? d : (d && Array.isArray(d.data) ? d.data : []);
+      if(cached.length>=100){
+        const normalized = cached.map(function(p){
+          const prop = (p.properties && p.properties[0]) || {};
+          const stock = Number(p.stock != null ? p.stock : (prop.min != null ? prop.min : (prop.value || 0)));
+          const category = cat(p.name || p.title || '');
+          return Object.assign({}, p, {category: category, cat: category, stock: stock, available: p.available !== false && p.is_active !== false && stock > 0, propId: p.propId || prop._id || ''});
+        });
+        return res.json(normalized);
+      }
     }
   }catch(e){}
   try{
@@ -151,7 +159,7 @@ app.get('/api/products', async (req,res)=>{
       page++;
     }
     const mapped = all.map(function(p){
-      const c = typeof categorize==='function' ? categorize(p) : 'أخرى';
+      const c = cat(p.name || p.title || '');
       const prop = (p.properties && p.properties[0]) || {};
       return Object.assign({}, p, {
         id: p._id || p.id,

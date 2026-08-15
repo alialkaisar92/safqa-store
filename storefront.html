@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Earnify | المتجر</title>
+<title>Rab7na | متجر منتجات التسويق بالعمولة في مصر</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -81,10 +81,17 @@ header{position:sticky;top:0;z-index:50;background:var(--paper);border-bottom:1p
 
 /* ---- product grid ---- */
 main{max-width:640px;margin:0 auto;padding:16px}
-.sec-t{font-size:1.15rem;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
-.sec-t small{font-family:Cairo;font-size:.72rem;color:var(--muted);font-weight:700}
+  .sec-t{font-size:1.15rem;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+  .sec-t small{font-family:Cairo;font-size:.72rem;color:var(--muted);font-weight:700}
+  .store-tools{display:flex;gap:8px;align-items:center;margin:-2px 0 14px;flex-wrap:wrap}
+  .sorter,.stock-filter{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:10px;padding:8px 10px;font-size:.76rem;font-weight:700;outline:none}
+  .stock-filter{cursor:pointer}.stock-filter.on{background:var(--mint);border-color:var(--leaf);color:var(--forest-d)}
+  .live-note{font-size:.7rem;color:var(--muted);margin-right:auto;display:flex;align-items:center;gap:5px}.live-dot{width:7px;height:7px;background:var(--leaf);border-radius:50%;display:inline-block}
+  .card .stock{display:flex;align-items:center;gap:4px}
+  .card .stock::before{content:'•';font-size:1.1rem;line-height:0}.stock-out::before{color:var(--danger)}.stock-low::before{color:var(--warn)}.stock-ok::before{color:var(--leaf)}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 @media(min-width:480px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){main{max-width:1180px;padding:22px 28px}.hero-in{max-width:1180px}.grid{grid-template-columns:repeat(4,1fr);gap:16px}.header-top{max-width:1180px;margin:auto}.cats{max-width:1180px;margin:auto}.card .t{font-size:.88rem}.card .pr{font-size:1.05rem}}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer}
 .card .imgwrap{position:relative;aspect-ratio:1;background:var(--mint)}
 .card img{width:100%;height:100%;object-fit:cover}
@@ -156,7 +163,7 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
 
 <header>
   <div class="header-top">
-    <div class="logo">Earn<span>ify</span></div>
+    <div class="logo">Rab<span>7na</span></div>
     <div class="search"><input id="q" placeholder="ابحث عن منتج..." oninput="doSearch(this.value)"></div>
     <button class="cart-btn" id="profileBtn" onclick="openAcct()" style="background:var(--mint);color:var(--forest-d);margin-left:2px">👤</button>
     <button class="cart-btn" onclick="openCart()">🛒<i id="cc">0</i></button>
@@ -173,7 +180,8 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
 </div>
 
 <main>
-  <div class="sec-t"><span id="prodTitle">كل المنتجات</span></div>
+  <div class="sec-t"><span id="prodTitle">كل المنتجات</span><small>بيانات مباشرة من Safka</small></div>
+  <div class="store-tools"><select class="sorter" id="sorter" onchange="setSort(this.value)" aria-label="ترتيب المنتجات"><option value="featured">الأكثر ملاءمة</option><option value="price-low">السعر: من الأقل</option><option value="price-high">السعر: من الأعلى</option><option value="stock">الأعلى مخزونًا</option></select><button class="stock-filter" id="stockFilter" onclick="toggleStockFilter()">المتاح فقط</button><span class="live-note"><i class="live-dot"></i> مخزون محدث</span></div>
   <div class="grid" id="mainGrid">
     <div class="skel-i"><div class="skel-img"></div><div class="skel-t"></div><div class="skel-p"></div></div>
     <div class="skel-i"><div class="skel-img"></div><div class="skel-t"></div><div class="skel-p"></div></div>
@@ -192,7 +200,7 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
 </div>
 
 <footer>
-  <div class="logo"><span style="color:var(--forest);font-family:Lalezar">Earn<span style="color:var(--ink)">ify</span></span></div>
+    <div class="logo"><span style="color:var(--forest);font-family:Lalezar">Rab<span style="color:var(--ink)">7na</span></span></div>
   <div>شحن لكل محافظات مصر • الدفع عند الاستلام • دعم عبر واتساب</div>
 </footer>
 
@@ -240,7 +248,7 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
 </div></div>
 
 <script>
-var P=[],cart=[],cur=null,qty=1,GOVS=[],curCat='الكل',curQ='';
+var P=[],cart=[],cur=null,qty=1,GOVS=[],curCat='الكل',curQ='',curSort='featured',onlyAvailable=false;
 
 function fmt(n){return Number(n||0).toLocaleString('ar-EG')+' ج.م'}
 
@@ -260,13 +268,21 @@ function renderCats(){
 }
 function setCat(c){curCat=c;renderCats();renderGrid();}
 function doSearch(v){curQ=(v||'').trim();renderGrid();}
+function setSort(v){curSort=v||'featured';renderGrid();}
+function toggleStockFilter(){onlyAvailable=!onlyAvailable;var b=document.getElementById('stockFilter');if(b){b.classList.toggle('on',onlyAvailable);b.textContent=onlyAvailable?'عرض الكل':'المتاح فقط';}renderGrid();}
+function safeCat(p){return p.category||p.cat||'أخرى';}
 
 function visible(){
-  return P.filter(function(p){
-    if(curCat!=='الكل' && (p.category||p.cat||'عام')!==curCat) return false;
-    if(curQ && (p.name||'').indexOf(curQ)===-1) return false;
+  var v=P.filter(function(p){
+    if(curCat!=='الكل' && safeCat(p)!==curCat) return false;
+    if(curQ && (p.name||'').toLowerCase().indexOf(curQ.toLowerCase())===-1 && String(p.barcode||'').toLowerCase().indexOf(curQ.toLowerCase())===-1) return false;
+    if(onlyAvailable && (p.available===false || Number(p.stock||0)<=0)) return false;
     return true;
   });
+  if(curSort==='price-low') v.sort(function(a,b){return Number(a.price||0)-Number(b.price||0);});
+  if(curSort==='price-high') v.sort(function(a,b){return Number(b.price||0)-Number(a.price||0);});
+  if(curSort==='stock') v.sort(function(a,b){return Number(b.stock||0)-Number(a.stock||0);});
+  return v;
 }
 function commInfo(note){
   var m1=/سعر\s*(?:البيع\s*)?(?:ال)?مقترح\s*(\d+)/.exec(note||'');
@@ -366,7 +382,7 @@ function updShip(){
   var sel=document.getElementById('fGov').value;
   var g=GOVS.find(function(x){return x._id===sel});
   shipCost = g ? Number(g.price||0) : 0;
-  document.getElementById('coTot').textContent=fmt(cart.reduce(function(a,c){return a+c.price*c.qty},0)+shipCost);
+  document.getElementById('coTot').textContent=fmt(cart.reduce(function(a,c){return a+cartLineTotal(c)},0)+shipCost);
 }
 function openCo(){
   if(!cart.length) return;
