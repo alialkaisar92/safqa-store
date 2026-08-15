@@ -2,6 +2,35 @@ const path = require('path');
 const store = require('./firestore');
 const { availableBalance } = require('./balance');
 
+function tokenFrom(req) {
+  const h = String(req.headers.authorization || '');
+  return String(req.headers['x-auth-token'] || (h.toLowerCase().startsWith('bearer ') ? h.slice(7) : '') || '').trim();
+}
+
+async function requireAdmin(req, res, next) {
+  try {
+    const payload = global.verifyJWT && global.verifyJWT(tokenFrom(req));
+    if (!payload) return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً' });
+    const user = await store.getUser(payload.uid);
+    if (!user || user.banned) return res.status(403).json({ error: 'الحساب غير مسموح له بالدخول' });
+    const adminEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+    const adminUid = String(process.env.ADMIN_USER_ID || '').trim();
+    const allowed = user.role === 'admin' || user.isAdmin === true ||
+      (adminEmail && [user.email, user.contact, user.username].some(v => String(v || '').trim().toLowerCase() === adminEmail)) ||
+      (adminUid && String(user.id) === adminUid);
+    if (!allowed) return res.status(403).json({ error: 'هذه الصفحة مخصصة لمدير المنصة فقط' });
+    req.adminUser = user;
+    next();
+  } catch (e) {
+    console.error('admin auth:', e.message);
+    return res.status(500).json({ error: 'تعذر التحقق من صلاحيات المدير' });
+  }
+}
+
+function allowedStatus(status) {
+  return ['جديد', 'تم التأكيد', 'تم الشحن', 'تم التوصيل', 'تم التحصيل', 'تم التسليم', 'مرتجع', 'طلب استبدال', 'ملغي'].includes(String(status || ''));
+}
+
 async function data() { return store.getAffiliateData(); }
 async function users() { return { users: await store.getUsers() }; }
 async function chats() { return store.getChats(); }
@@ -10,6 +39,7 @@ async function writeUsers(u) { await store.saveUsers(u.users || []); }
 
 module.exports = function (app) {
   app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
+  app.use('/api/admin', requireAdmin);
   app.get('/api/admin/stats', async (req, res) => {
     try {
       const [d, u, c] = await Promise.all([data(), users(), chats()]);
@@ -24,8 +54,9 @@ module.exports = function (app) {
   app.post('/api/admin/order-status', async (req, res) => {
     try {
       const b = req.body || {}; const d = await data(); const o = (d.orders || []).find(x => String(x.id) === String(b.id));
-      if (!o) return res.json({ error: 'مش موجود' });
-      const previous = o.status; o.status = b.status;
+      if (!o) return res.json({ error: 'الطلب غير موجود' });
+      if (!allowedStatus(b.status)) return res.status(400).json({ error: 'حالة الطلب غير صحيحة' });
+      const previous = o.status; o.status = String(b.status);
       await writeData(d);
       if (o.userId != null) {
         const u = await store.getUser(o.userId);
