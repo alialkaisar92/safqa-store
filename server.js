@@ -7,6 +7,7 @@ const PORT = process.env.PORT || 3000;
 try{const _f=require('fs');const _ep=require('path').join(__dirname,'.env');if(_f.existsSync(_ep)){const _c=_f.readFileSync(_ep,'utf8');const _re=/^([A-Z0-9_]+)=(.*)$/gm;let _m;while((_m=_re.exec(_c))){if(process.env[_m[1]]===undefined)process.env[_m[1]]=_m[2].trim();}}}catch(_e){}
 const API_KEY = process.env.SAFKA_API_KEY || '';
 const BASE_URL='https://api.safka-eg.com/api/v1/public';
+const safkaSync = require('./safka-sync');
 app.use(express.json({limit:'50mb'}));
 
 const crypto = require('crypto');
@@ -824,18 +825,24 @@ app.get('/api/my/dashboard', async (req,res)=>{try{const u=await currentUser(req
 app.post('/api/set-commission', (req,res)=>res.json({ok:true,message:'تم تحديث العمولة'}));
 app.post(['/api/withdraw','/api/my/withdraw'], async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});const amount=Number(req.body&&req.body.amount)||0;if(amount<=0)return res.json({error:'أدخل مبلغ صحيح'});if(amount>(+u.balance||0))return res.json({error:'الرصيد غير كافي'});const d=await readAffiliate();d.withdrawals=d.withdrawals||[];const w={id:Date.now(),userId:u.id,userName:u.name||'',amount,method:req.body.method||'',details:req.body.details||'',status:'pending',date:new Date().toISOString()};d.withdrawals.unshift(w);u.balance=(+u.balance||0)-amount;u.totalWithdrawn=(+u.totalWithdrawn||0)+amount;await Promise.all([saveAffiliate(d),firestore.saveUser(u)]);res.json({ok:true,message:'تم إرسال طلب السحب بنجاح'});}catch(e){console.error('withdraw:',e.message);res.status(500).json({error:'تعذر إرسال طلب السحب حالياً'});}});
 
-async function refreshProductsCache(){
-  try{
-    const r=await fetch('https://api.safka.app/api/v1/products?page=1&limit=500',{headers:{'x-api-key':process.env.SAFKA_API_KEY||''}});
-    const j=await r.json();const items=j.data||j.items||j||[];
-    require('fs').writeFileSync(require('path').join(__dirname,'products-cache.json'),JSON.stringify(items));
-    console.log('✅ Products cached:',items.length);
-  }catch(e){console.log('cache err:',e.message)}
-}
-refreshProductsCache();setInterval(refreshProductsCache,10*60*1000);
-
 require('./admin')(app);
 require('./notify')(app);
+
+async function refreshProductsCache(){
+  try { const result = await safkaSync.syncProducts({ notify: true }); console.log('✅ Safka products synced:', result.products, 'new:', result.newProducts); }
+  catch (e) { console.log('Safka cache sync err:', e.message); }
+}
+if (API_KEY.trim()) { refreshProductsCache(); setInterval(refreshProductsCache, 10 * 60 * 1000); }
+
+app.all('/api/safka/sync', async (req, res) => {
+  const secret = String(process.env.SAFKA_SYNC_SECRET || '').trim();
+  const supplied = String(req.headers['x-safka-sync-secret'] || req.query.secret || '').trim();
+  const isVercelCron = String(req.headers['x-vercel-cron'] || '').toLowerCase() === '1';
+  if (secret && supplied !== secret && !isVercelCron) return res.status(401).json({ error: 'غير مصرح' });
+  if (!secret && !isVercelCron && process.env.NODE_ENV === 'production') return res.status(503).json({ error: 'اضبط SAFKA_SYNC_SECRET أو Vercel Cron' });
+  try { res.json(await safkaSync.runSync({ notify: true })); }
+  catch (e) { res.status(500).json({ error: 'فشلت مزامنة Safka', details: e.message }); }
+});
 
 app.get('/api/price-list', async (req,res)=>{
   const fp=require('path').join(__dirname,'price-list-cache.json');

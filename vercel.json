@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/safka/sync",
+      "schedule": "*/10 * * * *"
+    }
+  ]
+}

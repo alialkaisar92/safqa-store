@@ -70,6 +70,8 @@ header{position:sticky;top:0;z-index:50;background:var(--paper);border-bottom:1p
 .cats::-webkit-scrollbar{display:none}
 .cc{flex:0 0 auto;padding:7px 15px;border-radius:50px;border:1.5px solid var(--line);background:var(--paper);font-weight:700;font-size:.78rem;color:var(--muted)}
 .cc.on{background:var(--forest);border-color:var(--forest);color:#fff}
+.ship-link{display:block;margin:0 16px 12px;width:calc(100% - 32px);border:1.5px solid var(--leaf);background:var(--mint);color:var(--forest-d);border-radius:12px;padding:9px 12px;font:700 .78rem Cairo,sans-serif;text-align:center;cursor:pointer}
+.shipping-table{width:100%;border-collapse:collapse;font-size:.78rem}.shipping-table th,.shipping-table td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:right}.shipping-table th{color:var(--forest-d);background:var(--mint)}.shipping-price{font-weight:900;color:var(--forest-d);white-space:nowrap}
 
 /* ---- hero ---- */
 .hero{background:var(--forest);color:#fff;padding:26px 18px 30px;position:relative;overflow:hidden}
@@ -169,6 +171,7 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
     <button class="cart-btn" onclick="openCart()">🛒<i id="cc">0</i></button>
   </div>
   <div class="cats" id="catRow"></div>
+  <button class="ship-link" type="button" onclick="openShippingRates()">🚚 عرض أسعار الشحن حسب المحافظة</button>
 </header>
 
 <div class="hero">
@@ -239,6 +242,14 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
   <div class="tot"><span>الشحن + المنتجات</span><b id="coTot">0</b></div>
   <button class="addbtn" onclick="submitOrder()">تأكيد الطلب</button>
   <div class="msg" id="coMsg"></div>
+</div></div>
+
+<div class="modal" id="shipping"><div class="sheet">
+  <button class="sheet-x" onclick="closeM('shipping')">✕</button>
+  <div style="clear:both"></div>
+  <h3 class="pm-name">أسعار الشحن في مصر</h3>
+  <p style="font-size:.76rem;color:var(--muted);margin-bottom:10px">الأسعار المعروضة محدثة من قائمة Safka الحالية وقد تختلف حسب المدينة أو تحديث شركة الشحن.</p>
+  <div id="shippingBody"><div style="text-align:center;color:var(--muted);padding:20px">جاري تحميل الأسعار...</div></div>
 </div></div>
 
 <div class="modal" id="acct"><div class="sheet">
@@ -371,6 +382,7 @@ function openCart(){
 function rmC(i){cart.splice(i,1);updCC();openCart();}
 
 var shipCost=0;
+function openShippingRates(){openM('shipping');var body=document.getElementById('shippingBody');if(!body)return;body.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">جاري تحميل الأسعار...</div>';fetch('/api/price-list').then(function(r){return r.json()}).then(function(rows){rows=Array.isArray(rows)?rows:[];if(!rows.length){body.innerHTML='<div class="empty">لا توجد أسعار متاحة حاليًا.</div>';return;}body.innerHTML='<div style="overflow:auto"><table class="shipping-table"><thead><tr><th>المحافظة</th><th>السعر</th><th>أمثلة من المدن</th></tr></thead><tbody>'+rows.map(function(x){var cities=(x.cities||[]).slice(0,4).map(function(c){return c.name||c.city_name_ar||''}).filter(Boolean).join('، ');return '<tr><td>'+String(x.name||x.governorateNameAr||'').replace(/[<>]/g,'')+'</td><td class="shipping-price">'+fmt(x.price)+'</td><td style="color:var(--muted)">'+String(cities||'حسب التغطية').replace(/[<>]/g,'')+'</td></tr>';}).join('')+'</tbody></table></div>';}).catch(function(){body.innerHTML='<div class="msg err">تعذر تحميل قائمة الشحن حاليًا.</div>';});}
 function loadGovs(){
   fetch('/api/price-list').then(function(r){return r.json()}).then(function(g){
     GOVS=g||[];
