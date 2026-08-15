@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
 const store = require('./firestore');
+const { availableBalance } = require('./balance');
 
 const BASE_URL = process.env.SAFKA_PUBLIC_BASE_URL || 'https://api.safka-eg.com/api/v1/public';
 const CACHE_FILE = path.join(__dirname, 'products-cache.json');
@@ -77,9 +78,13 @@ async function syncOrderStatuses() {
       const next = mapStatus(raw);
       if (!raw || next === order.status) continue;
       const previous = order.status; order.status = next; order.safkaStatus = raw; order.statusSyncedAt = new Date().toISOString(); changed++;
-      if (next === 'تم التسليم' && previous !== 'تم التسليم' && order.userId != null && (+order.commission || 0) > 0) {
+      if (order.userId != null) {
         const user = await store.getUser(order.userId);
-        if (user) { user.balance = (+user.balance || 0) + (+order.commission || 0); user.totalEarned = (+user.totalEarned || 0) + (+order.commission || 0); await store.saveUser(user); delivered++; }
+        if (user) {
+          if (next === 'تم التسليم' && previous !== 'تم التسليم' && (+order.commission || 0) > 0) { user.totalEarned = (+user.totalEarned || 0) + (+order.commission || 0); delivered++; }
+          user.balance = availableBalance(user, affiliate);
+          await store.saveUser(user);
+        }
       }
       if (global.notifyUser && order.userId != null) await global.notifyUser(order.userId, 'تحديث حالة طلب', 'حالة طلبك الآن: ' + next, '/', 'order-status').catch(() => null);
     } catch (e) { console.warn('Safka status sync skipped order', order.id, e.message); }

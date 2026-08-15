@@ -1,5 +1,6 @@
 const path = require('path');
 const store = require('./firestore');
+const { availableBalance } = require('./balance');
 
 async function data() { return store.getAffiliateData(); }
 async function users() { return { users: await store.getUsers() }; }
@@ -26,9 +27,13 @@ module.exports = function (app) {
       if (!o) return res.json({ error: 'مش موجود' });
       const previous = o.status; o.status = b.status;
       await writeData(d);
-      if (b.status === 'تم التسليم' && previous !== 'تم التسليم' && o.userId != null && (+o.commission || 0) > 0) {
+      if (o.userId != null) {
         const u = await store.getUser(o.userId);
-        if (u) { u.balance = (+u.balance || 0) + (+o.commission || 0); u.totalEarned = (+u.totalEarned || 0) + (+o.commission || 0); await store.saveUser(u); }
+        if (u) {
+          if (b.status === 'تم التسليم' && previous !== 'تم التسليم' && (+o.commission || 0) > 0) u.totalEarned = (+u.totalEarned || 0) + (+o.commission || 0);
+          u.balance = availableBalance(u, d);
+          await store.saveUser(u);
+        }
       }
       if (global.notifyUser && o.userId != null) global.notifyUser(o.userId, 'تحديث حالة طلب', 'حالة طلبك الآن: ' + b.status, '/', 'order-status');
       res.json({ ok: true });

@@ -8,6 +8,7 @@ try{const _f=require('fs');const _ep=require('path').join(__dirname,'.env');if(_
 const API_KEY = process.env.SAFKA_API_KEY || '';
 const BASE_URL='https://api.safka-eg.com/api/v1/public';
 const safkaSync = require('./safka-sync');
+const { availableBalance } = require('./balance');
 app.use(express.json({limit:'50mb'}));
 
 const crypto = require('crypto');
@@ -61,6 +62,11 @@ let productsCache = [], priceListCache = [], lastFetch = 0;
 async function currentUser(req){ try { return await currentAuthUser(req); } catch(e) { return null; } }
 async function readAffiliate(){ return firestore.getAffiliateData(); }
 async function saveAffiliate(d){ return firestore.saveAffiliateData(d); }
+async function syncUserBalance(user, affiliate) {
+  const next = availableBalance(user, affiliate);
+  if (Number(user.balance || 0) !== next) { user.balance = next; await firestore.saveUser(user); }
+  return next;
+}
 
 function cat(n) {
   if (!n) return 'أخرى';
@@ -819,11 +825,11 @@ app.get('/dashboard',(req,res)=>res.sendFile(require('path').join(__dirname,'das
 
 require('./auth')(app);
 
-app.get('/api/me', async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.json({balance:0,orders:[],name:'',phone:''});const d=await readAffiliate();res.json({id:u.id,name:u.name||u.display_name||'',phone:u.phone||u.contact||'',balance:u.balance||0,orders:(d.orders||[]).filter(o=>String(o.userId)===String(u.id))});}catch(e){res.status(500).json({error:'تعذر تحميل الحساب'});}});
+app.get('/api/me', async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.json({balance:0,orders:[],name:'',phone:''});const d=await readAffiliate();const orders=(d.orders||[]).filter(o=>String(o.userId)===String(u.id));const balance=await syncUserBalance(u,d);res.json({id:u.id,name:u.name||u.display_name||'',phone:u.phone||u.contact||'',balance,orders});}catch(e){res.status(500).json({error:'تعذر تحميل الحساب'});}});
 app.post('/api/profile', async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});if(req.body.name)u.name=String(req.body.name);if(req.body.phone)u.phone=String(req.body.phone);if(req.body.payoutMethod)u.payoutMethod=String(req.body.payoutMethod);if(req.body.payoutDetails)u.payoutDetails=String(req.body.payoutDetails);await firestore.saveUser(u);res.json({ok:true,message:'تم حفظ البيانات'});}catch(e){res.status(500).json({error:'فشل الحفظ'});}});
-app.get('/api/my/dashboard', async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});const d=await readAffiliate();const orders=(d.orders||[]).filter(o=>String(o.userId)===String(u.id));const withdrawals=(d.withdrawals||[]).filter(w=>String(w.userId)===String(u.id));const month=new Date().toISOString().slice(0,7);const completed=orders.filter(o=>o.status==='تم التسليم');const monthCommission=orders.filter(o=>String(o.date||'').slice(0,7)===month).reduce((s,o)=>s+(+o.commission||0),0);res.json({user:{id:u.id,name:u.name||u.display_name||'',phone:u.phone||u.contact||'',email:u.email||'',balance:+u.balance||0,payoutMethod:u.payoutMethod||'',payoutDetails:u.payoutDetails||''},stats:{orders:orders.length,completed:completed.length,monthCommission},orders:orders.slice(0,100),withdrawals:withdrawals.slice(0,100)});}catch(e){res.status(500).json({error:'تعذر تحميل لوحة المسوّق'});}});
+app.get('/api/my/dashboard', async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});const d=await readAffiliate();const orders=(d.orders||[]).filter(o=>String(o.userId)===String(u.id));const withdrawals=(d.withdrawals||[]).filter(w=>String(w.userId)===String(u.id));const month=new Date().toISOString().slice(0,7);const completed=orders.filter(o=>o.status==='تم التسليم');const monthCommission=orders.filter(o=>String(o.date||'').slice(0,7)===month).reduce((s,o)=>s+(+o.commission||0),0);const balance=await syncUserBalance(u,d);res.json({user:{id:u.id,name:u.name||u.display_name||'',phone:u.phone||u.contact||'',email:u.email||'',balance,payoutMethod:u.payoutMethod||'',payoutDetails:u.payoutDetails||''},stats:{orders:orders.length,completed:completed.length,monthCommission},orders:orders.slice(0,100),withdrawals:withdrawals.slice(0,100)});}catch(e){res.status(500).json({error:'تعذر تحميل لوحة المسوّق'});}});
 app.post('/api/set-commission', (req,res)=>res.json({ok:true,message:'تم تحديث العمولة'}));
-app.post(['/api/withdraw','/api/my/withdraw'], async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});const amount=Number(req.body&&req.body.amount)||0;if(amount<=0)return res.json({error:'أدخل مبلغ صحيح'});if(amount>(+u.balance||0))return res.json({error:'الرصيد غير كافي'});const d=await readAffiliate();d.withdrawals=d.withdrawals||[];const w={id:Date.now(),userId:u.id,userName:u.name||'',amount,method:req.body.method||'',details:req.body.details||'',status:'pending',date:new Date().toISOString()};d.withdrawals.unshift(w);u.balance=(+u.balance||0)-amount;u.totalWithdrawn=(+u.totalWithdrawn||0)+amount;await Promise.all([saveAffiliate(d),firestore.saveUser(u)]);res.json({ok:true,message:'تم إرسال طلب السحب بنجاح'});}catch(e){console.error('withdraw:',e.message);res.status(500).json({error:'تعذر إرسال طلب السحب حالياً'});}});
+app.post(['/api/withdraw','/api/my/withdraw'], async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});const d=await readAffiliate();const available=await syncUserBalance(u,d);const amount=Number(req.body&&req.body.amount)||0;if(amount<=0)return res.json({error:'أدخل مبلغ صحيح'});if(amount>available)return res.json({error:'الرصيد غير كافي للسحب؛ تُضاف العمولة بعد تأكيد التسليم'});d.withdrawals=d.withdrawals||[];const w={id:Date.now(),userId:u.id,userName:u.name||'',amount,method:req.body.method||'',details:req.body.details||'',status:'pending',date:new Date().toISOString()};d.withdrawals.unshift(w);const next=availableBalance(u,d);u.balance=next;u.totalWithdrawn=(+u.totalWithdrawn||0)+amount;await Promise.all([saveAffiliate(d),firestore.saveUser(u)]);res.json({ok:true,message:'تم إرسال طلب السحب بنجاح',balance:next});}catch(e){console.error('withdraw:',e.message);res.status(500).json({error:'تعذر إرسال طلب السحب حالياً'});}});
 
 require('./admin')(app);
 require('./notify')(app);

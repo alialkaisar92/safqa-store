@@ -150,6 +150,7 @@ module.exports = function (app) {
     const b = req.body || {};
     const u = await store.getUser(b.userId);
     if (!u) return res.json({ error: 'user' });
+    u.manualCredits = (+u.manualCredits || 0) + (+b.amount || 0);
     u.balance = (+u.balance || 0) + (+b.amount || 0);
     u.salesCount = (+u.salesCount || 0) + 1;
     u.sales = u.sales || [];
