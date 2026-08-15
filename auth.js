@@ -151,7 +151,11 @@ module.exports = function (app) {
     try {
       const b = req.body || {};
       const u = await findUserByLogin(b.contact || b.username || b.email || b.phone);
-      if (!u || u.pass !== hashPw(b.password || '')) return res.json({ error: 'بيانات الدخول غلط' });
+      const adminEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+      const adminPasswordHash = String(process.env.ADMIN_PASSWORD_HASH || '').trim().toLowerCase();
+      const loginContact = String(b.contact || b.username || b.email || b.phone || '').trim().toLowerCase();
+      const isConfiguredAdmin = !!adminEmail && loginContact === adminEmail && !!adminPasswordHash && hashPw(b.password || '') === adminPasswordHash;
+      if (!u || (!isConfiguredAdmin && u.pass !== hashPw(b.password || ''))) return res.json({ error: 'بيانات الدخول غلط' });
       if (u.banned) return res.json({ error: 'الحساب محظور' });
       u.lastSeen = Date.now(); await store.saveUser(u);
       const t = await issue(u);
