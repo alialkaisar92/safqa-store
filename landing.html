@@ -1,185 +1,279 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Earnify | منصة التسويق بالعمولة</title><meta name="description" content="اربح عمولات عالية من تسويق المنتجات مع Earnify."><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"><style>
-:root{--bg:#f7faf9;--card:#fff;--card2:#eef5f2;--line:rgba(15,118,110,.14);--p:#0f766e;--p2:#10b981;--tx:#0f172a;--mut:#5b6b7a;--rad:16px;--sh:0 10px 30px -14px rgba(15,118,110,.22)}
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--tx);font-family:Cairo,system-ui,sans-serif;line-height:1.6}
-.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
-section{padding:70px 0}
-.h2{font-size:1.7rem;font-weight:800;text-align:center;margin-bottom:6px}
-.h2:after{content:"";display:block;width:56px;height:3px;background:linear-gradient(90deg,var(--p2),var(--p));margin:10px auto 0;border-radius:3px}
-.sub{color:var(--mut);text-align:center;margin-bottom:38px;font-size:.95rem}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);box-shadow:var(--sh)}
-.btn{display:inline-block;border:none;cursor:pointer;border-radius:12px;padding:12px 24px;font-weight:700;font-family:inherit;transition:.25s;text-decoration:none;text-align:center}
-.btn-p{background:linear-gradient(135deg,var(--p2),var(--p));color:#fff}
-.btn-ghost{background:#fff;border:1px solid var(--line);color:var(--tx)}
-.btn:hover{transform:translateY(-2px);box-shadow:var(--sh)}
-.navbar{position:sticky;top:0;z-index:90;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-.navbar .wrap{display:flex;align-items:center;justify-content:space-between;padding:14px 20px}
-.logo{font-weight:800;font-size:1.3rem;color:var(--p)}
-.navlinks{display:flex;gap:22px}
-.navlinks a{color:var(--mut);text-decoration:none;font-size:.9rem;font-weight:600}
-.navlinks a:hover{color:var(--p)}
-.hero{padding:80px 0 50px;display:grid;grid-template-columns:1.1fr .9fr;gap:44px;align-items:center}
-.tag{display:inline-block;background:rgba(16,185,129,.1);color:var(--p);border:1px solid var(--line);border-radius:50px;padding:5px 14px;font-size:.78rem;font-weight:700;margin-bottom:16px}
-.hero h1{font-size:2.3rem;line-height:1.25;font-weight:800;margin-bottom:14px}
-.hero h1 b{color:var(--p2)}
-.hero p{color:var(--mut);margin-bottom:24px}
-.cta{display:flex;gap:12px;flex-wrap:wrap}
-.trust{display:flex;gap:18px;margin-top:26px;flex-wrap:wrap}
-.trust span{color:var(--mut);font-size:.82rem}
-.mock{padding:22px}
-.mock h3{font-size:.95rem;color:var(--mut);font-weight:600;margin-bottom:12px}
-.bars{display:flex;gap:8px;align-items:flex-end;height:130px}
-.bars i{flex:1;background:linear-gradient(180deg,var(--p2),var(--p));border-radius:6px 6px 0 0}
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
-.kpis div{background:var(--card2);border-radius:10px;padding:10px;text-align:center}
-.kpis b{color:var(--p);display:block}
-.kpis small{color:var(--mut);font-size:.7rem}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.stat{padding:26px 12px;text-align:center}
-.stat b{font-size:1.7rem;color:var(--p);display:block}
-.stat span{color:var(--mut);font-size:.83rem}
-.cats{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
-.cat{padding:22px 8px;text-align:center;transition:.25s;cursor:pointer}
-.cat:hover{transform:translateY(-4px);border-color:var(--p2)}
-.cat i{font-style:normal;font-size:1.8rem;display:block;margin-bottom:8px}
-.cat span{font-size:.85rem;font-weight:600}
-@media(max-width:860px){.hero{grid-template-columns:1fr}.hero h1{font-size:1.8rem}.navlinks{display:none}.stats{grid-template-columns:repeat(2,1fr)}.cats{grid-template-columns:repeat(3,1fr)}}
-
-.ggrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
-.gstep{padding:24px;text-align:right}
-.gic{font-size:2.1rem;margin-bottom:8px}
-.gstep h3{color:var(--p);margin-bottom:12px;font-size:1.05rem}
-.gstep ol{padding-right:18px;margin:0}
-.gstep li{font-size:.86rem;color:var(--mut);margin-bottom:9px}
-.gstep li b{color:var(--p2)}
-</style></head><body>
-<header class="navbar"><div class="wrap"><div class="logo">💰 Earnify</div><nav class="navlinks"><a href="#feat">المنتجات</a><a href="#how">كيف تعمل</a><a href="#dash">لوحة التحكم</a><a href="#calc">حاسبة الأرباح</a><a href="#guide">الدليل</a><a href="#faq">الأسئلة</a></nav><a class="btn btn-p" href="/store">ابدأ الآن</a></div></header>
-<section class="wrap hero"><div><span class="tag">✨ المنصة الأولى للتسويق بالعمولة</span><h1>سوّق منتجات <b>مختارة بعناية</b> واربح عمولة على كل بيع</h1><p>انضم لآلاف المسوقين، انسخ رابطك، شاركه، وتابع أرباحك لحظياً — بدون رأس مال وبدون خبرة.</p><div class="cta"><a class="btn btn-p" href="/store">🚀 ابدأ التسويق مجاناً</a><a class="btn btn-ghost" href="#how">اعرف أكتر</a></div><div class="trust"><span>⭐ 4.9 تقييم</span><span>✅ دفع مضمون</span><span>🔒 آمن 100%</span></div></div>
-<div class="card mock"><h3>أرباحك هذا الشهر</h3><div class="bars"><i style="height:40%"></i><i style="height:62%"></i><i style="height:50%"></i><i style="height:78%"></i><i style="height:66%"></i><i style="height:95%"></i></div><div class="kpis"><div><b>48.2K</b><small>إيراد ج.م</small></div><div><b>1,240</b><small>طلب</small></div><div><b>4.8%</b><small>تحويل</small></div></div></div></section>
-<section class="wrap"><div class="stats"><div class="card stat"><b data-count="12500">0</b><span>مسوق نشط</span></div><div class="card stat"><b data-count="850">0</b><span>منتج</span></div><div class="card stat"><b data-count="3200000">0</b><span>ج.م عمولات</span></div><div class="card stat"><b data-count="98">0</b><span>% رضا</span></div></div></section>
-<section class="wrap"><h2 class="h2">تسوّق حسب التصنيف</h2><p class="sub">أشهر التصنيفات الأعلى مبيعاً</p><div class="cats"><div class="card cat"><i>📱</i><span>إلكترونيات</span></div><div class="card cat"><i>👗</i><span>أزياء</span></div><div class="card cat"><i>💄</i><span>جمال</span></div><div class="card cat"><i>🏠</i><span>منزل</span></div><div class="card cat"><i>👶</i><span>أطفال</span></div><div class="card cat"><i>⚽</i><span>رياضة</span></div></div></section>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Earnify | اربح من التسويق بالعمولة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
-.pcard{overflow:hidden;display:flex;flex-direction:column}
-.pcard img{width:100%;height:180px;object-fit:cover}
-.pbody{padding:16px;display:flex;flex-direction:column;gap:10px;flex:1}
-.pname{font-weight:700;font-size:.95rem;min-height:2.6em}
-.prow{display:flex;align-items:center;gap:10px}
-.now{color:var(--p);font-weight:800;font-size:1.05rem}
-.old{color:var(--mut);text-decoration:line-through;font-size:.8rem}
-.meta{display:flex;gap:8px;align-items:center;font-size:.72rem}
-.b{padding:3px 10px;border-radius:20px;font-weight:700}
-.b-g{background:rgba(16,185,129,.12);color:var(--p)}
-.b-y{background:rgba(15,118,110,.08);color:var(--p)}
-.comm{color:var(--p);font-size:.8rem;font-weight:700}
-.pact{display:flex;gap:8px;margin-top:auto}
-.pact .btn{flex:1;padding:9px;font-size:.78rem}
-.trend{display:flex;gap:14px;overflow-x:auto;padding:6px 2px;scroll-snap-type:x mandatory}
-.trend .pcard{min-width:230px;scroll-snap-align:start}
-.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.step{padding:28px 14px;text-align:center}
-.step b{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--p2),var(--p));color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:12px}
-.step h3{font-size:1rem;margin-bottom:6px}
-.step p{color:var(--mut);font-size:.82rem}
-.feat{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.fcard{padding:26px 16px;text-align:center}
-.fcard i{font-style:normal;font-size:1.9rem;display:block;margin-bottom:10px}
-.fcard h3{font-size:1rem;margin-bottom:6px}
-.fcard p{color:var(--mut);font-size:.82rem}
-.dash{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
-.kpi{padding:20px;text-align:center}
-.kpi small{color:var(--mut);font-size:.78rem}
-.kpi b{display:block;font-size:1.5rem;color:var(--p)}
-.panels{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.panel{padding:20px}
-.earn{display:flex;gap:8px;align-items:flex-end;height:140px;margin-top:14px}
-.earn i{flex:1;background:linear-gradient(180deg,var(--p2),var(--p));border-radius:6px 6px 0 0}
-.orders{width:100%;border-collapse:collapse;margin-top:10px}
-.orders td{padding:9px 4px;font-size:.83rem;border-bottom:1px solid var(--line)}
-.calc{max-width:520px;margin:0 auto;padding:30px}
-.calc label{display:block;margin:14px 0 6px;font-size:.88rem;font-weight:600}
-.calc input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--tx);font-family:inherit}
-.res{margin-top:20px;padding:16px;border-radius:12px;background:linear-gradient(135deg,var(--p2),var(--p));color:#fff;text-align:center;font-weight:800;font-size:1.2rem}
-.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.tcard{padding:24px}
-.tcard p{color:var(--mut);font-size:.88rem;margin:8px 0}
-.tgrid .rate{color:#f59e0b}
-.faq{max-width:720px;margin:0 auto}
-.fitem{margin-bottom:12px;overflow:hidden}
-.faq-q{width:100%;text-align:right;padding:16px 18px;background:var(--card);border:1px solid var(--line);color:var(--tx);font-weight:700;cursor:pointer;border-radius:12px;font-family:inherit;font-size:.95rem}
-.faq-a{max-height:0;overflow:hidden;transition:max-height .3s}
-.fitem.open .faq-a{padding:0 18px 16px}
-.faq-a p{color:var(--mut);font-size:.87rem}
-.bigcta{text-align:center;padding:60px 20px;border-radius:22px;background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(15,118,110,.05));border:1px solid var(--line)}
-.bigcta h2{font-size:1.7rem;margin-bottom:10px}
-.bigcta p{color:var(--mut);margin-bottom:22px}
-footer{background:#0b3d38;color:#cde9e4;padding:50px 0 20px;margin-top:50px}
-.fcols{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:26px}
-footer h4{color:#fff;margin-bottom:12px;font-size:.95rem}
-footer a{color:#a8cfc8;text-decoration:none;display:block;margin:7px 0;font-size:.85rem;cursor:pointer}
-footer a:hover{color:#fff}
-.copy{text-align:center;color:#8fb8b1;font-size:.8rem;border-top:1px solid rgba(255,255,255,.12);margin-top:30px;padding-top:18px}
-#toTop{position:fixed;bottom:20px;inset-inline-start:20px;width:46px;height:46px;border-radius:50%;border:none;background:var(--p);color:#fff;font-size:1.1rem;cursor:pointer;display:none;z-index:95}
-#toTop.show{display:block}
-#waFloat{position:fixed;bottom:20px;inset-inline-end:20px;width:52px;height:52px;border-radius:50%;background:#25d366;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;text-decoration:none;z-index:95;box-shadow:var(--sh)}
-.reveal{opacity:0;transform:translateY(24px);transition:.7s}
-.reveal.visible{opacity:1;transform:none}
-.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--p);color:#fff;padding:10px 22px;border-radius:50px;z-index:999;box-shadow:var(--sh)}
-@media(max-width:860px){.steps,.feat{grid-template-columns:repeat(2,1fr)}.dash{grid-template-columns:repeat(2,1fr)}.panels{grid-template-columns:1fr}.tgrid{grid-template-columns:1fr}.fcols{grid-template-columns:1fr 1fr}}
+:root{
+  --ink:#0B1F17; --forest:#0E5B3A; --forest-d:#0A4229; --leaf:#1F9D55;
+  --mint:#EEF7F1; --paper:#FFFFFF; --line:#D8E8DE; --muted:#5B6F64;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:Cairo,system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.6}
+img{max-width:100%;display:block}
+a{text-decoration:none;color:inherit}
+h1,h2,h3{font-family:Lalezar,Cairo,sans-serif;font-weight:400}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:13px 24px;border-radius:50px;font-weight:800;font-size:.9rem;cursor:pointer;border:none;font-family:inherit}
+.btn-p{background:var(--forest);color:#fff}
+.btn-ghost{background:var(--paper);color:var(--forest-d);border:1.6px solid var(--line)}
+.stamp{display:inline-flex;align-items:center;gap:6px;border:1.6px dashed var(--forest);color:var(--forest-d);border-radius:50px;padding:6px 14px;font-size:.75rem;font-weight:800;transform:rotate(-3deg);background:var(--mint)}
+.h2{font-size:1.7rem;text-align:center;margin-bottom:6px}
+.sub{text-align:center;color:var(--muted);font-size:.92rem;margin-bottom:28px}
+section{padding:52px 0}
+
+/* navbar */
+.navbar{position:sticky;top:0;z-index:80;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.navbar .wrap{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;gap:14px}
+.logo{font-family:Lalezar;font-size:1.5rem;color:var(--forest)}
+.logo span{color:var(--ink)}
+.navlinks{display:flex;gap:20px;font-size:.86rem;font-weight:700;color:var(--muted)}
+.navlinks a:hover{color:var(--forest-d)}
+@media(max-width:820px){.navlinks{display:none}}
+
+/* hero */
+.hero{background:linear-gradient(180deg,var(--mint),#fff 70%);padding:56px 0 40px}
+.hero .wrap{display:flex;flex-wrap:wrap;gap:30px;align-items:center}
+.hero-txt{flex:1;min-width:280px}
+.hero h1{font-size:2.3rem;line-height:1.35;margin:14px 0 12px}
+.hero h1 b{color:var(--forest-d)}
+.hero p{color:var(--muted);font-size:.98rem;margin-bottom:20px;max-width:480px}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.trust{display:flex;gap:16px;font-size:.78rem;color:var(--muted);font-weight:700;flex-wrap:wrap}
+.hero-visual{flex:1;min-width:260px;display:flex;justify-content:center}
+.ledger{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:22px;width:100%;max-width:330px;box-shadow:0 20px 40px -20px rgba(11,31,23,.25)}
+.ledger h4{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+.lrow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:.85rem}
+.lrow:last-child{border:0}
+.lrow b{color:var(--forest-d)}
+.ltotal{display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:2px solid var(--ink);font-weight:800;font-size:1.1rem}
+
+/* kpis */
+.kpis{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.kpi{flex:1;min-width:140px;text-align:center;padding:24px 10px;border-inline-end:1px solid var(--line)}
+.kpi b{display:block;font-family:Lalezar;font-size:1.9rem;color:var(--forest-d)}
+.kpi span{font-size:.78rem;color:var(--muted);font-weight:700}
+
+/* features */
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.fcard{border:1px solid var(--line);border-radius:16px;padding:22px}
+.fcard .gic{font-size:1.6rem;margin-bottom:10px}
+.fcard h3{font-family:Cairo;font-weight:800;font-size:1rem;margin-bottom:6px}
+.fcard p{font-size:.84rem;color:var(--muted)}
+
+/* how it works */
+.how{background:var(--mint)}
+.steps{display:flex;flex-wrap:wrap;gap:18px;counter-reset:s}
+.step{flex:1;min-width:200px;position:relative;padding-top:8px}
+.step:before{counter-increment:s;content:counter(s);display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:var(--forest);color:#fff;font-weight:800;margin-bottom:10px}
+.step h3{font-family:Cairo;font-weight:800;font-size:.95rem;margin-bottom:5px}
+.step p{font-size:.83rem;color:var(--muted)}
+
+/* products */
+.pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(min-width:640px){.pgrid{grid-template-columns:repeat(4,1fr)}}
+.pcard{border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.pcard img{aspect-ratio:1;object-fit:cover;width:100%;background:var(--mint)}
+.pbody{padding:10px}
+.pname{font-size:.8rem;font-weight:700;min-height:2.2em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:5px}
+.prow{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.now{font-weight:800;color:var(--forest-d);font-size:.9rem}
+.old{color:var(--muted);text-decoration:line-through;font-size:.72rem}
+.comm{font-size:.72rem;font-weight:800;color:var(--forest-d);background:var(--mint);display:inline-block;padding:3px 8px;border-radius:6px;margin-bottom:8px}
+.pact{display:flex;gap:6px}
+.pact .btn{flex:1;padding:8px;font-size:.72rem;justify-content:center}
+
+/* calc */
+.calc{max-width:420px;margin:0 auto;border:1px solid var(--line);border-radius:18px;padding:24px}
+.calc label{display:block;font-size:.8rem;font-weight:700;margin:12px 0 5px;color:var(--muted)}
+.calc input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:11px;font-family:inherit;font-size:.9rem}
+.res{margin-top:16px;background:var(--mint);border-radius:14px;padding:16px;text-align:center;font-family:Lalezar;font-size:1.6rem;color:var(--forest-d)}
+
+/* faq */
+.faq-item{border-bottom:1px solid var(--line)}
+.faq-q{padding:16px 4px;font-weight:700;font-size:.9rem;display:flex;justify-content:space-between;cursor:pointer}
+.faq-q:after{content:'+';font-size:1.3rem;color:var(--forest)}
+.faq-item.open .faq-q:after{content:'−'}
+.faq-a{max-height:0;overflow:hidden;font-size:.85rem;color:var(--muted);transition:max-height .25s}
+.faq-item.open .faq-a{padding-bottom:16px}
+
+footer{background:var(--forest-d);color:#fff;padding:44px 0 20px}
+.fcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:22px;margin-bottom:26px}
+.fcols h4{font-family:Lalezar;font-weight:400;margin-bottom:10px;font-size:1.05rem}
+.fcols a{display:block;font-size:.82rem;color:rgba(255,255,255,.75);padding:4px 0}
+.copy{border-top:1px solid rgba(255,255,255,.15);padding-top:16px;text-align:center;font-size:.78rem;color:rgba(255,255,255,.6)}
+
+.modal-ov{position:fixed;inset:0;background:rgba(11,31,23,.55);z-index:300;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-ov.on{display:flex}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 20px;border-radius:50px;z-index:400;font-size:.82rem;font-weight:700}
 </style>
-<section class="wrap" id="feat"><h2 class="h2">منتجات مميزة</h2><p class="sub">أعلى المنتجات عمولةً — سوّقها الآن</p><div class="pgrid" id="featGrid"></div></section>
-<section class="wrap"><h2 class="h2">🔥 الأكثر رواجاً</h2><p class="sub">منتجات يتهافت عليها المشترين</p><div class="trend" id="trendRow"></div></section>
-<section class="wrap" id="how"><h2 class="h2">كيف تعمل Earnify؟</h2><p class="sub">أربع خطوات تفصلك عن أول عمولة</p><div class="steps"><div class="card step reveal"><b>1</b><h3>سجّل مجاناً</h3><p>أنشئ حسابك في أقل من دقيقة</p></div><div class="card step reveal"><b>2</b><h3>اختر منتجاً</h3><p>تصفح واختر ما يناسب جمهورك</p></div><div class="card step reveal"><b>3</b><h3>انسخ رابطك</h3><p>شاركه على قنواتك ومتابعينك</p></div><div class="card step reveal"><b>4</b><h3>اكسب العمولة</h3><p>عمولة فورية على كل عملية بيع</p></div></div></section>
-<section class="wrap"><h2 class="h2">لماذا Earnify؟</h2><p class="sub">مميزات تجعلنا الخيار الأول</p><div class="feat"><div class="card fcard reveal"><i>💸</i><h3>عمولات عالية</h3><p>أعلى نسب عمولة في السوق</p></div><div class="card fcard reveal"><i>⚡</i><h3>سحب فوري</h3><p>اسحب أرباحك في أي وقت</p></div><div class="card fcard reveal"><i>📊</i><h3>لوحة ذكية</h3><p>تابع نقراتك ومبيعاتك لحظياً</p></div><div class="card fcard reveal"><i>🎧</i><h3>دعم متواصل</h3><p>فريق جاهز لمساعدتك دوماً</p></div></div></section>
-<section class="wrap" id="dash"><h2 class="h2">لوحة تحكم احترافية</h2><p class="sub">كل أرقامك في مكان واحد</p><div class="dash"><div class="card kpi reveal"><small>الإيرادات</small><b>48,200 ج.م</b></div><div class="card kpi reveal"><small>الطلبات</small><b>1,240</b></div><div class="card kpi reveal"><small>النقرات</small><b>25,800</b></div><div class="card kpi reveal"><small>التحويل</small><b>4.8%</b></div></div><div class="panels"><div class="card panel reveal"><b>الأرباح الشهرية</b><div class="earn"><i style="height:35%"></i><i style="height:55%"></i><i style="height:45%"></i><i style="height:75%"></i><i style="height:60%"></i><i style="height:90%"></i></div></div><div class="card panel reveal"><b>أحدث الطلبات</b><table class="orders"><tr><td>طلب #1042</td><td style="color:var(--p2)">+120 ج.م</td></tr><tr><td>طلب #1041</td><td style="color:var(--p2)">+85 ج.م</td></tr><tr><td>طلب #1040</td><td style="color:var(--p2)">+210 ج.م</td></tr></table></div></div></section>
-<section class="wrap" id="calc"><h2 class="h2">حاسبة الأرباح</h2><p class="sub">اعرف كم ممكن تكسب شهرياً</p><div class="card calc"><label>عدد النقرات شهرياً</label><input type="number" id="cClicks" value="1000"><label>معدل التحويل %</label><input type="number" id="cConv" value="3"><label>متوسط العمولة (ج.م)</label><input type="number" id="cComm" value="60"><button class="btn btn-p" style="width:100%;margin-top:18px" onclick="calcEarnings()">احسب أرباحي</button><div class="res" id="cRes">0 ج.م / شهر</div></div></section>
-<section class="wrap"><h2 class="h2">ماذا يقول المسوقون؟</h2><p class="sub">آراء حقيقية</p><div class="tgrid"><div class="card tcard reveal"><div class="rate">★★★★★</div><p>"حققت أول 5000 جنيه في شهري الأول، المنصة سهلة جداً."</p><b>— أحمد م.</b></div><div class="card tcard reveal"><div class="rate">★★★★★</div><p>"أفضل منصة عمولة، والسحب فوري بدون أي مشاكل."</p><b>— سارة ع.</b></div><div class="card tcard reveal"><div class="rate">★★★★★</div><p>"الدعم ممتاز ولوحة التحكم واضحة جداً."</p><b>— محمد ر.</b></div></div></section>
-<section class="wrap" id="guide"><h2 class="h2">📘 دليل الاستخدام الكامل</h2><p class="sub">كل خطوة بالتفصيل — من التسجيل لحد سحب أرباحك</p><div class="ggrid">
-<div class="card gstep reveal"><div class="gic">👤</div><h3>1. إنشاء حساب</h3><ol><li>دوس <b>「ابدأ التسويق مجاناً」</b> أو 「سجّل مجاناً」</li><li>اختار تاب <b>「إنشاء حساب」</b></li><li>اكتب اسمك + رقم موبايلك + كلمة سر (6 أحرف فأكثر)</li><li>دوس 「إنشاء الحساب والبدء」 — هتدخل المتجر فوراً</li></ol></div>
-<div class="card gstep reveal"><div class="gic">🛍️</div><h3>2. التسوق والسلة</h3><ol><li>تصفّح المنتجات ولاحظ شارة المخزون (متوفر / متبقي / نفد)</li><li>دوس على المنتج لفتح تفاصيله</li><li>حدّد الكمية بأزرار − و +</li><li>دوس 「أضف إلى السلة」 — العداد فوق يتحدث فوراً</li></ol></div>
-<div class="card gstep reveal"><div class="gic">💳</div><h3>3. إتمام الطلب</h3><ol><li>من السلة دوس 「إتمام الطلب للعميل」</li><li>اكتب اسم العميل وتليفونه وعنوانه</li><li>اختار المحافظة ثم المدينة</li><li>حدّد سعر الشحن وعمولتك، راجع الإجمالي ثم أكّد</li></ol></div>
-<div class="card gstep reveal"><div class="gic">📊</div><h3>4. متابعة أرباحك</h3><ol><li><b>「طلباتي」</b> — كل طلباتك وحالتها</li><li><b>「الإحصائيات」</b> — أرباحك ومبيعاتك بالأرقام</li><li><b>「حسابي」</b> — بياناتك وتعديلها</li><li><b>「الدعم」</b> — كلّمنا وابعث صور أو صوت</li></ol></div>
-<div class="card gstep reveal"><div class="gic">🎁</div><h3>5. الكسب بالمشاركة</h3><ol><li>انسخ رابط التسويق الخاص بيك من أي منتج</li><li>شاركه على فيسبوك / واتساب / تيك توك</li><li>لما حد يشتري من رابطك، العمولة تتضاف لرصيدك</li><li>لما رصيدك يكبر، روح 「السحب」 واسحب فلوسك</li></ol></div>
-<div class="card gstep reveal"><div class="gic">❓</div><h3>6. أسئلة سريعة</h3><ol><li>الاشتراك <b>مجاني 100%</b> وبدون رأس مال</li><li>العمولة تصل حتى <b>30%</b> حسب المنتج</li><li>السحب عبر فودافون كاش / إنستاباي / بنك</li><li>أي مشكلة؟ ابعتلنا من صفحة الدعم</li></ol></div>
+</head>
+<body>
+
+<header class="navbar"><div class="wrap">
+  <div class="logo">Earn<span>ify</span></div>
+  <nav class="navlinks">
+    <a href="#feat">المنتجات</a><a href="#how">كيف تعمل</a><a href="#calc">حاسبة الأرباح</a><a href="#faq">الأسئلة</a>
+  </nav>
+  <a class="btn btn-p" id="startBtn" href="/store">ابدأ الآن</a>
+</div></header>
+
+<section class="hero"><div class="wrap">
+  <div class="hero-txt">
+    <span class="stamp">✓ بدون رأس مال وبدون خبرة</span>
+    <h1>سوّق منتجات <b>مختارة بعناية</b><br>واربح عمولة على كل بيع</h1>
+    <p>انضم لآلاف المسوقين، انسخ رابطك، شاركه، وتابع أرباحك أول بأول — العميل يدفع عند الاستلام وأنت تقبض عمولتك.</p>
+    <div class="cta">
+      <a class="btn btn-p" href="#" onclick="lauthOpen('reg');return false">🚀 ابدأ التسويق مجاناً</a>
+      <a class="btn btn-ghost" href="#how">اعرف أكتر</a>
+    </div>
+    <div class="trust"><span>⭐ 4.9 تقييم المسوقين</span><span>✅ دفع مضمون</span><span>🔒 آمن 100%</span></div>
+  </div>
+  <div class="hero-visual">
+    <div class="ledger">
+      <h4>مثال على أرباحك الشهر ده</h4>
+      <div class="lrow"><span>عدد الطلبات</span><b>18</b></div>
+      <div class="lrow"><span>متوسط العمولة</span><b>65 ج.م</b></div>
+      <div class="lrow"><span>طلبات مكتملة</span><b>16</b></div>
+      <div class="ltotal"><span>الصافي</span><b>1,040 ج.م</b></div>
+    </div>
+  </div>
 </div></section>
-<section class="wrap" id="faq"><h2 class="h2">الأسئلة الشائعة</h2><p class="sub">إجابات سريعة</p><div class="faq"><div class="fitem card"><button class="faq-q">هل الاشتراك مجاني؟</button><div class="faq-a"><p>نعم، التسجيل مجاني تماماً وبدون رأس مال.</p></div></div><div class="fitem card"><button class="faq-q">كيف أستلم عمولاتي؟</button><div class="faq-a"><p>عبر فودافون كاش، إنستاباي، أو تحويل بنكي.</p></div></div><div class="fitem card"><button class="faq-q">كم نسبة العمولة؟</button><div class="faq-a"><p>تختلف حسب المنتج وتصل حتى 30%.</p></div></div><div class="fitem card"><button class="faq-q">هل أحتاج خبرة؟</button><div class="faq-a"><p>لا، نوفر روابط وأدوات جاهزة للمبتدئين.</p></div></div></div></section>
-<section class="wrap"><div class="bigcta reveal"><h2>جاهز تبدأ رحلة الكسب؟</h2><p>انضم الآن وابدأ التسويق خلال دقائق</p><a class="btn btn-p" href="/store">🚀 سجّل مجاناً الآن</a></div></section>
-<footer><div class="wrap fcols"><div><h4>💰 Earnify</h4><p style="font-size:.85rem">منصة التسويق بالعمولة الأولى — اربح من تسويق منتجات مختارة بعناية.</p></div><div><h4>روابط</h4><a href="#feat">المنتجات</a><a href="#how">كيف تعمل</a><a href="#calc">حاسبة الأرباح</a></div><div><h4>الدعم</h4><a href="#faq">الأسئلة الشائعة</a><a href="/store">اتصل بنا</a><a href="#" data-soon>الخصوصية</a><a href="#" data-soon>الشروط</a></div><div><h4>تابعنا</h4><a href="#" data-soon>فيسبوك</a><a href="#" data-soon>إنستجرام</a><a href="#" data-soon>تيك توك</a></div></div><div class="copy wrap">© 2026 Earnify — جميع الحقوق محفوظة</div></footer>
-<button id="toTop">↑</button><a id="waFloat" href="https://wa.me/20" target="_blank">🟢</a>
-<script src="/premium.js" defer></script>
+
+<div class="kpis wrap" style="max-width:1080px;margin:0 auto">
+  <div class="kpi"><b>+400</b><span>منتج متاح للتسويق</span></div>
+  <div class="kpi"><b>27</b><span>محافظة توصيل</span></div>
+  <div class="kpi"><b>%100</b><span>دفع مضمون للمسوق</span></div>
+  <div class="kpi"><b>0 ج.م</b><span>رأس مال مطلوب</span></div>
+</div>
+
+<section class="wrap" id="feat">
+  <h2 class="h2">ليه Earnify؟</h2>
+  <p class="sub">كل اللي محتاجه عشان تبدأ تكسب من التسويق بالعمولة</p>
+  <div class="feat">
+    <div class="fcard"><div class="gic">🔗</div><h3>رابط خاص بيك</h3><p>لكل منتج رابط تسويقي خاص بيك، تتبع منه كل بيعة وتاخد عمولتها.</p></div>
+    <div class="fcard"><div class="gic">💵</div><h3>الدفع عند الاستلام</h3><p>العميل مايدفعش أونلاين، ده بيرفع نسبة إتمام الطلبات وثقة العميل.</p></div>
+    <div class="fcard"><div class="gic">📊</div><h3>لوحة تحكم واضحة</h3><p>تابع طلباتك وأرباحك وحالة كل طلب لحظة بلحظة.</p></div>
+    <div class="fcard"><div class="gic">🚚</div><h3>شحن لكل مصر</h3><p>توصيل لـ27 محافظة، إنت بس ركز على التسويق والباقي علينا.</p></div>
+  </div>
+</section>
+
+<section class="how" id="how"><div class="wrap">
+  <h2 class="h2">إزاي تبدأ؟</h2>
+  <p class="sub">3 خطوات وتبدأ تكسب</p>
+  <div class="steps">
+    <div class="step"><h3>اعمل حساب مجاني</h3><p>تسجيل بسيط برقم موبايلك، بدون أي رسوم.</p></div>
+    <div class="step"><h3>اختار منتج وانسخ رابطك</h3><p>دور على منتج يعجبك وانسخ رابط التسويق الخاص بيك.</p></div>
+    <div class="step"><h3>شاركه واقبض عمولتك</h3><p>شارك الرابط في السوشيال ميديا، وكل طلب يتم توصيله تاخد عمولتك.</p></div>
+  </div>
+</div></section>
+
+<section class="wrap" id="products">
+  <h2 class="h2">منتجات تقدر تسوّقها دلوقتي</h2>
+  <p class="sub">أمثلة من مئات المنتجات المتاحة</p>
+  <div class="pgrid" id="featGrid"></div>
+</section>
+
+<section class="wrap" id="calc">
+  <h2 class="h2">حاسبة الأرباح</h2>
+  <p class="sub">اعرف كام ممكن تكسب شهرياً</p>
+  <div class="calc">
+    <label>عدد النقرات شهرياً</label><input type="number" id="cClicks" value="1000">
+    <label>معدل التحويل %</label><input type="number" id="cConv" value="3">
+    <label>متوسط العمولة (ج.م)</label><input type="number" id="cComm" value="60">
+    <button class="btn btn-p" style="width:100%;margin-top:16px;justify-content:center" onclick="calcEarnings()">احسب أرباحي</button>
+    <div class="res" id="cRes">0 ج.م / شهر</div>
+  </div>
+</section>
+
+<section class="wrap" id="faq">
+  <h2 class="h2">أسئلة شائعة</h2>
+  <div class="faq-item"><div class="faq-q">هل محتاج رأس مال عشان أبدأ؟</div><div class="faq-a">لا، التسجيل والتسويق مجاني تماماً، إنت بس بتشارك رابطك.</div></div>
+  <div class="faq-item"><div class="faq-q">إمتى أقبض عمولتي؟</div><div class="faq-a">بعد ما يتم توصيل الطلب للعميل وتأكيد الدفع، تظهر عمولتك في لوحة التحكم.</div></div>
+  <div class="faq-item"><div class="faq-q">هل ينفع أسوّق من غير متابعين كتير؟</div><div class="faq-a">أكيد، تقدر تبعت الرابط في جروبات أو لأصدقائك مباشرة على واتساب.</div></div>
+</section>
+
+<footer><div class="wrap">
+  <div class="fcols">
+    <div><h4>Earnify</h4><p style="font-size:.82rem;color:rgba(255,255,255,.75)">منصة التسويق بالعمولة الأولى — اربح من تسويق منتجات مختارة بعناية.</p></div>
+    <div><h4>روابط</h4><a href="#feat">المنتجات</a><a href="#how">كيف تعمل</a><a href="#calc">حاسبة الأرباح</a></div>
+    <div><h4>الدعم</h4><a href="#faq">الأسئلة الشائعة</a><a href="/store">المتجر</a></div>
+  </div>
+  <div class="copy">© 2026 Earnify — جميع الحقوق محفوظة</div>
+</div></footer>
+
+<div class="modal-ov" id="authM"></div>
 <script>
-function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2200);}
-document.addEventListener('click',function(e){var a=e.target.closest('a[data-soon]');if(a){e.preventDefault();toast('متاح قريباً 🚀');}});
-function card(p){var price=Math.round(p.price||0);var old=Math.round(price*1.3);var comm=Math.max(10,Math.round(price*0.12));var st=(p.stock>0)?'<span class="b b-g">متوفر</span>':'<span class="b" style="background:rgba(239,68,68,.12);color:#ef4444">نفد</span>';
-return '<div class="card pcard"><img src="'+(p.image||'')+'" loading="lazy" alt=""><div class="pbody"><div class="pname">'+(p.name||'')+'</div><div class="prow"><span class="now">'+price.toLocaleString('ar-EG')+' ج.م</span><span class="old">'+old.toLocaleString('ar-EG')+'</span></div><div class="comm">💰 عمولتك: '+comm+' ج.م</div><div class="meta">'+st+'<span class="b b-y">🚚 شحن مجاني</span><span style="color:#f59e0b">★ 4.8</span></div><div class="pact"><button class="btn btn-p" onclick="copyLink('+p.id+')">نسخ الرابط</button><button class="btn btn-ghost" onclick="shareP('+p.id+')">مشاركة</button></div></div></div>';}
+function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2400);}
+function calcEarnings(){
+  var clicks=+document.getElementById('cClicks').value||0,conv=+document.getElementById('cConv').value||0,comm=+document.getElementById('cComm').value||0;
+  var total=Math.round(clicks*(conv/100)*comm);
+  document.getElementById('cRes').textContent=total.toLocaleString('ar-EG')+' ج.م / شهر';
+}
+document.querySelectorAll('.faq-q').forEach(function(q){
+  q.onclick=function(){
+    var item=q.parentElement,a=item.querySelector('.faq-a');
+    item.classList.toggle('open');
+    a.style.maxHeight=item.classList.contains('open')?a.scrollHeight+'px':'0';
+  };
+});
+
+function card(p){
+  var price=Number(p.price||0),old=Math.round(price*1.25),comm=Math.max(20,Math.round(price*0.2));
+  var out=p.available===false;
+  return '<div class="pcard"><img src="'+(p.image||'')+'" loading="lazy"><div class="pbody"><div class="pname">'+(p.name||'')+'</div>'+
+    '<div class="prow"><span class="now">'+price.toLocaleString('ar-EG')+' ج.م</span><span class="old">'+old.toLocaleString('ar-EG')+'</span></div>'+
+    '<div class="comm">💰 عمولتك: '+comm+' ج.م</div>'+
+    '<div class="pact"><button class="btn btn-ghost" onclick="copyLink(\''+p.id+'\')">نسخ الرابط</button><button class="btn btn-p" onclick="shareP(\''+p.id+'\')">مشاركة</button></div></div></div>';
+}
 function copyLink(id){if(navigator.clipboard)navigator.clipboard.writeText(location.origin+'/?p='+id);toast('تم نسخ الرابط ✅');}
 function shareP(id){if(navigator.share)navigator.share({title:'Earnify',url:location.origin+'/?p='+id});else copyLink(id);}
-function calcEarnings(){var c=+document.getElementById('cClicks').value||0,v=+document.getElementById('cConv').value||0,m=+document.getElementById('cComm').value||0;var e=Math.round(c*(v/100)*m);document.getElementById('cRes').textContent=e.toLocaleString('ar-EG')+' ج.م / شهر';}
-fetch('/api/products').then(r=>r.json()).then(d=>{d=d||[];document.getElementById('featGrid').innerHTML=d.slice(0,12).map(card).join('');document.getElementById('trendRow').innerHTML=d.slice(12,24).map(card).join('');}).catch(()=>{});
-setInterval(function(){var t=document.getElementById('trendRow');if(t&&t.scrollWidth>t.clientWidth){t.scrollBy({left:240,behavior:'smooth'});if(t.scrollLeft+t.clientWidth>=t.scrollWidth-10)t.scrollTo({left:0,behavior:'smooth'});}},3500);
-</script></body></html><script>
-(function(){
-function hdr(){return {'Content-Type':'application/json','x-auth-token':(localStorage.getItem('etok')||'')}}
-function ensure(){if(document.getElementById('lauth'))return;var m=document.createElement('div');m.id='lauth';m.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:300;display:none;align-items:center;justify-content:center;padding:20px';
-m.innerHTML='<div style="background:#fff;border-radius:20px;padding:22px;max-width:400px;width:100%;position:relative"><button onclick="lauthClose()" style="position:absolute;top:12px;left:12px;border:none;background:#f1f5f9;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:14px">✕</button><div style="display:flex;gap:8px;margin-bottom:16px"><button id="ltL" onclick="ltab(\'login\')" style="flex:1;padding:11px;border-radius:12px;border:1.5px solid #e5e7eb;background:#0f766e;color:#fff;font-weight:800;cursor:pointer;font-family:inherit">تسجيل دخول</button><button id="ltR" onclick="ltab(\'reg\')" style="flex:1;padding:11px;border-radius:12px;border:1.5px solid #e5e7eb;background:#fff;font-weight:800;cursor:pointer;font-family:inherit">إنشاء حساب</button></div><div id="lbody"></div><p id="lmsg" style="text-align:center;font-size:.85rem;margin-top:10px;font-weight:700;min-height:1.2em"></p></div>';
-document.body.appendChild(m);}
-window.lauthOpen=function(t){ensure();document.getElementById('lauth').style.display='flex';ltab(t||'login')};
-window.lauthClose=function(){var m=document.getElementById('lauth');if(m)m.style.display='none'};
-window.ltab=function(t){var L=document.getElementById('ltL'),R=document.getElementById('ltR');
-L.style.background=t==='login'?'#0f766e':'#fff';L.style.color=t==='login'?'#fff':'#111';
-R.style.background=t==='reg'?'#0f766e':'#fff';R.style.color=t==='reg'?'#fff':'#111';
-document.getElementById('lmsg').textContent='';var b=document.getElementById('lbody');
-if(t==='login'){b.innerHTML='<label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">رقم الهاتف أو الإيميل</label><input id="liC" style="width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:12px"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">كلمة السر</label><input id="liP" type="password" style="width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:12px"><button onclick="ldoLogin()" style="width:100%;margin-top:14px;padding:12px;border:none;border-radius:12px;background:#0f766e;color:#fff;font-weight:800;cursor:pointer;font-family:inherit">دخول</button>';}
-else{b.innerHTML='<label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">الاسم</label><input id="rgN" style="width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:12px"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">رقم الهاتف أو الإيميل</label><input id="rgC" style="width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:12px"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">كلمة السر (6+ أحرف)</label><input id="rgP" type="password" style="width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:12px"><button onclick="ldoReg()" style="width:100%;margin-top:14px;padding:12px;border:none;border-radius:12px;background:#0f766e;color:#fff;font-weight:800;cursor:pointer;font-family:inherit">إنشاء الحساب والبدء 🚀</button>';}};
-function lmsg(s,ok){var e=document.getElementById('lmsg');if(e){e.textContent=s;e.style.color=ok?'#16a34a':'#dc2626'}}
+fetch('/api/products').then(function(r){return r.json()}).then(function(d){
+  d=d||[]; document.getElementById('featGrid').innerHTML=d.slice(0,8).map(card).join('');
+}).catch(function(){});
+
+/* ---- auth modal ---- */
+function hdr(){return {'Content-Type':'application/json'};}
 function done(d){localStorage.setItem('etok',d.token);localStorage.setItem('euser',JSON.stringify(d.user));location.href='/store';}
-window.ldoLogin=function(){fetch('/api/auth/login',{method:'POST',headers:hdr(),body:JSON.stringify({contact:document.getElementById('liC').value,password:document.getElementById('liP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else lmsg(d.error,false)})};
-window.ldoReg=function(){fetch('/api/auth/register',{method:'POST',headers:hdr(),body:JSON.stringify({name:document.getElementById('rgN').value,contact:document.getElementById('rgC').value,password:document.getElementById('rgP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else lmsg(d.error,false)})};
-var nb=document.querySelector('.navbar');
-if(nb&&!document.getElementById('lLoginBtn')){var b=document.createElement('button');b.id='lLoginBtn';b.textContent='تسجيل دخول';b.onclick=function(){lauthOpen('login')};b.style.cssText='background:#fff;border:1.5px solid #0f766e;color:#0f766e;border-radius:12px;padding:10px 16px;font-weight:800;cursor:pointer;font-family:inherit';var w=nb.querySelector('.wrap');(w||nb).appendChild(b);}
-document.querySelectorAll('a,button').forEach(function(x){var t=(x.textContent||'');if(t.indexOf('ابدأ')>-1){x.onclick=function(e){e.preventDefault();lauthOpen('reg')};}});
-if(localStorage.getItem('etok')){document.querySelectorAll('a,button').forEach(function(x){var t=(x.textContent||'');if(t.indexOf('ابدأ')>-1){x.onclick=function(e){e.preventDefault();location.href='/store'};}});}
-})();
+function lmsg(t,ok){var e=document.getElementById('lmsg');if(e){e.textContent=t||'';e.style.color=ok?'#1F9D55':'#B3261E';}}
+window.ldoLogin=function(){
+  fetch('/api/auth/login',{method:'POST',headers:hdr(),body:JSON.stringify({contact:document.getElementById('liC').value,password:document.getElementById('liP').value})})
+  .then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else lmsg(d.error,false)});
+};
+window.ldoReg=function(){
+  fetch('/api/auth/register',{method:'POST',headers:hdr(),body:JSON.stringify({name:document.getElementById('rgN').value,contact:document.getElementById('rgC').value,password:document.getElementById('rgP').value})})
+  .then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else lmsg(d.error,false)});
+};
+function ltab(t){
+  document.getElementById('ltL').style.background=t==='login'?'#0E5B3A':'#fff';
+  document.getElementById('ltL').style.color=t==='login'?'#fff':'#0A4229';
+  document.getElementById('ltR').style.background=t==='reg'?'#0E5B3A':'#fff';
+  document.getElementById('ltR').style.color=t==='reg'?'#fff':'#0A4229';
+  var b=document.getElementById('lbody');
+  if(t==='login'){
+    b.innerHTML='<label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">رقم الهاتف أو الإيميل</label><input id="liC" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">كلمة السر</label><input id="liP" type="password" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><button onclick="ldoLogin()" style="width:100%;margin-top:14px;padding:12px;border:none;border-radius:12px;background:#0E5B3A;color:#fff;font-weight:800;cursor:pointer;font-family:inherit">دخول</button>';
+  }else{
+    b.innerHTML='<label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">الاسم</label><input id="rgN" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">رقم الهاتف أو الإيميل</label><input id="rgC" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">كلمة السر (6+ أحرف)</label><input id="rgP" type="password" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><button onclick="ldoReg()" style="width:100%;margin-top:14px;padding:12px;border:none;border-radius:12px;background:#0E5B3A;color:#fff;font-weight:800;cursor:pointer;font-family:inherit">إنشاء الحساب والبدء 🚀</button>';
+  }
+}
+function lauthOpen(t){
+  var m=document.getElementById('authM');
+  m.innerHTML='<div style="background:#fff;border-radius:20px;padding:22px;max-width:400px;width:100%;position:relative"><button onclick="lauthClose()" style="position:absolute;top:12px;left:12px;border:none;background:#EEF7F1;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:14px">✕</button><div style="display:flex;gap:8px;margin-bottom:16px"><button id="ltL" style="flex:1;padding:11px;border-radius:12px;border:1.5px solid #D8E8DE;font-weight:800;cursor:pointer;font-family:inherit" onclick="ltab(\'login\')">تسجيل دخول</button><button id="ltR" style="flex:1;padding:11px;border-radius:12px;border:1.5px solid #D8E8DE;font-weight:800;cursor:pointer;font-family:inherit" onclick="ltab(\'reg\')">إنشاء حساب</button></div><div id="lbody"></div><p id="lmsg" style="text-align:center;font-size:.85rem;margin-top:10px;font-weight:700;min-height:1.2em"></p></div>';
+  m.classList.add('on'); ltab(t||'login');
+}
+function lauthClose(){document.getElementById('authM').classList.remove('on');}
+document.getElementById('authM').addEventListener('click',function(e){if(e.target.id==='authM')lauthClose();});
+
+if(localStorage.getItem('etok')){
+  document.getElementById('startBtn').textContent='المتجر ❯';
+  document.getElementById('startBtn').removeAttribute('onclick');
+}else{
+  document.getElementById('startBtn').onclick=function(e){e.preventDefault();lauthOpen('reg');};
+}
 </script>
-<script>window.lauthOpen=function(){location.href='/login'};</script>
+</body>
+</html>
