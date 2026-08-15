@@ -112,7 +112,7 @@ module.exports = function (app) {
   });
   const sessionHandler = async (req, res) => {
     try {
-      const raw = req.headers['x-auth-token'] || String(req.headers.authorization || '').replace(/^Bearer\\s+/i, '');
+      const raw = req.headers['x-auth-token'] || String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
       const pl = verify(raw); const u = pl && await store.getUser(pl.uid);
       if (!u) return res.status(401).json({ logged: false, authenticated: false });
       if (u.banned) return res.json({ logged: false, authenticated: false, banned: true });
