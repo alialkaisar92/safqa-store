@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const path = require('path');
+const fetch = require('node-fetch');
 const store = require('./firestore');
 const SECRET = process.env.JWT_SECRET || 'earnify_jwt_secret_2026';
 
@@ -43,7 +44,7 @@ module.exports = function (app) {
   app.post('/api/auth/register', async (req, res) => {
     try {
       const b = req.body || {};
-      const cid = String(b.contact || b.username || '').trim().toLowerCase();
+      const cid = String(b.contact || b.username || b.phone || '').trim().toLowerCase();
       const display = String(b.name || b.display_name || cid).trim();
       if (!display || !cid || !b.password) return res.json({ error: 'املأ كل الحقول' });
       if (String(b.password).length < 6) return res.json({ error: 'كلمة السر 6 أحرف على الأقل' });
@@ -53,6 +54,35 @@ module.exports = function (app) {
       const t = await issue(u);
       res.json({ ok: true, token: t.access, refresh: t.refresh, user: pub(u) });
     } catch (e) { console.error('register:', e.message); res.status(500).json({ error: 'تعذر إنشاء الحساب حالياً' }); }
+  });
+  app.get('/api/auth/google-config', (req, res) => {
+    res.json({ clientId: process.env.GOOGLE_CLIENT_ID || '' });
+  });
+  app.post('/api/auth/google', async (req, res) => {
+    try {
+      const idToken = String((req.body || {}).credential || '').trim();
+      const clientId = String(process.env.GOOGLE_CLIENT_ID || '').trim();
+      if (!clientId) return res.status(503).json({ error: 'تسجيل Google غير مفعّل حالياً' });
+      if (!idToken) return res.status(400).json({ error: 'بيانات Google غير مكتملة' });
+      const r = await fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(idToken));
+      const profile = await r.json().catch(() => ({}));
+      if (!r.ok || profile.aud !== clientId || !profile.sub || !profile.email || String(profile.email_verified) !== 'true') {
+        return res.status(401).json({ error: 'تعذر التحقق من حساب Google' });
+      }
+      const email = String(profile.email).trim().toLowerCase();
+      let users = await store.getUsers();
+      let u = users.find(x => String(x.googleId || '') === String(profile.sub)) || users.find(x => String(x.email || '').toLowerCase() === email || String(x.contact || '').toLowerCase() === email);
+      const display = String(profile.name || email.split('@')[0] || 'مستخدم Google').trim();
+      if (!u) {
+        u = { id: Date.now(), username: email, display_name: display, name: display, contact: email, phone: email, email, googleId: String(profile.sub), avatar: profile.picture || '', provider: 'google', balance: 0, created: new Date().toISOString() };
+      } else {
+        u.googleId = String(profile.sub); u.provider = u.provider || 'google'; u.email = u.email || email; u.avatar = profile.picture || u.avatar || ''; u.name = u.name || display; u.display_name = u.display_name || display;
+      }
+      u.lastSeen = Date.now();
+      await store.saveUser(u);
+      const t = await issue(u);
+      res.json({ ok: true, token: t.access, refresh: t.refresh, user: pub(u) });
+    } catch (e) { console.error('google auth:', e.message); res.status(500).json({ error: 'تعذر تسجيل الدخول عبر Google حالياً' }); }
   });
   app.post('/api/auth/login', async (req, res) => {
     try {
