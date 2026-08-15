@@ -63,15 +63,18 @@ async function saveAffiliate(d){ return firestore.saveAffiliateData(d); }
 
 function cat(n) {
   if (!n) return 'أخرى';
-  n = (n + '').toLowerCase();
-  if (/طفل|أطفال|رضع|بيبي|baby|kids|لعبة|ناموسية/.test(n)) return 'أطفال';
-  if (/شاحن|سماعة|باور|كابل|usb|led|لمبة|أباجورة|بلوتوث|كشاف|بلور|نفاث|طاقة|solar|قلم|ترجمة/.test(n)) return 'إلكترونيات';
-  if (/كريم|عطر|مكياج|عناية|بشرة|شعر|سيروم|شد|تجاعيد/.test(n)) return 'جمال';
-  if (/حذاء|شبشب|حقيبة|شنطة|دولاب/.test(n)) return 'أحذية وحقائب';
-  if (/مطبخ|حاجز|سيليكون|حوض|أواني/.test(n)) return 'مطبخ';
-  if (/منزل|ديكور|إضاءة/.test(n)) return 'منزل';
-  if (/تنظيف|منظف|تكييف/.test(n)) return 'تنظيف';
-  if (/مفك|عدة|أدوات|مسامير|مسدس/.test(n)) return 'أدوات';
+  const text = String(n).toLowerCase().replace(/[إأآ]/g, 'ا').replace(/ة/g, 'ه');
+  const has = (pattern) => pattern.test(text);
+  if (has(/لعبه|العاب|لعبة|اطفال|طفل|رضع|بيبي|baby|kids|عروسه|بازل|دمى|دمية|كرة قدم|اخطبوط راقص|عصفوره|سكوتر اطفال|كرسي امان الاطفال/)) return 'أطفال';
+  if (has(/سياره|السياره|سيارات|عربيه|عربية|للسياره|للسيارات|تكييف السياره|كرسي السياره|منظم ظهر كرسي السياره|كفر.*سياره/)) return 'سيارات';
+  if (has(/ضغط الدم|دوبلر|نبض الجنين|ركبه طبيه|جامع البول|اسنان|الاسنان|شفاط الحليب|شفاط المخاط|مقاومه رياضيه|تمارين|تويست|تقويه الصدر|سكيت بورد|مساج|تدليك|لياقه|رياضه/)) return 'صحة ولياقة';
+  if (has(/شعر|رموش|اظافر|كريم|عطر|مكياج|عنايه|بشره|سيروم|تجاعيد|ازاله الشعر|حلاقه|مصفف|تمويج الشعر|فواحه/)) return 'جمال';
+  if (has(/حذاء|شبشب|حقيبه|شنطه|كعب|طاقيه|غطاء حذاء|ملابس|جاكيت|جوارب/)) return 'أحذية وحقائب';
+  if (has(/مطبخ|شوايه|خضروات|فواكه|قطايف|سمبوسه|هراسه|قشاره|ثوم|سكاكين|اواني|حوض|بوتجاز|دسبنسر مياه|مياه|ثلاجه|غساله/)) return 'مطبخ';
+  if (has(/تنظيف|منظف|بقع|وبر|ازاله الوبر|فرشه التنظيف|فرشاة التنظيف|مساحه|تكييف|اقمشه|مفروشات|غسيل/)) return 'تنظيف';
+  if (has(/مفك|شنيور|منشار|مسامير|مسدس تثبيت|مسدس المسامير|لحام|عدة|ادوات|قلم اللحام|تثبيت الملايه|اصلاح/)) return 'أدوات';
+  if (has(/شاحن|سماعه|باور|كابل|usb|led|لمبه|اباجوره|بلوتوث|كشاف|كاميرا|كيبورد|موبايل|موبيل|هاتف|جهاز العاب|العاب محمول|retroplay|r36s|طاقة شمسيه|solar|ترجمه|قلم ذكي|جهاز قياس|شريط مضيء|اضاءه/)) return 'إلكترونيات';
+  if (has(/منزل|ديكور|منظم|رف|ستاره|مفرش|ملايه|كرسي|بين باج|حامل|وساده|فواحه|قنديل|حدائق|تخزين|دولاب/)) return 'منزل';
   return 'أخرى';
 }
 
@@ -90,7 +93,7 @@ async function getProducts() {
       all = all.concat(d.data || []);
     }
   } catch (e) { console.error(e.message); }
-  all = all.map(p => { p._cat = cat(p.name); return p; });
+  all = all.map(p => { p._cat = cat([p.name, p.title, p.description, p.desc, p.note, p.category].filter(Boolean).join(' ')); return p; });
   productsCache = all;
   lastFetch = Date.now();
   console.log('تم تحميل ' + all.length + ' منتج');
@@ -138,7 +141,7 @@ app.get('/api/products', async (req,res)=>{
         const normalized = cached.map(function(p){
           const prop = (p.properties && p.properties[0]) || {};
           const stock = Number(p.stock != null ? p.stock : (prop.min != null ? prop.min : (prop.value || 0)));
-          const category = cat(p.name || p.title || '');
+          const category = cat([p.name, p.title, p.description, p.desc, p.note, p.category].filter(Boolean).join(' '));
           return Object.assign({}, p, {category: category, cat: category, stock: stock, available: p.available !== false && p.is_active !== false && stock > 0, propId: p.propId || prop._id || ''});
         });
         return res.json(normalized);
@@ -159,7 +162,7 @@ app.get('/api/products', async (req,res)=>{
       page++;
     }
     const mapped = all.map(function(p){
-      const c = cat(p.name || p.title || '');
+      const c = cat([p.name, p.title, p.description, p.desc, p.note, p.category].filter(Boolean).join(' '));
       const prop = (p.properties && p.properties[0]) || {};
       return Object.assign({}, p, {
         id: p._id || p.id,
