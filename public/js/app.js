@@ -1,5 +1,5 @@
 let products=[], priceList=[], cart=JSON.parse(localStorage.getItem('scart')||'[]'), cur=null, qty=1, submitting=false, cc='all', cs='', wM='vodafone';
-const titles={store:'Earnify',cart:'السلة',checkout:'إتمام الطلب',orders:'طلباتي',profile:'حسابي',withdraw:'سحب الأرباح',support:'الدعم'};
+const titles={store:'Rab7na',cart:'السلة',checkout:'إتمام الطلب',orders:'طلباتي',profile:'حسابي',withdraw:'سحب الأرباح',support:'الدعم'};
 
 function updCC(){document.getElementById('cc').textContent=cart.reduce((s,i)=>s+(i.qty||1),0)}
 function go(p){
@@ -7,7 +7,7 @@ function go(p){
   document.getElementById('p-'+p).classList.add('active');
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   const n=document.querySelector('.nav button[data-p="'+p+'"]'); if(n) n.classList.add('active');
-  document.getElementById('ht').innerHTML='<div style="display:flex;align-items:center;gap:12px"><div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:900">E</div><div><div style="font-size:28px;font-weight:900;color:#fff">'+(titles[p]||'Earnify')+'</div><div style="font-size:12px;opacity:.9">Affiliate Marketing Platform</div></div></div>';
+  document.getElementById('ht').innerHTML='<div style="display:flex;align-items:center;gap:12px"><div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:900">R</div><div><div style="font-size:28px;font-weight:900;color:#fff">'+(titles[p]||'Rab7na')+'</div><div style="font-size:12px;opacity:.9">Affiliate Marketing Platform</div></div></div>';
   if(p==='cart') renderCart();
   if(p==='orders') loadOrders();
   if(p==='profile'||p==='withdraw') loadMe();
@@ -33,7 +33,7 @@ function renderP(){
   if(cs.trim()){const q=cs.trim().toLowerCase();f=f.filter(p=>p.name.toLowerCase().includes(q)||(p.barcode||'').toLowerCase().includes(q))}
   document.getElementById('g').innerHTML=f.map(p=>{
     const i=products.indexOf(p);
-    return '<div class="card" onclick="openP('+i+')"><img src="'+(p.image||'')+'" loading="lazy"><div class="b"><div class="t">'+p.name+'</div><div class="pr">'+Number(p.price).toLocaleString('ar-EG')+' ج.م</div><div class="stock">'+stockLabel(p.stock,p.available)+'</div></div></div>';
+    return '<div class="card" onclick="openP('+i+')"><img src="'+(p.image||'')+'" alt="'+(p.name||'منتج')+'" loading="lazy" decoding="async"><div class="b"><div class="t">'+p.name+'</div><div class="pr">'+Number(p.price).toLocaleString('ar-EG')+' ج.م</div><div class="stock">'+stockLabel(p.stock,p.available)+'</div></div></div>';
   }).join('')||'<div class="empty">مفيش منتجات</div>';
 }
 

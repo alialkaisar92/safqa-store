@@ -1,4 +1,10 @@
 User-agent: *
 Allow: /
-
-Sitemap: https://safqa-store-production.up.railway.app/sitemap.xml
+Disallow: /admin
+Disallow: /api/
+Disallow: /login
+Disallow: /account
+Disallow: /orders
+Disallow: /withdraw
+Disallow: /support
+Sitemap: https://safqa-store.vercel.app/sitemap.xml

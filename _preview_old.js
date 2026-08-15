@@ -205,7 +205,7 @@ app.post('/api/support', (req, res) => {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Earnify | منصة التسويق بالعمولة</title>
+<title>Rab7na | منصة التسويق بالعمولة</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--p:#0d9488;--pd:#0f766e;--bg:#f0f4f8;--card:#fff;--text:#0f172a;--muted:#64748b;--accent:#f59e0b;--danger:#ef4444;--ok:#10b981}
@@ -306,7 +306,7 @@ textarea{min-height:90px;resize:vertical}
 </head>
 <body>
 <header class="header">
-  <div class="logo" id="ht">Earnify</div>
+  <div class="logo" id="ht">Rab7na</div>
   <button class="cart-btn" onclick="go('cart')">🛒 السلة<span class="badge" id="cc">0</span></button>
 </header>
 
@@ -402,7 +402,7 @@ textarea{min-height:90px;resize:vertical}
     <div class="pm-price" id="pm-price"></div>
     <div class="box"><div class="l">كود المنتج</div><div class="v" id="pm-code">—</div></div>
     <div class="box" id="pm-stock-box"><div class="l">المخزون</div><div class="v" id="pm-stock">—</div></div>
-    <div class="box note-box"><div class="l">ملاحظات Earnify</div><div class="v" id="pm-note">—</div></div>
+    <div class="box note-box"><div class="l">ملاحظات Rab7na</div><div class="v" id="pm-note">—</div></div>
     <a class="drive" id="pm-drive" href="#" target="_blank" style="display:none">📁 صور وفيديوهات على الطبيعة</a>
     <div id="pm-desc" style="font-size:.88rem;line-height:1.7;color:#475569;margin:10px 0"></div>
 
@@ -430,7 +430,7 @@ textarea{min-height:90px;resize:vertical}
   <button data-p="support" onclick="go('support')"><span class="ic">💬</span>دعم</button>
 </nav><script>
 let products=[], priceList=[], cart=JSON.parse(localStorage.getItem('scart')||'[]'), cur=null, qty=1, submitting=false, cc='all', cs='', wM='vodafone';
-const titles={store:'Earnify',cart:'السلة',checkout:'إتمام الطلب',orders:'طلباتي',profile:'حسابي',withdraw:'سحب الأرباح',support:'الدعم'};
+const titles={store:'Rab7na',cart:'السلة',checkout:'إتمام الطلب',orders:'طلباتي',profile:'حسابي',withdraw:'سحب الأرباح',support:'الدعم'};
 
 function updCC(){document.getElementById('cc').textContent=cart.reduce((s,i)=>s+(i.qty||1),0)}
 function go(p){
@@ -438,7 +438,7 @@ function go(p){
   document.getElementById('p-'+p).classList.add('active');
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   const n=document.querySelector('.nav button[data-p="'+p+'"]'); if(n) n.classList.add('active');
-  document.getElementById('ht').innerHTML='<div style="display:flex;align-items:center;gap:12px"><div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:900">E</div><div><div style="font-size:28px;font-weight:900;color:#fff">'+(titles[p]||'Earnify')+'</div><div style="font-size:12px;opacity:.9">Affiliate Marketing Platform</div></div></div>';
+  document.getElementById('ht').innerHTML='<div style="display:flex;align-items:center;gap:12px"><div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:900">E</div><div><div style="font-size:28px;font-weight:900;color:#fff">'+(titles[p]||'Rab7na')+'</div><div style="font-size:12px;opacity:.9">Affiliate Marketing Platform</div></div></div>';
   if(p==='cart') renderCart();
   if(p==='orders') loadOrders();
   if(p==='profile'||p==='withdraw') loadMe();

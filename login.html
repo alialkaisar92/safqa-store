@@ -1,4 +1,5 @@
-<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Earnify | تسجيل الدخول</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"><style>
+<!DOCTYPE html><html dir="rtl" lang="ar"><head>
+<meta name="robots" content="noindex,nofollow,noarchive"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rab7na | تسجيل الدخول</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"><style>
 *{box-sizing:border-box}body{margin:0;font-family:Cairo;background:linear-gradient(135deg,#0f766e,#10b981);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
 .card{background:#fff;border-radius:24px;padding:28px;max-width:400px;width:100%;box-shadow:0 30px 60px rgba(0,0,0,.25)}
 .logo{text-align:center;font-weight:900;font-size:1.5rem;color:#0f766e}
@@ -14,7 +15,7 @@ input{width:100%;padding:13px;border:1.5px solid #e5e7eb;border-radius:12px;font
 .back a{color:#0f766e;font-weight:700;text-decoration:none}
 </style></head><body>
 <div class="card">
-<div class="logo">💰 Earnify</div>
+<div class="logo">💰 Rab7na</div>
 <div class="sub">منصة التسويق بالعمولة</div>
 <div class="tabs"><button id="tL" class="on" onclick="tab('login')">تسجيل دخول</button><button id="tR" onclick="tab('reg')">إنشاء حساب</button></div>
 <div id="fbody"></div>
@@ -28,7 +29,7 @@ if(t==='login'){b.innerHTML='<label>رقم الهاتف أو الإيميل</lab
 else{b.innerHTML='<label>الاسم</label><input id="rgN"><label>رقم الهاتف أو الإيميل</label><input id="rgC"><label>كلمة السر (6+ أحرف)</label><input id="rgP" type="password"><button class="go" onclick="doReg()">إنشاء الحساب والبدء 🚀</button>';}}
 function msg(s,ok){var e=document.getElementById('msg');e.textContent=s;e.style.color=ok?'#16a34a':'#dc2626'}
 function done(d){localStorage.setItem('etok',d.token);if(d.refresh)localStorage.setItem('ertok',d.refresh);localStorage.setItem('euser',JSON.stringify(d.user));location.href='/store';}
-function doLogin(){fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contact:document.getElementById('liC').value,password:document.getElementById('liP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else msg(d.error,false)})}
-function doReg(){fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:document.getElementById('rgN').value,contact:document.getElementById('rgC').value,password:document.getElementById('rgP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else msg(d.error,false)})}
+function doLogin(){fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('liC').value,password:document.getElementById('liP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else msg(d.error,false)})}
+function doReg(){fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({display_name:document.getElementById('rgN').value,username:document.getElementById('rgC').value,password:document.getElementById('rgP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else msg(d.error,false)})}
 tab('login');
 </script></body></html>

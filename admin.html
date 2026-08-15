@@ -1,4 +1,5 @@
-<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Earnify | لوحة الإدارة</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"><style>
+<!DOCTYPE html><html dir="rtl" lang="ar"><head>
+<meta name="robots" content="noindex,nofollow,noarchive"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rab7na | لوحة الإدارة</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"><style>
 :root{--g:#0f766e;--g2:#10b981;--bg:#f4f7f6;--card:#fff;--tx:#0f172a;--mut:#64748b;--line:rgba(15,118,110,.14);--dark:#0f172a}
 *{margin:0;padding:0;box-sizing:border-box;font-family:Cairo}body{background:var(--bg);color:var(--tx)}
 .topbar{position:sticky;top:0;z-index:60;background:var(--dark);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;gap:10px}
@@ -34,7 +35,7 @@
 .admChatBody{flex:1;overflow-y:auto;padding:12px}
 .admChatBar{background:#f0f0f0;padding:8px;display:flex;gap:8px;flex:0 0 auto}
 </style></head><body>
-<header class="topbar"><button class="burger" onclick="sbOpen()"><span></span><span></span><span></span></button><div class="logo">💰 Earnify <small style="color:#64748b">إدارة</small></div><span class="adm">👑 أدمن</span></header>
+<header class="topbar"><button class="burger" onclick="sbOpen()"><span></span><span></span><span></span></button><div class="logo">💰 Rab7na <small style="color:#64748b">إدارة</small></div><span class="adm">👑 أدمن</span></header>
 <div class="ovl" id="ovl" onclick="sbClose()"></div>
 <aside class="drawer" id="drawer"><div class="dhead">💰 الأقسام <button onclick="sbClose()">✕</button></div><div id="menu"></div></aside>
 <main class="main"><div id="view"></div></main>
@@ -208,7 +209,7 @@ return '<div style="background:#fff;border:1px solid var(--line);border-radius:1
 +'<span class="st" style="background:#dcfce7;color:#047857">'+msgs.length+'</span></div>';}).join(''):'<div class="panel">لا توجد محادثات حالياً</div>');}
 function openChat(key){CHKEY=key;var ov=document.getElementById('admChat');if(!ov){ov=document.createElement('div');ov.id='admChat';document.body.appendChild(ov);}
 ov.style.display='flex';
-ov.innerHTML='<div class="admChatHead"><button onclick="closeChat()" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer">→</button><b>'+chLabel(key)+'</b><span style="font-size:.65rem;opacity:.85;margin-right:auto">دعم Earnify</span></div><div class="admChatBody" id="admThread"></div><div class="admChatBar"><input id="admMsg" placeholder="اكتب ردك..." style="flex:1;padding:11px;border-radius:12px;border:1px solid var(--line)"><button style="'+BS+'" onclick="sendReply()">إرسال</button></div>';
+ov.innerHTML='<div class="admChatHead"><button onclick="closeChat()" style="background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer">→</button><b>'+chLabel(key)+'</b><span style="font-size:.65rem;opacity:.85;margin-right:auto">دعم Rab7na</span></div><div class="admChatBody" id="admThread"></div><div class="admChatBar"><input id="admMsg" placeholder="اكتب ردك..." style="flex:1;padding:11px;border-radius:12px;border:1px solid var(--line)"><button style="'+BS+'" onclick="sendReply()">إرسال</button></div>';
 drawThread();clearInterval(window._cT);window._cT=setInterval(refreshChat,3000);}
 function closeChat(){var ov=document.getElementById('admChat');if(ov)ov.style.display='none';clearInterval(window._cT);renderChatList();}
 function refreshChat(){fetch('/api/admin/chats').then(function(r){return r.json()}).then(function(c){window._chats=c||{};var ov=document.getElementById('admChat');if(ov&&ov.style.display!=='none')drawThread();});}
