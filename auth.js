@@ -33,6 +33,17 @@ global.requireAuth = function (req, res, next) {
   next();
 };
 function pub(u) { return { id: u.id, username: u.username || u.contact, display_name: u.display_name || u.name, name: u.name || u.display_name, contact: u.contact || u.username, phone: u.phone || u.contact, email: u.email || '', balance: u.balance || 0 }; }
+const WELCOME_BONUS = 70;
+function isEmail(value) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim()); }
+function codeHash(code) { return crypto.createHash('sha256').update('rab7na-verification:' + String(code)).digest('hex'); }
+async function sendVerificationEmail(email, name, code) {
+  const key = String(process.env.RESEND_API_KEY || '').trim();
+  if (!key) return { ok: false, reason: 'RESEND_API_KEY غير مضبوط' };
+  const from = process.env.RESEND_FROM || 'Rab7na <onboarding@resend.dev>';
+  const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], subject: 'كود تفعيل حسابك في Rab7na', html: '<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.8"><h2>أهلاً بك في Rab7na</h2><p>استخدم الكود التالي لتفعيل حسابك:</p><div style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#087f5b">' + code + '</div><p>صلاحية الكود 10 دقائق. لا تشارك الكود مع أي شخص.</p></div>' }) });
+  return { ok: r.ok, data: await r.json().catch(() => ({})) };
+}
+function newUser(data) { return Object.assign({ balance: WELCOME_BONUS, welcomeBonus: WELCOME_BONUS, created: new Date().toISOString() }, data); }
 async function issue(u) {
   const access = sign(u.id, 7200);
   const refresh = crypto.randomBytes(24).toString('hex');
@@ -44,16 +55,52 @@ module.exports = function (app) {
   app.post('/api/auth/register', async (req, res) => {
     try {
       const b = req.body || {};
-      const cid = String(b.contact || b.username || b.phone || '').trim().toLowerCase();
+      const cid = String(b.contact || b.username || b.phone || b.email || '').trim().toLowerCase();
       const display = String(b.name || b.display_name || cid).trim();
       if (!display || !cid || !b.password) return res.json({ error: 'املأ كل الحقول' });
       if (String(b.password).length < 6) return res.json({ error: 'كلمة السر 6 أحرف على الأقل' });
       if (await store.findUserByContact(cid)) return res.json({ error: 'الحساب موجود، سجّل دخول' });
-      const u = { id: Date.now(), username: cid, display_name: display, name: display, contact: cid, phone: b.phone || cid, email: b.email || '', pass: hashPw(b.password), balance: 0, created: new Date().toISOString() };
+      if (isEmail(cid)) {
+        const code = String(crypto.randomInt(100000, 1000000));
+        const sent = await sendVerificationEmail(cid, display, code);
+        if (!sent.ok) return res.status(503).json({ error: 'تفعيل الإيميل غير متاح حالياً، جرّب التسجيل برقم الهاتف' });
+        await store.saveDoc('emailVerifications', cid, { id: cid, email: cid, name: display, phone: b.phone || '', pass: hashPw(b.password), codeHash: codeHash(code), expiresAt: Date.now() + 10 * 60 * 1000, createdAt: new Date().toISOString() });
+        return res.json({ ok: false, verificationRequired: true, email: cid, message: 'تم إرسال كود التفعيل إلى بريدك، صالح لمدة 10 دقائق' });
+      }
+      const u = newUser({ id: Date.now(), username: cid, display_name: display, name: display, contact: cid, phone: b.phone || cid, email: b.email || '', pass: hashPw(b.password) });
       await store.saveUser(u);
       const t = await issue(u);
       res.json({ ok: true, token: t.access, refresh: t.refresh, user: pub(u) });
     } catch (e) { console.error('register:', e.message); res.status(500).json({ error: 'تعذر إنشاء الحساب حالياً' }); }
+  });
+  app.post('/api/auth/email/verify', async (req, res) => {
+    try {
+      const email = String((req.body || {}).email || '').trim().toLowerCase();
+      const code = String((req.body || {}).code || '').trim();
+      if (!isEmail(email) || !/^\d{6}$/.test(code)) return res.json({ error: 'أدخل الإيميل والكود المكوّن من 6 أرقام' });
+      const snap = await store.getDb().collection('emailVerifications').doc(email).get();
+      if (!snap.exists) return res.json({ error: 'لا يوجد طلب تفعيل لهذا الإيميل' });
+      const pending = snap.data() || {};
+      if (Number(pending.expiresAt || 0) < Date.now()) return res.json({ error: 'انتهت صلاحية الكود، اطلب كوداً جديداً' });
+      if (pending.codeHash !== codeHash(code)) return res.json({ error: 'كود التفعيل غير صحيح' });
+      if (await store.findUserByContact(email)) { await store.deleteDoc('emailVerifications', email); return res.json({ error: 'الحساب موجود، سجّل دخول' }); }
+      const u = newUser({ id: Date.now(), username: email, display_name: pending.name || email.split('@')[0], name: pending.name || email.split('@')[0], contact: email, phone: pending.phone || email, email, pass: pending.pass, emailVerified: true, verifiedAt: new Date().toISOString() });
+      await store.saveUser(u); await store.deleteDoc('emailVerifications', email);
+      const t = await issue(u);
+      res.json({ ok: true, token: t.access, refresh: t.refresh, user: pub(u) });
+    } catch (e) { console.error('email verify:', e.message); res.status(500).json({ error: 'تعذر تفعيل الإيميل حالياً' }); }
+  });
+  app.post('/api/auth/email/resend', async (req, res) => {
+    try {
+      const email = String((req.body || {}).email || '').trim().toLowerCase();
+      const snap = await store.getDb().collection('emailVerifications').doc(email).get();
+      if (!snap.exists) return res.json({ error: 'ابدأ التسجيل أولاً' });
+      const pending = snap.data() || {}; const code = String(crypto.randomInt(100000, 1000000));
+      const sent = await sendVerificationEmail(email, pending.name || email, code);
+      if (!sent.ok) return res.status(503).json({ error: 'خدمة البريد غير متاحة حالياً' });
+      await store.saveDoc('emailVerifications', email, { codeHash: codeHash(code), expiresAt: Date.now() + 10 * 60 * 1000 });
+      res.json({ ok: true, message: 'تم إرسال كود جديد' });
+    } catch (e) { res.status(500).json({ error: 'تعذر إرسال الكود' }); }
   });
   app.get('/api/auth/google-config', (req, res) => {
     res.json({ clientId: process.env.GOOGLE_CLIENT_ID || '' });
@@ -74,7 +121,7 @@ module.exports = function (app) {
       let u = users.find(x => String(x.googleId || '') === String(profile.sub)) || users.find(x => String(x.email || '').toLowerCase() === email || String(x.contact || '').toLowerCase() === email);
       const display = String(profile.name || email.split('@')[0] || 'مستخدم Google').trim();
       if (!u) {
-        u = { id: Date.now(), username: email, display_name: display, name: display, contact: email, phone: email, email, googleId: String(profile.sub), avatar: profile.picture || '', provider: 'google', balance: 0, created: new Date().toISOString() };
+        u = newUser({ id: Date.now(), username: email, display_name: display, name: display, contact: email, phone: email, email, googleId: String(profile.sub), avatar: profile.picture || '', provider: 'google' });
       } else {
         u.googleId = String(profile.sub); u.provider = u.provider || 'google'; u.email = u.email || email; u.avatar = profile.picture || u.avatar || ''; u.name = u.name || display; u.display_name = u.display_name || display;
       }
