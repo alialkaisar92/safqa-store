@@ -8,13 +8,24 @@ function clean(value) {
 
 function getDb() {
   if (db) return db;
-  const encoded = String(process.env.FIREBASE_SERVICE_ACCOUNT_JSON_B64 || '').trim();
-  const raw = encoded ? Buffer.from(encoded, 'base64').toString('utf8') : String(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || '').replace(/^\uFEFF/, '').trim();
-  if (!raw) throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON غير مضبوط');
+  const encoded = String(process.env.FIREBASE_SERVICE_ACCOUNT_JSON_B64 || '').replace(/^\uFEFF/, '').trim();
+  const configured = encoded || String(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || '').replace(/^\uFEFF/, '').trim();
+  if (!configured) throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON غير مضبوط');
+  let raw = configured;
+  try {
+    // Vercel may contain either real Base64 or raw JSON after an env import.
+    // Accept both formats so a valid service account is never decoded twice.
+    if (!configured.startsWith('{')) raw = Buffer.from(configured, 'base64').toString('utf8');
+    let serviceAccount = JSON.parse(raw);
+    if (!serviceAccount || typeof serviceAccount !== 'object' || !serviceAccount.private_key) throw new Error('missing private key');
+    if (typeof serviceAccount.private_key === 'string') serviceAccount.private_key = serviceAccount.private_key.replace(/\\\\n/g, '\\n');
+    raw = JSON.stringify(serviceAccount);
+  } catch (e) {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON غير صالح');
+  }
   let serviceAccount;
   try {
     serviceAccount = JSON.parse(raw);
-    if (!serviceAccount || typeof serviceAccount !== 'object' || !serviceAccount.private_key) throw new Error('missing private key');
   } catch (e) {
     throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON غير صالح');
   }
