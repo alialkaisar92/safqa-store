@@ -1,5 +1,5 @@
 <!DOCTYPE html><html dir="rtl" lang="ar"><head>
-<meta name="robots" content="noindex,nofollow,noarchive"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rab7na | تسجيل الدخول</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"><style>
+<meta name="robots" content="noindex,nofollow,noarchive"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rab7na | تسجيل الدخول</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"><script src="https://accounts.google.com/gsi/client" async defer></script><style>
 *{box-sizing:border-box}body{margin:0;font-family:Cairo;background:linear-gradient(135deg,#0f766e,#10b981);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
 .card{background:#fff;border-radius:24px;padding:28px;max-width:400px;width:100%;box-shadow:0 30px 60px rgba(0,0,0,.25)}
 .logo{text-align:center;font-weight:900;font-size:1.5rem;color:#0f766e}
@@ -12,7 +12,7 @@ input{width:100%;padding:13px;border:1.5px solid #e5e7eb;border-radius:12px;font
 .go{width:100%;margin-top:16px;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#10b981,#0f766e);color:#fff;font-weight:800;font-size:1rem;cursor:pointer;font-family:inherit}
 .msg{text-align:center;font-size:.85rem;font-weight:700;margin-top:10px;min-height:1.2em}
 .back{text-align:center;margin-top:14px;font-size:.8rem}
-.back a{color:#0f766e;font-weight:700;text-decoration:none}
+.back a{color:#0f766e;font-weight:700;text-decoration:none}.googleBox{margin:16px 0 6px;text-align:center;min-height:42px}.googleBox:empty{display:none}.or{display:flex;align-items:center;gap:8px;color:#98a2b3;font-size:.75rem;margin:12px 0}.or:before,.or:after{content:"";height:1px;background:#eaecf0;flex:1}.googleHint{font-size:.72rem;color:#98a2b3;margin:5px 0}
 </style></head><body>
 <div class="card">
 <div class="logo">💰 Rab7na</div>
@@ -23,13 +23,19 @@ input{width:100%;padding:13px;border:1.5px solid #e5e7eb;border-radius:12px;font
 <div class="back"><a href="/">← الرجوع للمتجر</a> &nbsp;•&nbsp; <a href="/home">الصفحة الرئيسية</a></div>
 </div>
 <script>
+var googleClientId='';
+function msg(s,ok){var e=document.getElementById('msg');e.textContent=s;e.style.color=ok?'#16a34a':'#dc2626'}
+function googleArea(){return '<div class="googleBox" id="googleBox"></div><div class="or">أو باستخدام بياناتك</div>'}
+function renderGoogle(){var box=document.getElementById('googleBox');if(!box||!googleClientId)return;if(!window.google||!google.accounts||!google.accounts.id){setTimeout(renderGoogle,250);return}box.innerHTML='';google.accounts.id.initialize({client_id:googleClientId,callback:handleGoogle,auto_select:false,cancel_on_tap_outside:true,use_fedcm_for_prompt:true});google.accounts.id.renderButton(box,{theme:'outline',size:'large',width:320,text:'continue_with',shape:'rectangular',logo_alignment:'center'});var hint=document.createElement('div');hint.className='googleHint';hint.textContent='تسجيل آمن باستخدام حساب Google';box.appendChild(hint)}
+async function handleGoogle(response){msg('جارٍ التحقق من Google…',true);try{var r=await fetch('/api/auth/google',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({credential:response.credential})});var d=await r.json();if(d.ok)done(d);else msg(d.error||'تعذر تسجيل الدخول عبر Google',false)}catch(e){msg('تعذر الاتصال بالخادم',false)}}
+async function loadGoogle(){try{var r=await fetch('/api/auth/google-config');var d=await r.json();googleClientId=d.clientId||'';renderGoogle()}catch(e){}}
 function tab(t){document.getElementById('tL').classList.toggle('on',t==='login');document.getElementById('tR').classList.toggle('on',t==='reg');document.getElementById('msg').textContent='';
 var b=document.getElementById('fbody');
-if(t==='login'){b.innerHTML='<label>رقم الهاتف أو الإيميل</label><input id="liC"><label>كلمة السر</label><input id="liP" type="password"><button class="go" onclick="doLogin()">دخول 🔐</button><p style="text-align:center;font-size:.8rem;margin-top:12px">معندكش حساب؟ <a href="#" onclick="tab(\'reg\');return false" style="color:#0f766e;font-weight:700">إنشاء حساب</a></p>';}
-else{b.innerHTML='<label>الاسم</label><input id="rgN"><label>رقم الهاتف أو الإيميل</label><input id="rgC"><label>كلمة السر (6+ أحرف)</label><input id="rgP" type="password"><button class="go" onclick="doReg()">إنشاء الحساب والبدء 🚀</button>';}}
+if(t==='login'){b.innerHTML=googleArea()+'<label>رقم الهاتف أو الإيميل</label><input id="liC" autocomplete="username"><label>كلمة السر</label><input id="liP" type="password" autocomplete="current-password"><button class="go" onclick="doLogin()">دخول</button><p style="text-align:center;font-size:.8rem;margin-top:12px">معندكش حساب؟ <a href="#" onclick="tab(\'reg\');return false" style="color:#0f766e;font-weight:700">إنشاء حساب</a></p>';}
+else{b.innerHTML=googleArea()+'<label>الاسم</label><input id="rgN" autocomplete="name"><label>رقم الهاتف أو الإيميل</label><input id="rgC" autocomplete="username"><label>كلمة السر (6+ أحرف)</label><input id="rgP" type="password" autocomplete="new-password"><button class="go" onclick="doReg()">إنشاء الحساب والبدء</button>';};renderGoogle();}
 function msg(s,ok){var e=document.getElementById('msg');e.textContent=s;e.style.color=ok?'#16a34a':'#dc2626'}
 function done(d){localStorage.setItem('etok',d.token);if(d.refresh)localStorage.setItem('ertok',d.refresh);localStorage.setItem('euser',JSON.stringify(d.user));location.href='/store';}
 function doLogin(){fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('liC').value,password:document.getElementById('liP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else msg(d.error,false)})}
 function doReg(){fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({display_name:document.getElementById('rgN').value,username:document.getElementById('rgC').value,password:document.getElementById('rgP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else msg(d.error,false)})}
-tab('login');
+tab('login');loadGoogle();
 </script></body></html>
