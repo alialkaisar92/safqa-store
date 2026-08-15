@@ -399,7 +399,7 @@ input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(15,11
 <div class="page active" id="p-store">
   <input class="search" id="s" placeholder="ابحث عن منتج أو باركود...">
   <div class="cats" id="cats"></div>
-  <div class="store-tools"><select id="sorter" aria-label="ترتيب المنتجات" onchange="setSort(this.value)"><option value="featured">الأكثر ملاءمة</option><option value="price-low">السعر من الأقل</option><option value="price-high">السعر من الأعلى</option><option value="stock">الأعلى مخزونًا</option></select><button id="stockFilter" onclick="toggleStockFilter()">المتاح فقط</button><span class="store-count"><i class="live-dot"></i><b id="resultCount">0</b> منتج من Safka</span></div>
+  <div class="store-tools"><select id="sorter" aria-label="ترتيب المنتجات" onchange="setSort(this.value)"><option value="featured">الأكثر ملاءمة</option><option value="price-low">السعر من الأقل</option><option value="price-high">السعر من الأعلى</option><option value="stock">الأعلى مخزونًا</option></select><button id="stockFilter" onclick="toggleStockFilter()">المتاح فقط</button><span class="store-count"><i class="live-dot"></i><b id="resultCount">0</b> منتج من rab7na</span></div>
   <div class="grid" id="g"></div>
 </div>
 
