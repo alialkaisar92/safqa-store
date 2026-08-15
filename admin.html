@@ -52,8 +52,8 @@ if(s==='stats')rStats();else if(s==='orders')rOrders();else if(s==='products')rP
 function safeNum(v){var n=Number(v);return Number.isFinite(n)?n:0;
 }
 function money(v){return safeNum(v).toLocaleString('ar-EG');}
-function rStats(){fetch('/api/admin/stats').then(function(r){return r.json()}).then(function(d){
-var AR='ar-EG';
+function rStats(){var view=document.getElementById('view');if(view)view.innerHTML='<div class="panel" style="text-align:center;padding:34px"><div style="font-size:2rem;margin-bottom:8px">⏳</div><h3>جاري تحميل الإحصائيات</h3><p style="color:var(--mut);font-size:.8rem;margin-top:6px">لحظات ونجهز لوحة المدير...</p></div>';fetch('/api/admin/stats').then(function(r){return r.json().then(function(d){if(!r.ok)throw new Error(d&&d.error||'تعذر تحميل البيانات');return d||{};})}).then(function(d){
+d=d&&typeof d==='object'?d:{};var AR='ar-EG';
 var st='<div class="cards">'
 +'<div class="card"><b>'+d.orders+'</b><small>إجمالي الطلبات</small></div>'
 +'<div class="card"><b>'+d.sales+'</b><small>طلبات مسلّمة</small></div>'
@@ -62,10 +62,10 @@ var st='<div class="cards">'
 +'<div class="card"><b>'+d.products+'</b><small>المنتجات</small></div>'
 +'<div class="card"><b>'+d.withdrawals+'</b><small>سحوبات معلقة</small></div>'
 +'<div class="card"><b>'+d.chats+'</b><small>محادثات الدعم</small></div></div>';
-var chips=Object.keys(d.byStatus).map(function(k){var col=k==='تم التسليم'?'#dcfce7;color:#047857':(k==='ملغي'?'#fee2e2;color:#b91c1c':'#fef3c7;color:#92400e');return '<span class="st" style="background:'+col+'">'+k+': '+d.byStatus[k]+'</span>'}).join('');
+var byStatus=d&&d.byStatus&&typeof d.byStatus==='object'?d.byStatus:{};var chips=Object.keys(byStatus).map(function(k){var col=k==='تم التسليم'?'#dcfce7;color:#047857':(k==='ملغي'?'#fee2e2;color:#b91c1c':'#fef3c7;color:#92400e');return '<span class="st" style="background:'+col+'">'+k+': '+safeNum(byStatus[k])+'</span>'}).join('')||'<span class="st" style="background:#f1f5f9;color:#64748b">لا توجد بيانات حالات بعد</span>';
 var rows=(d.recent||[]).map(function(o){return '<tr><td>#'+(o.id||'')+'</td><td>'+(o.client_name||o.name||'')+'</td><td>'+(o.commission||0)+' ج.م</td><td>'+(o.status||'')+'</td><td>'+(o.date||'')+'</td></tr>'}).join('');
 document.getElementById('view').innerHTML=st+'<div class="panel"><h3>حالات الطلبات</h3>'+chips+'</div><div class="panel"><h3>أحدث الطلبات</h3><table class="tbl"><tr><th>#</th><th>العميل</th><th>العمولة</th><th>الحالة</th><th>التاريخ</th></tr>'+rows+'</table></div>';
-}).catch(function(e){document.getElementById('view').innerHTML='<div class="panel">خطأ: '+e+'</div>';});}
+}).catch(function(e){var v=document.getElementById('view');if(v)v.innerHTML='<div class="panel" style="text-align:center;padding:34px"><div style="font-size:2rem;margin-bottom:8px">⚠️</div><h3>تعذر تحميل لوحة الإحصائيات</h3><p style="color:var(--mut);font-size:.8rem;margin:10px 0">'+(e&&e.message?e.message:'حدث خطأ مؤقت')+'</p><button style="'+BS+'" onclick="rStats()">إعادة المحاولة</button></div>';});}
 
 var OSTATS=['جديد','تم التأكيد','تم الشحن','تم التوصيل','تم التحصيل','مرتجع','طلب استبدال','ملغي'];
 var OF='الكل',OQ='';
@@ -100,7 +100,7 @@ document.getElementById('plist').innerHTML=list.map(function(p){return '<div cla
 var BS="background:var(--g);color:#fff;border:none;border-radius:10px;padding:9px 14px;cursor:pointer;font-family:inherit;font-weight:700";
 var BG="background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer;font-family:inherit";
 var SQ='';
-function rProducts(){Promise.all([fetch('/api/products').then(function(r){return r.json()}),fetch('/api/admin/price').then(function(r){return r.json()})]).then(function(res){var prods=res[0]||[],up=res[1].up||0;window._sprods=prods;
+function rProducts(){Promise.all([fetch('/api/products').then(function(r){return r.json()}),fetch('/api/admin/price').then(function(r){return r.json()})]).then(function(res){var prods=Array.isArray(res[0])?res[0]:[],up=res[1]&&Number(res[1].up)||0;window._sprods=prods;
 document.getElementById('view').innerHTML='<div class="panel"><h3>💸 رفع أسعار كل المنتجات</h3><div style="color:var(--mut);font-size:.72rem;margin-bottom:8px">الزيادة المطبقة حالياً: <b style="color:var(--g)">'+up+'%</b></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="pup" type="number" placeholder="%" style="width:80px;padding:10px;border:1.5px solid var(--line);border-radius:10px"><button style="'+BS+'" onclick="applyUp()">تطبيق</button><button style="'+BG+'" onclick="setUp(5)">+5%</button><button style="'+BG+'" onclick="setUp(10)">+10%</button><button style="'+BG+'" onclick="setUp(20)">+20%</button><button style="'+BG+'" onclick="setUp(0)">إعادة الأسعار الأصلية</button></div></div><div class="panel"><input id="spq" placeholder="🔍 ابحث في المنتجات" oninput="SQ=this.value;drawStoreProds()"></div><div id="splist" style="margin-top:10px"></div>';
 drawStoreProds();});}
 function drawStoreProds(){var all=(window._sprods||[]).filter(function(p){return !SQ||(p.name||'').indexOf(SQ)>-1});var list=all.slice(0,60);
@@ -160,7 +160,7 @@ function drawWChips(){document.getElementById('wchips').innerHTML=['الكل','p
 function drawWList(){var list=(window._wds||[]).filter(function(w){return WF==='الكل'||w.status===WF});
 document.getElementById('wlist').innerHTML=list.map(function(w){
 var st=w.status==='pending'?'<span class="st" style="background:#fef3c7;color:#92400e">⏳ معلق</span>':(w.status==='approved'?'<span class="st" style="background:#dcfce7;color:#047857">✅ مقبول</span>':'<span class="st" style="background:#fee2e2;color:#b91c1c">❌ مرفوض</span>');
-return '<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:1rem;color:var(--g)">'+(+w.amount).toLocaleString('ar-EG')+' ج.م</b>'+st+'</div><div style="color:var(--mut);font-size:.72rem;margin:6px 0">💳 '+wMethod(w.method)+' • '+wMethod(w.details)+'</div><div style="color:var(--mut);font-size:.68rem">📅 '+(w.date||'')+'</div>'+(w.status==='pending'?'<div style="display:flex;gap:8px;margin-top:10px"><button style="'+BS+';flex:1" onclick="wStatus(\''+w.id+'\',\'approved\')">✅ موافقة</button><button style="'+BG+';flex:1" onclick="wStatus(\''+w.id+'\',\'rejected\')">❌ رفض</button></div>':'')+'</div>';}).join('')||'<div class="panel">لا توجد طلبات سحب حالياً</div>';}
+return '<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:1rem;color:var(--g)">'+money(w.amount)+' ج.م</b>'+st+'</div><div style="color:var(--mut);font-size:.72rem;margin:6px 0">💳 '+wMethod(w.method)+' • '+wMethod(w.details)+'</div><div style="color:var(--mut);font-size:.68rem">📅 '+(w.date||'')+'</div>'+(w.status==='pending'?'<div style="display:flex;gap:8px;margin-top:10px"><button style="'+BS+';flex:1" onclick="wStatus(\''+w.id+'\',\'approved\')">✅ موافقة</button><button style="'+BG+';flex:1" onclick="wStatus(\''+w.id+'\',\'rejected\')">❌ رفض</button></div>':'')+'</div>';}).join('')||'<div class="panel">لا توجد طلبات سحب حالياً</div>';}
 function wStatus(id,st){fetch('/api/admin/withdrawal-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,status:st})}).then(function(){rWithdraw();});}
 
 
@@ -176,9 +176,9 @@ function drawWList(){var list=(window._wds||[]).filter(function(w){return WF==='
 document.getElementById('wlist').innerHTML=list.map(function(w){
 var st=w.status==='pending'?'<span class="st" style="background:#fef3c7;color:#92400e">⏳ معلق</span>':(w.status==='approved'?'<span class="st" style="background:#dcfce7;color:#047857">✅ مقبول</span>':'<span class="st" style="background:#fee2e2;color:#b91c1c">❌ مرفوض</span>');
 var sales=(w.userSalesList||[]).slice(0,3).map(function(s){return '<div style="font-size:.68rem;color:var(--mut)">• '+(s.name||'')+' <b style="color:var(--g)">+'+(s.commission||0)+' ج.م</b></div>'}).join('');
-return '<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:1rem;color:var(--g)">'+(+w.amount).toLocaleString('ar-EG')+' ج.م</b>'+st+'</div>'
+return '<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:1rem;color:var(--g)">'+money(w.amount)+' ج.م</b>'+st+'</div>'
 +'<div style="margin-top:6px;font-size:.8rem">👤 <b>'+(w.userName||'—')+'</b> • '+(w.userContact||'')+'</div>'
-+'<div style="color:var(--mut);font-size:.7rem;margin-top:4px">💰 عمولته المكتسبة: <b style="color:var(--g)">'+(+w.userEarned||0).toLocaleString('ar-EG')+' ج.م</b> • 📊 عدد مبيعاته: '+(w.userSales||0)+'</div>'
++'<div style="color:var(--mut);font-size:.7rem;margin-top:4px">💰 عمولته المكتسبة: <b style="color:var(--g)">'+money(w.userEarned)+' ج.م</b> • 📊 عدد مبيعاته: '+(w.userSales||0)+'</div>'
 +(sales?'<div style="margin-top:6px;border-top:1px dashed var(--line);padding-top:6px"><b style="font-size:.68rem;color:var(--mut)">🛒 آخر مبيعاته:</b>'+sales+'</div>':'')
 +'<div style="color:var(--mut);font-size:.68rem;margin-top:6px">💳 '+wMethod(w.method)+' • 📅 '+(w.date||'')+'</div>'
 +(w.status==='pending'?'<div style="display:flex;gap:8px;margin-top:10px"><button style="'+BS+';flex:1" onclick="wStatus(\''+w.id+'\',\'approved\')">✅ موافقة</button><button style="'+BG+';flex:1" onclick="wStatus(\''+w.id+'\',\'rejected\')">❌ رفض</button></div>':'')
@@ -189,7 +189,7 @@ var CHKEY='';
 function chLabel(k){return k==='guest'?'👤 زائر':((window._uname&&window._uname[k])?window._uname[k]:k);}
 function rChat(){clearInterval(window._cT);Promise.all([fetch('/api/admin/chats').then(function(r){return r.json()}),fetch('/api/admin/users').then(function(r){return r.json()})]).then(function(res){
 window._chats=res[0]||{};var users=res[1]||[];window._uname={};users.forEach(function(u){window._uname['u'+u.id]=u.name});
-var keys=Object.keys(window._chats);
+var keys=Object.keys(window._chats||{});
 if(keys.length&&!CHKEY)CHKEY=keys[0];
 document.getElementById('view').innerHTML='<div class="panel" style="display:flex;justify-content:space-between;align-items:center"><b>💬 محادثات الدعم</b><span class="st" style="background:#dcfce7;color:#047857">● لايف</span></div><div class="panel"><label style="font-size:.75rem">اختر المحادثة</label><select id="chSel" onchange="CHKEY=this.value;drawChat()" style="width:100%;padding:10px;border:1.5px solid var(--line);border-radius:12px;background:#fff">'+keys.map(function(k){return '<option value="'+k+'"'+(k===CHKEY?' selected':'')+'>'+chLabel(k)+' — '+(window._chats[k]||[]).length+' رسالة</option>'}).join('')+'</select></div><div id="chThread"></div><div class="panel" style="display:flex;gap:8px"><input id="chMsg" placeholder="اكتب ردك..." style="flex:1"><button style="'+BS+'" onclick="sendReply()">إرسال</button></div>';
 drawChat();window._cT=setInterval(refreshChat,3000);});}
