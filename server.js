@@ -868,6 +868,7 @@ app.get('/api/price-list', async (req,res)=>{
 
 
 app.post('/api/create-order', async (req,res)=>{
+  if(!API_KEY.trim())return res.status(503).json({error:'إعدادات الطلب غير مكتملة: مفتاح Safka غير مضبوط على Vercel. أضف SAFKA_API_KEY ثم أعد المحاولة.'});
   const b=req.body||{};
   const gov=(b.shipping_governorate||'').toString().trim();
   let govId=gov;
