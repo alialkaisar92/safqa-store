@@ -256,3 +256,53 @@ function applyCat(cc){
 window.__filterUser=0;
 if(typeof openFilterSheet==='function'){var _ofs=openFilterSheet;openFilterSheet=function(){window.__filterUser=1;_ofs();};}
 document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var s=document.getElementById('fsheet');if(s&&!window.__filterUser)s.remove();},400);});
+
+/* rab7na push permission control: explicit user action */
+(function(){
+  var ready=false;
+  function token(){return localStorage.getItem('etok')||'';}
+  function showState(btn,msg,ok){if(btn){btn.textContent=msg;btn.disabled=false;btn.classList.toggle('is-ok',!!ok);}}
+  function addButton(){
+    if(document.getElementById('rab7naPushBtn'))return;
+    var host=document.querySelector('.header')||document.querySelector('.topbar')||document.body;
+    if(!host)return;
+    var b=document.createElement('button');b.id='rab7naPushBtn';b.type='button';b.textContent='🔔 تفعيل الإشعارات';
+    b.style.cssText='position:fixed;z-index:80;bottom:86px;right:14px;border:0;border-radius:999px;padding:12px 16px;background:#0f766e;color:#fff;font:700 13px inherit;box-shadow:0 8px 24px #0f766e44;cursor:pointer';
+    b.onclick=enable;document.body.appendChild(b);update(b);
+  }
+  function update(btn){
+    if(!btn)btn=document.getElementById('rab7naPushBtn');
+    if(!btn)return;
+    if(!token()){showState(btn,'🔔 سجّل الدخول لتفعيل الإشعارات',false);return;}
+    if(window.Notification&&Notification.permission==='denied'){showState(btn,'⚙️ السماح من إعدادات المتصفح',false);return;}
+    if(window.Notification&&Notification.permission==='granted')showState(btn,'✅ الإشعارات مفعّلة',true);
+  }
+  function load(){
+    if(window.OneSignal)return Promise.resolve(window.OneSignal);
+    return fetch('/api/onesignal/config').then(function(r){return r.json()}).then(function(c){
+      var appId=c&&c.appId;if(!appId)throw Error('missing app id');
+      return new Promise(function(resolve,reject){
+        window.OneSignalDeferred=window.OneSignalDeferred||[];
+        window.OneSignalDeferred.push(function(OS){resolve(OS)});
+        var s=document.querySelector('script[data-rab7na-os]');
+        if(!s){s=document.createElement('script');s.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';s.async=true;s.dataset.rab7naOs='1';s.onload=function(){window.OneSignalDeferred=window.OneSignalDeferred||[]};s.onerror=reject;document.head.appendChild(s)}
+        setTimeout(function(){if(!window.OneSignalDeferred)reject(Error('OneSignal timeout'))},10000);
+      }).then(function(OS){return OS.init({appId:appId,notifyButton:{enable:false},autoResubscribe:true,serviceWorkerPath:'/OneSignalSDKWorker.js',serviceWorkerParam:{scope:'/'}}).then(function(){return OS})});
+    });
+  }
+  function enable(){
+    var b=document.getElementById('rab7naPushBtn');if(!b)return;
+    if(!token()){showState(b,'سجّل الدخول أولًا',false);return;}
+    b.disabled=true;b.textContent='⏳ جاري التفعيل...';
+    load().then(function(OS){return OS.Slidedown.promptPush().then(function(){return OS})}).then(function(OS){
+      var user=JSON.parse(localStorage.getItem('euser')||'null'),uid=user&&user.id?String(user.id):'';
+      if(uid&&OS.login)return OS.login(uid).then(function(){return OS});return OS;
+    }).then(function(OS){
+      var u=OS.getUser?OS.getUser():null;var sub=u&&u.getPushSubscription?u.getPushSubscription():null;var id=sub&&sub.id;
+      if(!id)throw Error('لم يتم السماح بعد');
+      return fetch('/api/notifications/register',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token()},body:JSON.stringify({playerId:id,externalId:(JSON.parse(localStorage.getItem('euser')||'null')||{}).id||''})}).then(function(){showState(b,'✅ الإشعارات مفعّلة',true);if(window.rab7naNoticeSound)window.rab7naNoticeSound()});
+    }).catch(function(e){showState(b,e&&e.message==='لم يتم السماح بعد'?'اضغط للسماح من المتصفح':'🔔 حاول التفعيل مرة أخرى',false)});
+  }
+  window.rab7naEnablePush=enable;
+  setInterval(addButton,1200);setTimeout(addButton,500);
+})();
