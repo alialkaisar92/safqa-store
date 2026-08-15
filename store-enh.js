@@ -1,7 +1,7 @@
 (function(){
 window.ehToast=function(m){var d=document.createElement("div");d.className="eh-toast";d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2200);};
 function header(){return;var h=document.querySelector(".header");if(!h||h.dataset.eh)return;h.dataset.eh="1";
-h.innerHTML='<div class="eh-brand"><span class="eh-logo">Earnify 💰</span><small>منصة التسويق بالعمولة</small></div>'
+h.innerHTML='<div class="eh-brand"><span class="eh-logo">Rab7na 💰</span><small>منصة التسويق بالعمولة</small></div>'
 +'<button class="eh-profile" onclick="go(\'account\')"><span class="eh-pname">أحمد محمد<small>✔ مسوق نشط</small></span><span class="eh-av">👤</span></button>'
 +'<button class="eh-cartb" onclick="go(\'cart\')">🛒<i>0</i></button>'
 +'<button class="eh-bell" onclick="go(\'account\')">🔔<i>3</i></button>';}

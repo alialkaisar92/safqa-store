@@ -178,7 +178,7 @@ app.get('/', (req, res) => {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Earnify - المتجر الاحترافي</title>
+<title>Rab7na - المتجر الاحترافي</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{--p:#0d9488;--pd:#0f766e;--bg:#f8fafc;--card:#fff;--text:#0f172a;--muted:#64748b;--accent:#f59e0b;--danger:#ef4444;--ok:#10b981}
@@ -280,7 +280,7 @@ textarea{min-height:90px;resize:vertical}
 </head>
 <body>
 <header class="header">
-  <div class="logo">Earnify<span>.</span></div>
+  <div class="logo">Rab7na<span>.</span></div>
   <button class="cart-btn" onclick="go('cart')">🛒 السلة<span class="badge" id="cc">0</span></button>
 </header>
 

@@ -49,7 +49,7 @@ let sse=[];global.notifyChat=function(){sse.forEach(function(f){try{f()}catch(e)
 app.get('/api/admin/chat-stream',(req,res)=>{res.set({'Content-Type':'text/event-stream','Cache-Control':'no-cache','Connection':'keep-alive'});res.flushHeaders();res.write('data: ok\n\n');const push=function(){res.write('data: '+Date.now()+'\n\n')};sse.push(push);req.on('close',function(){sse=sse.filter(x=>x!==push)});});
 
 
-app.get('/api/admin/settings',(req,res)=>{const d=data();res.json(d.settings||{name:'Earnify',currency:'ج.م',whatsapp:'',commission:30,announcement:''})});
+app.get('/api/admin/settings',(req,res)=>{const d=data();res.json(d.settings||{name:'Rab7na',currency:'ج.م',whatsapp:'',commission:30,announcement:''})});
 app.post('/api/admin/settings',(req,res)=>{const d=data();d.settings=Object.assign(d.settings||{},req.body||{});writeData(d);res.json({ok:true})});
 
 };
