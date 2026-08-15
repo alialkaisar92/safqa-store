@@ -402,6 +402,13 @@ input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(15,11
 .nav{background:rgba(255,255,255,.92)!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(15,118,110,.1)!important}
 .nav button{color:var(--mut)!important;font-weight:700}
 .nav button.active{color:var(--p)!important}
+/* rab7na professional side navigation */
+.r7-menu-btn{width:44px;height:44px;border:1px solid rgba(15,118,110,.14);background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--p);font-size:22px;box-shadow:0 5px 16px rgba(15,118,110,.09)}
+.r7-menu-btn span,.r7-menu-btn span:before,.r7-menu-btn span:after{display:block;width:20px;height:2px;background:currentColor;border-radius:9px;position:relative}.r7-menu-btn span:before,.r7-menu-btn span:after{content:"";position:absolute;right:0}.r7-menu-btn span:before{top:-7px}.r7-menu-btn span:after{top:7px}
+.r7-overlay{position:fixed;inset:0;background:rgba(15,23,42,.42);backdrop-filter:blur(3px);z-index:2000;opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s}.r7-overlay.open{opacity:1;visibility:visible}
+.r7-sidebar{position:fixed;z-index:2001;top:0;right:0;width:min(350px,88vw);height:100dvh;background:#fff;box-shadow:-18px 0 50px rgba(15,23,42,.18);transform:translateX(105%);transition:transform .28s ease;display:flex;flex-direction:column;overflow-y:auto}.r7-sidebar.open{transform:translateX(0)}
+.r7-side-head{padding:22px 20px 18px;background:linear-gradient(145deg,#f0fdfa,#fff);border-bottom:1px solid #e6f4f0;display:flex;align-items:center;justify-content:space-between;gap:12px}.r7-brand{display:flex;align-items:center;gap:11px}.r7-brand-mark{width:45px;height:45px;border-radius:15px;background:linear-gradient(135deg,#0f766e,#10b981);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;box-shadow:0 8px 20px rgba(16,185,129,.28)}.r7-brand strong{display:block;font-size:1.32rem;letter-spacing:.2px;color:#0b2420}.r7-brand small{display:block;color:#64748b;font-size:.72rem;margin-top:2px}.r7-close{width:38px;height:38px;border:0;border-radius:12px;background:#fff;color:#64748b;font-size:25px;cursor:pointer}.r7-side-body{padding:16px 13px;flex:1}.r7-nav-label{font-size:.72rem;color:#94a3b8;font-weight:800;padding:0 12px 8px}.r7-link{width:100%;border:0;background:transparent;color:#344054;display:flex;align-items:center;gap:12px;padding:13px 13px;border-radius:14px;font-family:inherit;font-size:.96rem;font-weight:700;cursor:pointer;text-align:right;transition:all .18s;margin-bottom:4px}.r7-link:hover,.r7-link.active{background:#ecfdf5;color:#087f6d}.r7-link.active{box-shadow:inset -3px 0 #10b981}.r7-icon{width:35px;height:35px;border-radius:11px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-size:18px;flex:0 0 35px}.r7-link.active .r7-icon{background:#d1fae5}.r7-link .r7-arrow{margin-right:auto;color:#94a3b8;font-size:18px}.r7-divider{height:1px;background:#eef2f6;margin:14px 10px}.r7-side-foot{padding:14px 20px 22px;color:#94a3b8;text-align:center;font-size:.72rem}.r7-dashboard{background:linear-gradient(135deg,#0f766e,#10b981)!important;color:#fff!important}.r7-dashboard .r7-icon{background:rgba(255,255,255,.18)}
+@media(min-width:900px){.r7-sidebar{width:370px}.r7-menu-btn{width:46px;height:46px}}
 .eh-cartb,.eh-bell{border-radius:16px!important;background:linear-gradient(135deg,var(--p),var(--p2))!important;box-shadow:0 6px 18px -6px rgba(16,185,129,.5)}
 [class*="chip"],[class*="cat"]{border-radius:50px!important;font-weight:700!important}
 [class*="chip"].on,[class*="cat"].on,[class*="chip"].active{background:linear-gradient(135deg,var(--p),var(--p2))!important;color:#fff!important;border:none!important}
@@ -412,8 +419,24 @@ input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(15,11
   #fsheet button:active{background:var(--p)!important;color:#fff!important}
   .store-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}.store-tools select,.store-tools button{border:1px solid rgba(15,118,110,.16);background:#fff;color:var(--tx);padding:9px 11px;border-radius:12px;font-family:inherit;font-weight:700;font-size:.76rem}.store-tools button.active{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff}.store-count{margin-right:auto;color:var(--mut);font-size:.72rem;font-weight:700}.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;margin-left:4px}
   </style>
-<header class="header"><div id="ht" style="display:none"></div><div class="eh-brand"><span class="eh-logo">rab7na 💰</span><small>منصة التسويق بالعمولة</small></div><button class="eh-profile" onclick="go('profile')"><span class="eh-pname">حسابي<small>✔ مسوق</small></span><span class="eh-av">👤</span></button><button class="eh-cartb" onclick="go('cart')">🛒<i id="cc">0</i></button><button class="eh-bell" onclick="ehNotifToggle()">🔔<i>3</i></button></header>
-
+<header class="header"><button class="r7-menu-btn" aria-label="فتح القائمة" onclick="toggleSidebar(true)"><span></span></button><div id="ht" style="display:none"></div><div class="eh-brand"><span class="eh-logo">rab7na 💰</span><small>منصة التسويق بالعمولة</small></div><button class="eh-profile" onclick="go('profile')"><span class="eh-pname">حسابي<small>✔ مسوق</small></span><span class="eh-av">👤</span></button><button class="eh-cartb" onclick="go('cart')">🛒<i id="cc">0</i></button><button class="eh-bell" onclick="ehNotifToggle()">🔔<i>3</i></button></header>
+<div class="r7-overlay" id="r7Overlay" onclick="toggleSidebar(false)"></div>
+<aside class="r7-sidebar" id="r7Sidebar" aria-label="القائمة الرئيسية">
+  <div class="r7-side-head"><div class="r7-brand"><div class="r7-brand-mark">r</div><div><strong>rab7na</strong><small>منصة التسويق بالعمولة</small></div></div><button class="r7-close" aria-label="إغلاق القائمة" onclick="toggleSidebar(false)">×</button></div>
+  <div class="r7-side-body">
+    <div class="r7-nav-label">التنقل الرئيسي</div>
+    <button class="r7-link active" data-side="store" onclick="sideGo('store')"><span class="r7-icon">⌂</span><span>الرئيسية والمتجر</span><span class="r7-arrow">‹</span></button>
+    <button class="r7-link" data-side="products" onclick="sideGo('products')"><span class="r7-icon">▦</span><span>كل المنتجات</span><span class="r7-arrow">‹</span></button>
+    <button class="r7-link" data-side="cart" onclick="sideGo('cart')"><span class="r7-icon">🛒</span><span>سلة التسوق</span><span class="r7-arrow">‹</span></button>
+    <div class="r7-divider"></div><div class="r7-nav-label">حساب المسوّق</div>
+    <button class="r7-link" data-side="orders" onclick="sideGo('orders')"><span class="r7-icon">▤</span><span>طلباتي</span><span class="r7-arrow">‹</span></button>
+    <button class="r7-link" data-side="withdraw" onclick="sideGo('withdraw')"><span class="r7-icon">↗</span><span>الأرباح والسحب</span><span class="r7-arrow">‹</span></button>
+    <button class="r7-link" data-side="profile" onclick="sideGo('profile')"><span class="r7-icon">♙</span><span>الملف الشخصي</span><span class="r7-arrow">‹</span></button>
+    <button class="r7-link" data-side="support" onclick="sideGo('support')"><span class="r7-icon">?</span><span>الدعم والمساعدة</span><span class="r7-arrow">‹</span></button>
+    <div class="r7-divider"></div>
+    <button class="r7-link r7-dashboard" onclick="location.href='/dashboard'"><span class="r7-icon">▥</span><span>لوحة المسوّق الكاملة</span><span class="r7-arrow">‹</span></button>
+  </div><div class="r7-side-foot">rab7na · تسويق أسهل وربح أوضح</div>
+</aside>
 <div class="page active" id="p-store">
   <input class="search" id="s" placeholder="ابحث عن منتج أو باركود...">
   <div class="cats" id="cats"></div>
@@ -543,11 +566,15 @@ let products=[], priceList=[], cart=JSON.parse(localStorage.getItem('scart')||'[
 const titles={store:'rab7na',cart:'السلة',checkout:'إتمام الطلب',orders:'طلباتي',profile:'حسابي',withdraw:'سحب الأرباح',support:'الدعم'};
 
 function updCC(){document.getElementById('cc').textContent=cart.reduce((s,i)=>s+(i.qty||1),0)}
+function toggleSidebar(open){const s=document.getElementById('r7Sidebar'),o=document.getElementById('r7Overlay');if(!s||!o)return;s.classList.toggle('open',!!open);o.classList.toggle('open',!!open);document.body.style.overflow=open?'hidden':''}
+function sideGo(p){toggleSidebar(false);if(p==='products'){go('store');setTimeout(function(){var g=document.getElementById('g');if(g)g.scrollIntoView({behavior:'smooth'})},220)}else go(p)}
 function go(p){
+  toggleSidebar(false);
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.getElementById('p-'+p).classList.add('active');
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   const n=document.querySelector('.nav button[data-p="'+p+'"]'); if(n) n.classList.add('active');
+  document.querySelectorAll('.r7-link').forEach(x=>x.classList.toggle('active',x.dataset.side===p||(p==='store'&&x.dataset.side==='store')));
   document.getElementById('ht').innerHTML='<div style="display:flex;align-items:center;gap:12px"><div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:900">R</div><div><div style="font-size:28px;font-weight:900;color:#fff">'+(titles[p]||'rab7na')+'</div><div style="font-size:12px;opacity:.9">Affiliate Marketing Platform</div></div></div>';
   if(p==='cart') renderCart();
   if(p==='orders') loadOrders();
