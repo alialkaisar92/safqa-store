@@ -1,21 +1,21 @@
 (function(){
 window.ehToast=function(m){var d=document.createElement("div");d.className="eh-toast";d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2200);};
 function header(){return;var h=document.querySelector(".header");if(!h||h.dataset.eh)return;h.dataset.eh="1";
-h.innerHTML='<div class="eh-brand"><span class="eh-logo">rab7na 💰</span><small>منصة التسويق بالعمولة</small></div>'
-+'<button class="eh-profile" onclick="go(\'account\')"><span class="eh-pname">حسابي<small>بيانات حسابك</small></span><span class="eh-av">👤</span></button>'
+h.innerHTML='<div class="eh-brand"><span class="eh-logo">Rab7na 💰</span><small>منصة التسويق بالعمولة</small></div>'
++'<button class="eh-profile" onclick="go(\'account\')"><span class="eh-pname">أحمد محمد<small>✔ مسوق نشط</small></span><span class="eh-av">👤</span></button>'
 +'<button class="eh-cartb" onclick="go(\'cart\')">🛒<i>0</i></button>'
 +'<button class="eh-bell" onclick="go(\'account\')">🔔<i>3</i></button>';}
 function wallet(){var s=document.getElementById("s");if(!s||document.getElementById("ehWallet"))return;
 var w=document.createElement("div");w.id="ehWallet";w.className="eh-wallet";
 w.innerHTML='<div style="display:flex;gap:10px;align-items:center"><span class="wic">💼</span><div class="bal"><small>رصيدك المتاح</small><b id="ehBal">... ج.م</b></div></div><button class="wbtn" onclick="go(\'withdraw\')">سحب الأرباح</button>';
 s.parentNode.insertBefore(w,s);
-fetch("/api/me").then(function(r){return r.json()}).then(function(me){var b=(me&&me.balance!=null)?me.balance:0;var el=document.getElementById("ehBal");if(el)el.textContent=(+b).toLocaleString("ar-EG")+" ج.م";}).catch(function(){});}
-function hero(){return;var s=document.getElementById("s");if(!s||document.getElementById("ehHero"))return;
+fetch("/api/me").then(function(r){return r.json()}).then(function(me){var b=(me&&me.balance!=null)?me.balance:2450;var el=document.getElementById("ehBal");if(el)el.textContent=(+b).toLocaleString("ar-EG")+" ج.م";}).catch(function(){});}
+function hero(){var s=document.getElementById("s");if(!s||document.getElementById("ehHero"))return;
 var h=document.createElement("div");h.id="ehHero";h.className="eh-hero";
-h.innerHTML='<h3>🔥 اكتشف منتجات مناسبة للتسويق</h3><p>اختر منتجات تناسب جمهورك<br>وتابع الطلبات من حسابك</p><button class="hbtn" onclick="document.getElementById(\'g\').scrollIntoView({behavior:\'smooth\'})">تصفح المنتجات ❮</button><div class="dots"><i class="on"></i><i></i><i></i><i></i></div>';
+h.innerHTML='<h3>🔥 سوّق واربح حتى 30% عمولة</h3><p>شحن سريع لجميع المحافظات<br>سحب أرباح فوري</p><button class="hbtn" onclick="document.getElementById(\'g\').scrollIntoView({behavior:\'smooth\'})">تصفح المنتجات ❮</button><div class="dots"><i class="on"></i><i></i><i></i><i></i></div>';
 s.parentNode.insertBefore(h,s);
 var q=document.createElement("div");q.className="eh-quick";
-q.innerHTML='<button onclick="document.getElementById(\'g\').scrollIntoView({behavior:\'smooth\'})"><i>★</i><b>المنتجات المميزة</b><small>منتجات متاحة</small></button><button onclick="go(\'support\')"><i>🎧</i><b>الدعم</b><small>تواصل معنا</small></button><button onclick="go(\'orders\')"><i>📦</i><b>طلباتي</b><small>تتبع طلباتك</small></button><button onclick="go(\'withdraw\')"><i>💰</i><b>سحب الأرباح</b><small>راجع شروط السحب</small></button>';
+q.innerHTML='<button onclick="document.getElementById(\'g\').scrollIntoView({behavior:\'smooth\'})"><i>★</i><b>المنتجات المميزة</b><small>أفضل العروض</small></button><button onclick="go(\'support\')"><i>🎧</i><b>الدعم</b><small>فريق جاهز</small></button><button onclick="go(\'orders\')"><i>📦</i><b>طلباتي</b><small>تتبع طلباتك</small></button><button onclick="go(\'withdraw\')"><i>💰</i><b>سحب الأرباح</b><small>حول أرباحك</small></button>';
 h.parentNode.insertBefore(q,s);}
 function search(){var s=document.getElementById("s");if(!s||s.dataset.eh)return;s.dataset.eh="1";
 var w=document.createElement("div");w.className="eh-search";s.parentNode.insertBefore(w,s);w.appendChild(s);
@@ -30,22 +30,22 @@ p.onclick=function(){bar.querySelectorAll("button").forEach(function(x){x.classL
 bar.appendChild(p);});}}
 function sechead(){var g=document.getElementById("g");if(!g||document.getElementById("ehSec"))return;
 var d=document.createElement("div");d.id="ehSec";d.className="eh-sechead";d.innerHTML='<b>⭐ منتجات مميزة</b><a href="#" onclick="return false">عرض الكل ❮</a>';g.parentNode.insertBefore(d,g);}
-function stats(){return;var g=document.getElementById("g");if(!g||document.getElementById("ehStats"))return;
+function stats(){var g=document.getElementById("g");if(!g||document.getElementById("ehStats"))return;
 var d=document.createElement("div");d.id="ehStats";d.className="eh-stats";
 d.innerHTML='<div><small>إجمالي الأرباح</small><b>18,760 ج.م</b><em>↑ 12.5%</em></div><div><small>عدد الطلبات</small><b>320</b><em>↑ 18.7%</em></div><div><small>عدد النقرات</small><b>8,540</b><em>↑ 25.6%</em></div><div><small>معدل التحويل</small><b>4.8%</b><em>↑ 12.5%</em></div>';
 g.parentNode.insertBefore(d,g.nextSibling);}
-function rebuild(){return;var g=document.getElementById("g");if(!g)return;
- g.querySelectorAll(".card:not([data-ref])").forEach(function(c){c.setAttribute("data-ref","1");
+function rebuild(){var g=document.getElementById("g");if(!g)return;
+g.querySelectorAll(".card:not([data-ref])").forEach(function(c){c.setAttribute("data-ref","1");
 var oc=c.getAttribute("onclick")||"";var m=oc.match(/openP\((\d+)\)/);var idx=m?+m[1]:-1;
 var P=(window.products&&idx>=0)?products[idx]:null;
 var img=c.querySelector("img");var src=P&&P.image?P.image:(img?img.src:"");
 var name=P?P.name:(c.querySelector(".t")?c.querySelector(".t").textContent:"");
 var price=P?(+P.price).toLocaleString("ar-EG")+" ج.م":(c.querySelector(".pr")?c.querySelector(".pr").textContent:"");
 var stock=P?(+P.stock).toLocaleString("ar-EG"):"0";
-var rate='';var cnt='';
-c.innerHTML='<div class="rf-img"><img src="'+src+'" alt="'+(name||'منتج')+'" loading="lazy" decoding="async"><button class="rf-fav" onclick="event.stopPropagation();ehToast(\'تمت الإضافة للمفضلة ❤\')">🤍</button><span class="rf-comm">تفاصيل المنتج والعمولة حسب البيانات المتاحة</span></div>'
+var rate=(4+Math.random()).toFixed(1);var cnt=Math.floor(100+Math.random()*300);
+c.innerHTML='<div class="rf-img"><img src="'+src+'" loading="lazy"><button class="rf-fav" onclick="event.stopPropagation();ehToast(\'تمت الإضافة للمفضلة ❤\')">🤍</button><span class="rf-comm">عمولة 30%</span></div>'
 +'<div class="rf-body"><div class="rf-name">'+name+'</div>'
-+'<div class="rf-row"><span class="rf-price">'+price+'</span></div>'
++'<div class="rf-row"><span class="rf-price">'+price+'</span><span class="rf-rate"><b>★</b> '+rate+' ('+cnt+')</span></div>'
 +'<div class="rf-stock">متوفر: '+stock+' قطعة</div>'
 +'<button class="rf-view">عرض المنتج</button></div>';});}
 setInterval(function(){header();wallet();hero();search();cats();sechead();stats();rebuild();},700);
@@ -126,8 +126,8 @@ var b=document.getElementById('authBody');
 if(t==='login'){b.innerHTML='<label>رقم الهاتف أو الإيميل</label><input id="liC"><label>كلمة السر</label><input id="liP" type="password"><button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="doLogin()">دخول</button><p style="text-align:center;margin-top:10px;font-size:.8rem">معندكش حساب؟ <a href="#" onclick="authTab(\'reg\');return false" style="color:var(--p);font-weight:700">إنشاء حساب</a></p>';}
 else{b.innerHTML='<label>الاسم</label><input id="rgN"><label>رقم الهاتف أو الإيميل</label><input id="rgC"><label>كلمة السر (6+ أحرف)</label><input id="rgP" type="password"><button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="doReg()">إنشاء الحساب</button>';}};
 function msg(s,ok){var e=document.getElementById('authMsg');if(e){e.textContent=s;e.style.color=ok?'#16a34a':'#dc2626'}}
-window.doLogin=function(){fetch('/api/auth/login',{method:'POST',headers:hdr(),body:JSON.stringify({contact:document.getElementById('liC').value,password:document.getElementById('liP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok){localStorage.setItem('etok',d.token);localStorage.setItem('euser',JSON.stringify(d.user));authClose();authRender();ehToast('أهلاً '+d.user.name+' 👋')}else msg(d.error,false)})};
-window.doReg=function(){fetch('/api/auth/register',{method:'POST',headers:hdr(),body:JSON.stringify({name:document.getElementById('rgN').value,contact:document.getElementById('rgC').value,password:document.getElementById('rgP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok){localStorage.setItem('etok',d.token);localStorage.setItem('euser',JSON.stringify(d.user));authClose();authRender();ehToast('تم إنشاء حسابك ✅')}else msg(d.error,false)})};
+window.doLogin=function(){fetch('/api/auth/login',{method:'POST',headers:hdr(),body:JSON.stringify({username:document.getElementById('liC').value,password:document.getElementById('liP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok){localStorage.setItem('etok',d.token);localStorage.setItem('euser',JSON.stringify(d.user));authClose();authRender();ehToast('أهلاً '+d.user.name+' 👋')}else msg(d.error,false)})};
+window.doReg=function(){fetch('/api/auth/register',{method:'POST',headers:hdr(),body:JSON.stringify({display_name:document.getElementById('rgN').value,username:document.getElementById('rgC').value,password:document.getElementById('rgP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok){localStorage.setItem('etok',d.token);localStorage.setItem('euser',JSON.stringify(d.user));authClose();authRender();ehToast('تم إنشاء حسابك ✅')}else msg(d.error,false)})};
 window.authLogout=function(){fetch('/api/auth/logout',{method:'POST',headers:hdr()}).then(function(){localStorage.removeItem('etok');localStorage.removeItem('euser');authRender();ehToast('تم تسجيل الخروج')})};
 function authRender(){var p=document.getElementById('p-profile');if(!p)return;
 var box=document.getElementById('authBox');if(!box){box=document.createElement('div');box.id='authBox';p.insertBefore(box,p.firstChild)}
@@ -143,8 +143,8 @@ function ensureNotif(){if(document.getElementById('ehNotif'))return;
 var p=document.createElement('div');p.id='ehNotif';p.style.cssText='position:fixed;top:64px;right:10px;left:10px;max-width:360px;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.25);z-index:220;display:none;padding:14px';
 p.innerHTML='<b style="font-size:.9rem">🔔 الإشعارات</b><div id="ehNotifList" style="margin-top:10px"></div>';
 document.body.appendChild(p);}
-function renderNotif(){var l=[];
-document.getElementById('ehNotifList').innerHTML=l.map(function(n){return '<div style="border:1px solid #eee;border-radius:12px;padding:10px;margin-bottom:8px"><b style="font-size:.8rem">'+n.t+'</b><div style="color:#888;font-size:.68rem">'+n.d+'</div></div>';}).join('');}
+function esc(v){return String(v==null?'':v).replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]})}
+function renderNotif(){var list=document.getElementById('ehNotifList');if(!list)return;var t=localStorage.getItem('etok')||'';if(!t){list.innerHTML='<div style="color:#888;font-size:.78rem;padding:10px 0">سجّل الدخول لمتابعة تحديثات الطلبات والمنتجات.</div>';return;}list.innerHTML='<div style="color:#888;font-size:.78rem;padding:10px 0">جاري تحميل الإشعارات...</div>';fetch('/api/notifications',{headers:{'x-auth-token':t}}).then(function(r){return r.json()}).then(function(d){var l=d.notifications||[];if(!l.length){list.innerHTML='<div style="color:#888;font-size:.78rem;padding:10px 0">لا توجد إشعارات جديدة.</div>';return;}list.innerHTML=l.map(function(n){return '<button type="button" data-notif-id="'+esc(n.id)+'" style="display:block;width:100%;text-align:right;border:1px solid '+(n.read?'#eee':'#b7e4c7')+';background:'+(n.read?'#fff':'#f0fff5')+';border-radius:12px;padding:10px;margin-bottom:8px;font-family:inherit;cursor:pointer"><b style="font-size:.8rem">'+esc(n.title)+'</b><div style="color:#666;font-size:.68rem;margin-top:3px">'+esc(n.body)+'</div><div style="color:#999;font-size:.64rem;margin-top:4px">'+esc(n.createdAt||'')+'</div></button>';}).join('')+'<button type="button" id="markNotifRead" style="width:100%;border:0;background:#e8f5ed;color:#176b43;border-radius:10px;padding:8px;font-family:inherit;font-weight:700">تعليم الكل كمقروء</button>';list.querySelectorAll('[data-notif-id]').forEach(function(b){b.onclick=function(){fetch('/api/notifications/read',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':t},body:JSON.stringify({id:b.getAttribute('data-notif-id')})}).then(renderNotif)}});var all=document.getElementById('markNotifRead');if(all)all.onclick=function(){fetch('/api/notifications/read',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':t},body:'{}'}).then(renderNotif)};}).catch(function(){list.innerHTML='<div style="color:#b33;font-size:.78rem;padding:10px 0">تعذر تحميل الإشعارات حالياً.</div>';});}
 window.ehNotifToggle=function(){ensureNotif();var p=document.getElementById('ehNotif');var open=p.style.display==='block';p.style.display=open?'none':'block';if(!open)renderNotif();};
 function wireBell(){var b=document.querySelector('.eh-bell');if(b&&!b.dataset.nt){b.dataset.nt='1';b.onclick=function(e){e.stopPropagation();ehNotifToggle();};}}
 /* === خصوصية: المسجّل يشوف بياناته هو بس === */
@@ -176,25 +176,46 @@ setInterval(function(){if(localStorage.getItem('etok'))act('نشط في '+cur())
  if(s.name){var l=document.querySelector('.eh-logo');if(l)l.textContent=s.name+' 💰';document.title=s.name;}
  if(s.announcement){var h=document.querySelector('.eh-hero h1, .eh-hero');if(h)h.innerHTML=s.announcement;}
 }).catch(function(){});})();
-(function(){var loaded=false;
-function loadOS(){if(loaded)return;loaded=true;
- fetch('/api/onesignal/config').then(function(r){return r.json()}).then(function(c){
-  var APPID=c.appId||'f283c3ca-8c41-49fe-800d-7a174920696d';
-  window.OneSignalDeferred=window.OneSignalDeferred||[];
-  var s=document.createElement('script');s.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';s.async=true;
-  s.onload=function(){OneSignalDeferred.push(function(OneSignal){
-   OneSignal.init({appId:APPID,notifyButton:false,autoResubscribe:true}).then(function(){return OneSignal.Slidedown.promptPush()}).then(function(){return OneSignal.getUser()}).then(function(u){
-    var id=u&&u.getPushSubscription?u.getPushSubscription().id:null;
-    if(id)fetch('/api/notifications/register',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':localStorage.getItem('etok')||''},body:JSON.stringify({playerId:id})});
-   }).catch(function(){});
-  });};
-  document.head.appendChild(s);
+(function(){var loaded=false, lastUnread=0;
+ function playNoticeSound(){try{
+  var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;var c=new AC(),o=c.createOscillator(),g=c.createGain();
+  o.type='sine';o.frequency.setValueAtTime(660,c.currentTime);o.frequency.exponentialRampToValueAtTime(990,c.currentTime+.12);
+  g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.08,c.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.42);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.45);setTimeout(function(){try{c.close()}catch(e){}},600);
+ }catch(e){}}
+ window.rab7naNoticeSound=playNoticeSound;
+ function registerSubscription(OneSignal){
+  var token=localStorage.getItem('etok')||'', user=JSON.parse(localStorage.getItem('euser')||'null');
+  if(!token)return Promise.resolve();
+  var uid=user&&user.id?String(user.id):'';
+  var p=Promise.resolve();
+  if(uid&&OneSignal.login)p=p.then(function(){return OneSignal.login(uid).catch(function(){})});
+  return p.then(function(){return OneSignal.getUser()}).then(function(u){
+   var sub=u&&u.getPushSubscription?u.getPushSubscription():null,id=sub&&sub.id;
+   if(!id)return null;
+   return fetch('/api/notifications/register',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({playerId:id,externalId:uid})});
+  });
+ }
+ function loadOS(){if(loaded)return;loaded=true;
+  fetch('/api/onesignal/config').then(function(r){return r.json()}).then(function(c){
+   var APPID=c.appId||'f283c3ca-8c41-49fe-800d-7a174920696d';
+   if(!APPID)return;
+   window.OneSignalDeferred=window.OneSignalDeferred||[];
+   var s=document.createElement('script');s.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';s.async=true;
+   s.onload=function(){OneSignalDeferred.push(function(OneSignal){
+    OneSignal.init({appId:APPID,notifyButton:false,autoResubscribe:true,serviceWorkerPath:'OneSignalSDKWorker.js',serviceWorkerParam:{scope:'/'}})
+    .then(function(){return OneSignal.Slidedown.promptPush()}).then(function(){return registerSubscription(OneSignal)}).catch(function(){});
+   });};
+   document.head.appendChild(s);
+  }).catch(function(){});}
+ function maybe(){if(localStorage.getItem('etok'))loadOS();}
+ document.addEventListener('click',function(){maybe()},{once:true});setInterval(maybe,6000);
+ function pollNotifications(){var t=localStorage.getItem('etok');if(!t)return;fetch('/api/notifications',{headers:{'x-auth-token':t}}).then(function(r){return r.json()}).then(function(d){
+  var n=Number(d&&d.unread||0);if(lastUnread&&n>lastUnread)playNoticeSound();lastUnread=n;
  }).catch(function(){});}
-function maybe(){if(localStorage.getItem('etok'))loadOS();}
-document.addEventListener('click',function(){maybe()},{once:true});
-setInterval(maybe,6000);
-var _ol=window.authLogout;window.authLogout=function(){fetch('/api/notifications/unlink',{method:'POST',headers:{'x-auth-token':localStorage.getItem('etok')||''}}).then(function(){if(_ol)_ol()});};
-})();
+ setInterval(pollNotifications,12000);pollNotifications();
+ var _ol=window.authLogout;window.authLogout=function(){fetch('/api/notifications/unlink',{method:'POST',headers:{'x-auth-token':localStorage.getItem('etok')||''}}).then(function(){if(_ol)_ol()});};
+ })();
 (function(){
 window.AppState={user:null};
 function setSess(a,r,u){if(a)localStorage.setItem('etok',a);if(r)localStorage.setItem('ertok',r);if(u){localStorage.setItem('euser',JSON.stringify(u));AppState.user=u}}
