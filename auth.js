@@ -40,8 +40,23 @@ async function sendVerificationEmail(email, name, code) {
   const key = String(process.env.RESEND_API_KEY || '').trim();
   if (!key) return { ok: false, reason: 'RESEND_API_KEY غير مضبوط' };
   const from = process.env.RESEND_FROM || 'Rab7na <onboarding@resend.dev>';
-  const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], subject: 'كود تفعيل حسابك في Rab7na', html: '<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.8"><h2>أهلاً بك في Rab7na</h2><p>استخدم الكود التالي لتفعيل حسابك:</p><div style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#087f5b">' + code + '</div><p>صلاحية الكود 10 دقائق. لا تشارك الكود مع أي شخص.</p></div>' }) });
+  const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], subject: 'كود تفعيل حسابك في rab7na', html: '<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.8"><h2>أهلاً بك في rab7na</h2><p>استخدم الكود التالي لتفعيل حسابك:</p><div style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#087f5b">' + code + '</div><p>صلاحية الكود 10 دقائق. لا تشارك الكود مع أي شخص.</p></div>' }) });
   return { ok: r.ok, data: await r.json().catch(() => ({})) };
+}
+async function sendPasswordResetEmail(email, name, code) {
+  const key = String(process.env.RESEND_API_KEY || '').trim();
+  if (!key) return { ok: false, reason: 'RESEND_API_KEY غير مضبوط' };
+  const from = process.env.RESEND_FROM || 'rab7na <onboarding@resend.dev>';
+  const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], subject: 'رمز تغيير كلمة المرور في rab7na', html: '<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.8"><h2>تغيير كلمة المرور</h2><p>مرحبًا ' + String(name || '').replace(/[<>]/g, '') + '، استخدم الرمز التالي لتعيين كلمة مرور جديدة:</p><div style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#087f5b">' + code + '</div><p>صلاحية الرمز 10 دقائق. إذا لم تطلب ذلك تجاهل الرسالة.</p></div>' }) });
+  return { ok: r.ok, data: await r.json().catch(() => ({})) };
+}
+async function findUserByLogin(value) {
+  const login = String(value || '').trim().toLowerCase();
+  if (!login) return null;
+  const direct = await store.findUserByContact(login);
+  if (direct) return direct;
+  const users = await store.getUsers();
+  return users.find(u => [u.email, u.username, u.phone, u.contact].some(v => String(v || '').trim().toLowerCase() === login)) || null;
 }
 function newUser(data) { return Object.assign({ balance: WELCOME_BONUS, welcomeBonus: WELCOME_BONUS, created: new Date().toISOString() }, data); }
 async function issue(u) {
@@ -55,22 +70,23 @@ module.exports = function (app) {
   app.post('/api/auth/register', async (req, res) => {
     try {
       const b = req.body || {};
-      const cid = String(b.contact || b.username || b.phone || b.email || '').trim().toLowerCase();
-      const display = String(b.name || b.display_name || cid).trim();
-      if (!display || !cid || !b.password) return res.json({ error: 'املأ كل الحقول' });
+      const email = String(b.email || '').trim().toLowerCase();
+      const phone = String(b.phone || '').replace(/[\s-]/g, '').trim();
+      const username = String(b.username || '').trim().toLowerCase();
+      const display = String(b.name || b.display_name || username).trim();
+      if (!display || !email || !phone || !username || !b.password || !b.password2) return res.json({ error: 'املأ كل الحقول المطلوبة' });
+      if (!isEmail(email)) return res.json({ error: 'أدخل بريدًا إلكترونيًا صحيحًا' });
+      if (!/^01\d{9}$/.test(phone.replace(/[\s-]/g, ''))) return res.json({ error: 'أدخل رقم هاتف مصري صحيحًا من 11 رقمًا' });
+      if (!/^[a-zA-Z0-9_\u0600-\u06ff]{3,30}$/.test(username)) return res.json({ error: 'اسم المستخدم من 3 إلى 30 حرفًا أو رقمًا' });
       if (String(b.password).length < 6) return res.json({ error: 'كلمة السر 6 أحرف على الأقل' });
-      if (await store.findUserByContact(cid)) return res.json({ error: 'الحساب موجود، سجّل دخول' });
-      if (isEmail(cid)) {
-        const code = String(crypto.randomInt(100000, 1000000));
-        const sent = await sendVerificationEmail(cid, display, code);
-        if (!sent.ok) return res.status(503).json({ error: 'تفعيل الإيميل غير متاح حالياً، جرّب التسجيل برقم الهاتف' });
-        await store.saveDoc('emailVerifications', cid, { id: cid, email: cid, name: display, phone: b.phone || '', pass: hashPw(b.password), codeHash: codeHash(code), expiresAt: Date.now() + 10 * 60 * 1000, createdAt: new Date().toISOString() });
-        return res.json({ ok: false, verificationRequired: true, email: cid, message: 'تم إرسال كود التفعيل إلى بريدك، صالح لمدة 10 دقائق' });
-      }
-      const u = newUser({ id: Date.now(), username: cid, display_name: display, name: display, contact: cid, phone: b.phone || cid, email: b.email || '', pass: hashPw(b.password) });
-      await store.saveUser(u);
-      const t = await issue(u);
-      res.json({ ok: true, token: t.access, refresh: t.refresh, user: pub(u) });
+      if (String(b.password) !== String(b.password2)) return res.json({ error: 'كلمتا السر غير متطابقتين' });
+      const existing = await findUserByLogin(email) || await findUserByLogin(username) || await findUserByLogin(phone);
+      if (existing) return res.json({ error: 'البريد أو الهاتف أو اسم المستخدم مستخدم بالفعل' });
+      const code = String(crypto.randomInt(100000, 1000000));
+      const sent = await sendVerificationEmail(email, display, code);
+      if (!sent.ok) return res.status(503).json({ error: 'تعذر إرسال رمز البريد حاليًا، حاول لاحقًا' });
+      await store.saveDoc('emailVerifications', email, { id: email, email, name: display, username, phone, pass: hashPw(b.password), codeHash: codeHash(code), expiresAt: Date.now() + 10 * 60 * 1000, createdAt: new Date().toISOString() });
+      return res.json({ ok: false, verificationRequired: true, email, message: 'تم إرسال رمز التحقق إلى بريدك، صالح لمدة 10 دقائق' });
     } catch (e) { console.error('register:', e.message); res.status(500).json({ error: 'تعذر إنشاء الحساب حالياً' }); }
   });
   app.post('/api/auth/email/verify', async (req, res) => {
@@ -84,7 +100,7 @@ module.exports = function (app) {
       if (Number(pending.expiresAt || 0) < Date.now()) return res.json({ error: 'انتهت صلاحية الكود، اطلب كوداً جديداً' });
       if (pending.codeHash !== codeHash(code)) return res.json({ error: 'كود التفعيل غير صحيح' });
       if (await store.findUserByContact(email)) { await store.deleteDoc('emailVerifications', email); return res.json({ error: 'الحساب موجود، سجّل دخول' }); }
-      const u = newUser({ id: Date.now(), username: email, display_name: pending.name || email.split('@')[0], name: pending.name || email.split('@')[0], contact: email, phone: pending.phone || email, email, pass: pending.pass, emailVerified: true, verifiedAt: new Date().toISOString() });
+      const u = newUser({ id: Date.now(), username: pending.username || email.split('@')[0], display_name: pending.name || pending.username || email.split('@')[0], name: pending.name || pending.username || email.split('@')[0], contact: email, phone: pending.phone || '', email, pass: pending.pass, emailVerified: true, verifiedAt: new Date().toISOString() });
       await store.saveUser(u); await store.deleteDoc('emailVerifications', email);
       const t = await issue(u);
       res.json({ ok: true, token: t.access, refresh: t.refresh, user: pub(u) });
@@ -134,7 +150,7 @@ module.exports = function (app) {
   app.post('/api/auth/login', async (req, res) => {
     try {
       const b = req.body || {};
-      const u = await store.findUserByContact(String(b.contact || b.username || '').trim().toLowerCase());
+      const u = await findUserByLogin(b.contact || b.username || b.email || b.phone);
       if (!u || u.pass !== hashPw(b.password || '')) return res.json({ error: 'بيانات الدخول غلط' });
       if (u.banned) return res.json({ error: 'الحساب محظور' });
       u.lastSeen = Date.now(); await store.saveUser(u);
@@ -142,6 +158,39 @@ module.exports = function (app) {
       res.json({ ok: true, token: t.access, refresh: t.refresh, user: pub(u) });
     } catch (e) { console.error('login:', e.message); res.status(500).json({ error: 'تعذر تسجيل الدخول حالياً' }); }
   });
+  app.post('/api/auth/password/request', async (req, res) => {
+    try {
+      const email = String((req.body || {}).email || '').trim().toLowerCase();
+      if (!isEmail(email)) return res.json({ error: 'أدخل بريدًا إلكترونيًا صحيحًا' });
+      const u = await findUserByLogin(email);
+      if (!u || String(u.email || '').toLowerCase() !== email) return res.json({ error: 'لا يوجد حساب بهذا البريد' });
+      const code = String(crypto.randomInt(100000, 1000000));
+      const sent = await sendPasswordResetEmail(email, u.name || u.username, code);
+      if (!sent.ok) return res.status(503).json({ error: 'تعذر إرسال رمز تغيير كلمة المرور حاليًا' });
+      await store.saveDoc('passwordResets', email, { id: email, email, codeHash: codeHash(code), expiresAt: Date.now() + 10 * 60 * 1000, createdAt: new Date().toISOString() });
+      res.json({ ok: true, email, message: 'تم إرسال رمز تغيير كلمة المرور إلى بريدك' });
+    } catch (e) { console.error('password request:', e.message); res.status(500).json({ error: 'تعذر إرسال الرمز حاليًا' }); }
+  });
+  app.post('/api/auth/password/reset', async (req, res) => {
+    try {
+      const b = req.body || {}; const email = String(b.email || '').trim().toLowerCase(); const code = String(b.code || '').trim();
+      if (!isEmail(email) || !/^\d{6}$/.test(code)) return res.json({ error: 'أدخل البريد والرمز المكوّن من 6 أرقام' });
+      if (String(b.password || '').length < 6) return res.json({ error: 'كلمة السر 6 أحرف على الأقل' });
+      if (String(b.password) !== String(b.password2)) return res.json({ error: 'كلمتا السر غير متطابقتين' });
+      const snap = await store.getDb().collection('passwordResets').doc(email).get();
+      if (!snap.exists) return res.json({ error: 'اطلب رمز تغيير كلمة المرور أولًا' });
+      const reset = snap.data() || {};
+      if (Number(reset.expiresAt || 0) < Date.now()) return res.json({ error: 'انتهت صلاحية الرمز، اطلب رمزًا جديدًا' });
+      if (reset.codeHash !== codeHash(code)) return res.json({ error: 'رمز التحقق غير صحيح' });
+      const u = await findUserByLogin(email);
+      if (!u) return res.json({ error: 'الحساب غير موجود' });
+      u.pass = hashPw(b.password); u.passwordChangedAt = new Date().toISOString();
+      await store.saveUser(u); await store.deleteDoc('passwordResets', email);
+      res.json({ ok: true, message: 'تم تغيير كلمة المرور بنجاح، يمكنك تسجيل الدخول الآن' });
+    } catch (e) { console.error('password reset:', e.message); res.status(500).json({ error: 'تعذر تغيير كلمة المرور حاليًا' }); }
+  });
+  app.post('/api/auth/forgot/request', (req, res) => app._router ? res.redirect(307, '/api/auth/password/request') : res.json({ error: 'تعذر الطلب' }));
+  app.post('/api/auth/forgot/reset', (req, res) => app._router ? res.redirect(307, '/api/auth/password/reset') : res.json({ error: 'تعذر الطلب' }));
   app.post('/api/auth/refresh', async (req, res) => {
     try {
       const r = req.body && req.body.refresh;
