@@ -9,21 +9,11 @@ const API_KEY = process.env.SAFKA_API_KEY || 'sk_9f6d15ecb31c980ae65661abca57d1e
 const BASE_URL='https://api.safka-eg.com/api/v1/public';
 app.use(express.json({limit:'50mb'}));
 
-// Lightweight auth for Vercel Serverless. Data is kept in /tmp per warm instance.
 const crypto = require('crypto');
-const AUTH_FILE = '/tmp/safqa-auth-users.json';
-function authRead(){try{return JSON.parse(fs.readFileSync(AUTH_FILE,'utf8'));}catch(e){return {users:[],tokens:{}};}}
-function authWrite(x){try{fs.writeFileSync(AUTH_FILE,JSON.stringify(x));}catch(e){}}
-function authHash(p,s){return crypto.scryptSync(String(p),s,32).toString('hex');}
-function authToken(){return crypto.randomBytes(32).toString('hex');}
-function authUser(u){return {id:u.id,username:u.username,display_name:u.display_name,name:u.display_name,phone:u.phone||'',email:u.email||'',contact:u.username,role:'customer',active:1};}
+const firestore = require('./firestore');
 function authReqToken(req){const h=String(req.headers.authorization||'');return String(req.headers['x-auth-token']||req.headers['x-sq-token']||(h.toLowerCase().indexOf('bearer ')===0?h.slice(7):'')||'').trim();}
-app.post('/api/auth/register',function(req,res){try{const b=req.body||{};const username=String(b.username||'').trim().toLowerCase();const password=String(b.password||'');const display=String(b.display_name||b.name||username).trim();if(username.length<3)return res.status(400).json({ok:false,error:'رقم الهاتف أو الإيميل لازم يكون صحيح'});if(password.length<6)return res.status(400).json({ok:false,error:'كلمة السر لازم 6 أحرف على الأقل'});const db=authRead();if(db.users.some(u=>u.username===username))return res.status(400).json({ok:false,error:'الحساب ده موجود قبل كده'});const salt=crypto.randomBytes(16).toString('hex');const user={id:Date.now(),username,display_name:display,phone:b.phone||'',email:b.email||'',password_hash:authHash(password,salt),salt,bonus:70,created_at:new Date().toISOString()};db.users.push(user);const token=authToken();db.tokens[token]=user.id;authWrite(db);res.json({ok:true,token,user:authUser(user),bonus:70});}catch(e){res.status(500).json({ok:false,error:'تعذر إنشاء الحساب حالياً'});}});
-app.post('/api/auth/login',function(req,res){try{const b=req.body||{};const username=String(b.username||b.contact||'').trim().toLowerCase();const password=String(b.password||'');const db=authRead();const user=db.users.find(u=>u.username===username);if(!user||authHash(password,user.salt)!==user.password_hash)return res.status(401).json({ok:false,error:'بيانات الدخول غلط'});const token=authToken();db.tokens[token]=user.id;authWrite(db);res.json({ok:true,token,user:authUser(user)});}catch(e){res.status(500).json({ok:false,error:'تعذر تسجيل الدخول حالياً'});}});
-app.get('/api/auth/me',function(req,res){const db=authRead();const id=db.tokens[authReqToken(req)];const user=db.users.find(u=>u.id===id);if(!user)return res.status(401).json({ok:false,logged:false,error:'not logged in'});res.json({ok:true,logged:true,user:authUser(user)});});
-app.get('/api/auth/session',function(req,res){const db=authRead();const id=db.tokens[authReqToken(req)];const user=db.users.find(u=>u.id===id);res.json({ok:true,logged:!!user,user:user?authUser(user):null});});
-app.get('/api/health',function(req,res){res.json({ok:true,status:'healthy',service:'Rab7na',time:new Date().toISOString()});});
-app.post('/api/auth/logout',function(req,res){const db=authRead();delete db.tokens[authReqToken(req)];authWrite(db);res.json({ok:true});});
+async function currentAuthUser(req){const token=authReqToken(req);if(!token)return null;try{const jwt=global.verifyJWT&&global.verifyJWT(token);if(jwt)return await firestore.getUser(jwt.uid);}catch(e){}const rec=await firestore.getToken(token);return rec?await firestore.getUser(rec.uid):null;}
+app.get('/api/health',function(req,res){res.json({ok:true,status:'healthy',service:'Rab7na',database:'firestore',time:new Date().toISOString()});});
 app.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
 
 
@@ -67,10 +57,9 @@ function seoDescription(p){const d=seoText(p.description||p.desc||'');return (d|
 function productAvailability(p){return p.available===false || p.is_active===false ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock';}
 
 let productsCache = [], priceListCache = [], lastFetch = 0;
-let data = { name: 'المسوق', phone: '01000000000', balance: 0, withdrawals: [], orders: [], tickets: [] };
-
-try { if (fs.existsSync('affiliate-data.json')) data = Object.assign(data, JSON.parse(fs.readFileSync('affiliate-data.json'))); } catch (e) {}
-function save() { fs.writeFileSync('affiliate-data.json', JSON.stringify(data, null, 2)); }
+async function currentUser(req){ try { return await currentAuthUser(req); } catch(e) { return null; } }
+async function readAffiliate(){ return firestore.getAffiliateData(); }
+async function saveAffiliate(d){ return firestore.saveAffiliateData(d); }
 
 function cat(n) {
   if (!n) return 'أخرى';
@@ -184,19 +173,18 @@ app.get('/api/products', async (req,res)=>{
     res.json([]);
   }
 });
-app.post('/api/chat',(req,res)=>{const b=req.body||{};const k=chatKey(req);if(!k)return res.status(401).json({error:'login'});const all=chatLoad();all[k]=all[k]||[];let d=b.data||'';if(typeof d==='string'&&d.indexOf('data:')===0){try{const _fs=require('fs'),_pt=require('path');const _dir=_pt.join(__dirname,'uploads');if(!_fs.existsSync(_dir))_fs.mkdirSync(_dir);const _mt=(d.match(/^data:([^;]+);/)||[])[1]||'bin';const _ext=((_mt.split('/')[1])||'bin').replace(/[^a-z0-9]/gi,'');const _fn=Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+_ext;_fs.writeFileSync(_pt.join(_dir,_fn),Buffer.from((d.split(',')[1])||'','base64'));d='/uploads/'+_fn;}catch(_e){}}const m={id:Date.now(),from:b.from||'user',type:b.type||'text',text:b.text||'',data:d,time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})};all[k].push(m);require('fs').writeFileSync(CHAT_FILE,JSON.stringify(all));if(global.notifyChat)global.notifyChat();res.json({ok:true,m})});
+app.post('/api/chat', async (req,res)=>{const b=req.body||{};const u=await currentUser(req);const k=u?'u'+u.id:'';if(!k)return res.status(401).json({error:'login'});const all=await firestore.getChats();all[k]=all[k]||[];let d=b.data||'';if(typeof d==='string'&&d.indexOf('data:')===0){try{const _fs=require('fs'),_pt=require('path');const _dir=_pt.join(__dirname,'uploads');if(!_fs.existsSync(_dir))_fs.mkdirSync(_dir);const _mt=(d.match(/^data:([^;]+);/)||[])[1]||'bin';const _ext=((_mt.split('/')[1])||'bin').replace(/[^a-z0-9]/gi,'');const _fn=Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+_ext;_fs.writeFileSync(_pt.join(_dir,_fn),Buffer.from((d.split(',')[1])||'','base64'));d='/uploads/'+_fn;}catch(_e){}}const m={id:Date.now(),from:b.from||'user',type:b.type||'text',text:b.text||'',data:d,time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})};all[k].push(m);await firestore.saveChats(all);if(global.notifyChat)global.notifyChat();res.json({ok:true,m})});
+app.get('/api/chat', async (req,res)=>{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});const all=await firestore.getChats();res.json(all['u'+u.id]||[]);});
 
-app.post('/api/support', (req, res) => {
-  const { message } = req.body;
+app.post('/api/support', async (req, res) => {
+  const { message } = req.body || {};
   if (!message || !message.trim()) return res.json({ error: 'اكتب رسالتك' });
-  data.tickets = data.tickets || [];
-  data.tickets.unshift({ id: Date.now(), message: message.trim(), status: 'جديد', date: new Date().toISOString().slice(0, 10), reply: '' });
-  save();
-  res.json({ message: 'تم إرسال رسالتك للدعم ✓' });
+  try { const d = await readAffiliate(); d.tickets = d.tickets || []; d.tickets.unshift({ id: Date.now(), message: message.trim(), status: 'جديد', date: new Date().toISOString().slice(0, 10), reply: '' }); await saveAffiliate(d); res.json({ message: 'تم إرسال رسالتك للدعم ✓' }); }
+  catch (e) { res.status(500).json({ error: 'تعذر إرسال الرسالة حالياً' }); }
 });
 app.post('/api/upload',(req,res)=>{const pl=global.verifyJWT?global.verifyJWT(req.headers['x-auth-token']||''):null;if(!pl)return res.status(401).json({error:'login'});const b=req.body||{};if(typeof b.data!=='string'||b.data.indexOf('data:')!==0)return res.json({error:'صورة غير صالحة'});try{const fs=require('fs'),pt=require('path');const dir=pt.join(__dirname,'uploads');if(!fs.existsSync(dir))fs.mkdirSync(dir);const mt=(b.data.match(/^data:([^;]+);/)||[])[1]||'image/png';const ext=((mt.split('/')[1])||'png').replace(/[^a-z0-9]/gi,'')||'png';const fn='t'+Date.now()+'-'+Math.random().toString(36).slice(2,6)+'.'+ext;fs.writeFileSync(pt.join(dir,fn),Buffer.from((b.data.split(',')[1])||'','base64'));res.json({ok:true,url:'/uploads/'+fn});}catch(e){res.json({error:'فشل الرفع'});}});
-app.get('/api/theme/:id',(req,res)=>{try{const db=JSON.parse(require('fs').readFileSync(require('path').join(__dirname,'store-users.json'),'utf8'));const u=(db.users||[]).find(x=>String(x.id)===String(req.params.id));res.json({ok:true,theme:(u&&u.theme)||null,name:u?u.name:''});}catch(e){res.json({ok:true,theme:null,name:''});}});
-app.post('/api/my/theme',(req,res)=>{const pl=global.verifyJWT?global.verifyJWT(req.headers['x-auth-token']||''):null;if(!pl)return res.status(401).json({error:'login'});try{const fp=require('path').join(__dirname,'store-users.json');const db=JSON.parse(require('fs').readFileSync(fp,'utf8'));const u=(db.users||[]).find(x=>x.id===pl.uid);if(!u)return res.status(401).json({error:'login'});u.theme=req.body||{};require('fs').writeFileSync(fp,JSON.stringify(db,null,2));res.json({ok:true});}catch(e){res.json({error:'فشل الحفظ'});}});
+app.get('/api/theme/:id',async (req,res)=>{try{const u=await firestore.getUser(req.params.id);res.json({ok:true,theme:(u&&u.theme)||null,name:u?u.name:''});}catch(e){res.json({ok:true,theme:null,name:''});}});
+app.post('/api/my/theme',async (req,res)=>{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});try{u.theme=req.body||{};await firestore.saveUser(u);res.json({ok:true});}catch(e){res.json({error:'فشل الحفظ'});}});
 app.get('/premium.js',(req,res)=>res.sendFile(require('path').join(__dirname,'themes','premium.js')));
 app.get('/premium.css',(req,res)=>res.sendFile(require('path').join(__dirname,'themes','premium.css')));
 app.get('/products.js',(req,res)=>{res.type('js').sendFile(require('path').join(__dirname,'products.js'));});
@@ -758,6 +746,11 @@ app.get('/home',(req,res)=>res.sendFile(require('path').join(__dirname,'landing.
 
 require('./auth')(app);
 
+app.get('/api/me', async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.json({balance:0,orders:[],name:'',phone:''});const d=await readAffiliate();res.json({id:u.id,name:u.name||u.display_name||'',phone:u.phone||u.contact||'',balance:u.balance||0,orders:(d.orders||[]).filter(o=>String(o.userId)===String(u.id))});}catch(e){res.status(500).json({error:'تعذر تحميل الحساب'});}});
+app.post('/api/profile', async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});if(req.body.name)u.name=String(req.body.name);if(req.body.phone)u.phone=String(req.body.phone);await firestore.saveUser(u);res.json({ok:true,message:'تم حفظ البيانات'});}catch(e){res.status(500).json({error:'فشل الحفظ'});}});
+app.post('/api/set-commission', (req,res)=>res.json({ok:true,message:'تم تحديث العمولة'}));
+app.post('/api/withdraw', async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});const amount=Number(req.body&&req.body.amount)||0;if(amount<=0)return res.json({error:'أدخل مبلغ صحيح'});if(amount>(+u.balance||0))return res.json({error:'الرصيد غير كافي'});const d=await readAffiliate();d.withdrawals=d.withdrawals||[];const w={id:Date.now(),userId:u.id,userName:u.name||'',amount,method:req.body.method||'',details:req.body.details||'',status:'pending',date:new Date().toISOString()};d.withdrawals.unshift(w);u.balance=(+u.balance||0)-amount;u.totalWithdrawn=(+u.totalWithdrawn||0)+amount;await Promise.all([saveAffiliate(d),firestore.saveUser(u)]);res.json({ok:true,message:'تم إرسال طلب السحب بنجاح'});}catch(e){console.error('withdraw:',e.message);res.status(500).json({error:'تعذر إرسال طلب السحب حالياً'});}});
+
 async function refreshProductsCache(){
   try{
     const r=await fetch('https://api.safka.app/api/v1/products?page=1&limit=500',{headers:{'x-api-key':process.env.SAFKA_API_KEY||''}});
@@ -841,7 +834,11 @@ app.post('/api/create-order', async (req,res)=>{
     console.log('SAFKA response status:',r.status);
     console.log('SAFKA response:',JSON.stringify(d,null,2));
     if(!r.ok)return res.json({error:d.errors?d.errors.map(e=>e.msg).join(', ').replace('محظور عشان سلوكه وحش في النظام','الرقم ده محظور في Rab7na - استخدم رقمًا حقيقيًا'):'فشل الطلب'});
-    res.json({ok:true,order:d.data||d});
+    const customer=await currentUser(req);
+    const external=d.data||d;
+    const savedOrder={id:external.id||external._id||Date.now(),serial:external.id||external._id||Date.now(),userId:customer&&customer.id||null,products:b.productNames||items.map(x=>x.product),items,client_name:body.client_name,client_phone1:body.client_phone1,client_address:body.client_address,status:'قيد التأكيد',date:new Date().toISOString(),commission,total,shipping:Number(b.shipping_cost)||0,external:external};
+    const affiliate=await readAffiliate();affiliate.orders=affiliate.orders||[];affiliate.orders.unshift(savedOrder);await saveAffiliate(affiliate);
+    res.json({ok:true,message:'تم إرسال الطلب بنجاح',order:external});
   }catch(e){
     console.log('SAFKA error:',e.message);
     res.json({error:'تعذر الاتصال بالخادم'});
