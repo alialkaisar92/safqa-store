@@ -338,6 +338,8 @@ textarea{min-height:90px;resize:vertical}
 .order-summary-card .summary-total strong{font-size:1.55rem;color:#111827;font-weight:900}
 .order-summary-card .summary-profit{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:12px 14px;background:#ecfdf5;border-radius:14px;color:#047857;font-weight:800}
 .order-summary-card .summary-profit strong{font-size:1.25rem}
+.checkout-hero{display:flex;align-items:center;gap:13px;padding:16px;margin:5px 0 18px;background:linear-gradient(135deg,#0f766e,#10b981);border-radius:20px;color:#fff;box-shadow:0 12px 25px rgba(15,118,110,.2)}
+.checkout-hero .hero-icon{width:46px;height:46px;border-radius:15px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px}.checkout-hero h2{margin:0;font-size:1.18rem}.checkout-hero p{margin:3px 0 0;font-size:.76rem;opacity:.88}.checkout-section{background:#fff;border:1px solid #e6eef0;border-radius:18px;padding:15px;margin:12px 0;box-shadow:0 5px 18px rgba(15,23,42,.04)}.checkout-section .section-title{margin-top:0!important}.checkout-note{display:flex;gap:8px;align-items:flex-start;background:#f8fafc;color:#64748b;border-radius:12px;padding:10px 12px;font-size:.76rem;line-height:1.6;margin-top:10px}.checkout-note b{color:#0f766e;white-space:nowrap}
 @media(max-width:520px){.order-summary-card{padding:15px 13px;border-radius:18px}.order-summary-card .summary-product img{width:56px;height:56px}.order-summary-card .summary-product .sp-name{font-size:.82rem}.order-summary-card .summary-product .sp-price{font-size:.85rem}.order-summary-card .summary-total strong{font-size:1.3rem}}
 .msg{text-align:center;margin-top:10px;font-weight:700;font-size:.9rem;min-height:24px}
 .msg.ok{color:var(--ok)}.msg.err{color:var(--danger)}
@@ -456,21 +458,22 @@ input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(15,11
 </div>
 
 <div class="page" id="p-checkout">
-  <div class="section-title">① بيانات العميل</div>
+  <div class="checkout-hero"><div class="hero-icon">✓</div><div><h2>إتمام طلب العميل</h2><p>راجع الأسعار والربح قبل إرسال الطلب إلى rab7na</p></div></div>
+  <div class="checkout-section"><div class="section-title">① بيانات العميل</div>
   <label>اسم العميل</label><input id="cName" placeholder="الاسم الكامل">
   <label>رقم التليفون</label><input id="cPhone" type="tel" placeholder="01xxxxxxxxx">
   <label>العنوان بالتفصيل</label><input id="cAddress" placeholder="الشارع - المنطقة - علامة مميزة">
   <label>المحافظة</label><select id="gov" onchange="onGov()"></select>
-  <label>المدينة</label><select id="city"><option value="">اختر المدينة</option></select>
-
-  <div class="section-title" style="margin-top:20px">② الشحن والعمولة</div>
+    <label>المدينة</label><select id="city"><option value="">اختر المدينة</option></select></div>
+  <div class="checkout-section"><div class="section-title" style="margin-top:0">② الشحن والربح</div>
   <label>سعر الشحن (ج.م)</label>
   <input type="number" id="shipInput" min="0" value="0" oninput="recalc()">
   <p style="font-size:.75rem;color:var(--muted);margin-top:4px">افتراضي من المحافظة — عدّله بحرية (0 = مجاني)</p>
 
-  <label>عمولة المسوق (ج.م)</label>
+  <label>ربح المسوّق (ج.م)</label>
   <input type="number" id="commInput" min="0" value="0" oninput="recalc()">
-  <p style="font-size:.75rem;color:var(--muted);margin-top:4px">عدّل عمولتك — لا يُسمح بقيم سالبة</p>
+  <p id="commHint" style="font-size:.75rem;color:var(--muted);margin-top:4px">يُحسب الربح من الفرق بين سعر البيع والسعر الأساسي</p>
+  <div class="checkout-note"><b>تنبيه مالي</b><span>المستحق من العميل هو سعر المنتجات مضافًا إليه الشحن. ربحك هو فرق السعر فقط ولا يُخصم من مبلغ العميل.</span></div></div>
 
   <div class="order-summary-card" id="sumBox">
     <div class="summary-head"><h3>ملخص الطلب</h3><span id="sumCount">0 منتج</span></div>
@@ -704,11 +707,12 @@ function onGov(){
   if(g) document.getElementById('shipInput').value=g.price;
   recalc();
 }
+function maxCartCommission(){return cart.reduce((s,i)=>s+Math.max(0,Number(i.price||0)-Number(i.basePrice||i.cost||0))*(Number(i.qty)||1),0)}
 function initCheckout(){
   if(!cart.length){go('cart');return}
-  const pTotal=cart.reduce((s,i)=>s+i.price*i.qty,0);
-  const cTotal=cart.reduce((s,i)=>s+(i.cost||i.basePrice)*i.qty,0);
-  document.getElementById('commInput').value=Math.max(0,pTotal-cTotal);
+  const maxComm=maxCartCommission();
+  const input=document.getElementById('commInput');
+  input.max=maxComm; input.value=maxComm;
   const g=priceList.find(x=>x.id===document.getElementById('gov').value);
   if(g) document.getElementById('shipInput').value=g.price;
   else document.getElementById('shipInput').value=0;
@@ -724,8 +728,12 @@ function recalc(){
   const pTotal=cart.reduce((s,i)=>s+i.price*i.qty,0);
   let ship=Number(document.getElementById('shipInput').value);
   let comm=Number(document.getElementById('commInput').value);
+  const maxComm=maxCartCommission();
   if(isNaN(ship)||ship<0) ship=0;
   if(isNaN(comm)||comm<0) comm=0;
+  if(comm>maxComm){comm=maxComm;document.getElementById('commInput').value=maxComm}
+  document.getElementById('commInput').max=maxComm;
+  const hint=document.getElementById('commHint'); if(hint)hint.textContent='الحد الأقصى لربحك: '+maxComm.toLocaleString('ar-EG')+' ج.م — لا يمكن أن يتجاوز فرق السعر';
   document.getElementById('sumProd').textContent=pTotal.toLocaleString('ar-EG')+' ج.م';
   document.getElementById('sumShip').textContent=ship.toLocaleString('ar-EG')+' ج.م';
   document.getElementById('sumComm').textContent=comm.toLocaleString('ar-EG')+' ج.م';
@@ -744,8 +752,10 @@ async function submitOrder(){
   if(!name||!phone||!address||!gov){msg.textContent='أكمل بيانات العميل والمحافظة';msg.className='msg err';return}
   let ship=Number(document.getElementById('shipInput').value);
   let comm=Number(document.getElementById('commInput').value);
+  const maxComm=maxCartCommission();
   if(isNaN(ship)||ship<0){msg.textContent='سعر شحن غير صحيح';msg.className='msg err';return}
-  if(isNaN(comm)||comm<0){msg.textContent='عمولة غير صحيحة';msg.className='msg err';return}
+  if(isNaN(comm)||comm<0){msg.textContent='ربح غير صحيح';msg.className='msg err';return}
+  if(comm>maxComm){msg.textContent='الربح لا يمكن أن يتجاوز فرق السعر: '+maxComm.toLocaleString('ar-EG')+' ج.م';msg.className='msg err';return}
   const pTotal=cart.reduce((s,i)=>s+i.price*i.qty,0);
 
   submitting=true;
@@ -753,7 +763,7 @@ async function submitOrder(){
   msg.textContent='جاري إرسال الطلب...';msg.className='msg';
 
   const body={
-    items:cart.map(i=>({product:i.id,property:i.propertyId,qty:i.qty})),
+    items:cart.map(i=>({product:i.id,property:i.propertyId,qty:i.qty,originalPrice:Number(i.basePrice||i.cost||0),finalPrice:Number(i.price||0)})),
     productNames:cart.map(i=>i.name+(i.qty>1?' ×'+i.qty:'')),
     client_name:name, client_phone1:phone, client_address:address,
     shipping_governorate:gov, city:document.getElementById('city').value,
@@ -887,8 +897,12 @@ app.post('/api/create-order', async (req,res)=>{
     finalPrice: Number(it.finalPrice||it.salePrice||it.originalPrice||it.price||0)
   })).filter(x=>x.product);
   if(!items.length)return res.json({error:'السلة فارغة'});
-  const commission=Number(b.commission)||0;
-  const total=Number(b.total)||0;
+  const commission=Math.max(0,Number(b.commission)||0);
+  const shippingCost=Math.max(0,Number(b.shipping_cost)||0);
+  const merchandiseTotal=items.reduce((sum,x)=>sum+Math.max(0,Number(x.finalPrice)||0)*(Number(x.qty)||1),0);
+  const maxCommission=items.reduce((sum,x)=>sum+Math.max(0,(Number(x.finalPrice)||0)-(Number(x.originalPrice)||0))*(Number(x.qty)||1),0);
+  if(commission>maxCommission+0.01)return res.json({error:'العمولة أكبر من هامش الربح المسموح: '+maxCommission.toLocaleString('ar-EG')+' ج.م'});
+  const total=merchandiseTotal+shippingCost;
   const body={
     items:items,
     client_name:b.client_name||'',
@@ -899,6 +913,7 @@ app.post('/api/create-order', async (req,res)=>{
     city:b.city||'',
     note:b.note||'',
     commission:commission,
+    shipping_cost:shippingCost,
     total:total
   };
   if(!body.client_name)return res.json({error:'اسم العميل مطلوب'});
