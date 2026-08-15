@@ -1,0 +1,121 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>متجر إلكتروني</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style id="baseCss">
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:Cairo,system-ui,sans-serif;background:var(--bg,#f7faf9);color:var(--tx,#0f172a);line-height:1.6}
+button{font-family:inherit;cursor:pointer;border:none}img{max-width:100%;display:block}a{text-decoration:none;color:inherit}
+
+#toolbar{background:var(--bg,#f7faf9);padding:10px 14px 0}
+.tb-search input{width:100%;border:1px solid var(--line,#e5e7eb);border-radius:14px;padding:12px 16px;font-size:.9rem;background:var(--card,#fff);color:var(--tx,#0f172a)}
+.tb-cats{display:flex;gap:8px;overflow-x:auto;padding:10px 0}
+.tb-cats .cc{flex:0 0 auto;background:var(--card,#fff);border:1px solid var(--line,#e5e7eb);border-radius:50px;padding:8px 16px;font-size:.78rem;font-weight:700;color:var(--mut,#5b6b7a)}
+.tb-cats .cc.on{background:var(--p,#0f766e);color:#fff;border-color:transparent}
+#waFloat{position:fixed;bottom:18px;left:18px;z-index:95;width:56px;height:56px;border-radius:50%;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.7rem;box-shadow:0 10px 24px rgba(0,0,0,.3);text-decoration:none;animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(37,211,102,.5)}70%{box-shadow:0 0 0 16px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}
+#themeCss{}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:flex-end;justify-content:center}
+.modal.on{display:flex}
+.sheet{background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:560px;max-height:88vh;overflow:auto;padding:18px;color:#0f172a}
+.sheet .x{float:left;background:#f1f5f9;border-radius:50%;width:32px;height:32px}
+.pm-img{border-radius:14px;height:200px;object-fit:cover;width:100%;background:#eef5f2}
+.qty{display:flex;align-items:center;gap:14px;margin:12px 0}.qty button{width:36px;height:36px;border-radius:10px;background:#eef5f2;font-size:1.2rem}
+.addbtn{width:100%;background:var(--p,#0f766e);color:#fff;border-radius:14px;padding:13px;font-weight:800}
+.ci{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
+.ci img{width:52px;height:52px;border-radius:10px;object-fit:cover}.ci .n{flex:1;font-size:.78rem;font-weight:700}.ci .p{color:var(--p,#0f766e);font-weight:800}
+.ci button{background:#fee2e2;color:#dc2626;border-radius:8px;padding:4px 8px;font-size:.68rem}
+label{display:block;font-size:.78rem;font-weight:700;margin:10px 0 5px}
+input,select,textarea{width:100%;border:1px solid #ddd;border-radius:12px;padding:10px;font-family:inherit;font-size:.88rem}
+.tot{display:flex;justify-content:space-between;font-weight:800;margin:12px 0}.tot b{color:var(--p,#0f766e)}
+.msg{margin-top:10px;font-size:.84rem;font-weight:700;text-align:center}.msg.ok{color:#059669}.msg.err{color:#dc2626}
+.cartb{position:relative}.cartb i{position:absolute;top:-6px;left:-6px;background:#ef4444;color:#fff;font-style:normal;font-size:.62rem;font-weight:800;border-radius:50px;min-width:17px;height:17px;display:flex;align-items:center;justify-content:center}
+
+.skel{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:14px}
+@media(min-width:700px){.skel{grid-template-columns:repeat(4,1fr)}}
+.skel-i{background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb}
+.skel-img{height:150px;background:linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 50%,#f3f4f6 75%);background-size:200% 100%;animation:sh 1.2s infinite}
+.skel-t{height:12px;background:#f3f4f6;margin:10px;border-radius:6px;animation:sh 1.2s infinite}
+.skel-p{height:14px;background:#f3f4f6;margin:10px;width:50%;border-radius:6px;animation:sh 1.2s infinite}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style><style id="themeCss"></style><style id="customCss"></style></head>
+<body>
+<div id="header"></div>
+<div id="toolbar"><div class="tb-search"><input id="q" placeholder="🔍 ابحث عن منتج..." oninput="doSearch(this.value)"></div><div class="tb-cats" id="catRow"></div></div>
+<a id="waFloat" target="_blank">💬</a><main id="home"></main><div id="footer"></div><div id="mnav"></div>
+
+<div class="modal" id="pm"><div class="sheet"><button class="x" onclick="closeM('pm')">✕</button><img class="pm-img" id="pmImg"><h3 id="pmName" style="margin-top:8px"></h3><div id="pmPrice" style="color:var(--p);font-weight:900;margin:5px 0"></div><p id="pmDesc" style="font-size:.83rem;color:#666"></p><div class="qty"><button onclick="chQ(-1)">−</button><b id="qV">1</b><button onclick="chQ(1)">+</button></div><button class="addbtn" onclick="addToCart()">🛒 أضف إلى السلة</button></div></div>
+<div class="modal" id="cm"><div class="sheet"><button class="x" onclick="closeM('cm')">✕</button><h3 style="margin-bottom:8px">🛒 السلة</h3><div id="cItems"></div><div class="tot"><span>الإجمالي</span><b id="cTot">0</b></div><button class="addbtn" onclick="openCo()">إتمام الطلب ❯</button></div></div>
+<div class="modal" id="co"><div class="sheet"><button class="x" onclick="closeM('co')">✕</button><h3>📦 بيانات التوصيل</h3><label>الاسم</label><input id="fName"><label>الموبايل</label><input id="fPhone"><label>العنوان</label><textarea id="fAddr" rows="2"></textarea><label>المحافظة</label><select id="fGov"></select><div class="tot"><span>الإجمالي</span><b id="coTot">0</b></div><button class="addbtn" onclick="submitOrder()">✔ تأكيد الطلب</button><div class="msg" id="coMsg"></div></div></div>
+
+<script src="/themes.js"></script>
+<script src="/products.js"></script>
+<script>
+P=(window.__PRODUCTS||[]),cart=[],cur=null,qty=1,SH=50,COMM=20,TH=null,STORE={};
+var GOVS=['القاهرة','الجيزة','الإسكندرية','الدقهلية','الشرقية','الغربية','المنوفية','القليوبية','البحيرة','كفر الشيخ','دمياط','بورسعيد','الإسماعيلية','السويس','الفيوم','بني سويف','المنيا','أسيوط','سوهاج','قنا','الأقصر','أسوان'];
+fGov.innerHTML=GOVS.map(g=>'<option>'+g+'</option>').join('');
+function fmt(n){return Number(n).toLocaleString('ar-EG')+' ج.م'}
+function range(a,b){var r=[];for(var i=a;i<b&&i<P.length;i++)r.push(i);return r}
+function allIdx(){return range(0,P.length)}
+
+function boot(tid){loadTheme(tid||'store-pro');}
+function loadTheme(id){var s=document.createElement('script');s.src='/premium.js';s.onload=function(){TH=window.THEME;document.getElementById('themeCss').textContent=TH.css||'';if(TH.cssUrl){var l=document.createElement('link');l.rel='stylesheet';l.href=TH.cssUrl;document.head.appendChild(l);}render();};s.onerror=function(){TH=window.THEME;render();};document.head.appendChild(s);}
+function cards(idx){return idx.map(function(i){return TH.card(P[i],i)}).join('')}
+function wrap(t,inner,cls){return '<section class="'+(cls||TH.wrapClass||'sec-wrap')+'"><h2 class="'+(TH.titleClass||'sec-t')+'">'+t+'</h2><div class="'+(TH.gridClass||'pgrid')+'">'+inner+'</div></section>'}
+function defCats(){return '<section class="cats-wrap"><h2 class="sec-t">تسوق حسب التصنيف</h2><div class="cats">'+['إلكترونيات','أزياء','جمال','منزل','رياضة'].map(c=>'<span class="cat">'+c+'</span>').join('')+'</div></section>'}
+function secHtml(id){
+ if(id=='hero')return TH.hero();
+ if(id=='categories')return TH.categories?TH.categories():defCats();
+ if(id=='products')return '<section class="'+(TH.wrapClass||'sec-wrap')+'"><h2 class="'+(TH.titleClass||'sec-t')+'" id="prodTitle">كل المنتجات</h2><div class="'+(TH.gridClass||'pgrid')+'" id="mainGrid"><div class="skel"><div class="skel-i"><div class="skel-img"></div><div class="skel-t"></div><div class="skel-p"></div></div><div class="skel-i"><div class="skel-img"></div><div class="skel-t"></div><div class="skel-p"></div></div><div class="skel-i"><div class="skel-img"></div><div class="skel-t"></div><div class="skel-p"></div></div><div class="skel-i"><div class="skel-img"></div><div class="skel-t"></div><div class="skel-p"></div></div></div></div>></div></section>';
+ if(id=='featured')return wrap(TH.tFeat||'منتجات مميزة',cards(range(0,4)));
+ if(id=='best')return wrap('الأكثر مبيعاً',cards(range(4,8)));
+ if(id=='flash')return wrap('⚡ عروض خاطفة',cards(range(8,12)));
+ if(id=='brands')return TH.brands?TH.brands():'';
+ if(id=='banner')return TH.banner?TH.banner():'';
+ if(id=='newsletter')return TH.newsletter?TH.newsletter():'';
+ return '';}
+function render(){if(!TH)return;var tb=document.getElementById('toolbar');if(tb)tb.style.display=TH.hideToolbar?'none':'';
+ document.getElementById('header').innerHTML=TH.header();
+ document.getElementById('home').innerHTML=(TH.sections||['hero','products']).map(secHtml).join('');
+ document.getElementById('footer').innerHTML=TH.footer();
+ document.getElementById('mnav').innerHTML=TH.mobileNav?TH.mobileNav():'';
+ document.title=(STORE.name||TH.name||'متجر إلكتروني');postRender();}
+
+var curCat='الكل',curQ='';
+function applyCustom(){var cs=document.getElementById('customCss');if(cs)cs.textContent=STORE.customCss||'';if(STORE.customHtml&&!document.getElementById('customHtmlBox')){var d=document.createElement('div');d.id='customHtmlBox';d.innerHTML=STORE.customHtml;document.body.appendChild(d);}if(STORE.customJs&&!window.__cjs){window.__cjs=1;try{new Function(STORE.customJs)();}catch(e){}}}
+function postRender(){applyCustom();renderCats();renderGrid();setupWA();updCC();}
+function getCats(){var s={};P.forEach(function(p){s[p.category||p.cat||'عام']=1});return ['الكل'].concat(Object.keys(s));}
+function renderCats(){var e=document.getElementById('catRow');if(e)e.innerHTML=getCats().map(function(cc){return '<button class="cc'+(cc===curCat?' on':'')+'" onclick="setCat(\''+cc+'\')">'+cc+'</button>'}).join('');}
+function setCat(cc){curCat=cc;renderCats();renderGrid();}
+function doSearch(q){curQ=(q||'').trim();renderGrid();}
+function visIdx(){return allIdx().filter(function(i){var p=P[i];if(curCat!=='الكل'&&(p.category||p.cat||'عام')!==curCat)return false;if(curQ&&(p.name||'').indexOf(curQ)===-1)return false;return true});}
+function renderGrid(){var e=document.getElementById('mainGrid');if(!e||!TH)return;var v=visIdx();var tt=document.getElementById('prodTitle');if(tt)tt.textContent=(curCat!=='الكل'?curCat:(curQ?'نتائج البحث':'كل المنتجات'))+' ('+v.length+')';var skel=e.querySelector('.skel');if(skel)skel.remove();e.innerHTML=v.map(function(i){return TH.card(P[i],i)}).join('')||'<div style="grid-column:1/-1;text-align:center;padding:30px;color:#999">لا توجد منتجات مطابقة 🔍</div>';}
+function setupWA(){var n=STORE.whatsapp||STORE.phone||'201000000000';var a=document.getElementById('waFloat');if(a)a.href='https://wa.me/'+String(n).replace(/[^0-9]/g,'')+'?text='+encodeURIComponent('مرحباً 👋 أريد الاستفسار عن المنتجات');}
+
+COMM=20;
+function startWith(data){P=data||[];fetch('/api/price-list').then(function(r){return r.json()}).then(function(g){window.__GOVS=g||[];}).catch(function(){window.__GOVS=[];});
+boot('premium');}
+if(window.__PRODUCTS&&window.__PRODUCTS.length){
+  startWith(window.__PRODUCTS);
+  // background refresh للتحديثات
+  fetch('/api/products').then(function(r){return r.json()}).then(function(d){
+    if(d&&d.length&&JSON.stringify(d)!==JSON.stringify(P)){P=d;render();postRender();}
+  }).catch(function(){});
+}else{
+  fetch('/api/products').then(r=>r.json()).then(function(d){startWith(d)}).catch(function(){startWith([])});
+}
+window.addEventListener('message',function(e){var d=e.data||{};if(d.type==='themeLive'){if(TH)applyLive(d.settings);}});
+function applyLive(s){if(!TH)return;if(s.customCss){var cc=document.getElementById('customCss');if(cc)cc.textContent=s.customCss;}
+if(s.colors){var r=document.documentElement;if(s.colors.primary)r.style.setProperty('--p',s.colors.primary);if(s.colors.secondary)r.style.setProperty('--p2',s.colors.secondary);if(s.colors.background)r.style.setProperty('--bg',s.colors.background);}render();}
+function openP(i){cur=P[i];qty=1;pmImg.src=cur.image||'';pmName.textContent=cur.name;pmPrice.textContent=fmt(cur.price);pmDesc.textContent=cur.desc||'';qV.textContent=1;openM('pm');}
+function chQ(d){qty=Math.max(1,qty+d);qV.textContent=qty;}
+function addToCart(){if(!cur)return;var ex=cart.find(c=>c.id===cur.id);if(ex)ex.qty+=qty;else cart.push({id:cur.id,name:cur.name,price:cur.price,image:cur.image,qty:qty});updCC();closeM('pm');openCart();}
+function updCC(){var e=document.getElementById('cc');if(e)e.textContent=cart.reduce((a,c)=>a+c.qty,0);}
+function openCart(){cItems.innerHTML=cart.length?cart.map(function(c,i){return '<div class="ci"><img src="'+(c.image||'')+'"><div class="n">'+c.name+'<br><small>'+c.qty+' × '+c.price+'</small></div><div class="p">'+fmt(c.price*c.qty)+'</div><button onclick="rmC('+i+')">حذف</button></div>';}).join(''):'<div style="text-align:center;color:#999;padding:30px">سلتك فارغة 🛒</div>';cTot.textContent=fmt(cart.reduce((a,c)=>a+c.price*c.qty,0));openM('cm');}
+function rmC(i){cart.splice(i,1);updCC();openCart();}
+function openCo(){if(!cart.length)return;closeM('cm');coTot.textContent=fmt(cart.reduce((a,c)=>a+c.price*c.qty,0)+SH);openM('co');}
+function submitOrder(){var m=coMsg;m.className='msg';if(!fName.value||!fPhone.value||!fAddr.value){m.textContent='⚠️ اكمل بياناتك';m.className='msg err';return;}
+ var items=cart.map(c=>({id:c.id,name:c.name,price:c.price,qty:c.qty}));var tot=cart.reduce((a,c)=>a+c.price*c.qty,0)+SH;
+ fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':localStorage.getItem('etok')||''},body:JSON.stringify({client_name:fName.value,client_phone1:fPhone.value,client_address:fAddr.value,shipping_governorate:fGov.value,items:items,productNames:cart.map(c=>c.name),total:tot,commission:COMM,shipping_cost:SH})}).then(r=>r.json()).then(function(d){if(d.error){m.textContent='⚠️ '+d.error;m.className='msg err';}else{m.textContent='✅ تم استلام طلبك';m.className='msg ok';cart=[];updCC();setTimeout(()=>closeM('co'),1400);}}).catch(function(){m.textContent='⚠️ خطأ';m.className='msg err';});}
+function openM(id){document.getElementById(id).classList.add('on')}function closeM(id){document.getElementById(id).classList.remove('on')}
+</script></body></html>

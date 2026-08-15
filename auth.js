@@ -25,4 +25,29 @@ app.get('/api/my/profile',global.requireAuth,(req,res)=>{const db=loadUsers();co
 app.post('/api/my/profile',global.requireAuth,(req,res)=>{const db=loadUsers();const u=db.users.find(x=>x.id===req.userId);if(u){if(req.body.name)u.name=String(req.body.name);if(req.body.phone)u.contact=String(req.body.phone);saveUsers(db)}res.json({ok:true})});
 app.get('/login',(req,res)=>res.sendFile(path.join(__dirname,'login.html')));
 app.get('/register',(req,res)=>res.sendFile(path.join(__dirname,'login.html')));
+app.post('/api/my/withdraw',global.requireAuth,(req,res)=>{
+  const db=loadUsers();const u=db.users.find(x=>x.id===req.userId);
+  if(!u)return res.status(401).json({error:'login'});
+  const amount=Number((req.body||{}).amount)||0;
+  const method=String((req.body||{}).method||'').trim();
+  const contact=String((req.body||{}).contact||'').trim();
+  if(amount<=0)return res.json({error:'المبلغ غير صحيح'});
+  if(amount>(u.balance||0))return res.json({error:'الرصيد غير كافي'});
+  if(!method||!contact)return res.json({error:'اكمل بيانات السحب'});
+  const AD_FILE=path.join(__dirname,'affiliate-data.json');
+  let ad={name:'المسوق',phone:'',balance:0,withdrawals:[],orders:[],tickets:[]};
+  try{ ad=JSON.parse(fs.readFileSync(AD_FILE,'utf8')); }catch(e){}
+  ad.withdrawals=ad.withdrawals||[];
+  ad.withdrawals.unshift({id:Date.now(),userId:u.id,name:u.name,amount:amount,method:method,contact:contact,status:'قيد المراجعة',date:new Date().toISOString()});
+  fs.writeFileSync(AD_FILE,JSON.stringify(ad,null,2));
+  u.balance=(u.balance||0)-amount;
+  saveUsers(db);
+  res.json({ok:true,balance:u.balance});
+});
+app.get('/api/my/withdrawals',global.requireAuth,(req,res)=>{
+  const AD_FILE=path.join(__dirname,'affiliate-data.json');
+  let ad={withdrawals:[]};
+  try{ ad=JSON.parse(fs.readFileSync(AD_FILE,'utf8')); }catch(e){}
+  res.json((ad.withdrawals||[]).filter(w=>w.userId===req.userId));
+});
 };

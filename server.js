@@ -199,6 +199,7 @@ app.get('/store', (req, res) => {
 
 app.get('/',(req,res)=>res.sendFile(require('path').join(__dirname,'landing.html')));
 app.get('/home',(req,res)=>res.sendFile(require('path').join(__dirname,'landing.html')));
+
 require('./auth')(app);
 
 async function refreshProductsCache(){
@@ -244,6 +245,18 @@ app.get('/api/price-list', async (req,res)=>{
 });
 
 
+function commissionForProduct(productId){
+  try{
+    const fp=require('path').join(__dirname,'products-cache.json');
+    const arr=JSON.parse(require('fs').readFileSync(fp,'utf8'));
+    const list=Array.isArray(arr)?arr:(arr.data||[]);
+    const p=list.find(x=>String(x._id||x.id)===String(productId));
+    if(!p) return 0;
+    const note=p.note||'';
+    const m=/عمولتك\s*(\d+)/.exec(note);
+    return m?+m[1]:0;
+  }catch(e){ return 0; }
+}
 app.post('/api/create-order', async (req,res)=>{
   const b=req.body||{};
   const gov=(b.shipping_governorate||'').toString().trim();
@@ -260,7 +273,8 @@ app.post('/api/create-order', async (req,res)=>{
     qty: Number(it.qty||it.quantity||1)
   })).filter(x=>x.product);
   if(!items.length)return res.json({error:'السلة فارغة'});
-  const commission=Number(b.commission)||0;
+  const calcCommission = items.reduce((s,it)=>s+commissionForProduct(it.product)*it.qty, 0);
+  const commission=calcCommission || Number(b.commission)||0;
   const total=Number(b.total)||0;
   const body={
     items:items,
@@ -284,6 +298,25 @@ app.post('/api/create-order', async (req,res)=>{
     console.log('SAFKA response status:',r.status);
     console.log('SAFKA response:',JSON.stringify(d,null,2));
     if(!r.ok)return res.json({error:d.errors?d.errors.map(e=>e.msg).join(', ').replace('محظور عشان سلوكه وحش في النظام','الرقم ده محظور في صفقة - استخدم رقم حقيقي'):'فشل الطلب'});
+    try{
+      const pl=global.verifyJWT?global.verifyJWT(req.headers['x-auth-token']||''):null;
+      const fp=require('path').join(__dirname,'affiliate-data.json');
+      let ad={name:'المسوق',phone:'',balance:0,withdrawals:[],orders:[],tickets:[]};
+      try{ ad=JSON.parse(require('fs').readFileSync(fp,'utf8')); }catch(e){}
+      ad.orders=ad.orders||[];
+      ad.orders.unshift({
+        id:(d.data&&(d.data._id||d.data.id))||Date.now(),
+        userId: pl?pl.uid:null,
+        client_name: body.client_name,
+        client_phone1: body.client_phone1,
+        items: items,
+        total: total,
+        commission: commission,
+        status: 'قيد المراجعة',
+        date: new Date().toISOString()
+      });
+      require('fs').writeFileSync(fp, JSON.stringify(ad, null, 2));
+    }catch(e){ console.log('order save err:', e.message); }
     res.json({ok:true,order:d.data||d});
   }catch(e){
     console.log('SAFKA error:',e.message);

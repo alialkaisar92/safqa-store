@@ -18,7 +18,7 @@ app.get('/api/admin/stats',(req,res)=>{
 
 function writeData(d){fs.writeFileSync(path.join(__dirname,'affiliate-data.json'),JSON.stringify(d,null,2))}
 app.get('/api/admin/orders',(req,res)=>res.json(data().orders||[]));
-app.post('/api/admin/order-status',(req,res)=>{const b=req.body||{};const d=data();const o=(d.orders||[]).find(x=>String(x.id)===String(b.id));if(!o)return res.json({error:'مش موجود'});o.status=b.status;writeData(d);if(global.sendPush)global.sendPush({headings:'📦 تحديث حالة طلب',contents:'حالة طلبك الآن: '+b.status,url:'/'});res.json({ok:true})});
+app.post('/api/admin/order-status',(req,res)=>{const b=req.body||{};const d=data();const o=(d.orders||[]).find(x=>String(x.id)===String(b.id));if(!o)return res.json({error:'مش موجود'});const wasCredited=o.credited;o.status=b.status;if(!wasCredited && o.userId && /تسليم|مكتمل|delivered|completed/i.test(b.status||'')){try{const ub=users();const u=(ub.users||[]).find(x=>x.id===o.userId);if(u){u.balance=(u.balance||0)+(o.commission||0);fs.writeFileSync(path.join(__dirname,'store-users.json'),JSON.stringify(ub,null,2));o.credited=true;}}catch(e){}}writeData(d);if(global.sendPush)global.sendPush({headings:'📦 تحديث حالة طلب',contents:'حالة طلبك الآن: '+b.status,url:'/'});res.json({ok:true})});
 
 
 app.get('/api/admin/products',(req,res)=>res.json(data().products||[]));
@@ -49,7 +49,7 @@ let sse=[];global.notifyChat=function(){sse.forEach(function(f){try{f()}catch(e)
 app.get('/api/admin/chat-stream',(req,res)=>{res.set({'Content-Type':'text/event-stream','Cache-Control':'no-cache','Connection':'keep-alive'});res.flushHeaders();res.write('data: ok\n\n');const push=function(){res.write('data: '+Date.now()+'\n\n')};sse.push(push);req.on('close',function(){sse=sse.filter(x=>x!==push)});});
 
 
-app.get('/api/admin/settings',(req,res)=>{const d=data();res.json(d.settings||{name:'Rab7na',currency:'ج.م',whatsapp:'',commission:30,announcement:''})});
+app.get('/api/admin/settings',(req,res)=>{const d=data();res.json(d.settings||{name:'Earnify',currency:'ج.م',whatsapp:'',commission:30,announcement:''})});
 app.post('/api/admin/settings',(req,res)=>{const d=data();d.settings=Object.assign(d.settings||{},req.body||{});writeData(d);res.json({ok:true})});
 
 };
