@@ -22,7 +22,7 @@ app.post('/api/auth/register',function(req,res){try{const b=req.body||{};const u
 app.post('/api/auth/login',function(req,res){try{const b=req.body||{};const username=String(b.username||b.contact||'').trim().toLowerCase();const password=String(b.password||'');const db=authRead();const user=db.users.find(u=>u.username===username);if(!user||authHash(password,user.salt)!==user.password_hash)return res.status(401).json({ok:false,error:'بيانات الدخول غلط'});const token=authToken();db.tokens[token]=user.id;authWrite(db);res.json({ok:true,token,user:authUser(user)});}catch(e){res.status(500).json({ok:false,error:'تعذر تسجيل الدخول حالياً'});}});
 app.get('/api/auth/me',function(req,res){const db=authRead();const id=db.tokens[authReqToken(req)];const user=db.users.find(u=>u.id===id);if(!user)return res.status(401).json({ok:false,logged:false,error:'not logged in'});res.json({ok:true,logged:true,user:authUser(user)});});
 app.get('/api/auth/session',function(req,res){const db=authRead();const id=db.tokens[authReqToken(req)];const user=db.users.find(u=>u.id===id);res.json({ok:true,logged:!!user,user:user?authUser(user):null});});
-app.get('/api/health',function(req,res){res.json({ok:true,status:'healthy',service:'earnify',time:new Date().toISOString()});});
+app.get('/api/health',function(req,res){res.json({ok:true,status:'healthy',service:'Rab7na',time:new Date().toISOString()});});
 app.post('/api/auth/logout',function(req,res){const db=authRead();delete db.tokens[authReqToken(req)];authWrite(db);res.json({ok:true});});
 app.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
 
@@ -63,7 +63,7 @@ function sitemapSlug(p){
 }
 function readSeoProducts(){try{const fp=path.join(__dirname,'products-cache.json');const d=JSON.parse(fs.readFileSync(fp,'utf8'));return Array.isArray(d)?d:[];}catch(e){return [];}}
 function findSeoProduct(slug){const all=readSeoProducts();return all.find(p=>sitemapSlug(p)===slug || String(p.id||p._id)===slug);}
-function seoDescription(p){const d=seoText(p.description||p.desc||'');return (d||('اكتشف '+seoText(p.name)+' على Earnify، مع معلومات المنتج والسعر والتوفر.')).slice(0,160);}
+function seoDescription(p){const d=seoText(p.description||p.desc||'');return (d||('اكتشف '+seoText(p.name)+' على Rab7na، مع معلومات المنتج والسعر والتوفر.')).slice(0,160);}
 function productAvailability(p){return p.available===false || p.is_active===false ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock';}
 
 let productsCache = [], priceListCache = [], lastFetch = 0;
@@ -216,8 +216,8 @@ app.get('/shop',(req,res)=>{
 
 app.get('/product/:slug', (req,res)=>{
   const p=findSeoProduct(req.params.slug);
-  if(!p) return res.status(404).send('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>المنتج غير موجود | Earnify</title></head><body><h1>المنتج غير موجود</h1><a href="/store">العودة إلى المتجر</a></body></html>');
-  const name=seoText(p.name||'منتج على Earnify');
+  if(!p) return res.status(404).send('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>المنتج غير موجود | Rab7na</title></head><body><h1>المنتج غير موجود</h1><a href="/store">العودة إلى المتجر</a></body></html>');
+  const name=seoText(p.name||'منتج على Rab7na');
   const desc=seoDescription(p);
   const image=p.image || ((p.images&&p.images[0])||'');
   const price=p.price!=null?p.price:(p.sale_price!=null?p.sale_price:null);
@@ -229,13 +229,13 @@ app.get('/product/:slug', (req,res)=>{
     offers:price!=null?{'@type':'Offer',url:productUrl,priceCurrency:'EGP',price:Number(price),availability:productAvailability(p)}:undefined
   };
   const breadcrumb={'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[
-    {'@type':'ListItem',position:1,name:'Earnify',item:SEO_ORIGIN+'/'},
+    {'@type':'ListItem',position:1,name:'Rab7na',item:SEO_ORIGIN+'/'},
     {'@type':'ListItem',position:2,name:'المتجر',item:SEO_ORIGIN+'/store'},
     {'@type':'ListItem',position:3,name,item:productUrl}
   ]};
   const imageHtml=image?'<img src="'+seoEsc(image)+'" alt="'+seoEsc(name)+'" loading="eager" decoding="async" style="max-width:420px;width:100%;height:auto;border-radius:16px">':'';
   const priceHtml=price!=null?'<p><strong>السعر: '+seoEsc(Number(price).toLocaleString('ar-EG'))+' جنيه مصري</strong></p>':'';
-  res.type('html').send('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+seoEsc(name)+' | Earnify</title><meta name="description" content="'+seoEsc(desc)+'"><link rel="canonical" href="'+seoEsc(productUrl)+'"><meta property="og:type" content="product"><meta property="og:title" content="'+seoEsc(name)+' | Earnify"><meta property="og:description" content="'+seoEsc(desc)+'"><meta property="og:url" content="'+seoEsc(productUrl)+'">'+(image?'<meta property="og:image" content="'+seoEsc(image)+'">':'')+'<script type="application/ld+json">'+JSON.stringify(schema).replace(/<\//g,'<\\/')+'</script><script type="application/ld+json">'+JSON.stringify(breadcrumb).replace(/<\//g,'<\\/')+'</script><style>body{font-family:Arial,sans-serif;max-width:900px;margin:0 auto;padding:24px;line-height:1.8;color:#172033}a{color:#0f766e}main{display:grid;gap:18px}h1{font-size:clamp(1.6rem,4vw,2.6rem)}</style></head><body><main><nav><a href="/">Earnify</a> / <a href="/store">المتجر</a></nav><article><h1>'+seoEsc(name)+'</h1>'+imageHtml+'<p>'+seoEsc(desc)+'</p>'+priceHtml+'<p><a href="/store">العودة إلى المتجر واكتشاف المنتجات</a></p></article></main></body></html>');
+  res.type('html').send('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+seoEsc(name)+' | Rab7na</title><meta name="description" content="'+seoEsc(desc)+'"><link rel="canonical" href="'+seoEsc(productUrl)+'"><meta property="og:type" content="product"><meta property="og:title" content="'+seoEsc(name)+' | Rab7na"><meta property="og:description" content="'+seoEsc(desc)+'"><meta property="og:url" content="'+seoEsc(productUrl)+'">'+(image?'<meta property="og:image" content="'+seoEsc(image)+'">':'')+'<script type="application/ld+json">'+JSON.stringify(schema).replace(/<\//g,'<\\/')+'</script><script type="application/ld+json">'+JSON.stringify(breadcrumb).replace(/<\//g,'<\\/')+'</script><style>body{font-family:Arial,sans-serif;max-width:900px;margin:0 auto;padding:24px;line-height:1.8;color:#172033}a{color:#0f766e}main{display:grid;gap:18px}h1{font-size:clamp(1.6rem,4vw,2.6rem)}</style></head><body><main><nav><a href="/">Rab7na</a> / <a href="/store">المتجر</a></nav><article><h1>'+seoEsc(name)+'</h1>'+imageHtml+'<p>'+seoEsc(desc)+'</p>'+priceHtml+'<p><a href="/store">العودة إلى المتجر واكتشاف المنتجات</a></p></article></main></body></html>');
 });
 
 app.get('/store', (req, res) => {
@@ -244,13 +244,13 @@ app.get('/store', (req, res) => {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Earnify | منصة التسويق بالعمولة</title>
-<meta name="description" content="اكتشف منتجات متنوعة وفرصًا للعمل كمسوق بالعمولة في مصر عبر Earnify.">
+<title>Rab7na | منصة التسويق بالعمولة</title>
+<meta name="description" content="اكتشف منتجات متنوعة وفرصًا للعمل كمسوق بالعمولة في مصر عبر Rab7na.">
 <link rel="canonical" href="https://safqa-store.vercel.app/store">
 <meta name="robots" content="index,follow,max-image-preview:large">
-<meta property="og:type" content="website"><meta property="og:site_name" content="Earnify"><meta property="og:title" content="متجر Earnify | منتجات للتسويق بالعمولة في مصر"><meta property="og:description" content="منتجات متنوعة للمسوقين بالعمولة في مصر."><meta property="og:url" content="https://safqa-store.vercel.app/store">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Earnify","url":"https://safqa-store.vercel.app/","potentialAction":{"@type":"SearchAction","target":"https://safqa-store.vercel.app/store?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"متجر Earnify","url":"https://safqa-store.vercel.app/store","isPartOf":{"@type":"WebSite","name":"Earnify","url":"https://safqa-store.vercel.app/"}}</script>
+<meta property="og:type" content="website"><meta property="og:site_name" content="Rab7na"><meta property="og:title" content="متجر Rab7na | منتجات للتسويق بالعمولة في مصر"><meta property="og:description" content="منتجات متنوعة للمسوقين بالعمولة في مصر."><meta property="og:url" content="https://safqa-store.vercel.app/store">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Rab7na","url":"https://safqa-store.vercel.app/","potentialAction":{"@type":"SearchAction","target":"https://safqa-store.vercel.app/store?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"متجر Rab7na","url":"https://safqa-store.vercel.app/store","isPartOf":{"@type":"WebSite","name":"Rab7na","url":"https://safqa-store.vercel.app/"}}</script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--p:#0d9488;--pd:#0f766e;--bg:#f0f4f8;--card:#fff;--text:#0f172a;--muted:#64748b;--accent:#f59e0b;--danger:#ef4444;--ok:#10b981}
@@ -368,7 +368,7 @@ body.chatfull .wa-wrap{height:calc(100vh - 62px);border-radius:0}
 </style>
 <link rel="stylesheet" href="/store-enh.css?v=3">
 </head>
-<body><div id="splash" style="position:fixed;inset:0;background:#f6f8f7;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px"><div style="width:46px;height:46px;border:4px solid #e2e8f0;border-top-color:#0f766e;border-radius:50%;animation:sp 1s linear infinite"></div><b style="color:#0f766e">Earnify</b><style>@keyframes sp{to{transform:rotate(360deg)}}</style></div>
+<body><div id="splash" style="position:fixed;inset:0;background:#f6f8f7;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px"><div style="width:46px;height:46px;border:4px solid #e2e8f0;border-top-color:#0f766e;border-radius:50%;animation:sp 1s linear infinite"></div><b style="color:#0f766e">Rab7na</b><style>@keyframes sp{to{transform:rotate(360deg)}}</style></div>
 <style id="modernDash">
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Tajawal:wght@400;500;700;800;900&family=Changa:wght@600;700;800&display=swap');
 :root{--p:#0f766e;--p2:#10b981;--bg:#f6faf8;--card:#fff;--tx:#0b2420;--mut:#5b6b66;--rad:22px;--sh:0 12px 40px -14px rgba(15,118,110,.20)}
@@ -397,7 +397,7 @@ input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(15,11
 #fsheet button{border-radius:16px!important;border:1.5px solid rgba(15,118,110,.15)!important;background:#f6faf8!important;color:var(--tx)!important;font-weight:700!important}
 #fsheet button:active{background:var(--p)!important;color:#fff!important}
 </style>
-<header class="header"><div id="ht" style="display:none"></div><div class="eh-brand"><span class="eh-logo">Earnify 💰</span><small>منصة التسويق بالعمولة</small></div><button class="eh-profile" onclick="go('profile')"><span class="eh-pname">حسابي<small>✔ مسوق</small></span><span class="eh-av">👤</span></button><button class="eh-cartb" onclick="go('cart')">🛒<i id="cc">0</i></button><button class="eh-bell" onclick="ehNotifToggle()">🔔<i>3</i></button></header>
+<header class="header"><div id="ht" style="display:none"></div><div class="eh-brand"><span class="eh-logo">Rab7na 💰</span><small>منصة التسويق بالعمولة</small></div><button class="eh-profile" onclick="go('profile')"><span class="eh-pname">حسابي<small>✔ مسوق</small></span><span class="eh-av">👤</span></button><button class="eh-cartb" onclick="go('cart')">🛒<i id="cc">0</i></button><button class="eh-bell" onclick="ehNotifToggle()">🔔<i>3</i></button></header>
 
 <div class="page active" id="p-store">
   <input class="search" id="s" placeholder="ابحث عن منتج أو باركود...">
@@ -498,7 +498,7 @@ input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(15,11
     <div class="pm-price" id="pm-price"></div>
     <div class="box"><div class="l">كود المنتج</div><div class="v" id="pm-code">—</div></div>
     <div class="box" id="pm-stock-box"><div class="l">المخزون</div><div class="v" id="pm-stock">—</div></div>
-    <div class="box note-box"><div class="l">ملاحظات Earnify</div><div class="v" id="pm-note">—</div></div>
+    <div class="box note-box"><div class="l">ملاحظات Rab7na</div><div class="v" id="pm-note">—</div></div>
     <a class="drive" id="pm-drive" href="#" target="_blank" style="display:none">📁 صور وفيديوهات على الطبيعة</a>
     <div id="pm-desc" style="font-size:.88rem;line-height:1.7;color:#475569;margin:10px 0"></div>
 
@@ -520,7 +520,7 @@ input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(15,11
 
 <nav class="nav"><button class="active" data-p="store" onclick="go('store')"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10v10h14V10"/></svg><span>الرئيسية</span></button><button data-p="products" onclick="go('store');setTimeout(function(){var g=document.getElementById('g');if(g)g.scrollIntoView({behavior:'smooth'})},200)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>المنتجات</span></button><button data-p="orders" onclick="go('orders')"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg><span>طلباتي</span></button><button data-p="withdraw" onclick="go('withdraw')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M15 9.5c-.5-1-5.5-1-5.5 1s5 2 5 3-4.5 1.5-5.5.5"/></svg><span>الأرباح</span></button><button data-p="profile" onclick="go('profile')"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>حسابي</span></button><button data-p="support" onclick="go('support')"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z"/></svg><span>دعم</span></button></nav><script>
 let products=[], priceList=[], cart=JSON.parse(localStorage.getItem('scart')||'[]'), cur=null, qty=1, submitting=false, cc='all', cs='', wM='vodafone';
-const titles={store:'Earnify',cart:'السلة',checkout:'إتمام الطلب',orders:'طلباتي',profile:'حسابي',withdraw:'سحب الأرباح',support:'الدعم'};
+const titles={store:'Rab7na',cart:'السلة',checkout:'إتمام الطلب',orders:'طلباتي',profile:'حسابي',withdraw:'سحب الأرباح',support:'الدعم'};
 
 function updCC(){document.getElementById('cc').textContent=cart.reduce((s,i)=>s+(i.qty||1),0)}
 function go(p){
@@ -528,7 +528,7 @@ function go(p){
   document.getElementById('p-'+p).classList.add('active');
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   const n=document.querySelector('.nav button[data-p="'+p+'"]'); if(n) n.classList.add('active');
-  document.getElementById('ht').innerHTML='<div style="display:flex;align-items:center;gap:12px"><div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:900">E</div><div><div style="font-size:28px;font-weight:900;color:#fff">'+(titles[p]||'Earnify')+'</div><div style="font-size:12px;opacity:.9">Affiliate Marketing Platform</div></div></div>';
+  document.getElementById('ht').innerHTML='<div style="display:flex;align-items:center;gap:12px"><div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:900">R</div><div><div style="font-size:28px;font-weight:900;color:#fff">'+(titles[p]||'Rab7na')+'</div><div style="font-size:12px;opacity:.9">Affiliate Marketing Platform</div></div></div>';
   if(p==='cart') renderCart();
   if(p==='orders') loadOrders();
   if(p==='profile'||p==='withdraw') loadMe();
@@ -555,7 +555,7 @@ function renderP(){
   if(cs.trim()){const q=cs.trim().toLowerCase();f=f.filter(p=>p.name.toLowerCase().includes(q)||(p.barcode||'').toLowerCase().includes(q))}
   document.getElementById('g').innerHTML=f.map(p=>{
     const i=products.indexOf(p);
-    return '<div class="card" onclick="openP('+i+')"><img src="'+(p.image||'')+'" loading="lazy"><div class="b"><div class="t">'+p.name+'</div><div class="pr">'+Number(p.price).toLocaleString('ar-EG')+' ج.م</div><div class="stock">'+stockLabel(p.stock,p.available)+'</div></div></div>';
+    return '<div class="card" onclick="openP('+i+')"><img src="'+(p.image||'')+'" alt="'+(p.name||'منتج Rab7na')+'" loading="lazy" decoding="async"><div class="b"><div class="t">'+p.name+'</div><div class="pr">'+Number(p.price).toLocaleString('ar-EG')+' ج.م</div><div class="stock">'+stockLabel(p.stock,p.available)+'</div></div></div>';
   }).join('')||'<div class="empty">مفيش منتجات</div>';
 }
 
@@ -627,7 +627,7 @@ function renderCart(){
   let total=0;
   list.innerHTML=cart.map((it,i)=>{
     total+=it.price*it.qty;
-    return '<div class="cart-item"><img src="'+(it.image||'')+'"><div class="info"><div class="name">'+it.name+'</div><div class="meta">'+stockLabel(it.stock,true)+'</div><div class="price">'+(it.price*it.qty).toLocaleString('ar-EG')+' ج.م <small style="color:var(--muted);font-weight:600">('+it.price+' × '+it.qty+')</small></div><div class="actions"><button class="qbtn" onclick="cartQty('+i+',-1)">−</button><span class="qval">'+it.qty+'</span><button class="qbtn" onclick="cartQty('+i+',1)">+</button><button class="rm" onclick="rmCart('+i+')">حذف</button></div></div></div>';
+    return '<div class="cart-item"><img src="'+(it.image||'')+'" alt="'+(it.name||'منتج Rab7na')+'" loading="lazy" decoding="async"><div class="info"><div class="name">'+it.name+'</div><div class="meta">'+stockLabel(it.stock,true)+'</div><div class="price">'+(it.price*it.qty).toLocaleString('ar-EG')+' ج.م <small style="color:var(--muted);font-weight:600">('+it.price+' × '+it.qty+')</small></div><div class="actions"><button class="qbtn" onclick="cartQty('+i+',-1)">−</button><span class="qval">'+it.qty+'</span><button class="qbtn" onclick="cartQty('+i+',1)">+</button><button class="rm" onclick="rmCart('+i+')">حذف</button></div></div></div>';
   }).join('');
   document.getElementById('cartTotal').textContent=total.toLocaleString('ar-EG')+' ج.م';
 }
@@ -840,7 +840,7 @@ app.post('/api/create-order', async (req,res)=>{
     const d=await r.json();
     console.log('SAFKA response status:',r.status);
     console.log('SAFKA response:',JSON.stringify(d,null,2));
-    if(!r.ok)return res.json({error:d.errors?d.errors.map(e=>e.msg).join(', ').replace('محظور عشان سلوكه وحش في النظام','الرقم ده محظور في Earnify - استخدم رقمًا حقيقيًا'):'فشل الطلب'});
+    if(!r.ok)return res.json({error:d.errors?d.errors.map(e=>e.msg).join(', ').replace('محظور عشان سلوكه وحش في النظام','الرقم ده محظور في Rab7na - استخدم رقمًا حقيقيًا'):'فشل الطلب'});
     res.json({ok:true,order:d.data||d});
   }catch(e){
     console.log('SAFKA error:',e.message);

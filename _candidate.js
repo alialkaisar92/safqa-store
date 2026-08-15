@@ -178,7 +178,7 @@ app.post('/api/support', (req, res) => {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Earnify | منصة التسويق بالعمولة</title>
+<title>Rab7na | منصة التسويق بالعمولة</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Lalezar&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -366,7 +366,7 @@ textarea{min-height:90px;resize:vertical}
 <div class="page" id="p-profile">
   <div class="dash-hero">
     <div class="hi">أهلاً بك أيها المسوّق</div>
-    <div class="name" id="dashName">مسوّق Earnify</div>
+    <div class="name" id="dashName">مسوّق Rab7na</div>
     <div class="stat-grid" style="margin-bottom:0">
       <div class="stat"><div class="l">💰 رصيدك الحالي</div><div class="v" id="bal">0</div></div>
       <div class="stat"><div class="l">📦 إجمالي طلباتك</div><div class="v" id="oCnt">0</div></div>
@@ -412,7 +412,7 @@ textarea{min-height:90px;resize:vertical}
     <div class="pm-price" id="pm-price"></div>
     <div class="box"><div class="l">كود المنتج</div><div class="v" id="pm-code">—</div></div>
     <div class="box" id="pm-stock-box"><div class="l">المخزون</div><div class="v" id="pm-stock">—</div></div>
-    <div class="box note-box"><div class="l">ملاحظات Earnify</div><div class="v" id="pm-note">—</div></div>
+    <div class="box note-box"><div class="l">ملاحظات Rab7na</div><div class="v" id="pm-note">—</div></div>
     <a class="drive" id="pm-drive" href="#" target="_blank" style="display:none">📁 صور وفيديوهات على الطبيعة</a>
     <div id="pm-desc" style="font-size:.88rem;line-height:1.7;color:#475569;margin:10px 0"></div>
 
@@ -452,7 +452,7 @@ window.addEventListener('error',function(e){
 </script>
 <script>
 let products=[], priceList=[], cart=JSON.parse(localStorage.getItem('scart')||'[]'), cur=null, qty=1, submitting=false, cc='all', cs='', wM='vodafone';
-const titles={store:'Earnify',cart:'السلة الملكية',checkout:'إتمام الطلب',orders:'طلباتي',profile:'حسابي',withdraw:'سحب',support:'دعم'};
+const titles={store:'Rab7na',cart:'السلة الملكية',checkout:'إتمام الطلب',orders:'طلباتي',profile:'حسابي',withdraw:'سحب',support:'دعم'};
 
 function updCC(){document.getElementById('cc').textContent=cart.reduce((s,i)=>s+(i.qty||1),0)}
 function go(p){
@@ -465,7 +465,7 @@ function go(p){
     if(ht){
       const showTitle = p==='store';
       ht.innerHTML=(showTitle?'<div class="royal-title">التسوق الملوكي</div>':'')
-        +'<div class="brand-row"><span class="crown">👑</span><span class="b">'+(titles[p]||'Earnify')+'</span></div>'
+        +'<div class="brand-row"><span class="crown">👑</span><span class="b">'+(titles[p]||'Rab7na')+'</span></div>'
         +'<div class="header-row"><button class="cart-btn" onclick="go(\'cart\')">🛒 السلة الملكية<span class="badge" id="cc">'+cart.reduce((s,i)=>s+(i.qty||1),0)+'</span></button></div>';
     }
   }catch(e){console.error('header render error:',e)}
@@ -674,7 +674,7 @@ async function loadMe(){
   document.getElementById('wBal').textContent=Number(me.balance||0).toLocaleString('ar-EG')+' ج.م';
   document.getElementById('pName').value=me.name||'';
   document.getElementById('pPhone').value=me.phone||'';
-  const dn=document.getElementById('dashName'); if(dn) dn.textContent=me.name||'مسوّق Earnify';
+  const dn=document.getElementById('dashName'); if(dn) dn.textContent=me.name||'مسوّق Rab7na';
 }
 async function saveProf(){
   const r=await fetch('/api/profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:document.getElementById('pName').value,phone:document.getElementById('pPhone').value})});
