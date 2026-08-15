@@ -321,6 +321,24 @@ textarea{min-height:90px;resize:vertical}
 .summary .line.total{font-weight:800;font-size:1.7rem;color:var(--pd);border-top:1.5px solid #99f6e4;padding-top:10px;margin-top:10px}
 .summary .line.comm{color:var(--pd);font-weight:700}
 .summary input{width:100px;padding:8px 10px;text-align:center;font-weight:700;border-radius:10px;border:1.5px solid #e2e8f0;font-family:Cairo,sans-serif}
+.order-summary-card{background:#fff;border:1px solid #e5e7eb;border-radius:22px;padding:18px 16px;margin:18px 0;box-shadow:0 10px 28px rgba(15,23,42,.07)}
+.order-summary-card .summary-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.order-summary-card .summary-head h3{margin:0;font-size:1.25rem;color:#101828}
+.order-summary-card .summary-head span{font-size:.76rem;color:#64748b;background:#f0fdfa;border-radius:999px;padding:6px 10px;font-weight:800}
+.order-summary-card .summary-product{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #eef2f6}
+.order-summary-card .summary-product img{width:64px;height:64px;border-radius:14px;object-fit:cover;background:#f8fafc;border:1px solid #eef2f6}
+.order-summary-card .summary-product .sp-name{font-weight:800;line-height:1.45;color:#1f2937;font-size:.91rem}
+.order-summary-card .summary-product .sp-meta{font-size:.78rem;color:#64748b;margin-top:4px}
+.order-summary-card .summary-product .sp-price{margin-right:auto;text-align:left;font-weight:900;color:#111827;white-space:nowrap}
+.order-summary-card .summary-lines{padding-top:8px}
+.order-summary-card .summary-line{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;color:#475467;font-size:.93rem}
+.order-summary-card .summary-line strong{color:#111827;font-size:1rem}
+.order-summary-card .summary-line.profit strong{color:#0f9f8c}
+.order-summary-card .summary-total{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e5e7eb;margin-top:8px;padding-top:16px;font-size:1rem;color:#344054}
+.order-summary-card .summary-total strong{font-size:1.55rem;color:#111827;font-weight:900}
+.order-summary-card .summary-profit{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:12px 14px;background:#ecfdf5;border-radius:14px;color:#047857;font-weight:800}
+.order-summary-card .summary-profit strong{font-size:1.25rem}
+@media(max-width:520px){.order-summary-card{padding:15px 13px;border-radius:18px}.order-summary-card .summary-product img{width:56px;height:56px}.order-summary-card .summary-product .sp-name{font-size:.82rem}.order-summary-card .summary-product .sp-price{font-size:.85rem}.order-summary-card .summary-total strong{font-size:1.3rem}}
 .msg{text-align:center;margin-top:10px;font-weight:700;font-size:.9rem;min-height:24px}
 .msg.ok{color:var(--ok)}.msg.err{color:var(--danger)}
 .order{background:var(--card);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
@@ -431,12 +449,16 @@ input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(15,11
   <input type="number" id="commInput" min="0" value="0" oninput="recalc()">
   <p style="font-size:.75rem;color:var(--muted);margin-top:4px">عدّل عمولتك — لا يُسمح بقيم سالبة</p>
 
-  <div class="summary" id="sumBox">
-    <div class="line"><span>المنتجات</span><span id="sumProd">0</span></div>
-    <div class="line"><span>الشحن</span><span id="sumShip">0</span></div>
-    <div class="line"><span>عمولة المسوق</span><span id="sumComm">0</span></div>
-    <div class="line total"><span>الإجمالي على العميل</span><span id="sumTotal">0</span></div>
-    <div class="line comm"><span>صافي ربحك</span><span id="sumProfit">0</span></div>
+  <div class="order-summary-card" id="sumBox">
+    <div class="summary-head"><h3>ملخص الطلب</h3><span id="sumCount">0 منتج</span></div>
+    <div id="sumItems"></div>
+    <div class="summary-lines">
+      <div class="summary-line"><span>سعر المنتجات</span><strong id="sumProd">0 ج.م</strong></div>
+      <div class="summary-line"><span>سعر الشحن</span><strong id="sumShip">0 ج.م</strong></div>
+      <div class="summary-line profit"><span>ربح الكمية</span><strong id="sumComm">0 ج.م</strong></div>
+    </div>
+    <div class="summary-total"><span>المستحق للدفع</span><strong id="sumTotal">0 ج.م</strong></div>
+    <div class="summary-profit"><span>صافي الربح</span><strong id="sumProfit">0 ج.م</strong></div>
   </div>
 
   <button class="btn btn-primary" id="btnSubmit" onclick="submitOrder()">تأكيد الطلب</button>
@@ -664,7 +686,14 @@ function initCheckout(){
   if(g) document.getElementById('shipInput').value=g.price;
   else document.getElementById('shipInput').value=0;
 }
+function renderOrderSummary(){
+  const box=document.getElementById('sumItems'); if(!box)return;
+  const esc=s=>String(s||'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]));
+  box.innerHTML=cart.map(it=>'<div class="summary-product"><img src="'+(it.image||'')+'" alt="'+esc(it.name)+'" loading="lazy"><div><div class="sp-name">'+esc(it.name)+'</div><div class="sp-meta">الكمية: '+it.qty+' × '+Number(it.price).toLocaleString('ar-EG')+' ج.م</div></div><div class="sp-price">'+Number(it.price*it.qty).toLocaleString('ar-EG')+' ج.م</div></div>').join('');
+  const c=document.getElementById('sumCount'); if(c)c.textContent=cart.reduce((s,i)=>s+i.qty,0)+' منتج';
+}
 function recalc(){
+  renderOrderSummary();
   const pTotal=cart.reduce((s,i)=>s+i.price*i.qty,0);
   let ship=Number(document.getElementById('shipInput').value);
   let comm=Number(document.getElementById('commInput').value);
