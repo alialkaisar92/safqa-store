@@ -176,25 +176,46 @@ setInterval(function(){if(localStorage.getItem('etok'))act('نشط في '+cur())
  if(s.name){var l=document.querySelector('.eh-logo');if(l)l.textContent=s.name+' 💰';document.title=s.name;}
  if(s.announcement){var h=document.querySelector('.eh-hero h1, .eh-hero');if(h)h.innerHTML=s.announcement;}
 }).catch(function(){});})();
-(function(){var loaded=false;
-function loadOS(){if(loaded)return;loaded=true;
- fetch('/api/onesignal/config').then(function(r){return r.json()}).then(function(c){
-  var APPID=c.appId||'f283c3ca-8c41-49fe-800d-7a174920696d';
-  window.OneSignalDeferred=window.OneSignalDeferred||[];
-  var s=document.createElement('script');s.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';s.async=true;
-  s.onload=function(){OneSignalDeferred.push(function(OneSignal){
-   OneSignal.init({appId:APPID,notifyButton:false,autoResubscribe:true}).then(function(){return OneSignal.Slidedown.promptPush()}).then(function(){return OneSignal.getUser()}).then(function(u){
-    var id=u&&u.getPushSubscription?u.getPushSubscription().id:null;
-    if(id)fetch('/api/notifications/register',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':localStorage.getItem('etok')||''},body:JSON.stringify({playerId:id})});
-   }).catch(function(){});
-  });};
-  document.head.appendChild(s);
+(function(){var loaded=false, lastUnread=0;
+ function playNoticeSound(){try{
+  var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;var c=new AC(),o=c.createOscillator(),g=c.createGain();
+  o.type='sine';o.frequency.setValueAtTime(660,c.currentTime);o.frequency.exponentialRampToValueAtTime(990,c.currentTime+.12);
+  g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.08,c.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.42);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.45);setTimeout(function(){try{c.close()}catch(e){}},600);
+ }catch(e){}}
+ window.rab7naNoticeSound=playNoticeSound;
+ function registerSubscription(OneSignal){
+  var token=localStorage.getItem('etok')||'', user=JSON.parse(localStorage.getItem('euser')||'null');
+  if(!token)return Promise.resolve();
+  var uid=user&&user.id?String(user.id):'';
+  var p=Promise.resolve();
+  if(uid&&OneSignal.login)p=p.then(function(){return OneSignal.login(uid).catch(function(){})});
+  return p.then(function(){return OneSignal.getUser()}).then(function(u){
+   var sub=u&&u.getPushSubscription?u.getPushSubscription():null,id=sub&&sub.id;
+   if(!id)return null;
+   return fetch('/api/notifications/register',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({playerId:id,externalId:uid})});
+  });
+ }
+ function loadOS(){if(loaded)return;loaded=true;
+  fetch('/api/onesignal/config').then(function(r){return r.json()}).then(function(c){
+   var APPID=c.appId||'f283c3ca-8c41-49fe-800d-7a174920696d';
+   if(!APPID)return;
+   window.OneSignalDeferred=window.OneSignalDeferred||[];
+   var s=document.createElement('script');s.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';s.async=true;
+   s.onload=function(){OneSignalDeferred.push(function(OneSignal){
+    OneSignal.init({appId:APPID,notifyButton:false,autoResubscribe:true,serviceWorkerPath:'OneSignalSDKWorker.js',serviceWorkerParam:{scope:'/'}})
+    .then(function(){return OneSignal.Slidedown.promptPush()}).then(function(){return registerSubscription(OneSignal)}).catch(function(){});
+   });};
+   document.head.appendChild(s);
+  }).catch(function(){});}
+ function maybe(){if(localStorage.getItem('etok'))loadOS();}
+ document.addEventListener('click',function(){maybe()},{once:true});setInterval(maybe,6000);
+ function pollNotifications(){var t=localStorage.getItem('etok');if(!t)return;fetch('/api/notifications',{headers:{'x-auth-token':t}}).then(function(r){return r.json()}).then(function(d){
+  var n=Number(d&&d.unread||0);if(lastUnread&&n>lastUnread)playNoticeSound();lastUnread=n;
  }).catch(function(){});}
-function maybe(){if(localStorage.getItem('etok'))loadOS();}
-document.addEventListener('click',function(){maybe()},{once:true});
-setInterval(maybe,6000);
-var _ol=window.authLogout;window.authLogout=function(){fetch('/api/notifications/unlink',{method:'POST',headers:{'x-auth-token':localStorage.getItem('etok')||''}}).then(function(){if(_ol)_ol()});};
-})();
+ setInterval(pollNotifications,12000);pollNotifications();
+ var _ol=window.authLogout;window.authLogout=function(){fetch('/api/notifications/unlink',{method:'POST',headers:{'x-auth-token':localStorage.getItem('etok')||''}}).then(function(){if(_ol)_ol()});};
+ })();
 (function(){
 window.AppState={user:null};
 function setSess(a,r,u){if(a)localStorage.setItem('etok',a);if(r)localStorage.setItem('ertok',r);if(u){localStorage.setItem('euser',JSON.stringify(u));AppState.user=u}}
