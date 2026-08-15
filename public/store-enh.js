@@ -2,20 +2,20 @@
 window.ehToast=function(m){var d=document.createElement("div");d.className="eh-toast";d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2200);};
 function header(){return;var h=document.querySelector(".header");if(!h||h.dataset.eh)return;h.dataset.eh="1";
 h.innerHTML='<div class="eh-brand"><span class="eh-logo">Earnify 💰</span><small>منصة التسويق بالعمولة</small></div>'
-+'<button class="eh-profile" onclick="go(\'account\')"><span class="eh-pname">أحمد محمد<small>✔ مسوق نشط</small></span><span class="eh-av">👤</span></button>'
++'<button class="eh-profile" onclick="go(\'account\')"><span class="eh-pname">حسابي<small>بيانات حسابك</small></span><span class="eh-av">👤</span></button>'
 +'<button class="eh-cartb" onclick="go(\'cart\')">🛒<i>0</i></button>'
 +'<button class="eh-bell" onclick="go(\'account\')">🔔<i>3</i></button>';}
 function wallet(){var s=document.getElementById("s");if(!s||document.getElementById("ehWallet"))return;
 var w=document.createElement("div");w.id="ehWallet";w.className="eh-wallet";
 w.innerHTML='<div style="display:flex;gap:10px;align-items:center"><span class="wic">💼</span><div class="bal"><small>رصيدك المتاح</small><b id="ehBal">... ج.م</b></div></div><button class="wbtn" onclick="go(\'withdraw\')">سحب الأرباح</button>';
 s.parentNode.insertBefore(w,s);
-fetch("/api/me").then(function(r){return r.json()}).then(function(me){var b=(me&&me.balance!=null)?me.balance:2450;var el=document.getElementById("ehBal");if(el)el.textContent=(+b).toLocaleString("ar-EG")+" ج.م";}).catch(function(){});}
+fetch("/api/me").then(function(r){return r.json()}).then(function(me){var b=(me&&me.balance!=null)?me.balance:0;var el=document.getElementById("ehBal");if(el)el.textContent=(+b).toLocaleString("ar-EG")+" ج.م";}).catch(function(){});}
 function hero(){var s=document.getElementById("s");if(!s||document.getElementById("ehHero"))return;
 var h=document.createElement("div");h.id="ehHero";h.className="eh-hero";
-h.innerHTML='<h3>🔥 سوّق واربح حتى 30% عمولة</h3><p>شحن سريع لجميع المحافظات<br>سحب أرباح فوري</p><button class="hbtn" onclick="document.getElementById(\'g\').scrollIntoView({behavior:\'smooth\'})">تصفح المنتجات ❮</button><div class="dots"><i class="on"></i><i></i><i></i><i></i></div>';
+h.innerHTML='<h3>🔥 اكتشف منتجات مناسبة للتسويق</h3><p>اختر منتجات تناسب جمهورك<br>وتابع الطلبات من حسابك</p><button class="hbtn" onclick="document.getElementById(\'g\').scrollIntoView({behavior:\'smooth\'})">تصفح المنتجات ❮</button><div class="dots"><i class="on"></i><i></i><i></i><i></i></div>';
 s.parentNode.insertBefore(h,s);
 var q=document.createElement("div");q.className="eh-quick";
-q.innerHTML='<button onclick="document.getElementById(\'g\').scrollIntoView({behavior:\'smooth\'})"><i>★</i><b>المنتجات المميزة</b><small>أفضل العروض</small></button><button onclick="go(\'support\')"><i>🎧</i><b>الدعم</b><small>فريق جاهز</small></button><button onclick="go(\'orders\')"><i>📦</i><b>طلباتي</b><small>تتبع طلباتك</small></button><button onclick="go(\'withdraw\')"><i>💰</i><b>سحب الأرباح</b><small>حول أرباحك</small></button>';
+q.innerHTML='<button onclick="document.getElementById(\'g\').scrollIntoView({behavior:\'smooth\'})"><i>★</i><b>المنتجات المميزة</b><small>منتجات متاحة</small></button><button onclick="go(\'support\')"><i>🎧</i><b>الدعم</b><small>تواصل معنا</small></button><button onclick="go(\'orders\')"><i>📦</i><b>طلباتي</b><small>تتبع طلباتك</small></button><button onclick="go(\'withdraw\')"><i>💰</i><b>سحب الأرباح</b><small>راجع شروط السحب</small></button>';
 h.parentNode.insertBefore(q,s);}
 function search(){var s=document.getElementById("s");if(!s||s.dataset.eh)return;s.dataset.eh="1";
 var w=document.createElement("div");w.className="eh-search";s.parentNode.insertBefore(w,s);w.appendChild(s);
@@ -30,7 +30,7 @@ p.onclick=function(){bar.querySelectorAll("button").forEach(function(x){x.classL
 bar.appendChild(p);});}}
 function sechead(){var g=document.getElementById("g");if(!g||document.getElementById("ehSec"))return;
 var d=document.createElement("div");d.id="ehSec";d.className="eh-sechead";d.innerHTML='<b>⭐ منتجات مميزة</b><a href="#" onclick="return false">عرض الكل ❮</a>';g.parentNode.insertBefore(d,g);}
-function stats(){var g=document.getElementById("g");if(!g||document.getElementById("ehStats"))return;
+function stats(){return;var g=document.getElementById("g");if(!g||document.getElementById("ehStats"))return;
 var d=document.createElement("div");d.id="ehStats";d.className="eh-stats";
 d.innerHTML='<div><small>إجمالي الأرباح</small><b>18,760 ج.م</b><em>↑ 12.5%</em></div><div><small>عدد الطلبات</small><b>320</b><em>↑ 18.7%</em></div><div><small>عدد النقرات</small><b>8,540</b><em>↑ 25.6%</em></div><div><small>معدل التحويل</small><b>4.8%</b><em>↑ 12.5%</em></div>';
 g.parentNode.insertBefore(d,g.nextSibling);}
@@ -42,10 +42,10 @@ var img=c.querySelector("img");var src=P&&P.image?P.image:(img?img.src:"");
 var name=P?P.name:(c.querySelector(".t")?c.querySelector(".t").textContent:"");
 var price=P?(+P.price).toLocaleString("ar-EG")+" ج.م":(c.querySelector(".pr")?c.querySelector(".pr").textContent:"");
 var stock=P?(+P.stock).toLocaleString("ar-EG"):"0";
-var rate=(4+Math.random()).toFixed(1);var cnt=Math.floor(100+Math.random()*300);
-c.innerHTML='<div class="rf-img"><img src="'+src+'" loading="lazy"><button class="rf-fav" onclick="event.stopPropagation();ehToast(\'تمت الإضافة للمفضلة ❤\')">🤍</button><span class="rf-comm">عمولة 30%</span></div>'
+var rate='';var cnt='';
+c.innerHTML='<div class="rf-img"><img src="'+src+'" alt="'+(name||'منتج')+'" loading="lazy" decoding="async"><button class="rf-fav" onclick="event.stopPropagation();ehToast(\'تمت الإضافة للمفضلة ❤\')">🤍</button><span class="rf-comm">تفاصيل المنتج والعمولة حسب البيانات المتاحة</span></div>'
 +'<div class="rf-body"><div class="rf-name">'+name+'</div>'
-+'<div class="rf-row"><span class="rf-price">'+price+'</span><span class="rf-rate"><b>★</b> '+rate+' ('+cnt+')</span></div>'
++'<div class="rf-row"><span class="rf-price">'+price+'</span></div>'
 +'<div class="rf-stock">متوفر: '+stock+' قطعة</div>'
 +'<button class="rf-view">عرض المنتج</button></div>';});}
 setInterval(function(){header();wallet();hero();search();cats();sechead();stats();rebuild();},700);
@@ -143,7 +143,7 @@ function ensureNotif(){if(document.getElementById('ehNotif'))return;
 var p=document.createElement('div');p.id='ehNotif';p.style.cssText='position:fixed;top:64px;right:10px;left:10px;max-width:360px;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.25);z-index:220;display:none;padding:14px';
 p.innerHTML='<b style="font-size:.9rem">🔔 الإشعارات</b><div id="ehNotifList" style="margin-top:10px"></div>';
 document.body.appendChild(p);}
-function renderNotif(){var l=[{t:'تم شحن طلبك #1042',d:'منذ ساعة'},{t:'عمولة جديدة +45 ج.م',d:'منذ 3 ساعات'},{t:'منتج جديد متاح للتسويق',d:'أمس'}];
+function renderNotif(){var l=[];
 document.getElementById('ehNotifList').innerHTML=l.map(function(n){return '<div style="border:1px solid #eee;border-radius:12px;padding:10px;margin-bottom:8px"><b style="font-size:.8rem">'+n.t+'</b><div style="color:#888;font-size:.68rem">'+n.d+'</div></div>';}).join('');}
 window.ehNotifToggle=function(){ensureNotif();var p=document.getElementById('ehNotif');var open=p.style.display==='block';p.style.display=open?'none':'block';if(!open)renderNotif();};
 function wireBell(){var b=document.querySelector('.eh-bell');if(b&&!b.dataset.nt){b.dataset.nt='1';b.onclick=function(e){e.stopPropagation();ehNotifToggle();};}}

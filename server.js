@@ -50,7 +50,21 @@ app.get('/robots.txt', (req, res) => {
 
 app.get('/sitemap.xml', (req, res) => {
   res.sendFile(path.join(__dirname, 'sitemap.xml'));
-});let productsCache = [], priceListCache = [], lastFetch = 0;
+});
+// SEO helpers: public product pages use real cached product data only.
+const SEO_ORIGIN = process.env.PUBLIC_SITE_URL || 'https://safqa-store.vercel.app';
+function seoEsc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function seoText(v){return String(v||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();}
+function sitemapSlug(p){
+  const base = seoText(p.name||'product').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^\p{L}\p{N}]+/gu,'-').replace(/^-+|-+$/g,'').slice(0,80);
+  return (base||'product')+'-'+String(p.id||p._id||'').slice(-8);
+}
+function readSeoProducts(){try{const fp=path.join(__dirname,'products-cache.json');const d=JSON.parse(fs.readFileSync(fp,'utf8'));return Array.isArray(d)?d:[];}catch(e){return [];}}
+function findSeoProduct(slug){const all=readSeoProducts();return all.find(p=>sitemapSlug(p)===slug || String(p.id||p._id)===slug);}
+function seoDescription(p){const d=seoText(p.description||p.desc||'');return (d||('اكتشف '+seoText(p.name)+' على Earnify، مع معلومات المنتج والسعر والتوفر.')).slice(0,160);}
+function productAvailability(p){return p.available===false || p.is_active===false ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock';}
+
+let productsCache = [], priceListCache = [], lastFetch = 0;
 let data = { name: 'المسوق', phone: '01000000000', balance: 0, withdrawals: [], orders: [], tickets: [] };
 
 try { if (fs.existsSync('affiliate-data.json')) data = Object.assign(data, JSON.parse(fs.readFileSync('affiliate-data.json'))); } catch (e) {}
@@ -123,6 +137,7 @@ function mapProduct(p, up) {
 }
 
 app.get('/api/products', async (req,res)=>{
+  res.set('Cache-Control','public, max-age=300, s-maxage=600');
   const fp=require('path').join(__dirname,'products-cache.json');
   try{
     if(require('fs').existsSync(fp)){
@@ -196,6 +211,31 @@ app.get('/shop',(req,res)=>{
     res.type('html').send(html);
   }catch(e){res.sendFile(require('path').join(__dirname,'storefront.html'));}
 });
+
+app.get('/product/:slug', (req,res)=>{
+  const p=findSeoProduct(req.params.slug);
+  if(!p) return res.status(404).send('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>المنتج غير موجود | Earnify</title></head><body><h1>المنتج غير موجود</h1><a href="/store">العودة إلى المتجر</a></body></html>');
+  const name=seoText(p.name||'منتج على Earnify');
+  const desc=seoDescription(p);
+  const image=p.image || ((p.images&&p.images[0])||'');
+  const price=p.price!=null?p.price:(p.sale_price!=null?p.sale_price:null);
+  const productUrl=SEO_ORIGIN+'/product/'+encodeURIComponent(sitemapSlug(p));
+  const schema={
+    '@context':'https://schema.org', '@type':'Product', name, description:desc, url:productUrl,
+    image:image?[image]:undefined, sku:p.id||p._id,
+    category:p.category||p.cat||undefined,
+    offers:price!=null?{'@type':'Offer',url:productUrl,priceCurrency:'EGP',price:Number(price),availability:productAvailability(p)}:undefined
+  };
+  const breadcrumb={'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[
+    {'@type':'ListItem',position:1,name:'Earnify',item:SEO_ORIGIN+'/'},
+    {'@type':'ListItem',position:2,name:'المتجر',item:SEO_ORIGIN+'/store'},
+    {'@type':'ListItem',position:3,name,item:productUrl}
+  ]};
+  const imageHtml=image?'<img src="'+seoEsc(image)+'" alt="'+seoEsc(name)+'" loading="eager" decoding="async" style="max-width:420px;width:100%;height:auto;border-radius:16px">':'';
+  const priceHtml=price!=null?'<p><strong>السعر: '+seoEsc(Number(price).toLocaleString('ar-EG'))+' جنيه مصري</strong></p>':'';
+  res.type('html').send('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+seoEsc(name)+' | Earnify</title><meta name="description" content="'+seoEsc(desc)+'"><link rel="canonical" href="'+seoEsc(productUrl)+'"><meta property="og:type" content="product"><meta property="og:title" content="'+seoEsc(name)+' | Earnify"><meta property="og:description" content="'+seoEsc(desc)+'"><meta property="og:url" content="'+seoEsc(productUrl)+'">'+(image?'<meta property="og:image" content="'+seoEsc(image)+'">':'')+'<script type="application/ld+json">'+JSON.stringify(schema).replace(/<\//g,'<\\/')+'</script><script type="application/ld+json">'+JSON.stringify(breadcrumb).replace(/<\//g,'<\\/')+'</script><style>body{font-family:Arial,sans-serif;max-width:900px;margin:0 auto;padding:24px;line-height:1.8;color:#172033}a{color:#0f766e}main{display:grid;gap:18px}h1{font-size:clamp(1.6rem,4vw,2.6rem)}</style></head><body><main><nav><a href="/">Earnify</a> / <a href="/store">المتجر</a></nav><article><h1>'+seoEsc(name)+'</h1>'+imageHtml+'<p>'+seoEsc(desc)+'</p>'+priceHtml+'<p><a href="/store">العودة إلى المتجر واكتشاف المنتجات</a></p></article></main></body></html>');
+});
+
 app.get('/store', (req, res) => {
   res.send(`<!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -203,6 +243,12 @@ app.get('/store', (req, res) => {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Earnify | منصة التسويق بالعمولة</title>
+<meta name="description" content="اكتشف منتجات متنوعة وفرصًا للعمل كمسوق بالعمولة في مصر عبر Earnify.">
+<link rel="canonical" href="https://safqa-store.vercel.app/store">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Earnify"><meta property="og:title" content="متجر Earnify | منتجات للتسويق بالعمولة في مصر"><meta property="og:description" content="منتجات متنوعة للمسوقين بالعمولة في مصر."><meta property="og:url" content="https://safqa-store.vercel.app/store">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Earnify","url":"https://safqa-store.vercel.app/","potentialAction":{"@type":"SearchAction","target":"https://safqa-store.vercel.app/store?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"متجر Earnify","url":"https://safqa-store.vercel.app/store","isPartOf":{"@type":"WebSite","name":"Earnify","url":"https://safqa-store.vercel.app/"}}</script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--p:#0d9488;--pd:#0f766e;--bg:#f0f4f8;--card:#fff;--text:#0f172a;--muted:#64748b;--accent:#f59e0b;--danger:#ef4444;--ok:#10b981}
@@ -792,7 +838,7 @@ app.post('/api/create-order', async (req,res)=>{
     const d=await r.json();
     console.log('SAFKA response status:',r.status);
     console.log('SAFKA response:',JSON.stringify(d,null,2));
-    if(!r.ok)return res.json({error:d.errors?d.errors.map(e=>e.msg).join(', ').replace('محظور عشان سلوكه وحش في النظام','الرقم ده محظور في صفقة - استخدم رقم حقيقي'):'فشل الطلب'});
+    if(!r.ok)return res.json({error:d.errors?d.errors.map(e=>e.msg).join(', ').replace('محظور عشان سلوكه وحش في النظام','الرقم ده محظور في Earnify - استخدم رقمًا حقيقيًا'):'فشل الطلب'});
     res.json({ok:true,order:d.data||d});
   }catch(e){
     console.log('SAFKA error:',e.message);
