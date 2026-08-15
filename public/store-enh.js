@@ -10,7 +10,7 @@ var w=document.createElement("div");w.id="ehWallet";w.className="eh-wallet";
 w.innerHTML='<div style="display:flex;gap:10px;align-items:center"><span class="wic">💼</span><div class="bal"><small>رصيدك المتاح</small><b id="ehBal">... ج.م</b></div></div><button class="wbtn" onclick="go(\'withdraw\')">سحب الأرباح</button>';
 s.parentNode.insertBefore(w,s);
 fetch("/api/me").then(function(r){return r.json()}).then(function(me){var b=(me&&me.balance!=null)?me.balance:0;var el=document.getElementById("ehBal");if(el)el.textContent=(+b).toLocaleString("ar-EG")+" ج.م";}).catch(function(){});}
-function hero(){var s=document.getElementById("s");if(!s||document.getElementById("ehHero"))return;
+function hero(){return;var s=document.getElementById("s");if(!s||document.getElementById("ehHero"))return;
 var h=document.createElement("div");h.id="ehHero";h.className="eh-hero";
 h.innerHTML='<h3>🔥 اكتشف منتجات مناسبة للتسويق</h3><p>اختر منتجات تناسب جمهورك<br>وتابع الطلبات من حسابك</p><button class="hbtn" onclick="document.getElementById(\'g\').scrollIntoView({behavior:\'smooth\'})">تصفح المنتجات ❮</button><div class="dots"><i class="on"></i><i></i><i></i><i></i></div>';
 s.parentNode.insertBefore(h,s);
@@ -34,8 +34,8 @@ function stats(){return;var g=document.getElementById("g");if(!g||document.getEl
 var d=document.createElement("div");d.id="ehStats";d.className="eh-stats";
 d.innerHTML='<div><small>إجمالي الأرباح</small><b>18,760 ج.م</b><em>↑ 12.5%</em></div><div><small>عدد الطلبات</small><b>320</b><em>↑ 18.7%</em></div><div><small>عدد النقرات</small><b>8,540</b><em>↑ 25.6%</em></div><div><small>معدل التحويل</small><b>4.8%</b><em>↑ 12.5%</em></div>';
 g.parentNode.insertBefore(d,g.nextSibling);}
-function rebuild(){var g=document.getElementById("g");if(!g)return;
-g.querySelectorAll(".card:not([data-ref])").forEach(function(c){c.setAttribute("data-ref","1");
+function rebuild(){return;var g=document.getElementById("g");if(!g)return;
+ g.querySelectorAll(".card:not([data-ref])").forEach(function(c){c.setAttribute("data-ref","1");
 var oc=c.getAttribute("onclick")||"";var m=oc.match(/openP\((\d+)\)/);var idx=m?+m[1]:-1;
 var P=(window.products&&idx>=0)?products[idx]:null;
 var img=c.querySelector("img");var src=P&&P.image?P.image:(img?img.src:"");
