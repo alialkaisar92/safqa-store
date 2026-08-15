@@ -807,7 +807,9 @@ app.post('/api/create-order', async (req,res)=>{
   const items=(b.items||[]).map(it=>({
     product: it.product||it.id||it._id,
     property: it.property||it.propId||'',
-    qty: Number(it.qty||it.quantity||1)
+    qty: Number(it.qty||it.quantity||1),
+    originalPrice: Number(it.originalPrice||it.price||0),
+    finalPrice: Number(it.finalPrice||it.salePrice||it.originalPrice||it.price||0)
   })).filter(x=>x.product);
   if(!items.length)return res.json({error:'السلة فارغة'});
   const commission=Number(b.commission)||0;
@@ -836,7 +838,7 @@ app.post('/api/create-order', async (req,res)=>{
     if(!r.ok)return res.json({error:d.errors?d.errors.map(e=>e.msg).join(', ').replace('محظور عشان سلوكه وحش في النظام','الرقم ده محظور في Rab7na - استخدم رقمًا حقيقيًا'):'فشل الطلب'});
     const customer=await currentUser(req);
     const external=d.data||d;
-    const savedOrder={id:external.id||external._id||Date.now(),serial:external.id||external._id||Date.now(),userId:customer&&customer.id||null,products:b.productNames||items.map(x=>x.product),items,client_name:body.client_name,client_phone1:body.client_phone1,client_address:body.client_address,status:'قيد التأكيد',date:new Date().toISOString(),commission,total,shipping:Number(b.shipping_cost)||0,external:external};
+    const savedOrder={id:external.id||external._id||Date.now(),serial:external.id||external._id||Date.now(),userId:customer&&customer.id||null,products:b.productNames||items.map(x=>x.product),items,client_name:body.client_name,client_phone1:body.client_phone1,client_address:body.client_address,status:'قيد التأكيد',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:Number(b.shipping_cost)||0,originalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.originalPrice||0)*(x.qty||1),0),finalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.finalPrice||0)*(x.qty||1),0),external:external};
     const affiliate=await readAffiliate();affiliate.orders=affiliate.orders||[];affiliate.orders.unshift(savedOrder);await saveAffiliate(affiliate);
     res.json({ok:true,message:'تم إرسال الطلب بنجاح',order:external});
   }catch(e){
