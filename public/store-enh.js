@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
     if(!host)return;
     var b=document.createElement('button');b.id='rab7naPushBtn';b.type='button';b.textContent='🔔 تفعيل الإشعارات';
     b.style.cssText='position:fixed;z-index:80;bottom:86px;right:14px;border:0;border-radius:999px;padding:12px 16px;background:#0f766e;color:#fff;font:700 13px inherit;box-shadow:0 8px 24px #0f766e44;cursor:pointer';
-    b.onclick=enable;document.body.appendChild(b);update(b);
+    b.onclick=function(){return window.rab7naEnableNativePush?window.rab7naEnableNativePush():enable();};document.body.appendChild(b);update(b);
   }
   function update(btn){
     if(!btn)btn=document.getElementById('rab7naPushBtn');
