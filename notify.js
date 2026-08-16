@@ -173,7 +173,7 @@ module.exports = function (app) {
     res.json({ ok: true });
   });
 
-  app.post('/api/notifications/register', async (req, res) => {
+  app.post(['/api/notifications/register', '/api/notifications/subscribe'], async (req, res) => {
     try {
       const u = await authUser(req);
       const userId = u ? String(u.id) : '';
@@ -191,7 +191,7 @@ module.exports = function (app) {
     } catch (e) { res.status(500).json({ error: 'تعذر تفعيل الإشعارات' }); }
   });
 
-  app.post('/api/notifications/unlink', global.requireAuth, async (req, res) => {
+  app.post(['/api/notifications/unlink', '/api/notifications/unsubscribe'], global.requireAuth, async (req, res) => {
     try {
       const u = await store.getUser(req.userId);
       if (u) { delete u.playerId; delete u.notificationExternalId; await store.saveUser(u); }
@@ -201,7 +201,7 @@ module.exports = function (app) {
     } catch (e) { res.json({ ok: true }); }
   });
 
-  app.post('/api/notify', global.requireAdmin, async (req, res) => {
+  app.post(['/api/notify', '/api/admin/notifications/send'], global.requireAdmin, async (req, res) => {
     try {
       const b = req.body || {};
       const title = String(b.headings || '').trim();
