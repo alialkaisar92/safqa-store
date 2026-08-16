@@ -330,3 +330,33 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
   window.rab7naEnablePush=enable;
   setInterval(addButton,1200);setTimeout(addButton,500);
 })();
+
+/* Native Web Push fallback: يعمل داخل الموقع وخارجه دون الاعتماد على لوحة OneSignal */
+(function(){
+  function b64ToBytes(base64){
+    var padding='='.repeat((4-base64.length%4)%4), raw=atob((base64+padding).replace(/-/g,'+').replace(/_/g,'/')), out=new Uint8Array(raw.length);
+    for(var i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i); return out;
+  }
+  function setNativeButton(btn,msg,ok){if(btn){btn.textContent=msg;btn.disabled=false;btn.classList.toggle('is-ok',!!ok);}}
+  async function enableNative(){
+    var btn=document.getElementById('rab7naPushBtn'), t=localStorage.getItem('etok')||'';
+    if(!t){setNativeButton(btn,'سجّل الدخول لتفعيل الإشعارات',false);return;}
+    if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){setNativeButton(btn,'المتصفح لا يدعم الإشعارات',false);return;}
+    if(Notification.permission==='denied'){setNativeButton(btn,'⚙️ السماح من إعدادات المتصفح',false);return;}
+    if(btn){btn.disabled=true;btn.textContent='⏳ جاري تفعيل الإشعارات...';}
+    try{
+      var keyRes=await fetch('/api/push/vapid-public-key',{cache:'no-store'}), key=await keyRes.json();
+      if(!key.publicKey)throw Error('خدمة الإشعارات غير مهيأة بعد');
+      var reg=await navigator.serviceWorker.register('/OneSignalSDKWorker.js',{scope:'/'});
+      var permission=await Notification.requestPermission();
+      if(permission!=='granted')throw Error('لم يتم السماح بالإشعارات من المتصفح');
+      var sub=await reg.pushManager.getSubscription();
+      if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToBytes(key.publicKey)});
+      var r=await fetch('/api/notifications/register',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':t},body:JSON.stringify({subscription:sub.toJSON(),externalId:(JSON.parse(localStorage.getItem('euser')||'null')||{}).id||''})});
+      if(!r.ok)throw Error('تعذر تسجيل جهازك للإشعارات');
+      setNativeButton(btn,'✅ الإشعارات مفعّلة',true); if(window.rab7naNoticeSound)window.rab7naNoticeSound();
+    }catch(e){setNativeButton(btn,e&&e.message?e.message:'تعذر تفعيل الإشعارات',false);}
+  }
+  window.rab7naEnableNativePush=enableNative;
+  setInterval(function(){var b=document.getElementById('rab7naPushBtn');if(b)b.onclick=enableNative;},1500);
+})();
