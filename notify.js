@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const store = require('./firestore');
 
 module.exports = function (app) {
   const API = 'https://onesignal.com/api/v1';
