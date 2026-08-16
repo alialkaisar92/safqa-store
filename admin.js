@@ -156,8 +156,13 @@ module.exports = function (app) {
   app.get('/api/admin/products', async (req, res) => {
     try {
       const d = await data();
+      const up = Math.max(0, Math.min(200, Number(d.priceUp) || 0));
+      const applyUp = (items) => (items || []).map((p) => {
+        const base = Number(p.basePrice != null ? p.basePrice : (p.price != null ? p.price : 0));
+        return Object.assign({}, p, { basePrice: base, price: Math.round(base * (1 + up / 100)) });
+      });
       const local = Array.isArray(d.products) ? d.products : [];
-      if (local.length) return res.json(local);
+      if (local.length) return res.json(applyUp(local));
       // استخدم كاش المنتجات العامل في الموقع العام قبل محاولة الاتصال المباشر بـ Safka.
       try {
         const fs = require('fs');
@@ -166,12 +171,12 @@ module.exports = function (app) {
         if (fs.existsSync(cacheFile)) {
           const raw = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
           const cached = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
-          if (cached.length) { d.products = cached; await writeData(d); return res.json(cached); }
+          if (cached.length) { d.products = cached; await writeData(d); return res.json(applyUp(cached)); }
         }
       } catch (cacheError) { console.error('products cache:', cacheError.message); }
       const remote = (await fetchSafkaProducts()).map(mapSafkaProduct);
       if (remote.length) { d.products = remote; await writeData(d); }
-      res.json(remote);
+      res.json(applyUp(remote));
     } catch (e) {
       console.error('admin products:', e.message);
       res.status(502).json({ error: e.message === 'مفتاح Safka غير مضبوط' ? e.message : 'تعذر تحميل المنتجات من Safka' });

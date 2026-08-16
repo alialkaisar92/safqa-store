@@ -138,7 +138,13 @@ function mapProduct(p, up) {
 }
 
 app.get('/api/products', async (req,res)=>{
-  res.set('Cache-Control','public, max-age=300, s-maxage=600');
+  res.set('Cache-Control','no-store');
+  let priceUp = 0;
+  try { priceUp = Math.max(0, Math.min(200, Number((await firestore.getAffiliateData()).priceUp) || 0)); } catch (e) {}
+  const applyPublicPrice = function(p) {
+    const base = Number(p.basePrice != null ? p.basePrice : (p.price != null ? p.price : (p.sale_price != null ? p.sale_price : 0)));
+    return Object.assign({}, p, { basePrice: base, cost: p.cost != null ? p.cost : base, price: Math.round(base * (1 + priceUp / 100)) });
+  };
   const fp=require('path').join(__dirname,'products-cache.json');
   try{
     if(require('fs').existsSync(fp)){
@@ -149,7 +155,7 @@ app.get('/api/products', async (req,res)=>{
           const prop = (p.properties && p.properties[0]) || {};
           const stock = Number(p.stock != null ? p.stock : (prop.min != null ? prop.min : (prop.value || 0)));
           const category = cat([p.name, p.title, p.description, p.desc, p.note, p.category].filter(Boolean).join(' '));
-          return Object.assign({}, p, {category: category, cat: category, stock: stock, available: p.available !== false && p.is_active !== false && stock > 0, propId: p.propId || prop._id || ''});
+          return applyPublicPrice(Object.assign({}, p, {category: category, cat: category, stock: stock, available: p.available !== false && p.is_active !== false && stock > 0, propId: p.propId || prop._id || ''}));
         });
         return res.json(normalized);
       }
@@ -171,7 +177,7 @@ app.get('/api/products', async (req,res)=>{
     const mapped = all.map(function(p){
       const c = cat([p.name, p.title, p.description, p.desc, p.note, p.category].filter(Boolean).join(' '));
       const prop = (p.properties && p.properties[0]) || {};
-      return Object.assign({}, p, {
+      return applyPublicPrice(Object.assign({}, p, {
         id: p._id || p.id,
         name: p.name,
         price: (p.sale_price!=null ? p.sale_price : p.price),
@@ -182,7 +188,7 @@ app.get('/api/products', async (req,res)=>{
         category: c, cat: c,
         propId: prop._id || '',
         propKey: prop.key || ''
-      });
+      }));
     });
     try{ require('fs').writeFileSync(fp, JSON.stringify(mapped)); }catch(e){}
     res.json(mapped);

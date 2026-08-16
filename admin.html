@@ -114,7 +114,7 @@ drawStoreProds();});}
 function drawStoreProds(){var all=(window._sprods||[]).filter(function(p){return !SQ||(p.name||'').indexOf(SQ)>-1});var list=all.slice(0,60);
 document.getElementById('splist').innerHTML='<p style="color:var(--mut);font-size:.7rem;margin-bottom:8px">معروض '+list.length+' من '+all.length+' منتج</p>'+list.map(function(p){return '<div class="panel" style="display:flex;gap:10px;align-items:center">'+(p.image?'<img src="'+p.image+'" style="width:50px;height:50px;object-fit:cover;border-radius:10px">':'')+'<div style="flex:1"><b style="font-size:.8rem">'+p.name+'</b><div style="color:var(--g);font-weight:800;font-size:.8rem">'+p.price+' ج.م</div></div></div>';}).join('')||'<div class="panel">لا يوجد منتجات</div>';}
 function applyUp(){setUp(+document.getElementById('pup').value||0);}
-function setUp(v){fetch('/api/admin/price-up',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({up:v})}).then(function(){rProducts();});}
+function setUp(v){var btns=document.querySelectorAll('#view button');btns.forEach(function(b){b.disabled=true;});fetch('/api/admin/price-up',{method:'POST',headers:adminHeaders(),body:JSON.stringify({up:v})}).then(function(r){return r.json().then(function(d){if(!r.ok||!d.ok)throw new Error(d.error||'تعذر حفظ الزيادة');return d;});}).then(function(d){alert('تم تطبيق زيادة '+(d.up||0)+'% على الأسعار ✅');rProducts();}).catch(function(e){alert(e.message||'تعذر تطبيق زيادة الأسعار');}).finally(function(){btns.forEach(function(b){b.disabled=false;});});}
 
 
 var UQ='';
