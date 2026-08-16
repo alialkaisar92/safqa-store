@@ -11,7 +11,7 @@ const safkaSync = require('./safka-sync');
 const { availableBalance } = require('./balance');
 app.use(express.json({limit:'50mb'}));
 
-app.get('/', (req, res) => res.redirect(302, '/store'));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'landing.html')));
 
 const crypto = require('crypto');
 const firestore = require('./firestore');
