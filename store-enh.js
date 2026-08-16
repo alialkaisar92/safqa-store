@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
       var keyRes=await fetch('/api/push/vapid-public-key',{cache:'no-store'}), key=await keyRes.json();
       if(!key.publicKey)throw Error('خدمة الإشعارات غير مهيأة بعد');
       var reg=await navigator.serviceWorker.register('/OneSignalSDKWorker.js',{scope:'/'});
-      var permission=await Notification.requestPermission();
+      var permission=await Promise.race([Notification.requestPermission(),new Promise(function(_,reject){setTimeout(function(){reject(Error('افتح السماح من إعدادات المتصفح ثم حاول مرة أخرى'))},12000)})]);
       if(permission!=='granted')throw Error('لم يتم السماح بالإشعارات من المتصفح');
       var sub=await reg.pushManager.getSubscription();
       if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToBytes(key.publicKey)});
