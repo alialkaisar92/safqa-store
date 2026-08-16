@@ -43,46 +43,41 @@ function safeName(value) { return String(value || '').replace(/[<>]/g, '').slice
 function otpHtml(title, name, code, purpose) { return '<!doctype html><html lang="ar" dir="rtl"><body style="margin:0;background:#f4faf8;padding:24px;font-family:Arial,sans-serif;color:#153b36"><div style="max-width:560px;margin:auto;background:#fff;border:1px solid #dceee9;border-radius:18px;padding:28px;text-align:right"><h2 style="color:#087f5b;margin-top:0">Rab7na</h2><p>مرحبًا ' + safeName(name) + '،</p><p>' + purpose + '</p><div style="margin:24px 0;padding:18px;text-align:center;background:#effaf6;border-radius:14px;font-size:34px;letter-spacing:9px;font-weight:800;color:#087f5b">' + code + '</div><p>صلاحية الرمز <b>10 دقائق</b>. لا تشاركه مع أي شخص.</p><p style="font-size:12px;color:#6b7f7b">إذا لم تطلب هذه العملية، يمكنك تجاهل الرسالة بأمان.</p></div></body></html>'; }
 async function sendEmail({ email, name, code, subject, purpose }) {
   const smtpHost = String(process.env.EMAIL_HOST || '').trim();
-  if (smtpHost) {
-    try {
-      const nodemailer = require('nodemailer');
-      const smtpPort = Number(process.env.EMAIL_PORT || 587);
-      const smtpSecure = String(process.env.EMAIL_SECURE || '').trim().toLowerCase() === 'true' || smtpPort === 465;
-      const smtpUser = String(process.env.EMAIL_USER || '').trim();
-      const smtpPassword = String(process.env.EMAIL_PASSWORD || '').replace(/\s+/g, '');
-      if (!smtpUser || !smtpPassword) throw new Error('SMTP credentials are missing');
-      const transporter = nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpSecure,
-        requireTLS: !smtpSecure,
-        auth: { user: smtpUser, pass: smtpPassword },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000,
-        tls: { minVersion: 'TLSv1.2', servername: smtpHost }
-      });
-      await transporter.verify();
-      await transporter.sendMail({ from: process.env.EMAIL_FROM || smtpUser, to: email, subject, text: 'رمزك في Rab7na هو ' + code + '. صالح لمدة 10 دقائق.', html: otpHtml(subject, name, code, purpose) });
-      return { ok: true, provider: 'smtp' };
-    } catch (e) { console.error('smtp email failed:', e.message); }
+  const smtpPort = Number(process.env.EMAIL_PORT || 465);
+  const smtpSecure = String(process.env.EMAIL_SECURE || '').trim().toLowerCase() === 'true' || smtpPort === 465;
+  const smtpUser = String(process.env.EMAIL_USER || '').trim();
+  const smtpPassword = String(process.env.EMAIL_PASSWORD || '').replace(/\s+/g, '');
+  if (!smtpHost || !smtpUser || !smtpPassword) {
+    console.error('smtp email failed: required Gmail SMTP environment variable is missing');
+    return { ok: false, reason: 'تعذر إرسال كود التحقق حاليًا. أضف إعدادات Gmail SMTP في Vercel Production.' };
   }
-  const key = String(process.env.RESEND_API_KEY || '').trim();
-  if (!key) return { ok: false, reason: 'أضف إعدادات SMTP EMAIL_HOST وEMAIL_USER وEMAIL_PASSWORD أو RESEND_API_KEY' };
-  const configuredFrom = String(process.env.RESEND_FROM || '').trim();
-  // Resend's shared onboarding sender must be used exactly as-is; display-name variants may be rejected as unverified.
-  const from = /onboarding@resend\.dev/i.test(configuredFrom) ? 'onboarding@resend.dev' : (configuredFrom || 'onboarding@resend.dev');
-  const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], subject, html: otpHtml(subject, name, code, purpose) }) });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) {
-    const detail = String(data.message || data.name || data.error || '').toLowerCase();
-    let reason = 'خدمة البريد رفضت إرسال الرسالة';
-    if (r.status === 401 || detail.includes('api key') || detail.includes('unauthorized')) reason = 'مفتاح خدمة البريد غير صحيح أو غير موجود في Vercel Production';
-    else if (detail.includes('domain') || detail.includes('sender') || detail.includes('from')) reason = 'عنوان المرسل غير موثّق في Resend؛ استخدم SMTP أو وثّق نطاق الإرسال';
-    else if (detail.includes('recipient') || detail.includes('only send') || detail.includes('resend.dev')) reason = 'Resend في الوضع التجريبي لا يسمح بهذا المستلم؛ استخدم SMTP أو وثّق نطاق الإرسال';
-    return { ok: false, status: r.status, reason, data };
+  try {
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpSecure,
+      requireTLS: !smtpSecure,
+      auth: { user: smtpUser, pass: smtpPassword },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+      tls: { minVersion: 'TLSv1.2', servername: smtpHost }
+    });
+    await transporter.verify();
+    await transporter.sendMail({
+      from: String(process.env.EMAIL_FROM || smtpUser).trim(),
+      to: email,
+      subject,
+      text: 'رمزك في Rab7na هو ' + code + '. صالح لمدة 10 دقائق.',
+      html: otpHtml(subject, name, code, purpose)
+    });
+    return { ok: true, provider: 'smtp' };
+  } catch (e) {
+    const message = String(e && e.message || 'unknown SMTP error').replace(/\b\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\b/g, '[redacted]');
+    console.error('smtp email failed:', message);
+    return { ok: false, reason: 'تعذر إرسال كود التحقق حاليًا. حاول مرة أخرى بعد قليل.' };
   }
-  return { ok: true, provider: 'resend', data };
 }
 async function sendVerificationEmail(email, name, code) { return sendEmail({ email, name, code, subject: 'كود تفعيل حسابك في Rab7na', purpose: 'استخدم الرمز التالي لتفعيل حسابك:' }); }
 async function sendPasswordResetEmail(email, name, code) { return sendEmail({ email, name, code, subject: 'رمز تغيير كلمة المرور في Rab7na', purpose: 'استخدم الرمز التالي لتعيين كلمة مرور جديدة:' }); }
