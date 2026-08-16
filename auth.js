@@ -42,6 +42,11 @@ function codeHash(code) { return crypto.createHash('sha256').update('rab7na-veri
 function safeName(value) { return String(value || '').replace(/[<>]/g, '').slice(0, 80); }
 function otpHtml(title, name, code, purpose) { return '<!doctype html><html lang="ar" dir="rtl"><body style="margin:0;background:#f4faf8;padding:24px;font-family:Arial,sans-serif;color:#153b36"><div style="max-width:560px;margin:auto;background:#fff;border:1px solid #dceee9;border-radius:18px;padding:28px;text-align:right"><h2 style="color:#087f5b;margin-top:0">Rab7na</h2><p>مرحبًا ' + safeName(name) + '،</p><p>' + purpose + '</p><div style="margin:24px 0;padding:18px;text-align:center;background:#effaf6;border-radius:14px;font-size:34px;letter-spacing:9px;font-weight:800;color:#087f5b">' + code + '</div><p>صلاحية الرمز <b>10 دقائق</b>. لا تشاركه مع أي شخص.</p><p style="font-size:12px;color:#6b7f7b">إذا لم تطلب هذه العملية، يمكنك تجاهل الرسالة بأمان.</p></div></body></html>'; }
 async function sendEmail({ email, name, code, subject, purpose }) {
+  const recipient = String(email || '').trim().toLowerCase();
+  if (!isEmail(recipient)) {
+    console.error('smtp email failed: invalid recipient email');
+    return { ok: false, reason: 'أدخل بريدًا إلكترونيًا صحيحًا لإرسال كود التحقق.' };
+  }
   const smtpHost = String(process.env.EMAIL_HOST || '').trim();
   const smtpPort = Number(process.env.EMAIL_PORT || 465);
   const smtpSecure = String(process.env.EMAIL_SECURE || '').trim().toLowerCase() === 'true' || smtpPort === 465;
@@ -65,9 +70,13 @@ async function sendEmail({ email, name, code, subject, purpose }) {
       tls: { minVersion: 'TLSv1.2', servername: smtpHost }
     });
     await transporter.verify();
+    const configuredFrom = String(process.env.EMAIL_FROM || '').trim();
+    const fromAddress = configuredFrom || smtpUser;
     await transporter.sendMail({
-      from: String(process.env.EMAIL_FROM || smtpUser).trim(),
-      to: email,
+      from: fromAddress,
+      to: recipient,
+      replyTo: smtpUser,
+      envelope: { from: smtpUser, to: recipient },
       subject,
       text: 'رمزك في Rab7na هو ' + code + '. صالح لمدة 10 دقائق.',
       html: otpHtml(subject, name, code, purpose)
