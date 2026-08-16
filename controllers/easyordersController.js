@@ -28,8 +28,8 @@ function mapProduct(raw) {
   if (!image && Array.isArray(raw.images) && raw.images[0]) {
     image = raw.images[0].url || raw.images[0].path || raw.images[0];
   }
-  const qty = raw.quantity != null ? Number(raw.quantity) : null;
-  const inStock = raw.track_stock ? (qty == null || qty > 0) : true;
+  const qty = raw.quantity != null && Number.isFinite(Number(raw.quantity)) ? Math.max(0, Number(raw.quantity)) : null;
+  const inStock = raw.track_stock ? (qty != null && qty > 0) : false;
   return {
     eo_product_id: String(raw.id),
     name: raw.name || '',

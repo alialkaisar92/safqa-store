@@ -91,7 +91,7 @@ async function getToken(token) {
 async function deleteToken(token) { if (token) await deleteDoc('authTokens', token); }
 
 async function getAffiliateData() {
-  const [orders, withdrawals, products, tickets, meta] = await Promise.all([
+  const [orders, products, withdrawals, tickets, meta] = await Promise.all([
     all('orders'), all('affiliateProducts'), all('withdrawals'), all('tickets'),
     getDb().collection('affiliateMeta').doc('main').get()
   ]);
