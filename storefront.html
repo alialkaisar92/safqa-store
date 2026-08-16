@@ -432,19 +432,27 @@ function openAcct(){
   else { acctLoadDashboard(); }
   openM('acct');
 }
+var acctPendingEmail='';
 function acctAuthView(mode){
   var b=document.getElementById('acctBody');
-  b.innerHTML =
-    '<h3 class="pm-name">'+(mode==='login'?'تسجيل الدخول':'إنشاء حساب مسوّق')+'</h3>'+
-    (mode==='reg' ? '<label>الاسم</label><input class="field" id="aName">' : '') +
-    '<label>رقم الهاتف أو الإيميل</label><input class="field" id="aContact">'+
-    '<label>كلمة السر</label><input class="field" id="aPass" type="password">'+
-    '<button class="addbtn" onclick="'+(mode==='login'?'acctDoLogin()':'acctDoReg()')+'" style="margin-top:14px">'+(mode==='login'?'دخول':'إنشاء الحساب')+'</button>'+
-    '<div class="msg" id="aMsg"></div>'+
-    '<div style="text-align:center;margin-top:14px;font-size:.82rem;color:var(--muted)">'+
-      (mode==='login' ? 'مالكش حساب؟ <a href="#" onclick="acctAuthView(\'reg\');return false" style="color:var(--forest-d);font-weight:800">أنشئ واحد</a>' : 'عندك حساب؟ <a href="#" onclick="acctAuthView(\'login\');return false" style="color:var(--forest-d);font-weight:800">سجّل دخول</a>')+
-    '</div>';
+  b.innerHTML = '<h3 class="pm-name">'+(mode==='login'?'تسجيل الدخول':'إنشاء حساب مسوّق')+'</h3>'+
+    (mode==='login' ?
+      '<label>البريد أو رقم الهاتف أو اسم المستخدم</label><input class="field" id="aContact" autocomplete="username" placeholder="أدخل بيانات الدخول">'+
+      '<label>كلمة السر</label><input class="field" id="aPass" type="password" autocomplete="current-password" placeholder="كلمة المرور">'+
+      '<button class="addbtn" onclick="acctDoLogin()" style="margin-top:14px">دخول</button>' :
+      '<p style="color:var(--muted);font-size:.78rem;line-height:1.7;margin:0 0 8px">أنشئ حسابك كمسوّق، وسنرسل رمز تفعيل إلى بريدك الإلكتروني.</p>'+
+      '<label>البريد الإلكتروني</label><input class="field" id="aEmail" type="email" autocomplete="email" placeholder="name@example.com">'+
+      '<label>رقم الموبايل</label><input class="field" id="aPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="01xxxxxxxxx">'+
+      '<label>اسم المستخدم</label><input class="field" id="aUsername" autocomplete="username" placeholder="مثال: ahmed_2026">'+
+      '<label>كلمة المرور</label><input class="field" id="aPass" type="password" autocomplete="new-password" placeholder="6 أحرف على الأقل">'+
+      '<label>إعادة كتابة كلمة المرور</label><input class="field" id="aPass2" type="password" autocomplete="new-password" placeholder="أعد كتابة كلمة المرور">'+
+      '<button class="addbtn" onclick="acctDoReg()" style="margin-top:14px">إنشاء الحساب وإرسال الرمز</button>')+
+    '<div class="msg" id="aMsg"></div><div style="text-align:center;margin-top:14px;font-size:.82rem;color:var(--muted)">'+
+      (mode==='login' ? 'مالكش حساب؟ <a href="#" onclick="acctAuthView(\'reg\');return false" style="color:var(--forest-d);font-weight:800">أنشئ واحد</a>' : 'عندك حساب؟ <a href="#" onclick="acctAuthView(\'login\');return false" style="color:var(--forest-d);font-weight:800">سجّل دخول</a>')+'</div>';
 }
+function acctVerifyView(note){var b=document.getElementById('acctBody');b.innerHTML='<h3 class="pm-name">فعّل حسابك</h3><p style="color:var(--muted);font-size:.8rem;line-height:1.8">'+note+'<br><b>'+acctPendingEmail+'</b></p><label>رمز التحقق المكوّن من 6 أرقام</label><input class="field" id="aCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000"><button class="addbtn" onclick="acctVerifyCode()" style="margin-top:14px">تفعيل الحساب</button><button type="button" onclick="acctResendCode()" style="width:100%;margin-top:8px;background:#fff;color:var(--forest-d);border:1px solid #cfe1dc;border-radius:12px;padding:10px;font-weight:800">إعادة إرسال الرمز</button><div class="msg" id="aMsg"></div>';}
+function acctVerifyCode(){var code=(document.getElementById('aCode').value||'').trim();if(!/^\d{6}$/.test(code))return acctMsg('اكتب الرمز المكوّن من 6 أرقام',false);fetch('/api/auth/email/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:acctPendingEmail,code:code})}).then(function(r){return r.json()}).then(function(d){if(d.ok){localStorage.setItem('etok',d.token);localStorage.setItem('euser',JSON.stringify(d.user));updProfileBtn();acctLoadDashboard()}else acctMsg(d.error||'رمز غير صحيح',false)}).catch(function(){acctMsg('تعذر الاتصال',false)})}
+function acctResendCode(){fetch('/api/auth/email/resend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:acctPendingEmail})}).then(function(r){return r.json()}).then(function(d){acctMsg(d.message||d.error||'تعذر إعادة الإرسال',!!d.ok)}).catch(function(){acctMsg('تعذر الاتصال',false)})}
 function acctMsg(t,ok){var e=document.getElementById('aMsg');if(e){e.textContent=t||'';e.className='msg '+(ok?'ok':'err');}}
 function acctDoLogin(){
   var contact=document.getElementById('aContact').value.trim(), pass=document.getElementById('aPass').value;
@@ -456,13 +464,13 @@ function acctDoLogin(){
   }).catch(function(){acctMsg('تعذر الاتصال',false)});
 }
 function acctDoReg(){
-  var name=document.getElementById('aName').value.trim(), contact=document.getElementById('aContact').value.trim(), pass=document.getElementById('aPass').value;
-  if(!name||!contact||!pass) return acctMsg('اكمل البيانات',false);
-  fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,contact:contact,password:pass})})
-  .then(function(r){return r.json()}).then(function(d){
-    if(d.ok){ localStorage.setItem('etok',d.token); localStorage.setItem('euser',JSON.stringify(d.user)); updProfileBtn(); acctLoadDashboard(); }
-    else acctMsg(d.error||'فشل إنشاء الحساب',false);
-  }).catch(function(){acctMsg('تعذر الاتصال',false)});
+  var email=(document.getElementById('aEmail').value||'').trim().toLowerCase(), phone=(document.getElementById('aPhone').value||'').trim(), username=(document.getElementById('aUsername').value||'').trim(), pass=document.getElementById('aPass').value, pass2=document.getElementById('aPass2').value;
+  if(!email||!phone||!username||!pass||!pass2) return acctMsg('أكمل بيانات التسجيل كلها',false);
+  if(!/^\S+@\S+\.\S+$/.test(email)) return acctMsg('اكتب بريدًا إلكترونيًا صحيحًا',false);
+  if(!/^01\d{9}$/.test(phone)) return acctMsg('رقم الموبايل يجب أن يكون 11 رقمًا ويبدأ بـ 01',false);
+  if(pass.length<6) return acctMsg('كلمة المرور 6 أحرف على الأقل',false);
+  if(pass!==pass2) return acctMsg('كلمتا المرور غير متطابقتين',false);
+  fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,phone:phone,username:username,name:username,display_name:username,password:pass,password2:pass2})}).then(function(r){return r.json()}).then(function(d){if(d.verificationRequired){acctPendingEmail=d.email||email;acctVerifyView(d.message||'تم إرسال رمز التحقق إلى بريدك')}else if(d.ok){localStorage.setItem('etok',d.token);localStorage.setItem('euser',JSON.stringify(d.user));updProfileBtn();acctLoadDashboard()}else acctMsg(d.error||'فشل إنشاء الحساب',false)}).catch(function(){acctMsg('تعذر الاتصال بخدمة التسجيل',false)});
 }
 function acctLogout(){ localStorage.removeItem('etok'); localStorage.removeItem('euser'); acctAuthView('login'); updProfileBtn(); }
 function acctLoadDashboard(){
