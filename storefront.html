@@ -38,7 +38,7 @@ html[data-theme="pharaoh"] .card,html[data-theme="pharaoh"] .sheet,html[data-the
 html[data-theme="pharaoh"] .cart-btn{background:linear-gradient(135deg,#E8C766,#C9A227);color:#120E07}
 html[data-theme="pharaoh"] .addbtn{background:linear-gradient(135deg,#E8C766,#C9A227);color:#120E07}
 html[data-theme="pharaoh"] .stamp{border-color:var(--forest);color:var(--forest-d);background:rgba(201,162,39,.08)}
-.theme-toggle{position:fixed;bottom:150px;left:16px;z-index:60;background:var(--paper);border:1.6px solid var(--line);border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;box-shadow:0 6px 16px rgba(0,0,0,.15)}
+.theme-toggle{position:fixed;top:84px;right:16px;left:auto;z-index:70;background:var(--paper);border:1.6px solid var(--line);border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;box-shadow:0 6px 16px rgba(0,0,0,.15)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
 body{font-family:Cairo,system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.55;padding-bottom:74px}
@@ -85,10 +85,15 @@ header{position:sticky;top:0;z-index:50;background:var(--paper);border-bottom:1p
 main{max-width:640px;margin:0 auto;padding:16px}
   .sec-t{font-size:1.15rem;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
   .sec-t small{font-family:Cairo;font-size:.72rem;color:var(--muted);font-weight:700}
-  .store-tools{display:flex;gap:8px;align-items:center;margin:-2px 0 14px;flex-wrap:wrap}
-  .sorter,.stock-filter{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:10px;padding:8px 10px;font-size:.76rem;font-weight:700;outline:none}
+  .store-tools{position:relative;display:flex;justify-content:flex-start;align-items:center;margin:-2px 0 18px}
+  .filter-toggle{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:9px 14px;font-size:.78rem;font-weight:800;box-shadow:0 5px 16px rgba(15,23,42,.04)}
+  .filter-toggle.on{border-color:var(--leaf);background:var(--mint);color:var(--forest-d)}
+  .filter-panel{display:none;position:absolute;top:calc(100% + 8px);right:0;z-index:20;width:min(280px,calc(100vw - 32px));padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--paper);box-shadow:0 16px 34px rgba(15,23,42,.12)}
+  .filter-panel.open{display:grid;gap:10px}
+  .filter-panel label{margin:0;font-size:.72rem}
+  .sorter,.stock-filter{width:100%;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:10px;padding:8px 10px;font-size:.76rem;font-weight:700;outline:none}
   .stock-filter{cursor:pointer}.stock-filter.on{background:var(--mint);border-color:var(--leaf);color:var(--forest-d)}
-  .live-note{font-size:.7rem;color:var(--muted);margin-right:auto;display:flex;align-items:center;gap:5px}.live-dot{width:7px;height:7px;background:var(--leaf);border-radius:50%;display:inline-block}
+  .live-note{font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:5px}.live-dot{width:7px;height:7px;background:var(--leaf);border-radius:50%;display:inline-block}
   .card .stock{display:flex;align-items:center;gap:4px}
   .card .stock::before{content:'•';font-size:1.1rem;line-height:0}.stock-out::before{color:var(--danger)}.stock-low::before{color:var(--warn)}.stock-ok::before{color:var(--leaf)}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
@@ -182,17 +187,9 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
   <button class="ship-link" type="button" onclick="openShippingRates()">🚚 عرض أسعار الشحن حسب المحافظة</button>
 </header>
 
-<div class="hero">
-  <div class="hero-in">
-    <span class="stamp">✓ الدفع عند الاستلام</span>
-    <h1 style="margin-top:12px">تسوّق واستلم لحد باب البيت</h1>
-    <p>منتجات مختارة بعناية — تدفع لما تستلم طلبك من غير أي مقدم</p>
-  </div>
-</div>
-
 <main>
-  <div class="sec-t"><span id="prodTitle">كل المنتجات</span><small>بيانات مباشرة من Safka</small></div>
-  <div class="store-tools"><select class="sorter" id="sorter" onchange="setSort(this.value)" aria-label="ترتيب المنتجات"><option value="featured">الأكثر ملاءمة</option><option value="price-low">السعر: من الأقل</option><option value="price-high">السعر: من الأعلى</option><option value="stock">الأعلى مخزونًا</option></select><button class="stock-filter" id="stockFilter" onclick="toggleStockFilter()">المتاح فقط</button><span class="live-note"><i class="live-dot"></i> مخزون محدث</span></div>
+  <div class="sec-t"><span id="prodTitle">كل المنتجات</span></div>
+  <div class="store-tools"><button class="filter-toggle" id="filterToggle" type="button" onclick="toggleFilterPanel()">☷ الفلتر</button><div class="filter-panel" id="filterPanel"><label for="sorter">ترتيب المنتجات</label><select class="sorter" id="sorter" onchange="setSort(this.value)" aria-label="ترتيب المنتجات"><option value="featured">الأكثر ملاءمة</option><option value="price-low">السعر: من الأقل</option><option value="price-high">السعر: من الأعلى</option><option value="stock">الأعلى مخزونًا</option></select><button class="stock-filter" id="stockFilter" type="button" onclick="toggleStockFilter()">المتاح فقط</button><span class="live-note"><i class="live-dot"></i> مخزون محدث من المصدر</span></div></div>
   <div class="grid" id="mainGrid">
     <div class="skel-i"><div class="skel-img"></div><div class="skel-t"></div><div class="skel-p"></div></div>
     <div class="skel-i"><div class="skel-img"></div><div class="skel-t"></div><div class="skel-p"></div></div>
@@ -256,7 +253,7 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
   <button class="sheet-x" onclick="closeM('shipping')">✕</button>
   <div style="clear:both"></div>
   <h3 class="pm-name">أسعار الشحن في مصر</h3>
-  <p style="font-size:.76rem;color:var(--muted);margin-bottom:10px">الأسعار المعروضة محدثة من قائمة Safka الحالية وقد تختلف حسب المدينة أو تحديث شركة الشحن.</p>
+  <p style="font-size:.76rem;color:var(--muted);margin-bottom:10px">الأسعار المعروضة محدثة من القائمة الحالية وقد تختلف حسب المدينة أو تحديث شركة الشحن.</p>
   <div id="shippingBody"><div style="text-align:center;color:var(--muted);padding:20px">جاري تحميل الأسعار...</div></div>
 </div></div>
 
@@ -365,7 +362,7 @@ function openP(i){cur=P[i];qty=1;
   var stockEl=document.getElementById('pmStock');
   if(out){ stockEl.textContent='نفذ من المخزون'; stockEl.style.color='var(--danger)'; }
   else if(cur.stock && cur.stock<10){ stockEl.textContent='الكمية المتوفرة: '+cur.stock; stockEl.style.color='var(--warn)'; }
-  else{ stockEl.textContent='متوفر في المصدر الأصلي ('+Number(cur.stock).toLocaleString('ar-EG')+')'; stockEl.style.color='var(--leaf)'; }
+  else{ stockEl.textContent='متوفر ('+Number(cur.stock).toLocaleString('ar-EG')+')'; stockEl.style.color='var(--leaf)'; }
   var drive=document.getElementById('pmDrive');
   var mediaUrl=cur.media||cur.media_url||cur.mediaVideo||cur.media_video||cur.mediaImages||cur.media_images||'';
   if(mediaUrl){ drive.href=mediaUrl; drive.style.display='flex'; } else { drive.style.display='none'; }
@@ -373,7 +370,7 @@ function openP(i){cur=P[i];qty=1;
 }
 function chQ(d){var max=cur&&cur.stock!=null?Number(cur.stock):0;qty=Math.max(1,Math.min(Math.max(1,max),qty+d));document.getElementById('qV').textContent=qty;}
 function addToCart(){
-  if(!cur || cur.available===false || cur.stock==null || Number(cur.stock)<=0){ ehToastLocal('المنتج غير متاح حاليًا من المصدر الأصلي'); return; }
+  if(!cur || cur.available===false || cur.stock==null || Number(cur.stock)<=0){ ehToastLocal('المنتج غير متاح حاليًا'); return; }
   if(qty>Number(cur.stock)){ ehToastLocal('الكمية المطلوبة أكبر من المخزون الأصلي'); return; }
   var ex=cart.find(function(c){return c.id===cur.id});
   if(ex) ex.qty+=qty; else cart.push({id:cur.id,propId:cur.propId||'',name:cur.name,price:Number(cur.price)||0,basePrice:Number(cur.basePrice!=null?cur.basePrice:cur.price)||0,finalPrice:Number(cur.price)||0,image:cur.image,qty:qty});
@@ -394,6 +391,7 @@ function openCart(){
 }
 function rmC(i){cart.splice(i,1);updCC();openCart();}
 
+function toggleFilterPanel(){var panel=document.getElementById('filterPanel'),btn=document.getElementById('filterToggle');if(!panel)return;var open=panel.classList.toggle('open');if(btn)btn.classList.toggle('on',open);}
 var shipCost=0;
 function openShippingRates(){openM('shipping');var body=document.getElementById('shippingBody');if(!body)return;body.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">جاري تحميل الأسعار...</div>';fetch('/api/price-list').then(function(r){return r.json()}).then(function(rows){rows=Array.isArray(rows)?rows:[];if(!rows.length){body.innerHTML='<div class="empty">لا توجد أسعار متاحة حاليًا.</div>';return;}body.innerHTML='<div style="overflow:auto"><table class="shipping-table"><thead><tr><th>المحافظة</th><th>السعر</th><th>أمثلة من المدن</th></tr></thead><tbody>'+rows.map(function(x){var cities=(x.cities||[]).slice(0,4).map(function(c){return c.name||c.city_name_ar||''}).filter(Boolean).join('، ');return '<tr><td>'+String(x.name||x.governorateNameAr||'').replace(/[<>]/g,'')+'</td><td class="shipping-price">'+fmt(x.price)+'</td><td style="color:var(--muted)">'+String(cities||'حسب التغطية').replace(/[<>]/g,'')+'</td></tr>';}).join('')+'</tbody></table></div>';}).catch(function(){body.innerHTML='<div class="msg err">تعذر تحميل قائمة الشحن حاليًا.</div>';});}
 function loadGovs(){

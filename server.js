@@ -293,7 +293,7 @@ app.all('/api/safka/sync', async (req, res) => {
   if (secret && supplied !== secret && !isVercelCron) return res.status(401).json({ error: 'غير مصرح' });
   if (!secret && !isVercelCron && process.env.NODE_ENV === 'production') return res.status(503).json({ error: 'اضبط SAFKA_SYNC_SECRET أو Vercel Cron' });
   try { res.json(await safkaSync.runSync({ notify: true })); }
-  catch (e) { res.status(500).json({ error: 'فشلت مزامنة Safka', details: e.message }); }
+  catch (e) { res.status(500).json({ error: 'فشلت مزامنة المنتجات', details: e.message }); }
 });
 
 app.get('/api/price-list', async (req,res)=>{
@@ -327,7 +327,7 @@ app.get('/api/price-list', async (req,res)=>{
 
 
 app.post('/api/create-order', async (req,res)=>{
-  if(!API_KEY.trim())return res.status(503).json({error:'إعدادات الطلب غير مكتملة: مفتاح Safka غير مضبوط على Vercel. أضف SAFKA_API_KEY ثم أعد المحاولة.'});
+  if(!API_KEY.trim())return res.status(503).json({error:'إعدادات الطلب غير مكتملة حاليًا. يرجى المحاولة لاحقًا.'});
   const b=req.body||{};
   const gov=(b.shipping_governorate||'').toString().trim();
   let govId=gov;
