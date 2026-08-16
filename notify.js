@@ -71,19 +71,21 @@ module.exports = function (app) {
     });
     let delivered = 0;
     let removed = 0;
+    const errors = [];
     await Promise.all(selected.map(async row => {
       try {
         await webpush.sendNotification(row.subscription, payload);
         delivered++;
       } catch (e) {
         const status = Number(e.statusCode || 0);
+        errors.push({ id: String(row.id || ''), status, message: String(e.body || e.message || e).slice(0, 240) });
         if (status === 404 || status === 410) {
           await store.getDb().collection('pushSubscriptions').doc(String(row.id)).delete().catch(() => {});
           removed++;
         }
       }
     }));
-    return { ok: delivered > 0, delivered, removed, channel: 'web-push' };
+    return { ok: delivered > 0, delivered, removed, failed: errors.length, errors: errors.slice(0, 5), channel: 'web-push' };
   }
 
   async function sendOneSignal(options) {
