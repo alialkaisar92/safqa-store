@@ -11,6 +11,8 @@ const safkaSync = require('./safka-sync');
 const { availableBalance } = require('./balance');
 app.use(express.json({limit:'50mb'}));
 
+app.get('/', (req, res) => res.redirect(302, '/store'));
+
 const crypto = require('crypto');
 const firestore = require('./firestore');
 function authReqToken(req){const h=String(req.headers.authorization||'');return String(req.headers['x-auth-token']||req.headers['x-sq-token']||(h.toLowerCase().indexOf('bearer ')===0?h.slice(7):'')||'').trim();}
