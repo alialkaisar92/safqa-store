@@ -311,10 +311,21 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
       var user=JSON.parse(localStorage.getItem('euser')||'null'),uid=user&&user.id?String(user.id):'';
       if(uid&&OS.login)return OS.login(uid).then(function(){return OS});return OS;
     }).then(function(OS){
-      var u=OS.getUser?OS.getUser():null;var sub=u&&u.getPushSubscription?u.getPushSubscription():null;var id=sub&&sub.id;
-      if(!id)throw Error('لم يتم السماح بعد');
-      return fetch('/api/notifications/register',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token()},body:JSON.stringify({playerId:id,externalId:(JSON.parse(localStorage.getItem('euser')||'null')||{}).id||''})}).then(function(){showState(b,'✅ الإشعارات مفعّلة',true);if(window.rab7naNoticeSound)window.rab7naNoticeSound()});
-    }).catch(function(e){showState(b,e&&e.message==='لم يتم السماح بعد'?'اضغط للسماح من المتصفح':'🔔 حاول التفعيل مرة أخرى',false)});
+      function readId(){
+        var ps=OS.User&&OS.User.PushSubscription;
+        return ps&&ps.id?String(ps.id):'';
+      }
+      function waitForId(left){
+        var id=readId();
+        if(id)return Promise.resolve(id);
+        if(left<=0)return Promise.reject(Error('لم يتم السماح بعد'));
+        return new Promise(function(resolve){setTimeout(resolve,500)}).then(function(){return waitForId(left-1)});
+      }
+      return waitForId(16).then(function(id){
+        var eu=JSON.parse(localStorage.getItem('euser')||'null')||{};
+        return fetch('/api/notifications/register',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token()},body:JSON.stringify({playerId:id,externalId:eu.id||''})}).then(function(r){if(!r.ok)throw Error('تعذر تسجيل جهازك للإشعارات');return r});
+      }).then(function(){showState(b,'✅ الإشعارات مفعّلة',true);if(window.rab7naNoticeSound)window.rab7naNoticeSound()});
+    }).catch(function(e){showState(b,e&&e.message?e.message:'🔔 حاول التفعيل مرة أخرى',false)});
   }
   window.rab7naEnablePush=enable;
   setInterval(addButton,1200);setTimeout(addButton,500);
