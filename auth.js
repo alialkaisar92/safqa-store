@@ -34,40 +34,40 @@ global.requireAuth = function (req, res, next) {
 };
 function pub(u) { return { id: u.id, username: u.username || u.contact, display_name: u.display_name || u.name, name: u.name || u.display_name, contact: u.contact || u.username, phone: u.phone || u.contact, email: u.email || '', balance: u.balance || 0, role: u.role || '', isAdmin: !!u.isAdmin, permissions: Array.isArray(u.permissions) ? u.permissions : [] }; }
 const WELCOME_BONUS = 70;
+const OTP_TTL_MS = 10 * 60 * 1000;
+const OTP_RESEND_GAP_MS = 60 * 1000;
+const OTP_MAX_ATTEMPTS = 5;
 function isEmail(value) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim()); }
 function codeHash(code) { return crypto.createHash('sha256').update('rab7na-verification:' + String(code)).digest('hex'); }
-async function sendVerificationEmail(email, name, code) {
+function safeName(value) { return String(value || '').replace(/[<>]/g, '').slice(0, 80); }
+function otpHtml(title, name, code, purpose) { return '<!doctype html><html lang="ar" dir="rtl"><body style="margin:0;background:#f4faf8;padding:24px;font-family:Arial,sans-serif;color:#153b36"><div style="max-width:560px;margin:auto;background:#fff;border:1px solid #dceee9;border-radius:18px;padding:28px;text-align:right"><h2 style="color:#087f5b;margin-top:0">Rab7na</h2><p>مرحبًا ' + safeName(name) + '،</p><p>' + purpose + '</p><div style="margin:24px 0;padding:18px;text-align:center;background:#effaf6;border-radius:14px;font-size:34px;letter-spacing:9px;font-weight:800;color:#087f5b">' + code + '</div><p>صلاحية الرمز <b>10 دقائق</b>. لا تشاركه مع أي شخص.</p><p style="font-size:12px;color:#6b7f7b">إذا لم تطلب هذه العملية، يمكنك تجاهل الرسالة بأمان.</p></div></body></html>'; }
+async function sendEmail({ email, name, code, subject, purpose }) {
+  const smtpHost = String(process.env.EMAIL_HOST || '').trim();
+  if (smtpHost) {
+    try {
+      const nodemailer = require('nodemailer');
+      const transporter = nodemailer.createTransport({ host: smtpHost, port: Number(process.env.EMAIL_PORT || 587), secure: String(process.env.EMAIL_SECURE || '').toLowerCase() === 'true' || Number(process.env.EMAIL_PORT) === 465, auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD } });
+      await transporter.sendMail({ from: process.env.EMAIL_FROM || process.env.EMAIL_USER, to: email, subject, text: 'رمزك في Rab7na هو ' + code + '. صالح لمدة 10 دقائق.', html: otpHtml(subject, name, code, purpose) });
+      return { ok: true, provider: 'smtp' };
+    } catch (e) { console.error('smtp email failed:', e.message); return { ok: false, reason: 'تعذر الاتصال بخدمة SMTP؛ راجع متغيرات البريد في Vercel Production' }; }
+  }
   const key = String(process.env.RESEND_API_KEY || '').trim();
-  if (!key) return { ok: false, reason: 'RESEND_API_KEY غير مضبوط' };
+  if (!key) return { ok: false, reason: 'أضف إعدادات SMTP EMAIL_HOST وEMAIL_USER وEMAIL_PASSWORD أو RESEND_API_KEY' };
   const from = process.env.RESEND_FROM || 'Rab7na <onboarding@resend.dev>';
-  const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], subject: 'كود تفعيل حسابك في rab7na', html: '<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.8"><h2>أهلاً بك في rab7na</h2><p>استخدم الكود التالي لتفعيل حسابك:</p><div style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#087f5b">' + code + '</div><p>صلاحية الكود 10 دقائق. لا تشارك الكود مع أي شخص.</p></div>' }) });
+  const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], subject, html: otpHtml(subject, name, code, purpose) }) });
   const data = await r.json().catch(() => ({}));
   if (!r.ok) {
     const detail = String(data.message || data.name || data.error || '').toLowerCase();
     let reason = 'خدمة البريد رفضت إرسال الرسالة';
     if (r.status === 401 || detail.includes('api key') || detail.includes('unauthorized')) reason = 'مفتاح خدمة البريد غير صحيح أو غير موجود في Vercel Production';
-    else if (detail.includes('domain') || detail.includes('sender') || detail.includes('from')) reason = 'عنوان المرسل غير موثّق في Resend؛ أضف RESEND_FROM من نطاق موثّق';
-    else if (detail.includes('recipient') || detail.includes('only send') || detail.includes('resend.dev')) reason = 'Resend في الوضع التجريبي لا يسمح بهذا المستلم؛ وثّق نطاق الإرسال أولًا';
+    else if (detail.includes('domain') || detail.includes('sender') || detail.includes('from')) reason = 'عنوان المرسل غير موثّق في Resend؛ استخدم SMTP أو وثّق نطاق الإرسال';
+    else if (detail.includes('recipient') || detail.includes('only send') || detail.includes('resend.dev')) reason = 'Resend في الوضع التجريبي لا يسمح بهذا المستلم؛ استخدم SMTP أو وثّق نطاق الإرسال';
     return { ok: false, status: r.status, reason, data };
   }
-  return { ok: true, data };
+  return { ok: true, provider: 'resend', data };
 }
-async function sendPasswordResetEmail(email, name, code) {
-  const key = String(process.env.RESEND_API_KEY || '').trim();
-  if (!key) return { ok: false, reason: 'RESEND_API_KEY غير مضبوط' };
-  const from = process.env.RESEND_FROM || 'rab7na <onboarding@resend.dev>';
-  const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], subject: 'رمز تغيير كلمة المرور في rab7na', html: '<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.8"><h2>تغيير كلمة المرور</h2><p>مرحبًا ' + String(name || '').replace(/[<>]/g, '') + '، استخدم الرمز التالي لتعيين كلمة مرور جديدة:</p><div style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#087f5b">' + code + '</div><p>صلاحية الرمز 10 دقائق. إذا لم تطلب ذلك تجاهل الرسالة.</p></div>' }) });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) {
-    const detail = String(data.message || data.name || data.error || '').toLowerCase();
-    let reason = 'خدمة البريد رفضت إرسال الرسالة';
-    if (r.status === 401 || detail.includes('api key') || detail.includes('unauthorized')) reason = 'مفتاح خدمة البريد غير صحيح أو غير موجود في Vercel Production';
-    else if (detail.includes('domain') || detail.includes('sender') || detail.includes('from')) reason = 'عنوان المرسل غير موثّق في Resend؛ أضف RESEND_FROM من نطاق موثّق';
-    else if (detail.includes('recipient') || detail.includes('only send') || detail.includes('resend.dev')) reason = 'Resend في الوضع التجريبي لا يسمح بهذا المستلم؛ وثّق نطاق الإرسال أولًا';
-    return { ok: false, status: r.status, reason, data };
-  }
-  return { ok: true, data };
-}
+async function sendVerificationEmail(email, name, code) { return sendEmail({ email, name, code, subject: 'كود تفعيل حسابك في Rab7na', purpose: 'استخدم الرمز التالي لتفعيل حسابك:' }); }
+async function sendPasswordResetEmail(email, name, code) { return sendEmail({ email, name, code, subject: 'رمز تغيير كلمة المرور في Rab7na', purpose: 'استخدم الرمز التالي لتعيين كلمة مرور جديدة:' }); }
 async function findUserByLogin(value) {
   const login = String(value || '').trim().toLowerCase();
   if (!login) return null;
@@ -101,9 +101,11 @@ module.exports = function (app) {
       const existing = await findUserByLogin(email) || await findUserByLogin(username) || await findUserByLogin(phone);
       if (existing) return res.json({ error: 'البريد أو الهاتف أو اسم المستخدم مستخدم بالفعل' });
       const code = String(crypto.randomInt(100000, 1000000));
+      const pendingSnap = await store.getDb().collection('emailVerifications').doc(email).get();
+      if (pendingSnap.exists && Date.now() - Number((pendingSnap.data() || {}).lastSentAt || 0) < OTP_RESEND_GAP_MS) return res.status(429).json({ error: 'تم إرسال كود بالفعل، انتظر دقيقة قبل إعادة المحاولة' });
       const sent = await sendVerificationEmail(email, display, code);
-      if (!sent.ok) { console.error('verification email rejected:', sent.status || '', sent.reason || '', sent.data || ''); return res.status(503).json({ error: sent.reason || 'تعذر إرسال رمز البريد حاليًا، حاول لاحقًا' }); }
-      await store.saveDoc('emailVerifications', email, { id: email, email, name: display, username, phone, pass: hashPw(b.password), codeHash: codeHash(code), expiresAt: Date.now() + 10 * 60 * 1000, createdAt: new Date().toISOString() });
+      if (!sent.ok) { console.error('verification email rejected:', sent.status || '', sent.reason || ''); return res.status(503).json({ error: sent.reason || 'تعذر إرسال رمز البريد حاليًا، حاول لاحقًا' }); }
+      await store.saveDoc('emailVerifications', email, { id: email, email, name: display, username, phone, pass: hashPw(b.password), codeHash: codeHash(code), expiresAt: Date.now() + OTP_TTL_MS, attempts: 0, lastSentAt: Date.now(), createdAt: new Date().toISOString() });
       return res.json({ ok: false, verificationRequired: true, email, message: 'تم إرسال رمز التحقق إلى بريدك، صالح لمدة 10 دقائق' });
     } catch (e) { console.error('register:', e.message); res.status(500).json({ error: 'تعذر إنشاء الحساب حالياً' }); }
   });
@@ -116,7 +118,8 @@ module.exports = function (app) {
       if (!snap.exists) return res.json({ error: 'لا يوجد طلب تفعيل لهذا الإيميل' });
       const pending = snap.data() || {};
       if (Number(pending.expiresAt || 0) < Date.now()) return res.json({ error: 'انتهت صلاحية الكود، اطلب كوداً جديداً' });
-      if (pending.codeHash !== codeHash(code)) return res.json({ error: 'كود التفعيل غير صحيح' });
+      if (Number(pending.attempts || 0) >= OTP_MAX_ATTEMPTS) return res.status(429).json({ error: 'تم تجاوز عدد المحاولات، اطلب كوداً جديداً' });
+      if (pending.codeHash !== codeHash(code)) { await store.saveDoc('emailVerifications', email, { attempts: Number(pending.attempts || 0) + 1 }); return res.json({ error: 'كود التفعيل غير صحيح' }); }
       if (await store.findUserByContact(email)) { await store.deleteDoc('emailVerifications', email); return res.json({ error: 'الحساب موجود، سجّل دخول' }); }
       const u = newUser({ id: Date.now(), username: pending.username || email.split('@')[0], display_name: pending.name || pending.username || email.split('@')[0], name: pending.name || pending.username || email.split('@')[0], contact: email, phone: pending.phone || '', email, pass: pending.pass, emailVerified: true, verifiedAt: new Date().toISOString() });
       await store.saveUser(u); await store.deleteDoc('emailVerifications', email);
@@ -129,10 +132,12 @@ module.exports = function (app) {
       const email = String((req.body || {}).email || '').trim().toLowerCase();
       const snap = await store.getDb().collection('emailVerifications').doc(email).get();
       if (!snap.exists) return res.json({ error: 'ابدأ التسجيل أولاً' });
-      const pending = snap.data() || {}; const code = String(crypto.randomInt(100000, 1000000));
+      const pending = snap.data() || {};
+      if (Date.now() - Number(pending.lastSentAt || 0) < OTP_RESEND_GAP_MS) return res.status(429).json({ error: 'انتظر دقيقة قبل إعادة إرسال الكود' });
+      const code = String(crypto.randomInt(100000, 1000000));
       const sent = await sendVerificationEmail(email, pending.name || email, code);
-      if (!sent.ok) return res.status(503).json({ error: 'خدمة البريد غير متاحة حالياً' });
-      await store.saveDoc('emailVerifications', email, { codeHash: codeHash(code), expiresAt: Date.now() + 10 * 60 * 1000 });
+      if (!sent.ok) return res.status(503).json({ error: sent.reason || 'خدمة البريد غير متاحة حالياً' });
+      await store.saveDoc('emailVerifications', email, { codeHash: codeHash(code), expiresAt: Date.now() + OTP_TTL_MS, attempts: 0, lastSentAt: Date.now() });
       res.json({ ok: true, message: 'تم إرسال كود جديد' });
     } catch (e) { res.status(500).json({ error: 'تعذر إرسال الكود' }); }
   });
@@ -187,9 +192,11 @@ module.exports = function (app) {
       const u = await findUserByLogin(email);
       if (!u || String(u.email || '').toLowerCase() !== email) return res.json({ error: 'لا يوجد حساب بهذا البريد' });
       const code = String(crypto.randomInt(100000, 1000000));
+      const resetSnap = await store.getDb().collection('passwordResets').doc(email).get();
+      if (resetSnap.exists && Date.now() - Number((resetSnap.data() || {}).lastSentAt || 0) < OTP_RESEND_GAP_MS) return res.status(429).json({ error: 'تم إرسال كود بالفعل، انتظر دقيقة قبل إعادة المحاولة' });
       const sent = await sendPasswordResetEmail(email, u.name || u.username, code);
-      if (!sent.ok) return res.status(503).json({ error: 'تعذر إرسال رمز تغيير كلمة المرور حاليًا' });
-      await store.saveDoc('passwordResets', email, { id: email, email, codeHash: codeHash(code), expiresAt: Date.now() + 10 * 60 * 1000, createdAt: new Date().toISOString() });
+      if (!sent.ok) return res.status(503).json({ error: sent.reason || 'تعذر إرسال رمز تغيير كلمة المرور حاليًا' });
+      await store.saveDoc('passwordResets', email, { id: email, email, codeHash: codeHash(code), expiresAt: Date.now() + OTP_TTL_MS, attempts: 0, lastSentAt: Date.now(), createdAt: new Date().toISOString() });
       res.json({ ok: true, email, message: 'تم إرسال رمز تغيير كلمة المرور إلى بريدك' });
     } catch (e) { console.error('password request:', e.message); res.status(500).json({ error: 'تعذر إرسال الرمز حاليًا' }); }
   });
@@ -203,7 +210,8 @@ module.exports = function (app) {
       if (!snap.exists) return res.json({ error: 'اطلب رمز تغيير كلمة المرور أولًا' });
       const reset = snap.data() || {};
       if (Number(reset.expiresAt || 0) < Date.now()) return res.json({ error: 'انتهت صلاحية الرمز، اطلب رمزًا جديدًا' });
-      if (reset.codeHash !== codeHash(code)) return res.json({ error: 'رمز التحقق غير صحيح' });
+      if (Number(reset.attempts || 0) >= OTP_MAX_ATTEMPTS) return res.status(429).json({ error: 'تم تجاوز عدد المحاولات، اطلب رمزًا جديدًا' });
+      if (reset.codeHash !== codeHash(code)) { await store.saveDoc('passwordResets', email, { attempts: Number(reset.attempts || 0) + 1 }); return res.json({ error: 'رمز التحقق غير صحيح' }); }
       const u = await findUserByLogin(email);
       if (!u) return res.json({ error: 'الحساب غير موجود' });
       u.pass = hashPw(b.password); u.passwordChangedAt = new Date().toISOString();
