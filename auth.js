@@ -69,7 +69,9 @@ async function sendEmail({ email, name, code, subject, purpose }) {
   }
   const key = String(process.env.RESEND_API_KEY || '').trim();
   if (!key) return { ok: false, reason: 'أضف إعدادات SMTP EMAIL_HOST وEMAIL_USER وEMAIL_PASSWORD أو RESEND_API_KEY' };
-  const from = process.env.RESEND_FROM || 'Rab7na <onboarding@resend.dev>';
+  const configuredFrom = String(process.env.RESEND_FROM || '').trim();
+  // Resend's shared onboarding sender must be used exactly as-is; display-name variants may be rejected as unverified.
+  const from = /onboarding@resend\.dev/i.test(configuredFrom) ? 'onboarding@resend.dev' : (configuredFrom || 'onboarding@resend.dev');
   const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], subject, html: otpHtml(subject, name, code, purpose) }) });
   const data = await r.json().catch(() => ({}));
   if (!r.ok) {
