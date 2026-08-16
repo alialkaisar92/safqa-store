@@ -34,14 +34,14 @@ html[data-theme="pharaoh"]{
 html[data-theme="pharaoh"] body{background:var(--paper)}
 html[data-theme="pharaoh"] h1,html[data-theme="pharaoh"] .logo,html[data-theme="pharaoh"] .pm-name{font-family:'Amiri',Lalezar,serif}
 html[data-theme="pharaoh"] .hero{background:linear-gradient(180deg,#1B1509,#120E07);border-bottom:1px solid var(--line)}
-html[data-theme="pharaoh"] .card,html[data-theme="pharaoh"] .sheet,html[data-theme="pharaoh"] header,html[data-theme="pharaoh"] .mnav,html[data-theme="pharaoh"] footer{background:var(--paper)}
+html[data-theme="pharaoh"] .card,html[data-theme="pharaoh"] .sheet,html[data-theme="pharaoh"] header,html[data-theme="pharaoh"] .mnav,html[data-theme="pharaoh"] footer,html[data-theme="pharaoh"] .side-drawer{background:var(--paper)}
 html[data-theme="pharaoh"] .cart-btn{background:linear-gradient(135deg,#E8C766,#C9A227);color:#120E07}
 html[data-theme="pharaoh"] .addbtn{background:linear-gradient(135deg,#E8C766,#C9A227);color:#120E07}
 html[data-theme="pharaoh"] .stamp{border-color:var(--forest);color:var(--forest-d);background:rgba(201,162,39,.08)}
 .theme-toggle{position:fixed;top:84px;right:16px;left:auto;z-index:70;background:var(--paper);border:1.6px solid var(--line);border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;box-shadow:0 6px 16px rgba(0,0,0,.15)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
-body{font-family:Cairo,system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.55;padding-bottom:74px}
+body{font-family:Cairo,system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.55}
 img{max-width:100%;display:block}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
 input,select,textarea{font-family:inherit}
@@ -114,11 +114,25 @@ main{max-width:640px;margin:0 auto;padding:16px}
 /* ---- floating whatsapp ---- */
 #waFloat{position:fixed;bottom:88px;left:16px;z-index:60;width:52px;height:52px;border-radius:50%;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 8px 20px rgba(0,0,0,.2);text-decoration:none}
 
-/* ---- bottom nav ---- */
-.mnav{position:fixed;bottom:0;left:0;right:0;background:var(--paper);border-top:1px solid var(--line);display:flex;z-index:55;padding-bottom:env(safe-area-inset-bottom)}
-.mnav button{flex:1;padding:9px 4px;font-size:.66rem;font-weight:700;color:var(--muted)}
-.mnav button.on{color:var(--forest-d)}
-.mnav .ic{display:block;font-size:1.15rem;margin-bottom:2px}
+/* ---- marketer side navigation ---- */
+.menu-btn{position:relative;flex-shrink:0;width:42px;height:42px;border-radius:50%;background:var(--mint);color:var(--forest-d);display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:900}
+.side-overlay{position:fixed;inset:0;background:rgba(11,31,23,.48);z-index:180;display:none}
+.side-overlay.on{display:block}
+.side-drawer{position:fixed;top:0;right:0;bottom:0;width:min(355px,88vw);background:var(--paper);z-index:190;transform:translateX(105%);transition:transform .25s ease;box-shadow:-16px 0 42px rgba(0,0,0,.18);overflow:auto;padding:22px 16px calc(24px + env(safe-area-inset-bottom))}
+.side-drawer.on{transform:translateX(0)}
+.side-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.side-brand{font-family:Lalezar,Cairo,sans-serif;font-size:1.55rem;color:var(--forest)}
+.side-close{width:36px;height:36px;border-radius:50%;background:var(--mint);color:var(--ink);font-size:1rem}
+.side-user{background:var(--mint);border-radius:16px;padding:13px;margin-bottom:14px;color:var(--ink)}
+.side-user strong{display:block;color:var(--forest-d);font-size:.9rem;margin-bottom:3px}
+.side-user span{font-size:.72rem;color:var(--muted)}
+.side-group{font-size:.68rem;color:var(--muted);font-weight:800;margin:16px 4px 7px}
+.side-item{width:100%;display:flex;align-items:center;gap:11px;text-align:right;padding:12px 11px;border-radius:12px;color:var(--ink);font-size:.82rem;font-weight:700;margin-bottom:4px}
+.side-item:hover,.side-item:active{background:var(--mint);color:var(--forest-d)}
+.side-item .side-ic{width:25px;text-align:center;font-size:1.1rem}
+.side-divider{height:1px;background:var(--line);margin:14px 0}
+.side-item.danger{color:var(--danger)}
+@media(min-width:900px){.side-drawer{width:380px}}
 
 /* ---- footer ---- */
 footer{background:var(--mint);border-top:1px solid var(--line);padding:26px 16px;text-align:center;color:var(--muted);font-size:.78rem;margin-top:10px}
@@ -180,8 +194,8 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
   <div class="header-top">
     <div class="logo">Rab<span>7na</span></div>
     <div class="search"><input id="q" placeholder="ابحث عن منتج..." oninput="doSearch(this.value)"></div>
-    <button class="cart-btn" id="profileBtn" onclick="openAcct()" style="background:var(--mint);color:var(--forest-d);margin-left:2px">👤</button>
-    <button class="cart-btn" onclick="openCart()">🛒<i id="cc">0</i></button>
+    <button class="menu-btn" id="menuBtn" onclick="openSidebar()" aria-label="فتح قائمة المسوق">☰</button>
+    <button class="cart-btn" onclick="openCart()" aria-label="فتح السلة">🛒<i id="cc">0</i></button>
   </div>
   <div class="cats" id="catRow"></div>
   <button class="ship-link" type="button" onclick="openShippingRates()">🚚 عرض أسعار الشحن حسب المحافظة</button>
@@ -201,11 +215,22 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
 <a id="waFloat" target="_blank">💬</a>
 <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="تبديل الوضع">✨</button>
 
-<div class="mnav">
-  <button class="on"><span class="ic">🏠</span>الرئيسية</button>
-  <button onclick="document.getElementById('mainGrid').scrollIntoView({behavior:'smooth'})"><span class="ic">🛍️</span>المنتجات</button>
-  <button onclick="openCart()"><span class="ic">🛒</span>السلة</button>
-</div>
+<div class="side-overlay" id="sideOverlay" onclick="closeSidebar()"></div>
+<aside class="side-drawer" id="sideDrawer" aria-label="قائمة المسوق">
+  <div class="side-head"><div class="side-brand">Rab<span style="color:var(--ink)">7na</span></div><button class="side-close" onclick="closeSidebar()" aria-label="إغلاق القائمة">✕</button></div>
+  <div class="side-user" id="sideUser"><strong>مساحة المسوق</strong><span>سجّل الدخول للوصول إلى حسابك وطلباتك وأرباحك.</span></div>
+  <div class="side-group">التنقل السريع</div>
+  <button class="side-item" onclick="sideGoProducts()"><span class="side-ic">🛍️</span><span>المنتجات</span></button>
+  <button class="side-item" onclick="closeSidebar();openCart()"><span class="side-ic">🛒</span><span>السلة <small id="sideCartCount"></small></span></button>
+  <button class="side-item" onclick="closeSidebar();openAcct()"><span class="side-ic">👤</span><span>حسابي وطلباتي</span></button>
+  <button class="side-item" onclick="closeSidebar();openWithdraw()"><span class="side-ic">💰</span><span>سحب الأرباح</span></button>
+  <div class="side-group">خدمات المسوق</div>
+  <button class="side-item" onclick="closeSidebar();openShippingRates()"><span class="side-ic">🚚</span><span>أسعار الشحن حسب المحافظة</span></button>
+  <button class="side-item" onclick="closeSidebar();document.getElementById('waFloat').click()"><span class="side-ic">💬</span><span>الدعم عبر واتساب</span></button>
+  <button class="side-item" onclick="closeSidebar();toggleTheme()"><span class="side-ic">✨</span><span>تبديل مظهر المتجر</span></button>
+  <div class="side-divider"></div>
+  <button class="side-item danger" id="sideLogout" onclick="closeSidebar();acctLogout()" style="display:none"><span class="side-ic">↪</span><span>تسجيل الخروج</span></button>
+</aside>
 
 <footer>
     <div class="logo"><span style="color:var(--forest);font-family:Lalezar">Rab<span style="color:var(--ink)">7na</span></span></div>
@@ -376,7 +401,7 @@ function addToCart(){
   if(ex) ex.qty+=qty; else cart.push({id:cur.id,propId:cur.propId||'',name:cur.name,price:Number(cur.price)||0,basePrice:Number(cur.basePrice!=null?cur.basePrice:cur.price)||0,finalPrice:Number(cur.price)||0,image:cur.image,qty:qty});
   updCC(); closeM('pm'); openCart();
 }
-function updCC(){document.getElementById('cc').textContent=cart.reduce(function(a,c){return a+c.qty},0);}
+function updCC(){var n=cart.reduce(function(a,c){return a+c.qty},0);document.getElementById('cc').textContent=n;var s=document.getElementById('sideCartCount');if(s)s.textContent=n?'('+n+')':'';}
 function setCartPrice(i,value){var n=Math.max(0,Number(value)||0);cart[i].finalPrice=n;openCart();}
 function cartLineTotal(c){return (Number(c.finalPrice!=null?c.finalPrice:c.price)||0)*(Number(c.qty)||1);}
 function openCart(){
@@ -439,6 +464,10 @@ function setupWA(){
 }
 function openM(id){document.getElementById(id).classList.add('on')}
 function closeM(id){document.getElementById(id).classList.remove('on')}
+function openSidebar(){updProfileBtn();document.getElementById('sideOverlay').classList.add('on');document.getElementById('sideDrawer').classList.add('on')}
+function closeSidebar(){document.getElementById('sideOverlay').classList.remove('on');document.getElementById('sideDrawer').classList.remove('on')}
+function sideGoProducts(){closeSidebar();document.getElementById('mainGrid').scrollIntoView({behavior:'smooth',block:'start'})}
+function openWithdraw(){var tok=localStorage.getItem('etok');if(!tok){openAcct();return;}openM('acct');acctWithdrawView()}
 
 function openAcct(){
   var tok=localStorage.getItem('etok');
@@ -533,9 +562,14 @@ function acctDoWithdraw(){
   }).catch(function(){acctMsg('تعذر الاتصال',false)});
 }
 function updProfileBtn(){
-  document.getElementById('profileBtn').textContent = localStorage.getItem('etok') ? '👤✓' : '👤';
+  var logged=!!localStorage.getItem('etok'),u={};
+  try{u=JSON.parse(localStorage.getItem('euser')||'{}')}catch(e){}
+  var b=document.getElementById('sideUser'),lo=document.getElementById('sideLogout');
+  if(b)b.innerHTML=logged?'<strong>أهلاً '+esc(u.name||u.username||'يا مسوّق')+' 👋</strong><span>إدارة الطلبات والأرباح والحساب من مكان واحد.</span>':'<strong>مساحة المسوق</strong><span>سجّل الدخول للوصول إلى حسابك وطلباتك وأرباحك.</span>';
+  if(lo)lo.style.display=logged?'flex':'none';
 }
 updProfileBtn();
+updCC();
 
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme', t==='pharaoh' ? 'pharaoh' : '');
