@@ -158,6 +158,17 @@ module.exports = function (app) {
       const d = await data();
       const local = Array.isArray(d.products) ? d.products : [];
       if (local.length) return res.json(local);
+      // استخدم كاش المنتجات العامل في الموقع العام قبل محاولة الاتصال المباشر بـ Safka.
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const cacheFile = path.join(__dirname, 'products-cache.json');
+        if (fs.existsSync(cacheFile)) {
+          const raw = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
+          const cached = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
+          if (cached.length) { d.products = cached; await writeData(d); return res.json(cached); }
+        }
+      } catch (cacheError) { console.error('products cache:', cacheError.message); }
       const remote = (await fetchSafkaProducts()).map(mapSafkaProduct);
       if (remote.length) { d.products = remote; await writeData(d); }
       res.json(remote);
