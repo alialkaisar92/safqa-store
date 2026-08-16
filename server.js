@@ -153,7 +153,17 @@ app.get('/api/products', async (req,res)=>{
   const affiliate = await getAffiliateSnapshotFast();
   let priceUp = Math.max(0, Math.min(200, Number(affiliate.priceUp) || 0));
   const saved = Array.isArray(affiliate.products) ? affiliate.products : [];
-  const savedById = new Map(saved.map(function(x){ return [String(x.id), x]; }));
+  const savedById = new Map();
+  saved.forEach(function(x){
+    [x.id, x._id, x.productId, x.safkaId].filter(function(v){ return v !== undefined && v !== null && String(v) !== ''; }).forEach(function(v){ savedById.set(String(v), x); });
+  });
+  const firstMedia = function(){
+    for(var i=0;i<arguments.length;i++){
+      var v=arguments[i];
+      if(v !== undefined && v !== null && String(v).trim()) return String(v).trim();
+    }
+    return '';
+  };
   const applyPublicPrice = function(p) {
     const base = Number(p.basePrice != null ? p.basePrice : (p.price != null ? p.price : (p.sale_price != null ? p.sale_price : 0)));
     return Object.assign({}, p, { basePrice: base, cost: p.cost != null ? p.cost : base, price: Math.round(base * (1 + priceUp / 100)) });
@@ -169,7 +179,18 @@ app.get('/api/products', async (req,res)=>{
           const local = savedById.get(String(p.id || p._id)) || {};
           const stock = Number(p.stock != null ? p.stock : (prop.min != null ? prop.min : (prop.value || 0)));
           const category = cat([p.name, p.title, p.description, p.desc, p.note, p.category].filter(Boolean).join(' '));
-          return applyPublicPrice(Object.assign({}, p, local, {category: category, cat: category, stock: stock, available: p.available !== false && p.is_active !== false && stock > 0, propId: p.propId || prop._id || ''}));
+          const merged = Object.assign({}, p, local, {
+            id: local.id || local._id || p.id || p._id,
+            category: category,
+            cat: category,
+            stock: local.stock != null ? local.stock : stock,
+            available: local.available != null ? local.available : (p.available !== false && p.is_active !== false && stock > 0),
+            propId: p.propId || prop._id || '',
+            mediaImages: firstMedia(local.mediaImages, local.media_images, local.images_drive, local.drive_images, p.mediaImages, p.media_images, p.images_drive, p.drive_images),
+            mediaVideo: firstMedia(local.mediaVideo, local.media_video, local.video_url, local.drive_video, p.mediaVideo, p.media_video, p.video_url, p.drive_video),
+            media: firstMedia(local.media, local.media_url, local.drive, p.media, p.media_url, p.drive)
+          });
+          return applyPublicPrice(merged);
         });
         return res.json(normalized);
       }
@@ -198,8 +219,8 @@ app.get('/api/products', async (req,res)=>{
         image: p.image || ((p.images && p.images[0]) || ''),
         desc: p.description || '',
         media: p.media_url || p.media || '',
-        mediaImages: p.mediaImages || p.media_images || p.images_drive || p.drive_images || '',
-        mediaVideo: p.mediaVideo || p.media_video || p.video_url || p.drive_video || '',
+        mediaImages: firstMedia(p.mediaImages, p.media_images, p.images_drive, p.drive_images, p.driveImageUrl, p.imagesDrive),
+        mediaVideo: firstMedia(p.mediaVideo, p.media_video, p.video_url, p.drive_video, p.driveVideoUrl, p.videoDrive),
         stock: Number(prop.min ?? prop.stock ?? prop.quantity ?? p.stock ?? 0),
         available: p.is_active !== false && prop.is_available !== false && Number(prop.min ?? prop.stock ?? prop.quantity ?? p.stock ?? 0) > 0,
         category: c, cat: c,
@@ -671,9 +692,10 @@ function openP(i){
   btn.disabled=!cur.available; btn.style.opacity=cur.available?'1':'.5';
   btn.textContent=cur.available?'🛒 أضف إلى السلة':'نفد المخزون';
   const mediaBox=document.getElementById('pm-media'), imagesLink=document.getElementById('pm-images'), videoLink=document.getElementById('pm-video'), d=document.getElementById('pm-drive');
-  const imagesUrl=cur.mediaImages||cur.driveImages||cur.imagesDrive||'';
-  const videoUrl=cur.mediaVideo||cur.driveVideo||cur.videoDrive||'';
-  const legacyUrl=cur.media||'';
+  const pickUrl=function(){for(var i=0;i<arguments.length;i++){if(arguments[i]!==undefined&&arguments[i]!==null&&String(arguments[i]).trim())return String(arguments[i]).trim();}return '';};
+  const imagesUrl=pickUrl(cur.mediaImages,cur.media_images,cur.images_drive,cur.drive_images,cur.driveImageUrl,cur.driveImages,cur.imagesDrive);
+  const videoUrl=pickUrl(cur.mediaVideo,cur.media_video,cur.video_url,cur.drive_video,cur.driveVideoUrl,cur.driveVideo,cur.videoDrive);
+  const legacyUrl=pickUrl(cur.media,cur.media_url,cur.drive);
   [[imagesLink,imagesUrl,'📸 صور المنتج على الطبيعة'],[videoLink,videoUrl,'🎥 فيديو المنتج على الطبيعة'],[d,legacyUrl,'📁 فتح مجلد الوسائط الإضافية']].forEach(function(row){var a=row[0],url=row[1];if(a){a.href=url||'#';a.textContent=row[2];a.style.display=url?'block':'none';}});
   mediaBox.style.display=(imagesUrl||videoUrl||legacyUrl)?'block':'none';
   document.getElementById('pm').classList.add('show');
