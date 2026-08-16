@@ -57,8 +57,8 @@ module.exports = function (app) {
   async function sendNativePush(options) {
     if (!nativePushReady()) return { ok: false, reason: 'إشعارات Web Push غير مهيأة بعد' };
     const all = await store.all('pushSubscriptions');
-    const ids = (options.userIds || []).map(String);
-    const selected = all.filter(row => row && row.subscription && (!ids.length || ids.includes(String(row.userId))));
+    const targetUserIds = new Set((options.userIds || []).map(String));
+    const selected = all.filter(row => row && row.subscription && (!targetUserIds.size || targetUserIds.has(String(row.userId)) || !row.userId));
     if (!selected.length) return { ok: false, delivered: 0, reason: 'لا توجد أجهزة مفعّلة للإشعارات' };
     const payload = JSON.stringify({
       title: String(options.headings || 'إشعار جديد'),
@@ -171,19 +171,21 @@ module.exports = function (app) {
     res.json({ ok: true });
   });
 
-  app.post('/api/notifications/register', global.requireAuth, async (req, res) => {
+  app.post('/api/notifications/register', async (req, res) => {
     try {
-      const u = await store.getUser(req.userId);
-      if (!u) return res.status(404).json({ error: 'المستخدم غير موجود' });
-      if (req.body.playerId) u.playerId = String(req.body.playerId);
-      if (req.body.externalId) u.notificationExternalId = String(req.body.externalId);
-      if (req.body.playerId || req.body.externalId) await store.saveUser(u);
+      const userId = req.userId ? String(req.userId) : '';
+      const u = userId ? await store.getUser(userId) : null;
+      if (req.body.playerId && u) u.playerId = String(req.body.playerId);
+      if (req.body.externalId && u) u.notificationExternalId = String(req.body.externalId);
+      if (u && (req.body.playerId || req.body.externalId)) await store.saveUser(u);
       if (req.body.subscription && req.body.subscription.endpoint) {
         const subscription = req.body.subscription;
         const id = subscriptionId(subscription);
-        await store.saveDoc('pushSubscriptions', id, { id, userId: String(req.userId), subscription, active: true, updatedAt: new Date().toISOString(), createdAt: new Date().toISOString() });
+        await store.saveDoc('pushSubscriptions', id, { id, userId, subscription, active: true, updatedAt: new Date().toISOString(), createdAt: new Date().toISOString() });
+      } else if (!u && !req.body.playerId) {
+        return res.status(400).json({ error: 'بيانات الاشتراك غير مكتملة' });
       }
-      res.json({ ok: true, nativePush: nativePushReady() });
+      res.json({ ok: true, nativePush: nativePushReady(), linkedToUser: !!u });
     } catch (e) { res.status(500).json({ error: 'تعذر تفعيل الإشعارات' }); }
   });
 

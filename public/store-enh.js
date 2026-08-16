@@ -340,7 +340,6 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
   function setNativeButton(btn,msg,ok){if(btn){btn.textContent=msg;btn.disabled=false;btn.classList.toggle('is-ok',!!ok);}}
   async function enableNative(){
     var btn=document.getElementById('rab7naPushBtn'), t=localStorage.getItem('etok')||'';
-    if(!t){setNativeButton(btn,'سجّل الدخول لتفعيل الإشعارات',false);return;}
     if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){setNativeButton(btn,'المتصفح لا يدعم الإشعارات',false);return;}
     if(Notification.permission==='denied'){setNativeButton(btn,'⚙️ السماح من إعدادات المتصفح',false);return;}
     if(btn){btn.disabled=true;btn.textContent='⏳ جاري تفعيل الإشعارات...';}
@@ -354,7 +353,8 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
       var reg=await navigator.serviceWorker.register('/OneSignalSDKWorker.js',{scope:'/'});
       var sub=await reg.pushManager.getSubscription();
       if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToBytes(key.publicKey)});
-      var r=await fetch('/api/notifications/register',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':t},body:JSON.stringify({subscription:sub.toJSON(),externalId:(JSON.parse(localStorage.getItem('euser')||'null')||{}).id||''})});
+      var headers={'Content-Type':'application/json'}; if(t) headers['x-auth-token']=t;
+      var r=await fetch('/api/notifications/register',{method:'POST',headers:headers,body:JSON.stringify({subscription:sub.toJSON(),externalId:(JSON.parse(localStorage.getItem('euser')||'null')||{}).id||''})});
       if(!r.ok)throw Error('تعذر تسجيل جهازك للإشعارات');
       setNativeButton(btn,'✅ الإشعارات مفعّلة',true); if(window.rab7naNoticeSound)window.rab7naNoticeSound();
     }catch(e){setNativeButton(btn,e&&e.message?e.message:'تعذر تفعيل الإشعارات',false);}
