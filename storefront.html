@@ -284,7 +284,7 @@ function afterLoad(){ renderCats(); renderGrid(); }
 function getCats(){var s={};P.forEach(function(p){s[p.category||p.cat||'عام']=1});return ['الكل'].concat(Object.keys(s).sort(function(a,b){return a.localeCompare(b,'ar')}));}
 function renderCats(){
   document.getElementById('catRow').innerHTML = getCats().map(function(c){
-    return '<button class="cc'+(c===curCat?' on':'')+'" onclick="setCat(\''+esc(c).replace(/\'/g,\"\\'\")+'\')">'+esc(c)+'</button>';
+    return '<button class="cc'+(c===curCat?' on':'')+'" onclick="setCat(\''+esc(c).replace(/'/g,"\\'")+'\')">'+esc(c)+'</button>';
   }).join('');
 }
 function setCat(c){curCat=c;renderCats();renderGrid();}
