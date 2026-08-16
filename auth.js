@@ -41,14 +41,32 @@ async function sendVerificationEmail(email, name, code) {
   if (!key) return { ok: false, reason: 'RESEND_API_KEY غير مضبوط' };
   const from = process.env.RESEND_FROM || 'Rab7na <onboarding@resend.dev>';
   const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], subject: 'كود تفعيل حسابك في rab7na', html: '<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.8"><h2>أهلاً بك في rab7na</h2><p>استخدم الكود التالي لتفعيل حسابك:</p><div style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#087f5b">' + code + '</div><p>صلاحية الكود 10 دقائق. لا تشارك الكود مع أي شخص.</p></div>' }) });
-  return { ok: r.ok, data: await r.json().catch(() => ({})) };
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const detail = String(data.message || data.name || data.error || '').toLowerCase();
+    let reason = 'خدمة البريد رفضت إرسال الرسالة';
+    if (r.status === 401 || detail.includes('api key') || detail.includes('unauthorized')) reason = 'مفتاح خدمة البريد غير صحيح أو غير موجود في Vercel Production';
+    else if (detail.includes('domain') || detail.includes('sender') || detail.includes('from')) reason = 'عنوان المرسل غير موثّق في Resend؛ أضف RESEND_FROM من نطاق موثّق';
+    else if (detail.includes('recipient') || detail.includes('only send') || detail.includes('resend.dev')) reason = 'Resend في الوضع التجريبي لا يسمح بهذا المستلم؛ وثّق نطاق الإرسال أولًا';
+    return { ok: false, status: r.status, reason, data };
+  }
+  return { ok: true, data };
 }
 async function sendPasswordResetEmail(email, name, code) {
   const key = String(process.env.RESEND_API_KEY || '').trim();
   if (!key) return { ok: false, reason: 'RESEND_API_KEY غير مضبوط' };
   const from = process.env.RESEND_FROM || 'rab7na <onboarding@resend.dev>';
   const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], subject: 'رمز تغيير كلمة المرور في rab7na', html: '<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.8"><h2>تغيير كلمة المرور</h2><p>مرحبًا ' + String(name || '').replace(/[<>]/g, '') + '، استخدم الرمز التالي لتعيين كلمة مرور جديدة:</p><div style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#087f5b">' + code + '</div><p>صلاحية الرمز 10 دقائق. إذا لم تطلب ذلك تجاهل الرسالة.</p></div>' }) });
-  return { ok: r.ok, data: await r.json().catch(() => ({})) };
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const detail = String(data.message || data.name || data.error || '').toLowerCase();
+    let reason = 'خدمة البريد رفضت إرسال الرسالة';
+    if (r.status === 401 || detail.includes('api key') || detail.includes('unauthorized')) reason = 'مفتاح خدمة البريد غير صحيح أو غير موجود في Vercel Production';
+    else if (detail.includes('domain') || detail.includes('sender') || detail.includes('from')) reason = 'عنوان المرسل غير موثّق في Resend؛ أضف RESEND_FROM من نطاق موثّق';
+    else if (detail.includes('recipient') || detail.includes('only send') || detail.includes('resend.dev')) reason = 'Resend في الوضع التجريبي لا يسمح بهذا المستلم؛ وثّق نطاق الإرسال أولًا';
+    return { ok: false, status: r.status, reason, data };
+  }
+  return { ok: true, data };
 }
 async function findUserByLogin(value) {
   const login = String(value || '').trim().toLowerCase();
@@ -84,7 +102,7 @@ module.exports = function (app) {
       if (existing) return res.json({ error: 'البريد أو الهاتف أو اسم المستخدم مستخدم بالفعل' });
       const code = String(crypto.randomInt(100000, 1000000));
       const sent = await sendVerificationEmail(email, display, code);
-      if (!sent.ok) return res.status(503).json({ error: 'تعذر إرسال رمز البريد حاليًا، حاول لاحقًا' });
+      if (!sent.ok) { console.error('verification email rejected:', sent.status || '', sent.reason || '', sent.data || ''); return res.status(503).json({ error: sent.reason || 'تعذر إرسال رمز البريد حاليًا، حاول لاحقًا' }); }
       await store.saveDoc('emailVerifications', email, { id: email, email, name: display, username, phone, pass: hashPw(b.password), codeHash: codeHash(code), expiresAt: Date.now() + 10 * 60 * 1000, createdAt: new Date().toISOString() });
       return res.json({ ok: false, verificationRequired: true, email, message: 'تم إرسال رمز التحقق إلى بريدك، صالح لمدة 10 دقائق' });
     } catch (e) { console.error('register:', e.message); res.status(500).json({ error: 'تعذر إنشاء الحساب حالياً' }); }
