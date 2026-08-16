@@ -208,8 +208,8 @@ setInterval(function(){if(localStorage.getItem('etok'))act('نشط في '+cur())
    });};
    document.head.appendChild(s);
   }).catch(function(){});}
- function maybe(){if(localStorage.getItem('etok'))loadOS();}
- document.addEventListener('click',function(){maybe()},{once:true});setInterval(maybe,6000);
+ function maybe(){}
+ /* لا نطلب الإذن تلقائيًا؛ التهيئة تبدأ فقط من زر المستخدم. */
  function pollNotifications(){var t=localStorage.getItem('etok');if(!t)return;fetch('/api/notifications',{headers:{'x-auth-token':t}}).then(function(r){return r.json()}).then(function(d){
   var n=Number(d&&d.unread||0);if(lastUnread&&n>lastUnread)playNoticeSound();lastUnread=n;
  }).catch(function(){});}
@@ -283,6 +283,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
     window.__rab7naOSPromise=withTimeout(fetch('/api/onesignal/config').then(function(r){return r.json()}).then(function(c){
       var appId=c&&c.appId;if(!appId)throw Error('خدمة الإشعارات غير مهيأة');
       return new Promise(function(resolve,reject){
+        if(window.OneSignal&&typeof window.OneSignal.init==='function')return resolve(window.OneSignal);
         var done=false;
         function finish(OS){if(done)return;done=true;resolve(OS)}
         window.OneSignalDeferred=window.OneSignalDeferred||[];
@@ -292,7 +293,8 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
         setTimeout(function(){if(!done)reject(Error('تعذر تشغيل خدمة الإشعارات'))},12000);
       }).then(function(OS){
         if(OS.__rab7naInitialized)return OS;
-        return OS.init({appId:appId,notifyButton:{enable:false},autoResubscribe:true,serviceWorkerPath:'/OneSignalSDKWorker.js',serviceWorkerParam:{scope:'/'}}).then(function(){OS.__rab7naInitialized=true;return OS});
+        var sw=window.navigator&&navigator.serviceWorker?navigator.serviceWorker.register('/OneSignalSDKWorker.js',{scope:'/'}).catch(function(){return null}):Promise.resolve(null);
+        return sw.then(function(){return OS.init({appId:appId,notifyButton:{enable:false},autoResubscribe:true,serviceWorkerPath:'/OneSignalSDKWorker.js',serviceWorkerParam:{scope:'/'}})}).then(function(){OS.__rab7naInitialized=true;return OS});
       });
     }),15000).catch(function(e){window.__rab7naOSPromise=null;throw e});
     return window.__rab7naOSPromise;
