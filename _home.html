@@ -726,7 +726,7 @@ function checkMin(){
   document.getElementById('btnAdd').style.opacity=(!ok||!cur.available)?'.5':'1';
 }
 function chgQty(d){
-  const max=cur?cur.stock:99;
+  const max=cur && cur.stock != null ? Number(cur.stock) : 0;
   qty=Math.max(1,Math.min(max,qty+d));
   document.getElementById('qtyVal').textContent=qty;
   document.getElementById('stockHint').style.display=(qty>max)?'block':'none';
@@ -1129,7 +1129,7 @@ W.openP=async function(i){ensurePM();if(!_P)await loadP();var c=_P[i];if(!c)retu
 W.closeP=function(){var pm=G('pm');if(pm){pm.classList.remove('show');D.body.style.overflow='';}};
 W.checkMin=function(){var ep=G('editPrice');if(!ep||!_CUR)return;var v=Number(ep.value),mn=Number(_CUR.price),ok=v>=mn;var mh=G('minHint');if(mh)mh.style.display=ok?'none':'block';var btn=G('btnAdd');if(btn){btn.disabled=!ok||!_CUR.available;btn.style.opacity=(!ok||!_CUR.available)?'.5':'1';}};
 W.updProfit=function(){var ep=G('editPrice'),pf=G('pm-profit');if(!ep||!pf||!_CUR)return;var v=Number(ep.value)||0,g=Number(_CUR.price)||0,d=v-g;pf.textContent=(d>0?'+':'')+d.toLocaleString('ar-EG')+' ج.م';pf.style.color=d>0?'#0F766E':'#ef4444';};
-W.chgQty=function(d){var mx=_CUR?_CUR.stock:99;_QTY=Math.max(1,Math.min(mx,_QTY+d));var qv=G('qtyVal');if(qv)qv.textContent=_QTY;var sh=G('stockHint');if(sh)sh.style.display=(_QTY>mx)?'block':'none';};
+W.chgQty=function(d){var mx=_CUR && _CUR.stock != null ? Number(_CUR.stock) : 0;_QTY=Math.max(1,Math.min(mx,_QTY+d));var qv=G('qtyVal');if(qv)qv.textContent=_QTY;var sh=G('stockHint');if(sh)sh.style.display=(_QTY>mx)?'block':'none';};
 W.addCart=function(){if(!_CUR||!_CUR.available)return;var ep=G('editPrice');var sale=ep?Number(ep.value):_CUR.price;if(sale<Number(_CUR.price))return;if(_QTY>_CUR.stock){var sh=G('stockHint');if(sh)sh.style.display='block';return;}var cart=JSON.parse(localStorage.getItem('scart')||'[]');var ex=cart.find(function(x){return x.id===_CUR.id&&x.price===sale;});if(ex){if(ex.qty+_QTY>_CUR.stock){alert('الكمية أكبر من المخزون');return;}ex.qty+=_QTY;}else{cart.push({id:_CUR.id,name:_CUR.name,price:sale,basePrice:_CUR.price,cost:_CUR.cost,propertyId:_CUR.propertyId,image:_CUR.image,barcode:_CUR.barcode,stock:_CUR.stock,qty:_QTY});}localStorage.setItem('scart',JSON.stringify(cart));if(W.updCC)try{W.updCC();}catch(_){}var btn=G('btnAdd');if(btn){btn.textContent='✓ تم الإضافة';setTimeout(function(){btn.textContent='🛒 أضف إلى السلة';W.closeP();},800);}};
 
 /* ===== دوال مساعدة لـ EasyOrders ===== */
@@ -1273,7 +1273,7 @@ async function eoExport(idx) {
     const r = await fetch('/api/easyorders/export', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({id: p.id, name: p.name, price: p.price, sale_price: p.price, image: p.image, stock: p.stock || 100})
+      body: JSON.stringify({id: p.id, name: p.name, price: p.price, sale_price: p.price, image: p.image, stock: p.stock == null ? null : Number(p.stock)})
     });
     const j = await r.json();
     if(j.ok) { btn.textContent = '✅ تم التصدير'; setTimeout(() => { btn.textContent = '📤 تصدير إلى EasyOrders'; btn.disabled = false; }, 2000); }
@@ -1329,7 +1329,7 @@ window.chatOnFile=function(input){var f=input.files&&input.files[0];if(!f)return
     fetch('/api/easyorders/status').then(function(r){return r.ok?r.json():{connected:false};}).then(function(j){
       if(!j||!j.connected){alert('⚠️ اربط EasyOrders الأول من لوحة الأدمن:\nافتح /admin → 🔗 ربط EasyOrders → حط الـ API Key');return;}
       btn.disabled=true; btn.innerHTML='⏳ جارٍ التصدير…';
-      fetch('/api/easyorders/export',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:c.id,name:c.name,price:c.price,sale_price:c.price,image:c.image,stock:c.stock||100,description:c.desc||c.description||''})})
+      fetch('/api/easyorders/export',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:c.id,name:c.name,price:c.price,sale_price:c.price,image:c.image,stock:c.stock == null ? null : Number(c.stock),description:c.desc||c.description||''})})
         .then(function(r){return r.json().then(function(jj){return {ok:r.ok,jj:jj};}).catch(function(){return {ok:r.ok,jj:{}};});})
         .then(function(res){ if(res.ok&&res.jj&&res.jj.ok){btn.innerHTML='✅ تم التصدير بنجاح';setTimeout(function(){btn.innerHTML='📤 تصدير هذا المنتج إلى EasyOrders';btn.disabled=false;},2400);} else {alert('فشل التصدير: '+((res.jj&&res.jj.error)||'خطأ غير معروف'));btn.innerHTML='📤 تصدير هذا المنتج إلى EasyOrders';btn.disabled=false;} })
         .catch(function(e){alert('تعذّر الاتصال بالسيرفر');btn.innerHTML='📤 تصدير هذا المنتج إلى EasyOrders';btn.disabled=false;});

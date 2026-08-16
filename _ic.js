@@ -80,7 +80,7 @@ function checkMin(){
   document.getElementById('btnAdd').style.opacity=(!ok||!cur.available)?'.5':'1';
 }
 function chgQty(d){
-  const max=cur?cur.stock:99;
+  const max=cur && cur.stock != null ? Number(cur.stock) : 0;
   qty=Math.max(1,Math.min(max,qty+d));
   document.getElementById('qtyVal').textContent=qty;
   document.getElementById('stockHint').style.display=(qty>max)?'block':'none';
