@@ -153,7 +153,19 @@ module.exports = function (app) {
       res.json({ ok: true });
     } catch (e) { console.error('order-status:', e.message); res.status(500).json({ error: 'تعذر تحديث الطلب' }); }
   });
-  app.get('/api/admin/products', async (req, res) => { try { res.json((await data()).products || []); } catch (e) { res.status(500).json({ error: 'تعذر تحميل المنتجات' }); } });
+  app.get('/api/admin/products', async (req, res) => {
+    try {
+      const d = await data();
+      const local = Array.isArray(d.products) ? d.products : [];
+      if (local.length) return res.json(local);
+      const remote = (await fetchSafkaProducts()).map(mapSafkaProduct);
+      if (remote.length) { d.products = remote; await writeData(d); }
+      res.json(remote);
+    } catch (e) {
+      console.error('admin products:', e.message);
+      res.status(502).json({ error: e.message === 'مفتاح Safka غير مضبوط' ? e.message : 'تعذر تحميل المنتجات من Safka' });
+    }
+  });
   app.post('/api/admin/product', async (req, res) => {
     try { const b = req.body || {}; const d = await data(); d.products = d.products || []; if (b.id) { const p = d.products.find(x => String(x.id) === String(b.id)); if (p) Object.assign(p, b); } else { b.id = Date.now(); d.products.push(b); if (global.sendPush) global.sendPush({ headings: 'منتج جديد', contents: b.name, url: '/' }); } await writeData(d); res.json({ ok: true }); }
     catch (e) { res.status(500).json({ error: 'تعذر حفظ المنتج' }); }
