@@ -32,7 +32,7 @@ global.requireAuth = function (req, res, next) {
   req.userId = pl.uid;
   next();
 };
-function pub(u) { return { id: u.id, username: u.username || u.contact, display_name: u.display_name || u.name, name: u.name || u.display_name, contact: u.contact || u.username, phone: u.phone || u.contact, email: u.email || '', balance: u.balance || 0 }; }
+function pub(u) { return { id: u.id, username: u.username || u.contact, display_name: u.display_name || u.name, name: u.name || u.display_name, contact: u.contact || u.username, phone: u.phone || u.contact, email: u.email || '', balance: u.balance || 0, role: u.role || '', isAdmin: !!u.isAdmin, permissions: Array.isArray(u.permissions) ? u.permissions : [] }; }
 const WELCOME_BONUS = 70;
 function isEmail(value) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim()); }
 function codeHash(code) { return crypto.createHash('sha256').update('rab7na-verification:' + String(code)).digest('hex'); }

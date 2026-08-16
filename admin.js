@@ -1,4 +1,5 @@
 const path = require('path');
+const crypto = require('crypto');
 const store = require('./firestore');
 const { availableBalance } = require('./balance');
 
@@ -6,6 +7,26 @@ function tokenFrom(req) {
   const h = String(req.headers.authorization || '');
   return String(req.headers['x-auth-token'] || (h.toLowerCase().startsWith('bearer ') ? h.slice(7) : '') || '').trim();
 }
+
+const ADMIN_PERMISSIONS = ['dashboard', 'orders', 'products', 'users', 'withdrawals', 'chats', 'notifications', 'settings', 'admins'];
+const ROLE_PERMISSIONS = {
+  owner: ADMIN_PERMISSIONS,
+  admin: ADMIN_PERMISSIONS,
+  manager: ['dashboard', 'orders', 'products', 'users', 'withdrawals', 'chats', 'notifications', 'settings'],
+  support: ['dashboard', 'orders', 'chats', 'notifications'],
+  finance: ['dashboard', 'orders', 'withdrawals'],
+  products: ['dashboard', 'products']
+};
+function hasPermission(user, permission) {
+  if (!user) return false;
+  if (user.__envAdmin || user.role === 'owner' || user.role === 'admin') return true;
+  const role = String(user.role || '').toLowerCase();
+  const fromRole = ROLE_PERMISSIONS[role] || [];
+  const custom = Array.isArray(user.permissions) ? user.permissions : [];
+  return fromRole.includes(permission) || custom.includes(permission);
+}
+function rolePermissions(role) { return ROLE_PERMISSIONS[String(role || '').toLowerCase()] || []; }
+function hashAdminPassword(password) { return crypto.createHash('sha256').update('earnify:' + String(password)).digest('hex'); }
 
 async function requireAdmin(req, res, next) {
   try {
@@ -15,11 +36,11 @@ async function requireAdmin(req, res, next) {
     if (!user || user.banned) return res.status(403).json({ error: 'الحساب غير مسموح له بالدخول' });
     const adminEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
     const adminUid = String(process.env.ADMIN_USER_ID || '').trim();
-    const allowed = user.role === 'admin' || user.isAdmin === true ||
-      (adminEmail && [user.email, user.contact, user.username].some(v => String(v || '').trim().toLowerCase() === adminEmail)) ||
+    const envAllowed = (adminEmail && [user.email, user.contact, user.username].some(v => String(v || '').trim().toLowerCase() === adminEmail)) ||
       (adminUid && String(user.id) === adminUid);
+    const allowed = hasPermission(user, 'dashboard') || user.isAdmin === true || envAllowed;
     if (!allowed) return res.status(403).json({ error: 'هذه الصفحة مخصصة لمدير المنصة فقط' });
-    req.adminUser = user;
+    req.adminUser = envAllowed ? Object.assign({}, user, { __envAdmin: true, role: user.role || 'owner' }) : user;
     next();
   } catch (e) {
     console.error('admin auth:', e.message);
@@ -42,6 +63,20 @@ global.requireAdmin = requireAdmin;
 module.exports = function (app) {
   app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
   app.use('/api/admin', requireAdmin);
+  app.use('/api/admin', (req, res, next) => {
+    const p = req.path || '';
+    let permission = 'dashboard';
+    if (/^\/(orders|order-status)/.test(p)) permission = 'orders';
+    else if (/^\/(products|product|product-delete|price|price-up)/.test(p)) permission = 'products';
+    else if (/^\/(users|user-ban)/.test(p)) permission = 'users';
+    else if (/^\/(withdrawals|withdrawal-status)/.test(p)) permission = 'withdrawals';
+    else if (/^\/(chats|chat-reply|chat-stream)/.test(p)) permission = 'chats';
+    else if (/^\/(settings)/.test(p)) permission = 'settings';
+    else if (/^\/(notifications|notify)/.test(p)) permission = 'notifications';
+    else if (/^\/(admins|admin-users)/.test(p)) permission = 'admins';
+    if (!hasPermission(req.adminUser, permission)) return res.status(403).json({ error: 'ليس لديك صلاحية لهذا القسم', permission });
+    next();
+  });
   app.get('/api/admin/stats', async (req, res) => {
     try {
       const [d, u, c] = await Promise.all([data(), users(), chats()]);
@@ -82,6 +117,32 @@ module.exports = function (app) {
   app.post('/api/admin/price-up', async (req, res) => { try { const d = await data(); let v = +(req.body && req.body.up) || 0; v = Math.max(0, Math.min(200, v)); d.priceUp = v; await writeData(d); res.json({ ok: true, up: v }); } catch (e) { res.status(500).json({ error: 'تعذر حفظ الزيادة' }); } });
   app.get('/api/admin/users', async (req, res) => { try { const db = await users(); const now = Date.now(); res.json((db.users || []).map(u => ({ id: u.id, name: u.name, contact: u.contact, balance: u.balance || 0, created: u.created, lastSeen: u.lastSeen || 0, banned: !!u.banned, lastAction: u.lastAction || '', activity: (u.activity || []).slice(0, 50), online: !!(u.lastSeen && now - u.lastSeen < 120000) }))); } catch (e) { res.status(500).json({ error: 'تعذر تحميل المستخدمين' }); } });
   app.post('/api/admin/user-ban', async (req, res) => { try { const db = await users(); const u = (db.users || []).find(x => String(x.id) === String(req.body.id)); if (!u) return res.json({ error: 'مش موجود' }); u.banned = !!req.body.banned; await store.saveUser(u); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: 'تعذر تحديث الحساب' }); } });
+  app.get('/api/admin/admins', async (req, res) => {
+    try {
+      const db = await users();
+      res.json((db.users || []).filter(u => u.role || u.isAdmin).map(u => ({ id: u.id, name: u.name || u.display_name || u.username, contact: u.contact || u.email || u.phone, email: u.email || '', role: u.role || (u.isAdmin ? 'admin' : 'user'), permissions: Array.isArray(u.permissions) ? u.permissions : [], banned: !!u.banned, created: u.created || '' })));
+    } catch (e) { res.status(500).json({ error: 'تعذر تحميل المديرين' }); }
+  });
+  app.post('/api/admin/admins', async (req, res) => {
+    try {
+      const b = req.body || {}; const name = String(b.name || '').trim(); const contact = String(b.contact || b.email || '').trim().toLowerCase(); const password = String(b.password || '');
+      const role = String(b.role || 'manager').trim().toLowerCase();
+      if (role === 'owner' && !(req.adminUser && (req.adminUser.__envAdmin || req.adminUser.role === 'owner'))) return res.status(403).json({ error: 'إنشاء مالك جديد متاح لمالك المنصة فقط' });
+      if (!name || !contact || password.length < 6) return res.status(400).json({ error: 'أدخل الاسم وبيانات الدخول وكلمة مرور من 6 أحرف على الأقل' });
+      if (!['owner', 'admin', 'manager', 'support', 'finance', 'products'].includes(role)) return res.status(400).json({ error: 'دور المدير غير صحيح' });
+      const db = await users(); const all = db.users || [];
+      if (all.some(u => [u.email, u.contact, u.username].some(v => String(v || '').trim().toLowerCase() === contact))) return res.status(409).json({ error: 'بيانات الدخول مستخدمة بالفعل' });
+      const u = { id: Date.now(), name, display_name: name, username: contact, contact, email: contact.includes('@') ? contact : '', pass: hashAdminPassword(password), role, isAdmin: true, permissions: Array.isArray(b.permissions) ? b.permissions.filter(p => ADMIN_PERMISSIONS.includes(p)) : rolePermissions(role), created: new Date().toISOString(), balance: 0 };
+      await store.saveUser(u); res.json({ ok: true, admin: { id: u.id, name: u.name, contact: u.contact, role: u.role, permissions: u.permissions } });
+    } catch (e) { console.error('create admin:', e.message); res.status(500).json({ error: 'تعذر إضافة المدير' }); }
+  });
+  app.patch('/api/admin/admins/:id', async (req, res) => {
+    try {
+      const u = await store.getUser(req.params.id); if (!u) return res.status(404).json({ error: 'المدير غير موجود' });
+      const b = req.body || {}; if (b.role === 'owner' && !(req.adminUser && (req.adminUser.__envAdmin || req.adminUser.role === 'owner'))) return res.status(403).json({ error: 'تعيين دور المالك متاح لمالك المنصة فقط' }); if (b.role && ['owner', 'admin', 'manager', 'support', 'finance', 'products'].includes(String(b.role))) u.role = String(b.role); if (Array.isArray(b.permissions)) u.permissions = b.permissions.filter(p => ADMIN_PERMISSIONS.includes(p)); if (typeof b.banned === 'boolean') u.banned = b.banned; if (b.password && String(b.password).length >= 6) u.pass = hashAdminPassword(b.password);
+      await store.saveUser(u); res.json({ ok: true });
+    } catch (e) { res.status(500).json({ error: 'تعذر تحديث المدير' }); }
+  });
   app.get('/api/admin/withdrawals', async (req, res) => { try { res.json((await data()).withdrawals || []); } catch (e) { res.status(500).json({ error: 'تعذر تحميل السحوبات' }); } });
   app.post('/api/admin/withdrawal-status', async (req, res) => { try { const d = await data(); const w = (d.withdrawals || []).find(x => String(x.id) === String(req.body.id)); if (!w) return res.json({ error: 'مش موجود' }); w.status = req.body.status; await writeData(d); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: 'تعذر تحديث السحب' }); } });
   app.get('/api/admin/chats', async (req, res) => { try { res.json(await chats()); } catch (e) { res.status(500).json({ error: 'تعذر تحميل المحادثات' }); } });
