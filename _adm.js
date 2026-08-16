@@ -152,12 +152,15 @@ var _PROD=[], _PROD_EDIT=null, _PROD_LOADING=false;
 function prodReq(path, method, body){
   var h = {'Content-Type':'application/json'};
   try{ var c = (typeof cred==='function')?cred():{}; for(var k in c) h[k]=c[k]; }catch(e){}
+  var ctl = window.AbortController ? new AbortController() : null;
+  var timer = ctl ? setTimeout(function(){ctl.abort();}, 25000) : null;
   var o = {method: method||'GET', headers: h, credentials:'include'};
+  if(ctl) o.signal = ctl.signal;
   if(body!==undefined) o.body = JSON.stringify(body);
   return fetch(path, o).then(function(r){
     if(r.status===401 && typeof doLogout==='function'){ try{toast('انتهت الجلسة — سجّل دخول تاني','err');}catch(_){}; }
     return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||('خطأ '+r.status)); return j; });
-  });
+  }).catch(function(e){if(e&&e.name==='AbortError')throw new Error('استغرق الاتصال أكثر من 25 ثانية — تحقق من مفتاح Safka أو حاول مرة أخرى');throw e;}).finally(function(){if(timer)clearTimeout(timer);});
 }
 function loadProducts(){
   if(_PROD_LOADING) return; _PROD_LOADING = true;

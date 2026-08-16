@@ -9,13 +9,20 @@ async function fetchSafkaProducts() {
   const key = String(process.env.SAFKA_API_KEY || '').trim();
   if (!key) throw new Error('مفتاح Safka غير مضبوط');
   const all = [];
-  const first = await fetch(SAFKA_BASE_URL + '/products?page=1&size=50', { headers: { 'api-safka-key': key } });
-  if (!first.ok) throw new Error('تعذر الاتصال بمصدر المنتجات');
+  const request = (url) => fetch(url, { headers: { 'api-safka-key': key }, signal: AbortSignal.timeout(15000) });
+  let first;
+  try { first = await request(SAFKA_BASE_URL + '/products?page=1&size=50'); }
+  catch (e) { if (e && e.name === 'TimeoutError') throw new Error('مصدر Safka لم يستجب خلال 15 ثانية'); throw new Error('تعذر الاتصال بمصدر المنتجات'); }
+  if (first.status === 401 || first.status === 403) throw new Error('مفتاح Safka غير صحيح أو منتهي');
+  if (!first.ok) throw new Error('تعذر الاتصال بمصدر المنتجات (HTTP ' + first.status + ')');
   const firstJson = await first.json();
   all.push(...(Array.isArray(firstJson.data) ? firstJson.data : []));
   const pages = Math.min(Number(firstJson.pages) || 1, 20);
   for (let page = 2; page <= pages; page++) {
-    const r = await fetch(SAFKA_BASE_URL + '/products?page=' + page + '&size=50', { headers: { 'api-safka-key': key } });
+    let r;
+    try { r = await request(SAFKA_BASE_URL + '/products?page=' + page + '&size=50'); }
+    catch (e) { if (e && e.name === 'TimeoutError') break; continue; }
+    if (r.status === 401 || r.status === 403) throw new Error('مفتاح Safka غير صحيح أو منتهي');
     if (!r.ok) continue;
     const json = await r.json();
     all.push(...(Array.isArray(json.data) ? json.data : []));
