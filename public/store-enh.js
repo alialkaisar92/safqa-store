@@ -345,11 +345,13 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
     if(Notification.permission==='denied'){setNativeButton(btn,'⚙️ السماح من إعدادات المتصفح',false);return;}
     if(btn){btn.disabled=true;btn.textContent='⏳ جاري تفعيل الإشعارات...';}
     try{
+      /* يجب طلب الإذن مباشرة من تفاعل المستخدم قبل أي طلب شبكة أو await طويل */
+      var permission=Notification.permission;
+      if(permission!=='granted') permission=await Notification.requestPermission();
+      if(permission!=='granted')throw Error('لم يتم السماح بالإشعارات من المتصفح');
       var keyRes=await fetch('/api/push/vapid-public-key',{cache:'no-store'}), key=await keyRes.json();
       if(!key.publicKey)throw Error('خدمة الإشعارات غير مهيأة بعد');
       var reg=await navigator.serviceWorker.register('/OneSignalSDKWorker.js',{scope:'/'});
-      var permission=await Notification.requestPermission();
-      if(permission!=='granted')throw Error('لم يتم السماح بالإشعارات من المتصفح');
       var sub=await reg.pushManager.getSubscription();
       if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToBytes(key.publicKey)});
       var r=await fetch('/api/notifications/register',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':t},body:JSON.stringify({subscription:sub.toJSON(),externalId:(JSON.parse(localStorage.getItem('euser')||'null')||{}).id||''})});
