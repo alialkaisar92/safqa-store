@@ -5,50 +5,15 @@ h.innerHTML='<div class="eh-brand"><span class="eh-logo">Rab7na 💰</span><smal
 +'<button class="eh-profile" onclick="go(\'account\')"><span class="eh-pname">أحمد محمد<small>✔ مسوق نشط</small></span><span class="eh-av">👤</span></button>'
 +'<button class="eh-cartb" onclick="go(\'cart\')">🛒<i>0</i></button>'
 +'<button class="eh-bell" onclick="go(\'account\')">🔔<i>3</i></button>';}
-function wallet(){var s=document.getElementById("s");if(!s||document.getElementById("ehWallet"))return;
-var w=document.createElement("div");w.id="ehWallet";w.className="eh-wallet";
-w.innerHTML='<div style="display:flex;gap:10px;align-items:center"><span class="wic">💼</span><div class="bal"><small>رصيدك المتاح</small><b id="ehBal">... ج.م</b></div></div><button class="wbtn" onclick="go(\'withdraw\')">سحب الأرباح</button>';
-s.parentNode.insertBefore(w,s);
-fetch("/api/me").then(function(r){return r.json()}).then(function(me){var b=(me&&me.balance!=null)?me.balance:2450;var el=document.getElementById("ehBal");if(el)el.textContent=(+b).toLocaleString("ar-EG")+" ج.م";}).catch(function(){});}
-function hero(){var s=document.getElementById("s");if(!s||document.getElementById("ehHero"))return;
-var h=document.createElement("div");h.id="ehHero";h.className="eh-hero";
-h.innerHTML='<h3>🔥 سوّق واربح حتى 30% عمولة</h3><p>شحن سريع لجميع المحافظات<br>سحب أرباح فوري</p><button class="hbtn" onclick="document.getElementById(\'g\').scrollIntoView({behavior:\'smooth\'})">تصفح المنتجات ❮</button><div class="dots"><i class="on"></i><i></i><i></i><i></i></div>';
-s.parentNode.insertBefore(h,s);
-var q=document.createElement("div");q.className="eh-quick";
-q.innerHTML='<button onclick="document.getElementById(\'g\').scrollIntoView({behavior:\'smooth\'})"><i>★</i><b>المنتجات المميزة</b><small>أفضل العروض</small></button><button onclick="go(\'support\')"><i>🎧</i><b>الدعم</b><small>فريق جاهز</small></button><button onclick="go(\'orders\')"><i>📦</i><b>طلباتي</b><small>تتبع طلباتك</small></button><button onclick="go(\'withdraw\')"><i>💰</i><b>سحب الأرباح</b><small>حول أرباحك</small></button>';
-h.parentNode.insertBefore(q,s);}
-function search(){var s=document.getElementById("s");if(!s||s.dataset.eh)return;s.dataset.eh="1";
-var w=document.createElement("div");w.className="eh-search";s.parentNode.insertBefore(w,s);w.appendChild(s);
-var f=document.createElement("button");f.className="fbtn";f.textContent="فلتر ⚙";w.appendChild(f);
-var b=document.createElement("button");b.className="bbtn";b.textContent="⌗";b.onclick=function(){ehToast("امسح الباركود 📷")};w.appendChild(b);}
+function wallet(){return;}
+function hero(){return;}
+function search(){return;}
 var IC={"الكل":"🛍️","أخرى":"📦","أطفال":"🧸","إلكترونيات":"📱","منزل":"🏠","جمال":"💄","أزياء":"👗","رياضة":"⚽"};
-function cats(){var old=document.getElementById("cats");if(!old)return;
-if(!document.getElementById("ehCats")){var bar=document.createElement("div");bar.id="ehCats";bar.className="eh-cats";old.parentNode.insertBefore(bar,old);
-[].forEach.call(old.querySelectorAll(".c"),function(b,i){var t=(b.getAttribute("data-c")||"").trim();var label=(b.textContent||"").trim();
-var p=document.createElement("button");p.innerHTML=(IC[label]||"📦")+" "+label;if(i===0)p.classList.add("on");
-p.onclick=function(){bar.querySelectorAll("button").forEach(function(x){x.classList.remove("on")});p.classList.add("on");cc=b.getAttribute("data-c");renderP();};
-bar.appendChild(p);});}}
-function sechead(){var g=document.getElementById("g");if(!g||document.getElementById("ehSec"))return;
-var d=document.createElement("div");d.id="ehSec";d.className="eh-sechead";d.innerHTML='<b>⭐ منتجات مميزة</b><a href="#" onclick="return false">عرض الكل ❮</a>';g.parentNode.insertBefore(d,g);}
-function stats(){var g=document.getElementById("g");if(!g||document.getElementById("ehStats"))return;
-var d=document.createElement("div");d.id="ehStats";d.className="eh-stats";
-d.innerHTML='<div><small>إجمالي الأرباح</small><b>18,760 ج.م</b><em>↑ 12.5%</em></div><div><small>عدد الطلبات</small><b>320</b><em>↑ 18.7%</em></div><div><small>عدد النقرات</small><b>8,540</b><em>↑ 25.6%</em></div><div><small>معدل التحويل</small><b>4.8%</b><em>↑ 12.5%</em></div>';
-g.parentNode.insertBefore(d,g.nextSibling);}
-function rebuild(){var g=document.getElementById("g");if(!g)return;
-g.querySelectorAll(".card:not([data-ref])").forEach(function(c){c.setAttribute("data-ref","1");
-var oc=c.getAttribute("onclick")||"";var m=oc.match(/openP\((\d+)\)/);var idx=m?+m[1]:-1;
-var P=(window.products&&idx>=0)?products[idx]:null;
-var img=c.querySelector("img");var src=P&&P.image?P.image:(img?img.src:"");
-var name=P?P.name:(c.querySelector(".t")?c.querySelector(".t").textContent:"");
-var price=P?(+P.price).toLocaleString("ar-EG")+" ج.م":(c.querySelector(".pr")?c.querySelector(".pr").textContent:"");
-var stock=P?(+P.stock).toLocaleString("ar-EG"):"0";
-var rate=(4+Math.random()).toFixed(1);var cnt=Math.floor(100+Math.random()*300);
-c.innerHTML='<div class="rf-img"><img src="'+src+'" loading="lazy"><button class="rf-fav" onclick="event.stopPropagation();ehToast(\'تمت الإضافة للمفضلة ❤\')">🤍</button><span class="rf-comm">عمولة 30%</span></div>'
-+'<div class="rf-body"><div class="rf-name">'+name+'</div>'
-+'<div class="rf-row"><span class="rf-price">'+price+'</span><span class="rf-rate"><b>★</b> '+rate+' ('+cnt+')</span></div>'
-+'<div class="rf-stock">متوفر: '+stock+' قطعة</div>'
-+'<button class="rf-view">عرض المنتج</button></div>';});}
-setInterval(function(){header();wallet();hero();search();cats();sechead();stats();rebuild();},700);
+function cats(){return;}
+function sechead(){return;}
+function stats(){return;}
+function rebuild(){return;}
+setInterval(function(){header();wallet();hero();search();cats();sechead();stats();rebuild();},1200);
 })();
 
 (function(){
@@ -244,8 +209,10 @@ function openFilterSheet(){
  var cats=['الكل','إلكترونيات','أطفال','منزل ومطبخ','جمال وعناية','أخرى'];
  var sh=document.createElement('div');sh.id='fsheet';
  sh.style.cssText='position:fixed;bottom:0;right:0;left:0;background:#fff;border-radius:22px 22px 0 0;padding:18px 16px 26px;z-index:9999;box-shadow:0 -12px 40px rgba(0,0,0,.25)';
- sh.innerHTML='<h3 style="margin-bottom:12px;font-size:1rem">🎛️ فلتر المنتجات</h3>'+cats.map(function(cc){return '<button data-c="'+cc+'" style="display:block;width:100%;margin:6px 0;padding:13px;border-radius:14px;border:1px solid #e5e7eb;background:#f8fafc;font-weight:700;font-size:.85rem">'+cc+'</button>'}).join('');
- sh.querySelectorAll('button').forEach(function(b){b.onclick=function(){applyCat(b.getAttribute('data-c'));};});
+ sh.innerHTML='<h3 style="margin-bottom:12px;font-size:1rem">الفلاتر والترتيب</h3><label style="display:block;font-size:.78rem;color:#64748b;font-weight:700;margin:10px 0 6px">التصنيف</label>'+cats.map(function(cc){return '<button data-c="'+cc+'" style="display:block;width:100%;margin:6px 0;padding:13px;border-radius:14px;border:1px solid #e5e7eb;background:#f8fafc;font-weight:700;font-size:.85rem">'+cc+'</button>'}).join('')+'<label style="display:block;font-size:.78rem;color:#64748b;font-weight:700;margin:14px 0 6px">ترتيب المنتجات</label><select id="sheetSort" style="width:100%;padding:13px;border-radius:14px;border:1px solid #e5e7eb;background:#f8fafc;font-family:inherit;font-weight:700"><option value="featured">الأكثر ملاءمة</option><option value="price-low">السعر من الأقل</option><option value="price-high">السعر من الأعلى</option><option value="stock">الأعلى مخزونًا</option></select><button id="sheetStock" style="width:100%;margin-top:10px;padding:13px;border-radius:14px;border:1px solid #e5e7eb;background:#f8fafc;font-weight:700">عرض المتاح فقط</button>';
+ sh.querySelectorAll('button[data-c]').forEach(function(b){b.onclick=function(){applyCat(b.getAttribute('data-c'));};});
+ var so=sh.querySelector('#sheetSort');if(so){so.value=document.getElementById('sorter')?document.getElementById('sorter').value:'featured';so.onchange=function(){setSort(this.value);};}
+ var sb=sh.querySelector('#sheetStock');if(sb){sb.onclick=function(){toggleStockFilter();sb.textContent=window.onlyAvailable?'عرض كل المنتجات':'عرض المتاح فقط';};}
  document.body.appendChild(sh);
 }
 function applyCat(cc){
