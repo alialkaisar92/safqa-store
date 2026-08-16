@@ -130,7 +130,9 @@ function mapProduct(p, up) {
     cat: p._cat || 'أخرى',
     barcode: p.barcode || '',
     note: p.note || '',
-    media: p.media_url || '',
+    media: p.media_url || p.media || '',
+    mediaImages: p.media_images || p.images_drive || p.drive_images || '',
+    mediaVideo: p.media_video || p.video_url || p.drive_video || '',
     desc: p.description || '',
     stock: stock,
     available: prop.is_available !== false && stock > 0
@@ -183,6 +185,9 @@ app.get('/api/products', async (req,res)=>{
         price: (p.sale_price!=null ? p.sale_price : p.price),
         image: p.image || ((p.images && p.images[0]) || ''),
         desc: p.description || '',
+        media: p.media_url || p.media || '',
+        mediaImages: p.media_images || p.images_drive || p.drive_images || '',
+        mediaVideo: p.media_video || p.video_url || p.drive_video || '',
         stock: Number(prop.min ?? prop.stock ?? prop.quantity ?? p.stock ?? 0),
         available: p.is_active !== false && prop.is_available !== false && Number(prop.min ?? prop.stock ?? prop.quantity ?? p.stock ?? 0) > 0,
         category: c, cat: c,
@@ -319,7 +324,7 @@ textarea{min-height:90px;resize:vertical}
 .btn-accent{background:linear-gradient(135deg,#f59e0b,#d97706);color:#111827;box-shadow:0 6px 20px rgba(245,158,11,.35)}
 .btn-primary{background:#ffffff;color:#111827;box-shadow:0 6px 20px rgba(13,148,136,.3)}
 .btn-danger{background:#fee2e2;color:#991b1b}
-.drive{display:block;text-align:center;padding:12px;background:#f0fdfa;border-radius:14px;color:var(--pd);font-weight:700;text-decoration:none;margin:10px 0;font-size:.9rem}
+.drive{display:block;text-align:center;padding:12px;background:#f0fdfa;border-radius:14px;color:var(--pd);font-weight:700;text-decoration:none;margin:8px 0;font-size:.86rem;border:1px solid #ccfbf1}.media-kit{background:linear-gradient(135deg,#f0fdfa,#f8fafc);border:1px solid #ccfbf1;border-radius:16px;padding:12px;margin:12px 0}.media-kit-title{font-weight:900;color:#0f766e;font-size:.9rem;margin-bottom:8px}.media-kit-note{color:#64748b;font-size:.72rem;line-height:1.6;margin:0 0 8px}.media-kit .drive{margin:7px 0}.media-kit .drive.secondary{background:#fff;border-color:#e2e8f0;color:#334155}
 .hint{font-size:.75rem;color:var(--danger);margin-top:4px;display:none}
 .cart-item{display:flex;gap:12px;background:var(--card);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(0,0,0,.04);align-items:flex-start}
 .cart-item img{width:72px;height:72px;border-radius:12px;object-fit:cover;flex-shrink:0}
@@ -556,7 +561,7 @@ input,select,textarea{border-radius:16px!important;border:1.5px solid rgba(15,11
     <div class="box"><div class="l">كود المنتج</div><div class="v" id="pm-code">—</div></div>
     <div class="box" id="pm-stock-box"><div class="l">المخزون</div><div class="v" id="pm-stock">—</div></div>
     <div class="box note-box"><div class="l">ملاحظات rab7na</div><div class="v" id="pm-note">—</div></div>
-    <a class="drive" id="pm-drive" href="#" target="_blank" style="display:none">📁 صور وفيديوهات على الطبيعة</a>
+    <div class="media-kit" id="pm-media" style="display:none"><div class="media-kit-title">📦 مواد تسويقية جاهزة للمسوق</div><p class="media-kit-note">شاهد صور المنتج وفيديو الاستخدام الطبيعي لاستخدامها في إعلانك أو منشورك.</p><a class="drive" id="pm-images" href="#" target="_blank" rel="noopener noreferrer" style="display:none">📸 صور المنتج على الطبيعة</a><a class="drive" id="pm-video" href="#" target="_blank" rel="noopener noreferrer" style="display:none">🎥 فيديو المنتج على الطبيعة</a><a class="drive secondary" id="pm-drive" href="#" target="_blank" rel="noopener noreferrer" style="display:none">📁 فتح مجلد الوسائط الإضافية</a></div>
     <div id="pm-desc" style="font-size:.88rem;line-height:1.7;color:#475569;margin:10px 0"></div>
 
     <label>سعر البيع للعميل (ج.م)</label>
@@ -645,8 +650,12 @@ function openP(i){
   const btn=document.getElementById('btnAdd');
   btn.disabled=!cur.available; btn.style.opacity=cur.available?'1':'.5';
   btn.textContent=cur.available?'🛒 أضف إلى السلة':'نفد المخزون';
-  const d=document.getElementById('pm-drive');
-  if(cur.media){d.href=cur.media;d.style.display='block'}else d.style.display='none';
+  const mediaBox=document.getElementById('pm-media'), imagesLink=document.getElementById('pm-images'), videoLink=document.getElementById('pm-video'), d=document.getElementById('pm-drive');
+  const imagesUrl=cur.mediaImages||cur.driveImages||cur.imagesDrive||'';
+  const videoUrl=cur.mediaVideo||cur.driveVideo||cur.videoDrive||'';
+  const legacyUrl=cur.media||'';
+  [[imagesLink,imagesUrl,'📸 صور المنتج على الطبيعة'],[videoLink,videoUrl,'🎥 فيديو المنتج على الطبيعة'],[d,legacyUrl,'📁 فتح مجلد الوسائط الإضافية']].forEach(function(row){var a=row[0],url=row[1];if(a){a.href=url||'#';a.textContent=row[2];a.style.display=url?'block':'none';}});
+  mediaBox.style.display=(imagesUrl||videoUrl||legacyUrl)?'block':'none';
   document.getElementById('pm').classList.add('show');
   document.body.style.overflow='hidden';
 }
