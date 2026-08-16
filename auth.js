@@ -124,7 +124,11 @@ module.exports = function (app) {
       if (existing) return res.json({ error: 'البريد أو الهاتف أو اسم المستخدم مستخدم بالفعل' });
       const code = String(crypto.randomInt(100000, 1000000));
       const pendingSnap = await store.getDb().collection('emailVerifications').doc(email).get();
-      if (pendingSnap.exists && Date.now() - Number((pendingSnap.data() || {}).lastSentAt || 0) < OTP_RESEND_GAP_MS) return res.status(429).json({ error: 'تم إرسال كود بالفعل، انتظر دقيقة قبل إعادة المحاولة' });
+      if (pendingSnap.exists) {
+        const lastSentAt = Number((pendingSnap.data() || {}).lastSentAt || 0);
+        const remainingSec = Math.max(0, Math.ceil((OTP_RESEND_GAP_MS - (Date.now() - lastSentAt)) / 1000));
+        if (remainingSec > 0) return res.status(429).json({ error: 'تم إرسال كود بالفعل', remainingSec, message: 'انتظر ' + remainingSec + ' ثانية قبل إعادة المحاولة' });
+      }
       const sent = await sendVerificationEmail(email, display, code);
       if (!sent.ok) { console.error('verification email rejected:', sent.status || '', sent.reason || ''); return res.status(503).json({ error: sent.reason || 'تعذر إرسال رمز البريد حاليًا، حاول لاحقًا' }); }
       await store.saveDoc('emailVerifications', email, { id: email, email, name: display, username, phone, pass: hashPw(b.password), codeHash: codeHash(code), expiresAt: Date.now() + OTP_TTL_MS, attempts: 0, lastSentAt: Date.now(), createdAt: new Date().toISOString() });
@@ -155,7 +159,8 @@ module.exports = function (app) {
       const snap = await store.getDb().collection('emailVerifications').doc(email).get();
       if (!snap.exists) return res.json({ error: 'ابدأ التسجيل أولاً' });
       const pending = snap.data() || {};
-      if (Date.now() - Number(pending.lastSentAt || 0) < OTP_RESEND_GAP_MS) return res.status(429).json({ error: 'انتظر دقيقة قبل إعادة إرسال الكود' });
+      const remainingSec = Math.max(0, Math.ceil((OTP_RESEND_GAP_MS - (Date.now() - Number(pending.lastSentAt || 0))) / 1000));
+      if (remainingSec > 0) return res.status(429).json({ error: 'تم إرسال كود بالفعل', remainingSec, message: 'انتظر ' + remainingSec + ' ثانية قبل إعادة إرسال الكود' });
       const code = String(crypto.randomInt(100000, 1000000));
       const sent = await sendVerificationEmail(email, pending.name || email, code);
       if (!sent.ok) return res.status(503).json({ error: sent.reason || 'خدمة البريد غير متاحة حالياً' });
