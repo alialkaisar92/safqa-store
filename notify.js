@@ -105,7 +105,10 @@ module.exports = function (app) {
 
   app.get('/api/onesignal/config', async (req, res) => {
     const cfg = await getMeta();
-    res.json({ appId: cfg.appId || '' });
+    // App ID is public client configuration; REST key remains server-only.
+    const appId = String(process.env.ONESIGNAL_APP_ID || cfg.appId || 'f283c3ca-8c41-49fe-800d-7a174920696d').trim();
+    res.set('Cache-Control', 'no-store');
+    res.json({ appId });
   });
 
   app.post('/api/onesignal/config', global.requireAdmin, async (req, res) => {
