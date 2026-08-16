@@ -59,6 +59,15 @@ function seoDescription(p){const d=seoText(p.description||p.desc||'');return (d|
 function productAvailability(p){return p.available===false || p.is_active===false ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock';}
 
 let productsCache = [], priceListCache = [], lastFetch = 0;
+let affiliateSnapshot = null, affiliateSnapshotAt = 0;
+async function getAffiliateSnapshotFast() {
+  if (affiliateSnapshot && Date.now() - affiliateSnapshotAt < 15000) return affiliateSnapshot;
+  try {
+    affiliateSnapshot = await firestore.getAffiliateData();
+    affiliateSnapshotAt = Date.now();
+  } catch (e) {}
+  return affiliateSnapshot || {};
+}
 async function currentUser(req){ try { return await currentAuthUser(req); } catch(e) { return null; } }
 async function readAffiliate(){ return firestore.getAffiliateData(); }
 async function saveAffiliate(d){ return firestore.saveAffiliateData(d); }
@@ -140,9 +149,11 @@ function mapProduct(p, up) {
 }
 
 app.get('/api/products', async (req,res)=>{
-  res.set('Cache-Control','no-store');
-  let priceUp = 0;
-  try { priceUp = Math.max(0, Math.min(200, Number((await firestore.getAffiliateData()).priceUp) || 0)); } catch (e) {}
+  res.set('Cache-Control','public, max-age=15, stale-while-revalidate=60');
+  const affiliate = await getAffiliateSnapshotFast();
+  let priceUp = Math.max(0, Math.min(200, Number(affiliate.priceUp) || 0));
+  const saved = Array.isArray(affiliate.products) ? affiliate.products : [];
+  const savedById = new Map(saved.map(function(x){ return [String(x.id), x]; }));
   const applyPublicPrice = function(p) {
     const base = Number(p.basePrice != null ? p.basePrice : (p.price != null ? p.price : (p.sale_price != null ? p.sale_price : 0)));
     return Object.assign({}, p, { basePrice: base, cost: p.cost != null ? p.cost : base, price: Math.round(base * (1 + priceUp / 100)) });
@@ -155,9 +166,10 @@ app.get('/api/products', async (req,res)=>{
       if(cached.length>=100){
         const normalized = cached.map(function(p){
           const prop = (p.properties && p.properties[0]) || {};
+          const local = savedById.get(String(p.id || p._id)) || {};
           const stock = Number(p.stock != null ? p.stock : (prop.min != null ? prop.min : (prop.value || 0)));
           const category = cat([p.name, p.title, p.description, p.desc, p.note, p.category].filter(Boolean).join(' '));
-          return applyPublicPrice(Object.assign({}, p, {category: category, cat: category, stock: stock, available: p.available !== false && p.is_active !== false && stock > 0, propId: p.propId || prop._id || ''}));
+          return applyPublicPrice(Object.assign({}, p, local, {category: category, cat: category, stock: stock, available: p.available !== false && p.is_active !== false && stock > 0, propId: p.propId || prop._id || ''}));
         });
         return res.json(normalized);
       }
@@ -186,8 +198,8 @@ app.get('/api/products', async (req,res)=>{
         image: p.image || ((p.images && p.images[0]) || ''),
         desc: p.description || '',
         media: p.media_url || p.media || '',
-        mediaImages: p.media_images || p.images_drive || p.drive_images || '',
-        mediaVideo: p.media_video || p.video_url || p.drive_video || '',
+        mediaImages: p.mediaImages || p.media_images || p.images_drive || p.drive_images || '',
+        mediaVideo: p.mediaVideo || p.media_video || p.video_url || p.drive_video || '',
         stock: Number(prop.min ?? prop.stock ?? prop.quantity ?? p.stock ?? 0),
         available: p.is_active !== false && prop.is_available !== false && Number(prop.min ?? prop.stock ?? prop.quantity ?? p.stock ?? 0) > 0,
         category: c, cat: c,
@@ -608,12 +620,20 @@ function stockLabel(s, avail){
   return '<span class="stock-ok">متوفر: '+s+' قطعة</span>';
 }
 
-async function loadProducts(){
-  const r=await fetch('/api/products'); products=(await r.json()).map(function(p){var sold=0;try{sold=(JSON.parse(localStorage.getItem('ssold')||'{}')[p.id])||0}catch(e){}
-p.stock=Math.max(0,(p.stock!=null?+p.stock:0)-sold);p.available=p.available!==false&&p.stock>0;return p});
+function hydrateProducts(list){
+  products=(Array.isArray(list)?list:[]).map(function(p){var sold=0;try{sold=(JSON.parse(localStorage.getItem('ssold')||'{}')[p.id])||0}catch(e){}
+    p.stock=Math.max(0,(p.stock!=null?+p.stock:0)-sold);p.available=p.available!==false&&p.stock>0;return p});
   const cats=['الكل',...new Set(products.map(p=>p.cat||p.category||'أخرى').filter(Boolean))];
   document.getElementById('cats').innerHTML=cats.map((c,i)=>'<button class="c'+(i===0?' active':'')+'" data-c="'+(c==='الكل'?'all':c)+'">'+c+'</button>').join('');
   renderP();
+}
+async function loadProducts(){
+  try { const cached=JSON.parse(localStorage.getItem('rab7na_products_cache')||'null'); if(Array.isArray(cached)&&cached.length) hydrateProducts(cached); } catch(e) {}
+  try {
+    const r=await fetch('/api/products'); const fresh=await r.json();
+    if(Array.isArray(fresh)&&fresh.length){ localStorage.setItem('rab7na_products_cache',JSON.stringify(fresh)); hydrateProducts(fresh); }
+    else if(!products.length) hydrateProducts([]);
+  } catch(e) { if(!products.length) hydrateProducts([]); }
 }
 function setSort(v){sortMode=v||'featured';renderP()}
 function toggleStockFilter(){onlyAvailable=!onlyAvailable;const b=document.getElementById('stockFilter');if(b){b.classList.toggle('active',onlyAvailable);b.textContent=onlyAvailable?'عرض الكل':'المتاح فقط'}renderP()}
