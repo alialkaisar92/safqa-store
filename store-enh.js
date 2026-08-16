@@ -277,24 +277,35 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
     if(window.Notification&&Notification.permission==='denied'){showState(btn,'⚙️ السماح من إعدادات المتصفح',false);return;}
     if(window.Notification&&Notification.permission==='granted')showState(btn,'✅ الإشعارات مفعّلة',true);
   }
+  function withTimeout(p,ms){return Promise.race([p,new Promise(function(_,reject){setTimeout(function(){reject(Error('انتهت مهلة خدمة الإشعارات؛ حاول مرة أخرى'))},ms)})]);}
   function load(){
-    if(window.OneSignal)return Promise.resolve(window.OneSignal);
-    return fetch('/api/onesignal/config').then(function(r){return r.json()}).then(function(c){
-      var appId=c&&c.appId;if(!appId)throw Error('missing app id');
+    if(window.__rab7naOSPromise)return window.__rab7naOSPromise;
+    window.__rab7naOSPromise=withTimeout(fetch('/api/onesignal/config').then(function(r){return r.json()}).then(function(c){
+      var appId=c&&c.appId;if(!appId)throw Error('خدمة الإشعارات غير مهيأة');
       return new Promise(function(resolve,reject){
+        var done=false;
+        function finish(OS){if(done)return;done=true;resolve(OS)}
         window.OneSignalDeferred=window.OneSignalDeferred||[];
-        window.OneSignalDeferred.push(function(OS){resolve(OS)});
-        var s=document.querySelector('script[data-rab7na-os]');
-        if(!s){s=document.createElement('script');s.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';s.async=true;s.dataset.rab7naOs='1';s.onload=function(){window.OneSignalDeferred=window.OneSignalDeferred||[]};s.onerror=reject;document.head.appendChild(s)}
-        setTimeout(function(){if(!window.OneSignalDeferred)reject(Error('OneSignal timeout'))},10000);
-      }).then(function(OS){return OS.init({appId:appId,notifyButton:{enable:false},autoResubscribe:true,serviceWorkerPath:'/OneSignalSDKWorker.js',serviceWorkerParam:{scope:'/'}}).then(function(){return OS})});
-    });
+        window.OneSignalDeferred.push(function(OS){finish(OS)});
+        var s=document.querySelector('script[data-rab7na-os]')||document.querySelector('script[src*="OneSignalSDK.page.js"]');
+        if(!s){s=document.createElement('script');s.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';s.async=true;s.dataset.rab7naOs='1';s.onerror=function(){reject(Error('تعذر تحميل خدمة الإشعارات'))};document.head.appendChild(s)}
+        setTimeout(function(){if(!done)reject(Error('تعذر تشغيل خدمة الإشعارات'))},12000);
+      }).then(function(OS){
+        if(OS.__rab7naInitialized)return OS;
+        return OS.init({appId:appId,notifyButton:{enable:false},autoResubscribe:true,serviceWorkerPath:'/OneSignalSDKWorker.js',serviceWorkerParam:{scope:'/'}}).then(function(){OS.__rab7naInitialized=true;return OS});
+      });
+    }),15000).catch(function(e){window.__rab7naOSPromise=null;throw e});
+    return window.__rab7naOSPromise;
   }
   function enable(){
     var b=document.getElementById('rab7naPushBtn');if(!b)return;
     if(!token()){showState(b,'سجّل الدخول أولًا',false);return;}
     b.disabled=true;b.textContent='⏳ جاري التفعيل...';
-    load().then(function(OS){return OS.Slidedown.promptPush().then(function(){return OS})}).then(function(OS){
+    withTimeout(load().then(function(OS){
+      if(OS.Slidedown&&OS.Slidedown.promptPush)return Promise.resolve(OS.Slidedown.promptPush()).then(function(){return OS});
+      if(OS.User&&OS.User.PushSubscription&&OS.User.PushSubscription.optIn)return OS.User.PushSubscription.optIn().then(function(){return OS});
+      return OS;
+    }),20000).then(function(OS){
       var user=JSON.parse(localStorage.getItem('euser')||'null'),uid=user&&user.id?String(user.id):'';
       if(uid&&OS.login)return OS.login(uid).then(function(){return OS});return OS;
     }).then(function(OS){
