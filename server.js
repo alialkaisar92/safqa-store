@@ -436,7 +436,7 @@ body.chatfull header.header{display:none}
 body.chatfull .wa-wrap{height:calc(100vh - 62px);border-radius:0}
 .wa-back{background:none;border:none;color:#fff;font-size:22px}
 </style>
-<link rel="stylesheet" href="/store-enh.css?v=3">
+<link rel="stylesheet" href="/store-enh.css?v=4">
 </head>
 <body><div id="splash" style="position:fixed;inset:0;background:#f6f8f7;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px"><div style="width:46px;height:46px;border:4px solid #e2e8f0;border-top-color:#0f766e;border-radius:50%;animation:sp 1s linear infinite"></div><b style="color:#0f766e">rab7na</b><style>@keyframes sp{to{transform:rotate(360deg)}}</style></div>
 <style id="modernDash">
@@ -870,7 +870,7 @@ document.getElementById('s').oninput=e=>{clearTimeout(window.t);window.t=setTime
 document.getElementById('cats').onclick=e=>{if(e.target.classList.contains('c')){document.querySelectorAll('.c').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');cc=e.target.dataset.c;renderP()}};
 updCC(); loadProducts(); loadPrices();
 </script>
-<script src="/store-enh.js?v=3" defer></script>
+<script src="/store-enh.js?v=4" defer></script>
 
 </body>
 </html>`);

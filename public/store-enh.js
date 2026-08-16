@@ -117,17 +117,19 @@ function uInfo(){try{return JSON.parse(localStorage.getItem('euser')||'null')}ca
 function hdr(){return {'Content-Type':'application/json','x-auth-token':tok()}}
 function ensureModal(){if(document.getElementById('authModal'))return;
 var m=document.createElement('div');m.id='authModal';m.className='auth-ovl';
-m.innerHTML='<div class="auth-card"><button class="auth-x" onclick="authClose()">✕</button><div class="auth-tabs"><button id="atLogin" class="on" onclick="authTab(\'login\')">تسجيل دخول</button><button id="atReg" onclick="authTab(\'reg\')">إنشاء حساب</button></div><div id="authBody"></div><p class="auth-msg" id="authMsg"></p></div>';
+m.innerHTML='<div class="auth-card"><button class="auth-x" onclick="authClose()" aria-label="إغلاق">×</button><div class="auth-brand"><span>ر</span><div><b>rab7na</b><small>منصة التسويق بالعمولة</small></div></div><div class="auth-tabs"><button id="atLogin" class="on" onclick="authTab(\'login\')">تسجيل الدخول</button><button id="atReg" onclick="authTab(\'reg\')">إنشاء حساب</button></div><div id="authBody"></div><p class="auth-msg" id="authMsg"></p><div class="auth-foot">آمن وسهل — ابدأ في دقائق</div></div>';
 document.body.appendChild(m);}
 window.authOpen=function(tab){ensureModal();document.getElementById('authModal').style.display='flex';authTab(tab||'login')};
 window.authClose=function(){var m=document.getElementById('authModal');if(m)m.style.display='none'};
+function storeGoogle(){var box=document.getElementById('storeGoogle');if(!box)return;fetch('/api/auth/google-config').then(function(r){return r.json()}).then(function(d){var id=d.clientId||'';if(!id){box.innerHTML='<div class="google-off">تسجيل Google غير متاح حاليًا</div>';return;}if(!window.google||!google.accounts||!google.accounts.id){setTimeout(storeGoogle,250);return;}google.accounts.id.initialize({client_id:id,callback:storeGoogleDone,auto_select:false,cancel_on_tap_outside:true,use_fedcm_for_prompt:true});box.innerHTML='';google.accounts.id.renderButton(box,{theme:'outline',size:'large',width:330,text:'continue_with',shape:'rectangular',logo_alignment:'center'});}).catch(function(){box.innerHTML='<div class="google-off">تعذر تحميل تسجيل Google</div>'})}
+function storeGoogleDone(response){msg('جارٍ التحقق من Google…',true);fetch('/api/auth/google',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({credential:response.credential})}).then(function(r){return r.json()}).then(function(d){if(d.ok){localStorage.setItem('etok',d.token);if(d.refresh)localStorage.setItem('ertok',d.refresh);localStorage.setItem('euser',JSON.stringify(d.user));authClose();authRender();ehToast('أهلاً '+d.user.name+' 👋')}else msg(d.error||'تعذر تسجيل الدخول عبر Google',false)}).catch(function(){msg('تعذر الاتصال بالخادم',false)})}
 window.authTab=function(t){var L=document.getElementById('atLogin'),R=document.getElementById('atReg');L.classList.toggle('on',t==='login');R.classList.toggle('on',t==='reg');document.getElementById('authMsg').textContent='';
 var b=document.getElementById('authBody');
-if(t==='login'){b.innerHTML='<label>رقم الهاتف أو الإيميل</label><input id="liC"><label>كلمة السر</label><input id="liP" type="password"><button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="doLogin()">دخول</button><p style="text-align:center;margin-top:10px;font-size:.8rem">معندكش حساب؟ <a href="#" onclick="authTab(\'reg\');return false" style="color:var(--p);font-weight:700">إنشاء حساب</a></p>';}
-else{b.innerHTML='<label>الاسم</label><input id="rgN"><label>رقم الهاتف أو الإيميل</label><input id="rgC"><label>كلمة السر (6+ أحرف)</label><input id="rgP" type="password"><button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="doReg()">إنشاء الحساب</button>';}};
-function msg(s,ok){var e=document.getElementById('authMsg');if(e){e.textContent=s;e.style.color=ok?'#16a34a':'#dc2626'}}
-window.doLogin=function(){fetch('/api/auth/login',{method:'POST',headers:hdr(),body:JSON.stringify({username:document.getElementById('liC').value,password:document.getElementById('liP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok){localStorage.setItem('etok',d.token);localStorage.setItem('euser',JSON.stringify(d.user));authClose();authRender();ehToast('أهلاً '+d.user.name+' 👋')}else msg(d.error,false)})};
-window.doReg=function(){fetch('/api/auth/register',{method:'POST',headers:hdr(),body:JSON.stringify({display_name:document.getElementById('rgN').value,username:document.getElementById('rgC').value,password:document.getElementById('rgP').value})}).then(function(r){return r.json()}).then(function(d){if(d.ok){localStorage.setItem('etok',d.token);localStorage.setItem('euser',JSON.stringify(d.user));authClose();authRender();ehToast('تم إنشاء حسابك ✅')}else msg(d.error,false)})};
+if(t==='login'){b.innerHTML='<div class="auth-google" id="storeGoogle"></div><div class="auth-or">أو باستخدام بياناتك</div><label>البريد أو رقم الهاتف أو اسم المستخدم</label><input id="liC" autocomplete="username" placeholder="أدخل بريدك أو رقم هاتفك"><label>كلمة المرور</label><input id="liP" type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور"><button class="auth-submit" onclick="doLogin()">تسجيل الدخول</button><p class="auth-help"><span onclick="authTab(\'reg\')">ليس لديك حساب؟ إنشاء حساب جديد</span></p>'}
+else{b.innerHTML='<div class="auth-google" id="storeGoogle"></div><div class="auth-or">أو باستخدام بياناتك</div><label>الاسم</label><input id="rgN" autocomplete="name" placeholder="اكتب اسمك"><label>البريد أو رقم الهاتف</label><input id="rgC" autocomplete="email" placeholder="أدخل البريد أو الهاتف"><label>كلمة المرور <small>(6 أحرف على الأقل)</small></label><input id="rgP" type="password" autocomplete="new-password" placeholder="أنشئ كلمة مرور قوية"><button class="auth-submit" onclick="doReg()">إنشاء الحساب والبدء</button><p class="auth-help">بإنشاء الحساب أنت توافق على استخدام المنصة بأمان.</p>';}storeGoogle();};
+function msg(s,ok){var e=document.getElementById('authMsg');if(e){e.textContent=s;e.style.color=ok?'#16a34a':'#b42318'}}
+window.doLogin=function(){var c=document.getElementById('liC'),p=document.getElementById('liP');if(!c||!p||!c.value.trim()||!p.value)return msg('اكتب بيانات الدخول أولًا',false);fetch('/api/auth/login',{method:'POST',headers:hdr(),body:JSON.stringify({contact:c.value.trim(),username:c.value.trim(),password:p.value})}).then(function(r){return r.json()}).then(function(d){if(d.ok){localStorage.setItem('etok',d.token);if(d.refresh)localStorage.setItem('ertok',d.refresh);localStorage.setItem('euser',JSON.stringify(d.user));authClose();authRender();ehToast('أهلاً '+d.user.name+' 👋')}else msg(d.error||'بيانات الدخول غير صحيحة',false)}).catch(function(){msg('تعذر الاتصال بالخادم',false)})};
+window.doReg=function(){var n=document.getElementById('rgN'),c=document.getElementById('rgC'),p=document.getElementById('rgP');if(!n||!c||!p||!n.value.trim()||!c.value.trim()||!p.value)return msg('أكمل البيانات أولًا',false);fetch('/api/auth/register',{method:'POST',headers:hdr(),body:JSON.stringify({display_name:n.value.trim(),name:n.value.trim(),username:c.value.trim(),contact:c.value.trim(),email:c.value.indexOf('@')>-1?c.value.trim():'',phone:c.value.indexOf('@')>-1?'':c.value.trim(),password:p.value})}).then(function(r){return r.json()}).then(function(d){if(d.ok){localStorage.setItem('etok',d.token);if(d.refresh)localStorage.setItem('ertok',d.refresh);localStorage.setItem('euser',JSON.stringify(d.user));authClose();authRender();ehToast('تم إنشاء حسابك ✅')}else msg(d.error||'تعذر إنشاء الحساب',false)}).catch(function(){msg('تعذر الاتصال بالخادم',false)})};
 window.authLogout=function(){fetch('/api/auth/logout',{method:'POST',headers:hdr()}).then(function(){localStorage.removeItem('etok');localStorage.removeItem('euser');authRender();ehToast('تم تسجيل الخروج')})};
 function authRender(){var p=document.getElementById('p-profile');if(!p)return;
 var box=document.getElementById('authBox');if(!box){box=document.createElement('div');box.id='authBox';p.insertBefore(box,p.firstChild)}
@@ -268,7 +270,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
     if(!host)return;
     var b=document.createElement('button');b.id='rab7naPushBtn';b.type='button';b.textContent='🔔 تفعيل الإشعارات';
     b.style.cssText='position:fixed;z-index:80;bottom:86px;right:14px;border:0;border-radius:999px;padding:12px 16px;background:#0f766e;color:#fff;font:700 13px inherit;box-shadow:0 8px 24px #0f766e44;cursor:pointer';
-    b.onclick=function(){return window.rab7naEnableNativePush?window.rab7naEnableNativePush():enable();};document.body.appendChild(b);update(b);
+    b.onclick=enable;document.body.appendChild(b);update(b);
   }
   function update(btn){
     if(!btn)btn=document.getElementById('rab7naPushBtn');
@@ -328,7 +330,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
     }).catch(function(e){showState(b,e&&e.message?e.message:'🔔 حاول التفعيل مرة أخرى',false)});
   }
   window.rab7naEnablePush=enable;
-  setInterval(addButton,1200);setTimeout(addButton,500);
+  setInterval(function(){addButton();update(document.getElementById('rab7naPushBtn'));},1200);setTimeout(function(){addButton();update(document.getElementById('rab7naPushBtn'));},500);
 })();
 
 /* Native Web Push fallback: يعمل داخل الموقع وخارجه دون الاعتماد على لوحة OneSignal */
@@ -337,28 +339,31 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
     var padding='='.repeat((4-base64.length%4)%4), raw=atob((base64+padding).replace(/-/g,'+').replace(/_/g,'/')), out=new Uint8Array(raw.length);
     for(var i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i); return out;
   }
-  function setNativeButton(btn,msg,ok){if(btn){btn.textContent=msg;btn.disabled=false;btn.classList.toggle('is-ok',!!ok);}}
-  async function enableNative(){
+  function setNativeButton(btn,msg,ok){if(btn){btn.textContent=msg;btn.disabled=false;btn.classList.toggle('is-ok',!!ok);if(ok)btn.style.display='none';}}
+  async function syncNativeSubscription(requestPermission){
     var btn=document.getElementById('rab7naPushBtn'), t=localStorage.getItem('etok')||'';
-    if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){setNativeButton(btn,'المتصفح لا يدعم الإشعارات',false);return;}
-    if(Notification.permission==='denied'){setNativeButton(btn,'⚙️ السماح من إعدادات المتصفح',false);return;}
+    if(!t)return false;
+    if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){setNativeButton(btn,'المتصفح لا يدعم الإشعارات',false);return false;}
+    if(Notification.permission==='denied'){setNativeButton(btn,'⚙️ السماح من إعدادات المتصفح',false);return false;}
     if(btn){btn.disabled=true;btn.textContent='⏳ جاري تفعيل الإشعارات...';}
     try{
-      /* يجب طلب الإذن مباشرة من تفاعل المستخدم قبل أي طلب شبكة أو await طويل */
-      var permission=Notification.permission;
-      if(permission!=='granted') permission=await Notification.requestPermission();
-      if(permission!=='granted')throw Error('لم يتم السماح بالإشعارات من المتصفح');
       var keyRes=await fetch('/api/push/vapid-public-key',{cache:'no-store'}), key=await keyRes.json();
       if(!key.publicKey)throw Error('خدمة الإشعارات غير مهيأة بعد');
       var reg=await navigator.serviceWorker.register('/sw.js',{scope:'/'});
+      var permission=Notification.permission;
+      if(permission==='default' && requestPermission){permission=await Promise.race([Notification.requestPermission(),new Promise(function(_,reject){setTimeout(function(){reject(Error('افتح السماح من إعدادات المتصفح ثم حاول مرة أخرى'))},12000)})]);}
+      if(permission!=='granted')throw Error('لم يتم السماح بالإشعارات من المتصفح');
       var sub=await reg.pushManager.getSubscription();
       if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToBytes(key.publicKey)});
-      var headers={'Content-Type':'application/json'}; if(t) headers['x-auth-token']=t;
-      var r=await fetch('/api/notifications/register',{method:'POST',headers:headers,body:JSON.stringify({subscription:sub.toJSON(),externalId:(JSON.parse(localStorage.getItem('euser')||'null')||{}).id||''})});
+      var r=await fetch('/api/notifications/register',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':t},body:JSON.stringify({subscription:sub.toJSON(),externalId:(JSON.parse(localStorage.getItem('euser')||'null')||{}).id||''})});
       if(!r.ok)throw Error('تعذر تسجيل جهازك للإشعارات');
-      setNativeButton(btn,'✅ الإشعارات مفعّلة',true); if(window.rab7naNoticeSound)window.rab7naNoticeSound();
-    }catch(e){setNativeButton(btn,e&&e.message?e.message:'تعذر تفعيل الإشعارات',false);}
+      localStorage.setItem('rab7naPushEnabled','1');
+      setNativeButton(btn,'✅ الإشعارات مفعّلة',true);
+      return true;
+    }catch(e){if(btn){btn.disabled=false;btn.style.display='';}setNativeButton(btn,e&&e.message?e.message:'تعذر تفعيل الإشعارات',false);return false;}
   }
+  async function enableNative(){return syncNativeSubscription(true);}
   window.rab7naEnableNativePush=enableNative;
-  setInterval(function(){var b=document.getElementById('rab7naPushBtn');if(b)b.onclick=enableNative;},1500);
+  setInterval(function(){var b=document.getElementById('rab7naPushBtn');if(!b)return;b.onclick=enableNative;var t=localStorage.getItem('etok')||'';if(!t)setNativeButton(b,'🔔 سجّل الدخول لتفعيل الإشعارات',false);else if(window.Notification&&Notification.permission==='granted'){syncNativeSubscription(false);}else if(window.Notification&&Notification.permission==='denied')setNativeButton(b,'⚙️ السماح من إعدادات المتصفح',false);else if(!b.disabled)setNativeButton(b,'🔔 تفعيل الإشعارات',false);},1500);
+  setTimeout(function(){if(window.Notification&&Notification.permission==='granted'&&localStorage.getItem('etok'))syncNativeSubscription(false);},2500);
 })();
