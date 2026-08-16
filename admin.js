@@ -112,6 +112,10 @@ module.exports = function (app) {
     if (!hasPermission(req.adminUser, permission)) return res.status(403).json({ error: 'ليس لديك صلاحية لهذا القسم', permission });
     next();
   });
+  app.get('/api/admin/me', async (req, res) => {
+    const u = req.adminUser || {};
+    res.json({ id: u.id, name: u.name || u.display_name || '', email: u.email || '', contact: u.contact || '', role: u.__envAdmin ? 'owner' : (u.role || ''), isAdmin: true, permissions: u.__envAdmin ? ADMIN_PERMISSIONS : (Array.isArray(u.permissions) ? u.permissions : rolePermissions(u.role)) });
+  });
   app.get('/api/admin/stats', async (req, res) => {
     try {
       const [d, u, c] = await Promise.all([data(), users(), chats()]);

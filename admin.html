@@ -276,5 +276,6 @@ document.getElementById('view').innerHTML='<div class="notif-title"><div><h2>ا�
 +'<div class="panel"><div class="panel-head"><h3>آخر الإشعارات</h3><button style="background:#fff1f2;color:#be123c;border:1px solid #fecdd3;border-radius:10px;padding:8px 12px;cursor:pointer;font-family:inherit;font-weight:800" onclick="clearAllAdminNotifications(this)">🗑 مسح السجل</button></div><p class="muted" style="margin:4px 0 8px">'+lg.length+' رسالة ظاهرة في السجل</p><div class="nlogs">'+logs+'</div></div>'
 +'<details class="panel advanced"><summary>إعدادات الربط المتقدمة</summary><label>Web App ID</label><input id="osApp" value="'+(c.appId||'')+'"><label>REST API Key</label><input id="osKey" type="password" value="'+(c.restKey||'')+'"><button class="btn ghost" style="margin-top:8px" onclick="saveOS(this)">حفظ الإعدادات</button></details>';});}
 
-menu();if(localStorage.getItem('etok'))go('stats');else showAdminLogin();
+function syncAdminIdentity(){return fetch('/api/admin/me',{headers:adminHeaders()}).then(function(r){return r.json().then(function(d){if(!r.ok)throw new Error(d.error||'انتهت جلسة الإدارة');return d;});}).then(function(u){var old={};try{old=JSON.parse(localStorage.getItem('euser')||'{}')}catch(e){}localStorage.setItem('euser',JSON.stringify(Object.assign({},old,u)));menu();return u;});}
+menu();if(localStorage.getItem('etok'))syncAdminIdentity().then(function(){go('stats')}).catch(function(){localStorage.removeItem('etok');menu();showAdminLogin()});else showAdminLogin();
 </script></body></html>
