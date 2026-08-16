@@ -175,8 +175,8 @@ module.exports = function (app) {
 
   app.post('/api/notifications/register', async (req, res) => {
     try {
-      const userId = req.userId ? String(req.userId) : '';
-      const u = userId ? await store.getUser(userId) : null;
+      const u = await authUser(req);
+      const userId = u ? String(u.id) : '';
       if (req.body.playerId && u) u.playerId = String(req.body.playerId);
       if (req.body.externalId && u) u.notificationExternalId = String(req.body.externalId);
       if (u && (req.body.playerId || req.body.externalId)) await store.saveUser(u);
