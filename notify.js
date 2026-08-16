@@ -66,7 +66,7 @@ module.exports = function (app) {
       url: String(options.url || '/'),
       icon: String(options.icon || '/logo.png'),
       badge: String(options.badge || '/logo.png'),
-      tag: String(options.tag || 'rab7na-notification'),
+      tag: String(options.tag || ('rab7na-notification-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8))),
       data: options.data || {}
     });
     let delivered = 0;
