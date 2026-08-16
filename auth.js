@@ -65,7 +65,7 @@ async function sendEmail({ email, name, code, subject, purpose }) {
       await transporter.verify();
       await transporter.sendMail({ from: process.env.EMAIL_FROM || smtpUser, to: email, subject, text: 'رمزك في Rab7na هو ' + code + '. صالح لمدة 10 دقائق.', html: otpHtml(subject, name, code, purpose) });
       return { ok: true, provider: 'smtp' };
-    } catch (e) { console.error('smtp email failed:', e.message); return { ok: false, reason: 'تعذر الاتصال بخدمة SMTP؛ راجع متغيرات البريد في Vercel Production' }; }
+    } catch (e) { console.error('smtp email failed:', e.message); }
   }
   const key = String(process.env.RESEND_API_KEY || '').trim();
   if (!key) return { ok: false, reason: 'أضف إعدادات SMTP EMAIL_HOST وEMAIL_USER وEMAIL_PASSWORD أو RESEND_API_KEY' };
