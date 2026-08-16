@@ -239,9 +239,6 @@ setInterval(guard,900);
 /* إزالة الـ Loader بعد تجهيز الواجهة */
 setTimeout(function(){var s=document.getElementById('splash');if(s)s.remove()},800);
 })();
-window.authOpen=function(){location.href='/login'};
-
-
 function openFilterSheet(){
  var ex=document.getElementById('fsheet');if(ex){ex.remove();return;}
  var cats=['الكل','إلكترونيات','أطفال','منزل ومطبخ','جمال وعناية','أخرى'];
