@@ -6,8 +6,10 @@ module.exports = function (app) {
   try { webpush = require('web-push'); } catch (_) {}
 
   async function getMeta() {
-    const snap = await store.getDb().collection('notificationMeta').doc('config').get();
-    return snap.exists ? (snap.data() || {}) : {};
+    try {
+      const snap = await store.getDb().collection('notificationMeta').doc('config').get();
+      return snap.exists ? (snap.data() || {}) : {};
+    } catch (_) { return {}; }
   }
 
   async function saveMeta(value) {
@@ -155,7 +157,7 @@ module.exports = function (app) {
     const cfg = await getMeta();
     const appId = String(process.env.ONESIGNAL_APP_ID || cfg.appId || 'f283c3ca-8c41-49fe-800d-7a174920696d').trim();
     res.set('Cache-Control', 'no-store');
-    res.json({ appId });
+    res.json({ appId, nativePush: nativePushReady() });
   });
 
   app.get('/api/push/vapid-public-key', async (req, res) => {
