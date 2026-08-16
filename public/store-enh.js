@@ -203,7 +203,7 @@ setInterval(function(){if(localStorage.getItem('etok'))act('نشط في '+cur())
    window.OneSignalDeferred=window.OneSignalDeferred||[];
    var s=document.createElement('script');s.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';s.async=true;
    s.onload=function(){OneSignalDeferred.push(function(OneSignal){
-    OneSignal.init({appId:APPID,notifyButton:false,autoResubscribe:true,serviceWorkerPath:'OneSignalSDKWorker.js',serviceWorkerParam:{scope:'/'}})
+    OneSignal.init({appId:APPID,notifyButton:false,autoResubscribe:true,serviceWorkerPath:'/sw.js',serviceWorkerParam:{scope:'/'}})
     .then(function(){return OneSignal.Slidedown.promptPush()}).then(function(){return registerSubscription(OneSignal)}).catch(function(){});
    });};
    document.head.appendChild(s);
@@ -293,8 +293,8 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
         setTimeout(function(){if(!done)reject(Error('تعذر تشغيل خدمة الإشعارات'))},12000);
       }).then(function(OS){
         if(OS.__rab7naInitialized)return OS;
-        var sw=window.navigator&&navigator.serviceWorker?navigator.serviceWorker.register('/OneSignalSDKWorker.js',{scope:'/'}).catch(function(){return null}):Promise.resolve(null);
-        return sw.then(function(){return OS.init({appId:appId,notifyButton:{enable:false},autoResubscribe:true,serviceWorkerPath:'/OneSignalSDKWorker.js',serviceWorkerParam:{scope:'/'}})}).then(function(){OS.__rab7naInitialized=true;return OS});
+        var sw=window.navigator&&navigator.serviceWorker?navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(function(){return null}):Promise.resolve(null);
+        return sw.then(function(){return OS.init({appId:appId,notifyButton:{enable:false},autoResubscribe:true,serviceWorkerPath:'/sw.js',serviceWorkerParam:{scope:'/'}})}).then(function(){OS.__rab7naInitialized=true;return OS});
       });
     }),15000).catch(function(e){window.__rab7naOSPromise=null;throw e});
     return window.__rab7naOSPromise;
@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
       if(permission!=='granted')throw Error('لم يتم السماح بالإشعارات من المتصفح');
       var keyRes=await fetch('/api/push/vapid-public-key',{cache:'no-store'}), key=await keyRes.json();
       if(!key.publicKey)throw Error('خدمة الإشعارات غير مهيأة بعد');
-      var reg=await navigator.serviceWorker.register('/OneSignalSDKWorker.js',{scope:'/'});
+      var reg=await navigator.serviceWorker.register('/sw.js',{scope:'/'});
       var sub=await reg.pushManager.getSubscription();
       if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToBytes(key.publicKey)});
       var headers={'Content-Type':'application/json'}; if(t) headers['x-auth-token']=t;

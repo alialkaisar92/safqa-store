@@ -1,7 +1,7 @@
 /* sw.js — يتعامل مع الـ push الحقيقي ويعرض إشعار نظام احترافي */
 self.addEventListener('push',function(e){
-  var d={title:'سوقلي',body:'عندك تحديث جديد',tag:'sa',icon:'/icon.svg',badge:'/icon.svg',vibrate:[0,60,40,60],requireInteraction:false,data:{url:'/'}};
-  try{if(e.data){var j=e.data.json();if(j.title)d.title=j.title;if(j.body)d.body=j.body;if(j.tag)d.tag=j.tag;if(j.url)d.data={url:j.url};}}catch(_){}
+  var d={title:'سوقلي',body:'عندك تحديث جديد',tag:'sa',icon:'/logo.png',badge:'/logo.png',vibrate:[0,60,40,60],requireInteraction:false,data:{url:'/'}};
+  try{if(e.data){var j=e.data.json();if(j.title)d.title=j.title;if(j.body)d.body=j.body;else if(j.contents)d.body=typeof j.contents==='string'?j.contents:(j.contents.ar||j.contents.en||d.body);if(j.tag)d.tag=j.tag;if(j.url)d.data={url:j.url};}}catch(_){}
   e.waitUntil(self.registration.showNotification(d.title,d));
 });
 self.addEventListener('notificationclick',function(e){
