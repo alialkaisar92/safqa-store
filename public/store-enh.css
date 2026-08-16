@@ -10,12 +10,12 @@ body{background:var(--bg)!important;color:var(--tx)!important}
 .eh-pname small{display:flex;align-items:center;gap:3px;font-size:.64rem;color:var(--p2);font-weight:700}
 .eh-bell,.eh-cartb{position:relative;background:#fff;border:none;border-radius:12px;padding:8px;font-size:18px;cursor:pointer}
 .eh-bell i,.eh-cartb i{position:absolute;top:-4px;inset-inline-end:-4px;background:var(--p2);color:#fff;border-radius:20px;font-size:.6rem;padding:2px 6px;font-style:normal;font-weight:800}
-.eh-wallet{background:#fff;border-radius:var(--rad);box-shadow:var(--sh);padding:16px;margin:14px 0;display:flex;align-items:center;justify-content:space-between}
+.eh-wallet{display:none!important}
 .eh-wallet .bal b{font-size:1.4rem;color:var(--p);display:block}
 .eh-wallet .bal small{color:var(--mut);font-size:.75rem;font-weight:700}
 .eh-wallet .wic{width:46px;height:46px;border-radius:14px;background:#e7f5f0;color:var(--p);display:flex;align-items:center;justify-content:center;font-size:20px}
 .eh-wallet .wbtn{background:linear-gradient(135deg,var(--p2),var(--p));color:#fff;border:none;border-radius:14px;padding:12px 18px;font-weight:800;cursor:pointer}
-.eh-hero{background:linear-gradient(135deg,var(--p),var(--p2));border-radius:22px;color:#fff;padding:24px;margin-bottom:14px;position:relative;box-shadow:0 16px 36px -16px rgba(16,185,129,.5)}
+.eh-hero,.eh-quick,.eh-sechead,.eh-stats{display:none!important}
 .eh-hero h3{font-size:1.3rem;font-weight:900;margin-bottom:6px}
 .eh-hero p{font-size:.8rem;opacity:.92;margin-bottom:14px;line-height:1.6}
 .eh-hero .hbtn{background:#fff;color:var(--p);border:none;border-radius:12px;padding:11px 20px;font-weight:800;cursor:pointer}
@@ -56,7 +56,7 @@ body{background:var(--bg)!important;color:var(--tx)!important}
 .eh-stats b{color:var(--p);font-size:.95rem;display:block;margin:2px 0}
 .eh-stats em{color:var(--p2);font-style:normal;font-size:.6rem;font-weight:800}
 .nav{background:#fff!important;box-shadow:0 -4px 16px rgba(16,24,40,.07)!important}
-#cats{display:none!important}
+#cats{display:flex!important}
 .eh-toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:var(--p);color:#fff;padding:10px 24px;border-radius:50px;z-index:999;font-size:.85rem}
 
 .nav{display:flex!important;background:#fff!important;box-shadow:0 -4px 16px rgba(16,24,40,.07)!important;padding:6px 8px!important;gap:4px;border-top:1px solid var(--line)}
