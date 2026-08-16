@@ -257,9 +257,22 @@ window.ldoLogin=function(){
   .then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else lmsg(d.error,false)});
 };
 window.ldoReg=function(){
-  fetch('/api/auth/register',{method:'POST',headers:hdr(),body:JSON.stringify({name:document.getElementById('rgN').value,contact:document.getElementById('rgC').value,password:document.getElementById('rgP').value})})
-  .then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else lmsg(d.error,false)});
+  var email=(document.getElementById('rgE')||{}).value||'';
+  var phone=(document.getElementById('rgPh')||{}).value||'';
+  var username=(document.getElementById('rgU')||{}).value||'';
+  var password=(document.getElementById('rgP')||{}).value||'';
+  var password2=(document.getElementById('rgP2')||{}).value||'';
+  if(!email||!phone||!username||!password||!password2)return lmsg('املأ كل الحقول المطلوبة',false);
+  if(password!==password2)return lmsg('كلمتا السر غير متطابقتين',false);
+  lmsg('جارٍ إرسال رمز التحقق إلى بريدك…',true);
+  fetch('/api/auth/register',{method:'POST',headers:hdr(),body:JSON.stringify({name:username,email:email,phone:phone,username:username,password:password,password2:password2})})
+  .then(function(r){return r.json()}).then(function(d){
+    if(d.verificationRequired){
+      document.getElementById('lbody').innerHTML='<label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">رمز التحقق المرسل إلى البريد</label><input id="rgCode" inputmode="numeric" maxlength="6" placeholder="أدخل الرمز المكوّن من 6 أرقام" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit;text-align:center;letter-spacing:6px"><button onclick="lverifyReg(\''+d.email+'\')" style="width:100%;margin-top:14px;padding:12px;border:none;border-radius:12px;background:#0E5B3A;color:#fff;font-weight:800;cursor:pointer;font-family:inherit">تفعيل الحساب</button><button onclick="ldoReg()" style="width:100%;margin-top:8px;padding:10px;border:1px solid #D8E8DE;border-radius:12px;background:#fff;color:#0E5B3A;font-weight:700;cursor:pointer;font-family:inherit">إعادة إرسال الرمز</button>';lmsg(d.message||'تم إرسال الرمز إلى بريدك',true);
+    }else lmsg(d.error||'تعذر إرسال رمز البريد',false);
+  }).catch(function(){lmsg('تعذر الاتصال بالخادم',false)});
 };
+window.lverifyReg=function(email){var code=(document.getElementById('rgCode')||{}).value||'';if(!code.trim())return lmsg('اكتب رمز التحقق أولًا',false);fetch('/api/auth/email/verify',{method:'POST',headers:hdr(),body:JSON.stringify({email:email,code:code.trim()})}).then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else lmsg(d.error||'رمز التحقق غير صحيح',false)}).catch(function(){lmsg('تعذر الاتصال بالخادم',false)})};
 function ltab(t){
   document.getElementById('ltL').style.background=t==='login'?'#0E5B3A':'#fff';
   document.getElementById('ltL').style.color=t==='login'?'#fff':'#0A4229';
@@ -269,7 +282,7 @@ function ltab(t){
   if(t==='login'){
     b.innerHTML=landingGoogleArea()+'<label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">رقم الهاتف أو الإيميل</label><input id="liC" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">كلمة السر</label><input id="liP" type="password" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><button onclick="ldoLogin()" style="width:100%;margin-top:14px;padding:12px;border:none;border-radius:12px;background:#0E5B3A;color:#fff;font-weight:800;cursor:pointer;font-family:inherit">دخول</button>';
   }else{
-    b.innerHTML=landingGoogleArea()+'<label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">الاسم</label><input id="rgN" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">رقم الهاتف أو الإيميل</label><input id="rgC" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">كلمة السر (6+ أحرف)</label><input id="rgP" type="password" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><button onclick="ldoReg()" style="width:100%;margin-top:14px;padding:12px;border:none;border-radius:12px;background:#0E5B3A;color:#fff;font-weight:800;cursor:pointer;font-family:inherit">إنشاء الحساب والبدء 🚀</button>';
+    b.innerHTML=landingGoogleArea()+'<label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">البريد الإلكتروني</label><input id="rgE" type="email" autocomplete="email" placeholder="name@example.com" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">رقم الموبايل</label><input id="rgPh" type="tel" inputmode="numeric" autocomplete="tel" placeholder="01xxxxxxxxx" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">اسم المستخدم</label><input id="rgU" autocomplete="username" placeholder="مثال: ahmed_2026" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">كلمة السر (6+ أحرف)</label><input id="rgP" type="password" autocomplete="new-password" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">إعادة كتابة كلمة السر</label><input id="rgP2" type="password" autocomplete="new-password" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><button onclick="ldoReg()" style="width:100%;margin-top:14px;padding:12px;border:none;border-radius:12px;background:#0E5B3A;color:#fff;font-weight:800;cursor:pointer;font-family:inherit">إنشاء الحساب وإرسال الرمز 🚀</button>';
   }
   renderLandingGoogle();
 }
