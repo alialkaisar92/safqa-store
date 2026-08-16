@@ -337,26 +337,31 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){va
     var padding='='.repeat((4-base64.length%4)%4), raw=atob((base64+padding).replace(/-/g,'+').replace(/_/g,'/')), out=new Uint8Array(raw.length);
     for(var i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i); return out;
   }
-  function setNativeButton(btn,msg,ok){if(btn){btn.textContent=msg;btn.disabled=false;btn.classList.toggle('is-ok',!!ok);}}
-  async function enableNative(){
+  function setNativeButton(btn,msg,ok){if(btn){btn.textContent=msg;btn.disabled=false;btn.classList.toggle('is-ok',!!ok);if(ok)btn.style.display='none';}}
+  async function syncNativeSubscription(requestPermission){
     var btn=document.getElementById('rab7naPushBtn'), t=localStorage.getItem('etok')||'';
-    if(!t){setNativeButton(btn,'سجّل الدخول لتفعيل الإشعارات',false);return;}
-    if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){setNativeButton(btn,'المتصفح لا يدعم الإشعارات',false);return;}
-    if(Notification.permission==='denied'){setNativeButton(btn,'⚙️ السماح من إعدادات المتصفح',false);return;}
+    if(!t)return false;
+    if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){setNativeButton(btn,'المتصفح لا يدعم الإشعارات',false);return false;}
+    if(Notification.permission==='denied'){setNativeButton(btn,'⚙️ السماح من إعدادات المتصفح',false);return false;}
     if(btn){btn.disabled=true;btn.textContent='⏳ جاري تفعيل الإشعارات...';}
     try{
       var keyRes=await fetch('/api/push/vapid-public-key',{cache:'no-store'}), key=await keyRes.json();
       if(!key.publicKey)throw Error('خدمة الإشعارات غير مهيأة بعد');
       var reg=await navigator.serviceWorker.register('/OneSignalSDKWorker.js',{scope:'/'});
-      var permission=await Promise.race([Notification.requestPermission(),new Promise(function(_,reject){setTimeout(function(){reject(Error('افتح السماح من إعدادات المتصفح ثم حاول مرة أخرى'))},12000)})]);
+      var permission=Notification.permission;
+      if(permission==='default' && requestPermission){permission=await Promise.race([Notification.requestPermission(),new Promise(function(_,reject){setTimeout(function(){reject(Error('افتح السماح من إعدادات المتصفح ثم حاول مرة أخرى'))},12000)})]);}
       if(permission!=='granted')throw Error('لم يتم السماح بالإشعارات من المتصفح');
       var sub=await reg.pushManager.getSubscription();
       if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToBytes(key.publicKey)});
       var r=await fetch('/api/notifications/register',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':t},body:JSON.stringify({subscription:sub.toJSON(),externalId:(JSON.parse(localStorage.getItem('euser')||'null')||{}).id||''})});
       if(!r.ok)throw Error('تعذر تسجيل جهازك للإشعارات');
-      setNativeButton(btn,'✅ الإشعارات مفعّلة',true); if(window.rab7naNoticeSound)window.rab7naNoticeSound();
-    }catch(e){setNativeButton(btn,e&&e.message?e.message:'تعذر تفعيل الإشعارات',false);}
+      localStorage.setItem('rab7naPushEnabled','1');
+      setNativeButton(btn,'✅ الإشعارات مفعّلة',true);
+      return true;
+    }catch(e){if(btn){btn.disabled=false;btn.style.display='';}setNativeButton(btn,e&&e.message?e.message:'تعذر تفعيل الإشعارات',false);return false;}
   }
+  async function enableNative(){return syncNativeSubscription(true);}
   window.rab7naEnableNativePush=enableNative;
-  setInterval(function(){var b=document.getElementById('rab7naPushBtn');if(b){b.onclick=enableNative;var t=localStorage.getItem('etok')||'';if(!t)setNativeButton(b,'🔔 سجّل الدخول لتفعيل الإشعارات',false);else if(window.Notification&&Notification.permission==='granted')setNativeButton(b,'✅ الإشعارات مفعّلة',true);else if(window.Notification&&Notification.permission==='denied')setNativeButton(b,'⚙️ السماح من إعدادات المتصفح',false);else if(!b.disabled)setNativeButton(b,'🔔 تفعيل الإشعارات',false);}},1500);
+  setInterval(function(){var b=document.getElementById('rab7naPushBtn');if(!b)return;b.onclick=enableNative;var t=localStorage.getItem('etok')||'';if(!t)setNativeButton(b,'🔔 سجّل الدخول لتفعيل الإشعارات',false);else if(window.Notification&&Notification.permission==='granted'){syncNativeSubscription(false);}else if(window.Notification&&Notification.permission==='denied')setNativeButton(b,'⚙️ السماح من إعدادات المتصفح',false);else if(!b.disabled)setNativeButton(b,'🔔 تفعيل الإشعارات',false);},1500);
+  setTimeout(function(){if(window.Notification&&Notification.permission==='granted'&&localStorage.getItem('etok'))syncNativeSubscription(false);},2500);
 })();
