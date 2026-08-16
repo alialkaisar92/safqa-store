@@ -46,8 +46,24 @@ async function sendEmail({ email, name, code, subject, purpose }) {
   if (smtpHost) {
     try {
       const nodemailer = require('nodemailer');
-      const transporter = nodemailer.createTransport({ host: smtpHost, port: Number(process.env.EMAIL_PORT || 587), secure: String(process.env.EMAIL_SECURE || '').toLowerCase() === 'true' || Number(process.env.EMAIL_PORT) === 465, auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD } });
-      await transporter.sendMail({ from: process.env.EMAIL_FROM || process.env.EMAIL_USER, to: email, subject, text: 'رمزك في Rab7na هو ' + code + '. صالح لمدة 10 دقائق.', html: otpHtml(subject, name, code, purpose) });
+      const smtpPort = Number(process.env.EMAIL_PORT || 587);
+      const smtpSecure = String(process.env.EMAIL_SECURE || '').trim().toLowerCase() === 'true' || smtpPort === 465;
+      const smtpUser = String(process.env.EMAIL_USER || '').trim();
+      const smtpPassword = String(process.env.EMAIL_PASSWORD || '').replace(/\s+/g, '');
+      if (!smtpUser || !smtpPassword) throw new Error('SMTP credentials are missing');
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpSecure,
+        requireTLS: !smtpSecure,
+        auth: { user: smtpUser, pass: smtpPassword },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+        tls: { minVersion: 'TLSv1.2', servername: smtpHost }
+      });
+      await transporter.verify();
+      await transporter.sendMail({ from: process.env.EMAIL_FROM || smtpUser, to: email, subject, text: 'رمزك في Rab7na هو ' + code + '. صالح لمدة 10 دقائق.', html: otpHtml(subject, name, code, purpose) });
       return { ok: true, provider: 'smtp' };
     } catch (e) { console.error('smtp email failed:', e.message); return { ok: false, reason: 'تعذر الاتصال بخدمة SMTP؛ راجع متغيرات البريد في Vercel Production' }; }
   }
