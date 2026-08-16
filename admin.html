@@ -2,7 +2,7 @@
 <meta name="robots" content="noindex,nofollow,noarchive"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rab7na | لوحة الإدارة</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"><style>
 :root{--g:#0f766e;--g2:#14b8a6;--g3:#99f6e4;--bg:#f1f5f9;--card:#fff;--tx:#0f172a;--mut:#64748b;--line:rgba(15,118,110,.14);--dark:#0b1326;--shadow:0 12px 35px rgba(15,23,42,.07)}
 *{margin:0;padding:0;box-sizing:border-box;font-family:Cairo}body{background:radial-gradient(circle at 15% 0%,rgba(20,184,166,.12),transparent 26rem),var(--bg);color:var(--tx);min-height:100vh}
-.topbar{position:sticky;top:0;z-index:60;background:linear-gradient(110deg,#0b1326,#12213b);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:13px max(16px,calc((100vw - 1180px)/2));gap:10px;box-shadow:0 8px 28px rgba(2,8,23,.18)}
+.topbar{position:sticky;top:0;z-index:60;background:linear-gradient(110deg,#0b1326 0%,#12213b 70%,#0f766e 150%);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:10px max(16px,calc((100vw - 1180px)/2));gap:10px;box-shadow:0 8px 28px rgba(2,8,23,.18)}
 .topbar .logo{font-weight:900;font-size:1.12rem;display:flex;gap:8px;align-items:center;letter-spacing:.2px}.topbar .logo small{font-size:.68rem;font-weight:600;color:#a7b7cc}
 .topbar .adm{background:linear-gradient(135deg,rgba(20,184,166,.34),rgba(255,255,255,.08));border:1px solid rgba(153,246,228,.2);border-radius:50px;padding:7px 14px;font-size:.75rem;font-weight:800}
 .burger{background:#1e293b;border:none;border-radius:12px;width:42px;height:42px;cursor:pointer;display:flex;flex-direction:column;gap:5px;align-items:center;justify-content:center}
@@ -11,17 +11,17 @@
 .drawer.open{transform:translateX(0)}
 .drawer .dhead{color:#fff;font-weight:900;display:flex;justify-content:space-between;align-items:center;padding:6px 10px 16px}
 .drawer .dhead button{background:#1e293b;border:none;color:#fff;border-radius:10px;width:32px;height:32px;cursor:pointer}
-.drawer .it{display:flex;gap:10px;align-items:center;padding:13px 14px;border-radius:12px;cursor:pointer;font-weight:700;font-size:.88rem;margin-bottom:6px;color:#94a3b8}
+.drawer .it{display:flex;gap:10px;align-items:center;padding:11px 12px;border-radius:11px;cursor:pointer;font-weight:700;font-size:.82rem;margin-bottom:4px;color:#94a3b8;transition:.16s}.drawer .it:active{transform:scale(.98)}
 .drawer .it.on{background:linear-gradient(135deg,var(--g2),var(--g));color:#fff}
 .ovl{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:110;display:none}
 .ovl.show{display:block}
-.main{padding:20px max(14px,calc((100vw - 1180px)/2));min-height:calc(100vh - 70px);max-width:1240px;margin:auto}
+.main{padding:14px max(12px,calc((100vw - 1180px)/2));min-height:calc(100vh - 62px);max-width:1180px;margin:auto}
 .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
-.card{background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:22px;padding:20px 14px;text-align:right;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden}.card:before{content:'';position:absolute;inset:0 auto 0 0;width:4px;background:linear-gradient(var(--g2),var(--g));border-radius:4px}.card:hover{transform:translateY(-3px);box-shadow:0 18px 38px rgba(15,23,42,.1)}
+.card{background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:17px;padding:14px 12px;text-align:right;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;min-height:82px}.card:before{content:'';position:absolute;inset:0 auto 0 0;width:4px;background:linear-gradient(var(--g2),var(--g));border-radius:4px}.card:hover{transform:translateY(-3px);box-shadow:0 18px 38px rgba(15,23,42,.1)}
 .card b{font-size:1.45rem;color:var(--g);display:block;margin-bottom:5px}
 .card small{color:var(--mut);font-size:.74rem;font-weight:800}.card:last-child:nth-child(odd){grid-column:auto}
-.panel{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:22px;padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}
-.panel h3{margin-bottom:10px;font-size:.95rem}
+.panel{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:17px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.panel h3{margin-bottom:10px;font-size:.95rem}.route-skeleton{min-height:190px}.sk-line,.sk-grid i{display:block;background:linear-gradient(90deg,#eef2f5,#dfe9e8,#eef2f5);background-size:200% 100%;animation:sk 1.1s infinite;border-radius:10px}.sk-line{height:14px;margin:14px 0}.sk-line.wide{width:42%;height:22px}.sk-line.short{width:55%}.sk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.sk-grid i{height:66px}@keyframes sk{to{background-position:-200% 0}}
 .tbl{width:100%;border-collapse:collapse}
 .tbl td,.tbl th{padding:12px 10px;font-size:.75rem;border-bottom:1px solid var(--line);text-align:right}.tbl tr:last-child td{border-bottom:0}
 .tbl th{color:var(--g)}
@@ -33,13 +33,13 @@
 .admChatHead b{font-size:.95rem}
 .admChatBody{flex:1;overflow-y:auto;padding:12px}
 .admChatBar{background:#f0f0f0;padding:8px;display:flex;gap:8px;flex:0 0 auto}
-@media(max-width:760px){.main{padding:14px 12px}.cards{grid-template-columns:repeat(2,1fr);gap:10px}.card{padding:15px 12px;border-radius:18px}.card b{font-size:1.2rem}.panel{padding:14px;border-radius:18px}.tbl{display:block;overflow-x:auto;white-space:nowrap}.drawer{width:min(310px,88vw)}}
+@media(max-width:760px){.main{padding:10px 9px}.cards{grid-template-columns:repeat(2,1fr);gap:8px}.card{padding:11px 10px;border-radius:14px;min-height:72px}.card b{font-size:1.05rem}.card small{font-size:.68rem}.panel{padding:11px;border-radius:14px;margin-bottom:9px}.panel h3{font-size:.88rem}.tbl{display:block;overflow-x:auto;white-space:nowrap}.drawer{width:min(286px,86vw)}.topbar .logo{font-size:1rem}.topbar .adm{padding:6px 10px;font-size:.68rem}}
 @media(min-width:1100px){.drawer{right:auto;left:0;transform:translateX(-100%);border-radius:0 22px 22px 0}.drawer.open{transform:translateX(0)}}
 </style></head><body>
 <header class="topbar"><button class="burger" onclick="sbOpen()"><span></span><span></span><span></span></button><div class="logo">💰 Rab7na <small style="color:#64748b">إدارة</small></div><span class="adm">👑 أدمن</span></header>
 <div class="ovl" id="ovl" onclick="sbClose()"></div>
 <aside class="drawer" id="drawer"><div class="dhead">💰 الأقسام <button onclick="sbClose()">✕</button></div><div id="menu"></div></aside>
-<main class="main"><div id="view"></div></main>
+<main class="main"><div id="view"></div></main><div id="routeLoading" style="display:none;position:fixed;inset:auto 12px 14px 12px;z-index:80;background:#0b1326;color:#fff;border-radius:14px;padding:10px 14px;text-align:center;font-size:.76rem;box-shadow:0 10px 28px rgba(2,8,23,.22)">جاري فتح القسم...</div>
 <script>
 (function(){var nativeFetch=window.fetch;window.fetch=function(input,init){init=init||{};var url=typeof input==='string'?input:(input&&input.url)||'';if(url.indexOf('/api/admin')===0){var h=new Headers(init.headers||{});var tok=localStorage.getItem('etok')||'';if(tok&&!h.has('x-auth-token'))h.set('x-auth-token',tok);init.headers=h;}return nativeFetch(input,init).then(function(r){if((r.status===401||r.status===403)&&url.indexOf('/api/admin')===0){showAdminLogin(r.status===403?'هذا الحساب ليس لديه صلاحيات مدير':'يجب تسجيل الدخول بحساب المدير');}return r;});};})();
 function showAdminLogin(message){clearInterval(window._uT);clearInterval(window._wT);clearInterval(window._cT);var v=document.getElementById('view');if(!v)return;v.innerHTML='<div class="panel admin-login"><div class="brand">💰 Rab7na</div><div class="sub">تسجيل دخول مدير المنصة</div><label>البريد أو رقم الهاتف أو اسم المستخدم</label><input id="admContact" autocomplete="username" placeholder="أدخل بيانات الدخول"><label>كلمة المرور</label><input id="admPass" type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور" onkeydown="if(event.key===\'Enter\')adminLogin()"><button id="admLoginBtn" style="'+BS+'" onclick="adminLogin()">دخول لوحة الإدارة</button><div id="admErr" class="err"></div></div>';var c=document.getElementById('admContact');if(c)c.focus();if(message){var e=document.getElementById('admErr');if(e){e.textContent=message;e.style.display='block';}}}
@@ -52,7 +52,9 @@ function sbClose(){document.getElementById('drawer').classList.remove('open');do
 function clean(t){return t.replace(/^\S+\s/,'')}
 function go(s){clearInterval(window._uT);clearInterval(window._wT);clearInterval(window._cT);var _ac=document.getElementById('admChat');if(_ac)_ac.style.display='none';document.querySelectorAll('.drawer .it').forEach(function(x){x.classList.toggle('on',x.dataset.s===s)});sbClose();
 var t=SEC.find(function(x){return x.id===s});
+var rl=document.getElementById('routeLoading');if(rl){rl.textContent='جاري فتح '+(t?t.t.replace(/^\S+\s/,''):'القسم')+'...';rl.style.display='block';setTimeout(function(){rl.style.display='none';},1800);}
 if(t&& !canSection(t.p)){document.getElementById('view').innerHTML='<div class="panel"><h3>🔒 القسم غير متاح</h3><p style="color:var(--mut);font-size:.82rem">لا تملك صلاحية الوصول إلى هذا القسم.</p></div>';return;}
+var v0=document.getElementById('view');if(v0)v0.innerHTML='<div class="panel route-skeleton"><div class="sk-line wide"></div><div class="sk-grid"><i></i><i></i><i></i></div><div class="sk-line"></div><div class="sk-line short"></div></div>';
 if(s==='stats')rStats();else if(s==='orders')rOrders();else if(s==='products')rProducts();else if(s==='users')rUsers();else if(s==='withdraw')rWithdraw();else if(s==='chat')rChat();else if(s==='notif')rNotif();else if(s==='settings')rSettings();else if(s==='admins')rAdmins();else document.getElementById('view').innerHTML='<div class="panel"><h3>🚧 قسم «'+clean(t.t)+'»</h3><p style="color:var(--mut);font-size:.85rem">لسه بيتبنى — قولي「كمّل في قسم '+clean(t.t)+'」</p></div>';}
 function safeNum(v){var n=Number(v);return Number.isFinite(n)?n:0;
 }
