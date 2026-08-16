@@ -3,6 +3,41 @@ const crypto = require('crypto');
 const store = require('./firestore');
 const { availableBalance } = require('./balance');
 
+const SAFKA_BASE_URL = String(process.env.SAFKA_BASE_URL || 'https://api.safka.com/api/v1').replace(/\/$/, '');
+
+async function fetchSafkaProducts() {
+  const key = String(process.env.SAFKA_API_KEY || '').trim();
+  if (!key) throw new Error('مفتاح Safka غير مضبوط');
+  const all = [];
+  const first = await fetch(SAFKA_BASE_URL + '/products?page=1&size=50', { headers: { 'api-safka-key': key } });
+  if (!first.ok) throw new Error('تعذر الاتصال بمصدر المنتجات');
+  const firstJson = await first.json();
+  all.push(...(Array.isArray(firstJson.data) ? firstJson.data : []));
+  const pages = Math.min(Number(firstJson.pages) || 1, 20);
+  for (let page = 2; page <= pages; page++) {
+    const r = await fetch(SAFKA_BASE_URL + '/products?page=' + page + '&size=50', { headers: { 'api-safka-key': key } });
+    if (!r.ok) continue;
+    const json = await r.json();
+    all.push(...(Array.isArray(json.data) ? json.data : []));
+  }
+  return all;
+}
+
+function mapSafkaProduct(p) {
+  const prop = (Array.isArray(p.properties) && p.properties[0]) || {};
+  const cost = Number(p.sale_price || p.price || 0) || 0;
+  const stock = typeof prop.value === 'number' ? prop.value : (prop.is_available === false ? 0 : 99);
+  return {
+    id: p._id || p.id || ('safka-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7)),
+    source: 'safka', sourceId: String(p._id || p.id || ''),
+    name: p.name || p.title || 'منتج', description: p.description || p.desc || p.note || '',
+    image: (Array.isArray(p.images) && p.images[0]) || p.image || '',
+    price: Math.round(cost), cost, base_price: cost, commission: 0,
+    stock, available: prop.is_available !== false && stock > 0, active: prop.is_available !== false && stock > 0,
+    cat: p.category || p._cat || 'أخرى', barcode: p.barcode || '', updatedAt: new Date().toISOString()
+  };
+}
+
 function tokenFrom(req) {
   const h = String(req.headers.authorization || '');
   return String(req.headers['x-auth-token'] || (h.toLowerCase().startsWith('bearer ') ? h.slice(7) : '') || '').trim();
@@ -113,6 +148,26 @@ module.exports = function (app) {
     catch (e) { res.status(500).json({ error: 'تعذر حفظ المنتج' }); }
   });
   app.post('/api/admin/product-delete', async (req, res) => { try { const d = await data(); d.products = (d.products || []).filter(x => String(x.id) !== String(req.body.id)); await writeData(d); res.json({ ok: true }); } catch (e) { res.status(500).json({ error: 'تعذر حذف المنتج' }); } });
+  app.post('/api/admin/products/import', async (req, res) => {
+    try {
+      const incoming = (await fetchSafkaProducts()).map(mapSafkaProduct);
+      const d = await data();
+      const current = Array.isArray(d.products) ? d.products : [];
+      const byId = new Map(current.map(p => [String(p.id), p]));
+      let added = 0, updated = 0;
+      for (const product of incoming) {
+        const old = byId.get(String(product.id));
+        if (old) { byId.set(String(product.id), Object.assign({}, old, product)); updated++; }
+        else { byId.set(String(product.id), product); added++; }
+      }
+      d.products = Array.from(byId.values());
+      await writeData(d);
+      res.json({ ok: true, fetched: incoming.length, added, updated, total: d.products.length });
+    } catch (e) {
+      console.error('products import:', e.message);
+      res.status(502).json({ ok: false, error: e.message === 'مفتاح Safka غير مضبوط' ? e.message : 'تعذر استيراد المنتجات من Safka' });
+    }
+  });
   app.get('/api/admin/price', async (req, res) => { try { res.json({ up: (await data()).priceUp || 0 }); } catch (e) { res.status(500).json({ error: 'تعذر تحميل السعر' }); } });
   app.post('/api/admin/price-up', async (req, res) => { try { const d = await data(); let v = +(req.body && req.body.up) || 0; v = Math.max(0, Math.min(200, v)); d.priceUp = v; await writeData(d); res.json({ ok: true, up: v }); } catch (e) { res.status(500).json({ error: 'تعذر حفظ الزيادة' }); } });
   app.get('/api/admin/users', async (req, res) => { try { const db = await users(); const now = Date.now(); res.json((db.users || []).map(u => ({ id: u.id, name: u.name, contact: u.contact, balance: u.balance || 0, created: u.created, lastSeen: u.lastSeen || 0, banned: !!u.banned, lastAction: u.lastAction || '', activity: (u.activity || []).slice(0, 50), online: !!(u.lastSeen && now - u.lastSeen < 120000) }))); } catch (e) { res.status(500).json({ error: 'تعذر تحميل المستخدمين' }); } });

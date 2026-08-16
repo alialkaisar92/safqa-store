@@ -161,7 +161,7 @@ function prodReq(path, method, body){
 }
 function loadProducts(){
   if(_PROD_LOADING) return; _PROD_LOADING = true;
-  prodReq('/api/v2/products','GET').then(function(list){
+  prodReq('/api/admin/products','GET').then(function(list){
     _PROD = Array.isArray(list)?list:[]; prodRender(_PROD);
   }).catch(function(e){ try{toast('فشل تحميل المنتجات: '+e.message,'err');}catch(_){} })
   .finally(function(){ _PROD_LOADING=false; });
@@ -207,15 +207,28 @@ function prodSave(){
     base_price:Number(document.getElementById('pf_base_price').value)||0, commission:Number(document.getElementById('pf_commission').value)||0,
     stock:Number(document.getElementById('pf_stock').value)||0, active:document.getElementById('pf_active').checked?1:0 };
   if(!obj.name){ try{toast('اسم المنتج مطلوب','err');}catch(e){} return; }
-  var pr = _PROD_EDIT ? prodReq('/api/v2/products/'+_PROD_EDIT,'PUT',obj) : prodReq('/api/v2/products','POST',obj);
+  if(_PROD_EDIT) obj.id=_PROD_EDIT;
+  var pr = prodReq('/api/admin/product','POST',obj);
   pr.then(function(){ prodClose(); try{toast('تم الحفظ ✓','ok');}catch(e){} loadProducts(); })
     .catch(function(e){ try{toast('فشل الحفظ: '+e.message,'err');}catch(_){} });
 }
 function prodDel(id){ if(!confirm('حذف المنتج نهائياً؟'))return;
-  prodReq('/api/v2/products/'+id,'DELETE').then(function(){ try{toast('تم الحذف ✓','ok');}catch(e){} loadProducts(); })
+  prodReq('/api/admin/product-delete','POST',{id:id}).then(function(){ try{toast('تم الحذف ✓','ok');}catch(e){} loadProducts(); })
     .catch(function(e){ try{toast('فشل الحذف: '+e.message,'err');}catch(_){} });
 }
-(function(){ if(typeof window.go==='function'){ var _og=window.go; window.go=function(v){ var r=_og.apply(this,arguments); if(v==='products')loadProducts(); return r; }; } })();
+async function importProductsFromSafka(){
+  var btn=document.getElementById('importSafkaBtn'); if(btn){btn.disabled=true;btn.textContent='⏳ جارٍ الاستيراد…';}
+  try{var r=await prodReq('/api/admin/products/import','POST',{});toast('تمت المزامنة: أضيف '+(r.added||0)+' وتحدّث '+(r.updated||0)+' منتج','ok');loadProducts();}
+  catch(e){toast(e.message||'تعذر استيراد المنتجات','err');}
+  finally{if(btn){btn.disabled=false;btn.textContent='↻ استيراد من Safka';}}
+}
+function injectProductTools(){
+  var v=document.getElementById('v-products'); if(!v||document.getElementById('importSafkaBtn'))return;
+  var b=document.createElement('button'); b.id='importSafkaBtn'; b.type='button'; b.textContent='↻ استيراد من Safka';
+  b.style.cssText='margin:0 8px 14px 0;padding:10px 16px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;border-radius:11px;font:800 .85rem Cairo,sans-serif;cursor:pointer'; b.onclick=importProductsFromSafka;
+  var anchor=v.querySelector('#prodSearch')||v.querySelector('.panel-head')||v.firstElementChild; if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(b,anchor.nextSibling); else v.insertBefore(b,v.firstChild);
+}
+(function(){ if(typeof window.go==='function'){ var _og=window.go; window.go=function(v){ var r=_og.apply(this,arguments); if(v==='products'){loadProducts();setTimeout(injectProductTools,0);} return r; }; } })();
 
 
 (function(){

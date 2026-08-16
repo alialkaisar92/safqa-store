@@ -220,9 +220,28 @@ module.exports = function (app) {
     } catch (e) { console.error('notify:', e.message); res.status(500).json({ ok: false, error: 'تعذر إرسال الإشعار حاليًا' }); }
   });
 
-  app.get('/api/admin/notiflog', async (req, res) => {
+  app.get('/api/admin/notiflog', global.requireAdmin, async (req, res) => {
     try { res.json((await store.all('notifications')).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || ''))).slice(0, 100)); }
     catch (e) { res.json([]); }
+  });
+
+  app.post('/api/admin/notifications/clear', global.requireAdmin, async (req, res) => {
+    try {
+      const db = store.getDb();
+      const snap = await db.collection('notifications').get();
+      let deleted = 0;
+      let batch = db.batch();
+      let count = 0;
+      for (const doc of snap.docs) {
+        batch.delete(doc.ref); count++; deleted++;
+        if (count === 400) { await batch.commit(); batch = db.batch(); count = 0; }
+      }
+      if (count) await batch.commit();
+      res.json({ ok: true, deleted });
+    } catch (e) {
+      console.error('clear notifications:', e.message);
+      res.status(500).json({ ok: false, error: 'تعذر مسح سجل الإشعارات' });
+    }
   });
 
   app.post('/api/admin/credit', async (req, res) => {
