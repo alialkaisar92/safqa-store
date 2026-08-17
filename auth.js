@@ -56,10 +56,12 @@ function otpHtml(title, name, code, purpose) { return '<!doctype html><html lang
 async function sendEmail({ email, name, code, subject, purpose }) {
   const recipient = String(email || '').trim().toLowerCase();
   if (!isEmail(recipient)) return { ok: false, reason: 'أدخل بريدًا إلكترونيًا صحيحًا لإرسال كود التحقق.' };
-  const apiKey = String(process.env.EMAIL_API_KEY || '').trim();
-  const from = String(process.env.EMAIL_FROM || '').trim();
+  // Support both the current Resend names and the older generic names.
+  // Vercel Production currently stores RESEND_API_KEY and RESEND_FROM.
+  const apiKey = String(process.env.RESEND_API_KEY || process.env.EMAIL_API_KEY || '').trim();
+  const from = String(process.env.RESEND_FROM || process.env.EMAIL_FROM || '').trim();
   if (!apiKey || !from) {
-    console.error('email api unavailable: EMAIL_API_KEY or EMAIL_FROM is missing');
+    console.error('email api unavailable: RESEND_API_KEY/EMAIL_API_KEY or RESEND_FROM/EMAIL_FROM is missing');
     return { ok: false, reason: 'خدمة البريد غير مهيأة حاليًا. يلزم إعداد مزود البريد في Production.' };
   }
   try {
