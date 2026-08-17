@@ -241,8 +241,8 @@ module.exports = function (app) {
     try {
       const email = String((req.body || {}).email || '').trim().toLowerCase();
       if (!isEmail(email)) return res.json({ error: 'أدخل بريدًا إلكترونيًا صحيحًا' });
-      const u = await findUserByLogin(email);
-      if (!u || String(u.email || '').toLowerCase() !== email) return res.json({ error: 'لا يوجد حساب بهذا البريد' });
+      const u = await (store.findUserByEmail ? store.findUserByEmail(email) : findUserByLogin(email));
+      if (!u || ![u.email, u.contact].some(v => String(v || '').trim().toLowerCase() === email)) return res.json({ error: 'لا يوجد حساب بهذا البريد' });
       const code = String(crypto.randomInt(100000, 1000000));
       const resetSnap = await store.getDb().collection('passwordResets').doc(email).get();
       if (resetSnap.exists && Date.now() - Number((resetSnap.data() || {}).lastSentAt || 0) < OTP_RESEND_GAP_MS) return res.status(429).json({ error: 'تم إرسال كود بالفعل، انتظر دقيقة قبل إعادة المحاولة' });
@@ -260,7 +260,7 @@ module.exports = function (app) {
     try {
       const email = String((req.body || {}).email || '').trim().toLowerCase();
       if (!isEmail(email)) return res.json({ error: 'أدخل بريدًا إلكترونيًا صحيحًا' });
-      const u = await findUserByLogin(email);
+      const u = await (store.findUserByEmail ? store.findUserByEmail(email) : findUserByLogin(email));
       const current = await store.getDb().collection('passwordResets').doc(email).get();
       if (!u || !current.exists) return res.json({ error: 'ابدأ طلب استعادة كلمة المرور أولًا' });
       const old = current.data() || {};
@@ -289,7 +289,7 @@ module.exports = function (app) {
       if (Number(reset.expiresAt || 0) < Date.now()) return res.json({ error: 'انتهت صلاحية الرمز، اطلب رمزًا جديدًا' });
       if (Number(reset.attempts || 0) >= OTP_MAX_ATTEMPTS) return res.status(429).json({ error: 'تم تجاوز عدد المحاولات، اطلب رمزًا جديدًا' });
       if (reset.codeHash !== codeHash(code)) { await store.saveDoc('passwordResets', email, { attempts: Number(reset.attempts || 0) + 1 }); return res.json({ error: 'رمز التحقق غير صحيح' }); }
-      const u = await findUserByLogin(email);
+      const u = await (store.findUserByEmail ? store.findUserByEmail(email) : findUserByLogin(email));
       if (!u) return res.json({ error: 'الحساب غير موجود' });
       u.pass = await hashPw(b.password); u.passwordChangedAt = new Date().toISOString();
       await store.saveUser(u); await store.deleteDoc('passwordResets', email);

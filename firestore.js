@@ -79,6 +79,16 @@ async function findUserByContact(contact) {
   if (snap.empty) return null;
   return Object.assign({}, snap.docs[0].data(), { id: snap.docs[0].id });
 }
+async function findUserByEmail(email) {
+  const value = String(email || '').trim().toLowerCase();
+  if (!value) return null;
+  const [byEmail, byContact] = await Promise.all([
+    getDb().collection('users').where('email', '==', value).limit(1).get(),
+    getDb().collection('users').where('contact', '==', value).limit(1).get()
+  ]);
+  const snap = !byEmail.empty ? byEmail : byContact;
+  return snap.empty ? null : Object.assign({}, snap.docs[0].data(), { id: snap.docs[0].id });
+}
 async function saveUser(user) { const copy = Object.assign({}, user); delete copy.id; await saveDoc('users', user.id, copy); return user; }
 async function saveUsers(users) { await replaceCollection('users', users); }
 
@@ -120,7 +130,7 @@ async function saveChats(chats) {
 }
 
 module.exports = {
-  getDb, getUsers, getUser, findUserByContact, saveUser, saveUsers,
+  getDb, getUsers, getUser, findUserByContact, findUserByEmail, saveUser, saveUsers,
   saveToken, getToken, deleteToken, getAffiliateData, saveAffiliateData,
   getChats, saveChats, all, saveDoc, deleteDoc
 };
