@@ -228,6 +228,7 @@ module.exports = function (app) {
       const passwordCheck = u ? await verifyPw(b.password || '', u.pass) : { ok: false, legacy: false };
       if (!u || (!adminCheck.ok && !passwordCheck.ok)) return res.json({ error: 'بيانات الدخول غلط' });
       if (u.banned) return res.json({ error: 'الحساب محظور' });
+      if (u.email && u.emailVerified === false && !u.googleId && !adminCheck.ok) return res.json({ error: 'فعّل بريدك أولاً، ثم أعد تسجيل الدخول', verificationRequired: true, email: u.email });
       if (passwordCheck.ok && passwordCheck.legacy && !adminCheck.ok) u.pass = await hashPw(b.password || '');
       u.lastSeen = Date.now(); await store.saveUser(u);
       const t = await issue(u);
@@ -293,6 +294,11 @@ module.exports = function (app) {
       res.json({ ok: true, message: 'تم تغيير كلمة المرور بنجاح، يمكنك تسجيل الدخول الآن' });
     } catch (e) { console.error('password reset:', e.message); res.status(500).json({ error: 'تعذر تغيير كلمة المرور حاليًا' }); }
   });
+  // Spec-compatible aliases; keep the original routes for existing clients.
+  app.post('/api/auth/resend-otp', (req, res) => res.redirect(307, '/api/auth/email/resend'));
+  app.post('/api/auth/verify-email', (req, res) => res.redirect(307, '/api/auth/email/verify'));
+  app.post('/api/auth/forgot-password', (req, res) => res.redirect(307, '/api/auth/password/request'));
+  app.post('/api/auth/reset-password', (req, res) => res.redirect(307, '/api/auth/password/reset'));
   app.post('/api/auth/forgot/request', (req, res) => app._router ? res.redirect(307, '/api/auth/password/request') : res.json({ error: 'تعذر الطلب' }));
   app.post('/api/auth/forgot/resend', (req, res) => app._router ? res.redirect(307, '/api/auth/password/resend') : res.json({ error: 'تعذر الطلب' }));
   app.post('/api/auth/forgot/reset', (req, res) => app._router ? res.redirect(307, '/api/auth/password/reset') : res.json({ error: 'تعذر الطلب' }));
