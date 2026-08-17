@@ -177,20 +177,19 @@ function normalizePublicProduct(p, local, priceUp) {
 }
 async function fetchLivePublicProducts() {
   if (!API_KEY) throw new Error('SAFKA_API_KEY غير مضبوط');
-  const all = [];
-  let page = 1;
-  let pages = 1;
-  while (page <= pages && page <= 100) {
-    const response = await fetch(BASE_URL + '/products?page=' + page + '&size=100', { headers: { 'api-safka-key': API_KEY } });
+  const headers = { 'api-safka-key': API_KEY };
+  const readPage = async (page) => {
+    const response = await fetch(BASE_URL + '/products?page=' + page + '&size=100', { headers });
     const body = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error('Safka HTTP ' + response.status);
-    const rows = body.data || body.items || (Array.isArray(body) ? body : []);
-    if (!rows.length) break;
-    all.push(...rows);
-    pages = Number(body.pages || pages);
-    page++;
-  }
-  return all;
+    if (!response.ok) throw new Error('مصدر المنتجات HTTP ' + response.status);
+    return { body, rows: body.data || body.items || (Array.isArray(body) ? body : []) };
+  };
+  const first = await readPage(1);
+  if (!first.rows.length) return [];
+  const pages = Math.min(100, Math.max(1, Number(first.body.pages || 1)));
+  if (pages === 1) return first.rows;
+  const rest = await Promise.all(Array.from({ length: pages - 1 }, (_, i) => readPage(i + 2)));
+  return first.rows.concat(...rest.map(x => x.rows));
 }
 function readProductCache() {
   const fp = path.join(__dirname, 'products-cache.json');
@@ -212,15 +211,8 @@ app.get('/api/products', async (req, res) => {
     try { fs.writeFileSync(path.join(__dirname, 'products-cache.json'), JSON.stringify(normalized)); } catch (e) { console.warn('Product cache write skipped:', e.message); }
     res.json(normalized);
   } catch (error) {
-    console.warn('Live Safka products unavailable; using cache only:', error.message);
-    try {
-      const cached = readProductCache();
-      const normalized = cached.map(raw => normalizePublicProduct(raw, savedById.get(String(raw.id || raw._id)) || {}, priceUp));
-      res.json(normalized);
-    } catch (cacheError) {
-      console.error('Product cache unavailable:', cacheError.message);
-      res.status(503).json({ ok: false, error: 'تعذر جلب المنتجات الأصلية حاليًا' });
-    }
+    console.error('Live products unavailable:', error.message);
+    res.status(503).json({ ok: false, error: 'تعذر جلب المنتجات الأصلية حاليًا' });
   }
 });
 
@@ -348,7 +340,7 @@ app.post('/api/create-order', async (req,res)=>{
   // لا نثق بالسعر الأصلي أو المخزون القادم من المتصفح؛ نتحقق من المصدر الحي أولًا.
   let sourceRows=[];
   try { sourceRows = await fetchLivePublicProducts(); }
-  catch (e) { try { sourceRows = readProductCache(); } catch (_) { sourceRows=[]; } }
+  catch (e) { return res.json({error:'تعذر التحقق من المنتج الأصلي حاليًا، حاول مرة أخرى'}); }
   const sourceById = new Map();
   sourceRows.forEach(p => { [p && p.id, p && p._id].filter(Boolean).forEach(id => sourceById.set(String(id), p)); });
   for (const item of items) {

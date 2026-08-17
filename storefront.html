@@ -130,6 +130,7 @@ main{max-width:640px;margin:0 auto;padding:16px}
 .side-item{width:100%;display:flex;align-items:center;gap:11px;text-align:right;padding:12px 11px;border-radius:12px;color:var(--ink);font-size:.82rem;font-weight:700;margin-bottom:4px}
 .side-item:hover,.side-item:active{background:var(--mint);color:var(--forest-d)}
 .side-item .side-ic{width:25px;text-align:center;font-size:1.1rem}
+.dashboard-panel{display:grid;gap:12px}.dash-hero{background:linear-gradient(135deg,var(--forest),var(--forest-d));color:#fff;border-radius:16px;padding:16px}.dash-hero small{opacity:.8}.dash-balance{font-size:1.65rem;font-weight:900;margin-top:4px}.dash-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.dash-stat{border:1px solid var(--line);background:var(--mint);border-radius:12px;padding:11px}.dash-stat small{display:block;color:var(--muted);font-size:.68rem;margin-bottom:4px}.dash-stat b{font-size:1rem;color:var(--forest-d)}.dash-section-title{font-weight:900;font-size:.9rem;margin-top:4px}.dash-order{display:flex;justify-content:space-between;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:10px 0;font-size:.75rem}.dash-order strong{display:block;font-size:.8rem}.dash-status{white-space:nowrap;border-radius:7px;padding:3px 7px;background:var(--mint);color:var(--forest-d);font-size:.66rem;font-weight:800}
 .side-divider{height:1px;background:var(--line);margin:14px 0}
 .side-item.danger{color:var(--danger)}
 @media(min-width:900px){.side-drawer{width:380px}}
@@ -222,6 +223,7 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
   <div class="side-group">التنقل السريع</div>
   <button class="side-item" onclick="sideGoProducts()"><span class="side-ic">🛍️</span><span>المنتجات</span></button>
   <button class="side-item" onclick="closeSidebar();openCart()"><span class="side-ic">🛒</span><span>السلة <small id="sideCartCount"></small></span></button>
+  <button class="side-item" onclick="closeSidebar();openDashboard()"><span class="side-ic">📊</span><span>لوحة تحكم المسوق</span></button>
   <button class="side-item" onclick="closeSidebar();openAcct()"><span class="side-ic">👤</span><span>حسابي وطلباتي</span></button>
   <button class="side-item" onclick="closeSidebar();openWithdraw()"><span class="side-ic">💰</span><span>سحب الأرباح</span></button>
   <div class="side-group">خدمات المسوق</div>
@@ -327,14 +329,10 @@ function visible(){
   if(curSort==='stock') v.sort(function(a,b){return Number(b.stock||0)-Number(a.stock||0);});
   return v;
 }
-function commInfo(note){
-  var m1=/سعر\s*(?:البيع\s*)?(?:ال)?مقترح\s*(\d+)/.exec(note||'');
-  var m2=/عمولتك\s*(\d+)/.exec(note||'');
-  if(!m2) return null;
-  var comm=+m2[1], suggested=m1?+m1[1]:null;
-  var base = suggested || comm;
-  var pct = base ? Math.round((comm/base)*100) : 0;
-  return {comm:comm, suggested:suggested, pct:pct};
+function commInfo(p){
+  var base=Number(p&&p.basePrice!=null?p.basePrice:0), sale=Number(p&&p.price!=null?p.price:0);
+  var comm=Math.max(0,sale-base);
+  return {comm:comm, suggested:null};
 }
 function stockLabel(p){
   var s=p.stock;
@@ -350,8 +348,8 @@ function renderGrid(){
   document.getElementById('prodTitle').textContent=(curCat!=='الكل'?curCat:(curQ?'نتائج البحث':'كل المنتجات'))+' ('+v.length+')';
   e.innerHTML = v.map(function(p){
     var i=idx[p.id];
-    var ci=commInfo(p.note);
-    var commHtml = ci ? '<div class="comm-tag">💰 عمولتك '+ci.pct+'%</div>' : '';
+    var ci=commInfo(p);
+    var commHtml = ci.comm>0 ? '<div class="comm-tag">💰 عمولتك '+fmt(ci.comm)+'</div>' : '';
     return '<div class="card" onclick="openP('+i+')"><div class="imgwrap"><img src="'+esc(p.image||'')+'" alt="'+esc(p.name||'منتج')+'" loading="lazy" onerror="this.style.display=\'none\'"></div><div class="b"><div class="t">'+esc(p.name)+'</div><div class="pr">'+fmt(p.price)+'</div>'+commHtml+stockLabel(p)+'</div></div>';
   }).join('') || '<div class="empty">لا توجد منتجات مطابقة 🔍</div>';
 }
@@ -372,11 +370,11 @@ function openP(i){cur=P[i];qty=1;
   document.getElementById('pmImg').src=cur.image||'';
   document.getElementById('pmName').textContent=cur.name;
   document.getElementById('pmPrice').textContent=fmt(cur.price);
-  var ci=commInfo(cur.note);
+  var ci=commInfo(cur);
   var commBox=document.getElementById('pmComm');
   if(ci){
-    var suggestedLine = ci.suggested ? ('<div class="crow"><span>سعر البيع المقترح</span><b>'+fmt(ci.suggested)+'</b></div>') : '';
-    commBox.innerHTML = '<div class="crow"><span>سعر الجملة (تكلفتك)</span><b>'+fmt(cur.basePrice!=null?cur.basePrice:cur.price)+'</b></div>'+suggestedLine+'<div class="crow ctot"><span>عمولتك</span><b>'+ci.pct+'%</b></div>';
+    var suggestedLine = '';
+    commBox.innerHTML = '<div class="crow"><span>سعر التكلفة الأصلي</span><b>'+fmt(cur.basePrice!=null?cur.basePrice:cur.price)+'</b></div>'+suggestedLine+'<div class="crow ctot"><span>عمولتك المتوقعة</span><b>'+fmt(ci.comm)+'</b></div>';
     commBox.style.display='block';
   } else { commBox.style.display='none'; commBox.innerHTML=''; }
   document.getElementById('pmDesc').textContent=(cur.desc||'').replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]*>/g,' ').replace(/\n{3,}/g,'\n\n').trim();
@@ -468,6 +466,24 @@ function openSidebar(){updProfileBtn();document.getElementById('sideOverlay').cl
 function closeSidebar(){document.getElementById('sideOverlay').classList.remove('on');document.getElementById('sideDrawer').classList.remove('on')}
 function sideGoProducts(){closeSidebar();document.getElementById('mainGrid').scrollIntoView({behavior:'smooth',block:'start'})}
 function openWithdraw(){var tok=localStorage.getItem('etok');if(!tok){openAcct();return;}openM('acct');acctWithdrawView()}
+function dashStatus(s){var x=String(s||'غير محدد');return x.replace(/تم التسليم|تم التوصيل|delivered|completed/i,'مكتمل').replace(/قيد التأكيد|pending/i,'قيد المراجعة').replace(/ملغي|cancelled|canceled/i,'ملغي')}
+function openDashboard(){
+  var tok=localStorage.getItem('etok');
+  if(!tok){openAcct();return;}
+  openM('acct');
+  var b=document.getElementById('acctBody');
+  b.innerHTML='<div style="text-align:center;color:var(--muted);padding:28px">جاري تحميل لوحة المسوق...</div>';
+  fetch('/api/my/dashboard',{headers:{'x-auth-token':tok}}).then(function(r){return r.json()}).then(function(d){
+    if(d.error||!d.stats){acctAuthView('login');return;}
+    var u=d.user||{},st=d.stats||{},orders=Array.isArray(d.orders)?d.orders:[];
+    b.innerHTML='<div class="dashboard-panel"><h3 class="pm-name">لوحة تحكم المسوق</h3>'+
+      '<div class="dash-hero"><small>الرصيد المتاح للسحب</small><div class="dash-balance">'+fmt(u.balance||0)+'</div></div>'+
+      '<div class="dash-stats"><div class="dash-stat"><small>إجمالي الطلبات</small><b>'+Number(st.orders||0).toLocaleString('ar-EG')+'</b></div><div class="dash-stat"><small>الطلبات المكتملة</small><b>'+Number(st.completed||0).toLocaleString('ar-EG')+'</b></div><div class="dash-stat"><small>عمولة هذا الشهر</small><b>'+fmt(st.monthCommission||0)+'</b></div><div class="dash-stat"><small>عمولات قيد الانتظار</small><b>'+fmt(st.pendingCommission||0)+'</b></div></div>'+
+      '<button class="addbtn" onclick="acctWithdrawView()">سحب الأرباح 💰</button><div class="dash-section-title">آخر الطلبات وحالتها</div>'+
+      (orders.length?orders.slice(0,20).map(function(o){return '<div class="dash-order"><div><strong>'+(esc(o.client_name||'طلب'))+'</strong><span style="color:var(--muted)">'+new Date(o.date||Date.now()).toLocaleDateString('ar-EG')+' • '+fmt(o.total||0)+'</span></div><span class="dash-status">'+esc(dashStatus(o.status))+'</span></div>'}).join(''):'<div class="empty">لا توجد طلبات حتى الآن</div>')+
+      '<button type="button" onclick="acctLogout()" style="width:100%;background:#fdecea;color:var(--danger);border-radius:12px;padding:11px;font-weight:700;font-size:.82rem;margin-top:8px">تسجيل الخروج</button></div>';
+  }).catch(function(){b.innerHTML='<div class="msg err">تعذر تحميل لوحة المسوق حاليًا</div>';});
+}
 
 function openAcct(){
   var tok=localStorage.getItem('etok');
