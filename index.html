@@ -304,5 +304,7 @@ if(localStorage.getItem('etok')){
   document.getElementById('startBtn').onclick=function(e){e.preventDefault();lauthOpen('reg');};
 }
 </script>
+<style>.rab7na-wa-public{position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:90;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#25D366;color:#fff;font-size:25px;box-shadow:0 10px 24px rgba(0,0,0,.2);text-decoration:none;transition:transform .2s ease}.rab7na-wa-public:hover{transform:scale(1.06)}@media(min-width:800px){.rab7na-wa-public{right:28px;bottom:28px}}</style><a class="rab7na-wa-public" href="#" target="_blank" rel="noopener" aria-label="الدعم عبر واتساب">💬</a>
+<script>(function(){var a=document.querySelector(".rab7na-wa-public");if(!a)return;fetch("/api/support/whatsapp").then(function(r){return r.json()}).then(function(d){var n=String(d.number||"");if(!/^\d{10,15}$/.test(n)){a.style.display="none";return}a.href="https://wa.me/"+n+"?text="+encodeURIComponent("مرحباً، أريد الاستفسار عن المنصة")}).catch(function(){a.style.display="none"})})()</script>
 </body>
 </html>
