@@ -1,12 +1,24 @@
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const path = require('path');
 const fetch = require('node-fetch');
 const store = require('./firestore');
-const SECRET = process.env.JWT_SECRET || 'earnify_jwt_secret_2026';
+const SECRET = String(process.env.JWT_SECRET || '').trim();
+function ensureSecret() { if (!SECRET) throw new Error('JWT_SECRET is not configured'); }
 
-function hashPw(p) { return crypto.createHash('sha256').update('earnify:' + String(p)).digest('hex'); }
+async function hashPw(p) { return bcrypt.hash(String(p), 12); }
+async function verifyPw(p, stored) {
+  const value = String(stored || '');
+  if (!value) return { ok: false, legacy: false };
+  if (/^\$2[aby]\$/.test(value)) return { ok: await bcrypt.compare(String(p), value), legacy: false };
+  const legacy = crypto.createHash('sha256').update('earnify:' + String(p)).digest('hex');
+  const left = Buffer.from(legacy);
+  const right = Buffer.from(value);
+  return { ok: left.length === right.length && crypto.timingSafeEqual(left, right), legacy: true };
+}
 function b64u(o) { return Buffer.from(JSON.stringify(o)).toString('base64url'); }
 function sign(uid, expSec) {
+  ensureSecret();
   const h = b64u({ alg: 'HS256', typ: 'JWT' });
   const now = Math.floor(Date.now() / 1000);
   const p = b64u({ uid, iat: now, exp: now + expSec });
@@ -14,7 +26,7 @@ function sign(uid, expSec) {
   return h + '.' + p + '.' + s;
 }
 function verify(t) {
-  if (!t) return null;
+  if (!t || !SECRET) return null;
   try {
     const a = String(t).split('.');
     if (a.length !== 3) return null;
@@ -43,49 +55,34 @@ function safeName(value) { return String(value || '').replace(/[<>]/g, '').slice
 function otpHtml(title, name, code, purpose) { return '<!doctype html><html lang="ar" dir="rtl"><body style="margin:0;background:#f4faf8;padding:24px;font-family:Arial,sans-serif;color:#153b36"><div style="max-width:560px;margin:auto;background:#fff;border:1px solid #dceee9;border-radius:18px;padding:28px;text-align:right"><h2 style="color:#087f5b;margin-top:0">Rab7na</h2><p>مرحبًا ' + safeName(name) + '،</p><p>' + purpose + '</p><div style="margin:24px 0;padding:18px;text-align:center;background:#effaf6;border-radius:14px;font-size:34px;letter-spacing:9px;font-weight:800;color:#087f5b">' + code + '</div><p>صلاحية الرمز <b>10 دقائق</b>. لا تشاركه مع أي شخص.</p><p style="font-size:12px;color:#6b7f7b">إذا لم تطلب هذه العملية، يمكنك تجاهل الرسالة بأمان.</p></div></body></html>'; }
 async function sendEmail({ email, name, code, subject, purpose }) {
   const recipient = String(email || '').trim().toLowerCase();
-  if (!isEmail(recipient)) {
-    console.error('smtp email failed: invalid recipient email');
-    return { ok: false, reason: 'أدخل بريدًا إلكترونيًا صحيحًا لإرسال كود التحقق.' };
-  }
-  const smtpHost = String(process.env.EMAIL_HOST || '').trim();
-  const smtpPort = Number(process.env.EMAIL_PORT || 465);
-  const smtpSecure = String(process.env.EMAIL_SECURE || '').trim().toLowerCase() === 'true' || smtpPort === 465;
-  const smtpUser = String(process.env.EMAIL_USER || '').trim();
-  const smtpPassword = String(process.env.EMAIL_PASSWORD || '').replace(/\s+/g, '');
-  if (!smtpHost || !smtpUser || !smtpPassword) {
-    console.error('smtp email failed: required Gmail SMTP environment variable is missing');
-    return { ok: false, reason: 'تعذر إرسال كود التحقق حاليًا. أضف إعدادات Gmail SMTP في Vercel Production.' };
+  if (!isEmail(recipient)) return { ok: false, reason: 'أدخل بريدًا إلكترونيًا صحيحًا لإرسال كود التحقق.' };
+  const apiKey = String(process.env.EMAIL_API_KEY || '').trim();
+  const from = String(process.env.EMAIL_FROM || '').trim();
+  if (!apiKey || !from) {
+    console.error('email api unavailable: EMAIL_API_KEY or EMAIL_FROM is missing');
+    return { ok: false, reason: 'خدمة البريد غير مهيأة حاليًا. يلزم إعداد مزود البريد في Production.' };
   }
   try {
-    const nodemailer = require('nodemailer');
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpSecure,
-      requireTLS: !smtpSecure,
-      auth: { user: smtpUser, pass: smtpPassword },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-      tls: { minVersion: 'TLSv1.2', servername: smtpHost }
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from,
+        to: [recipient],
+        subject,
+        text: 'رمزك في Rab7na هو ' + code + '. صالح لمدة 10 دقائق.',
+        html: otpHtml(subject, name, code, purpose)
+      })
     });
-    await transporter.verify();
-    const configuredFrom = String(process.env.EMAIL_FROM || '').trim();
-    const fromAddress = configuredFrom || smtpUser;
-    await transporter.sendMail({
-      from: fromAddress,
-      to: recipient,
-      replyTo: smtpUser,
-      envelope: { from: smtpUser, to: recipient },
-      subject,
-      text: 'رمزك في Rab7na هو ' + code + '. صالح لمدة 10 دقائق.',
-      html: otpHtml(subject, name, code, purpose)
-    });
-    return { ok: true, provider: 'smtp' };
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      console.error('email api rejected:', response.status, body && body.name ? body.name : 'provider_error');
+      return { ok: false, reason: 'تعذر إرسال كود التحقق حاليًا. راجع إعدادات مزود البريد.' };
+    }
+    return { ok: true, provider: 'resend', id: body && body.id ? body.id : undefined };
   } catch (e) {
-    const message = String(e && e.message || 'unknown SMTP error').replace(/\b\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\b/g, '[redacted]');
-    console.error('smtp email failed:', message);
-    return { ok: false, reason: 'تعذر إرسال كود التحقق حاليًا. حاول مرة أخرى بعد قليل.' };
+    console.error('email api request failed:', String(e && e.message || 'network_error'));
+    return { ok: false, reason: 'تعذر الاتصال بخدمة البريد حاليًا. حاول مرة أخرى بعد قليل.' };
   }
 }
 async function sendVerificationEmail(email, name, code) { return sendEmail({ email, name, code, subject: 'كود تفعيل حسابك في Rab7na', purpose: 'استخدم الرمز التالي لتفعيل حسابك:' }); }
@@ -141,7 +138,7 @@ module.exports = function (app) {
         const remainingSec = Math.max(0, Math.ceil((OTP_RESEND_GAP_MS - (Date.now() - lastSentAt)) / 1000));
         if (remainingSec > 0) return res.status(429).json({ error: 'تم إرسال كود بالفعل', remainingSec, message: 'انتظر ' + remainingSec + ' ثانية قبل إعادة المحاولة' });
       }
-      const pending = { id: email, email, name: display, username, phone: normalizedPhone, pass: hashPw(b.password), codeHash: codeHash(code), expiresAt: Date.now() + OTP_TTL_MS, attempts: 0, lastSentAt: Date.now(), createdAt: new Date().toISOString() };
+      const pending = { id: email, email, name: display, username, phone: normalizedPhone, pass: await hashPw(b.password), codeHash: codeHash(code), expiresAt: Date.now() + OTP_TTL_MS, attempts: 0, lastSentAt: Date.now(), createdAt: new Date().toISOString() };
       // Save first so the verification step can never receive a code that has no record.
       registrationStage = 'pending_write';
       await store.saveDoc('emailVerifications', email, pending);
@@ -225,11 +222,13 @@ module.exports = function (app) {
       const b = req.body || {};
       const u = await findUserByLogin(b.contact || b.username || b.email || b.phone);
       const adminEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
-      const adminPasswordHash = String(process.env.ADMIN_PASSWORD_HASH || '').trim().toLowerCase();
+      const adminPasswordHash = String(process.env.ADMIN_PASSWORD_HASH || '').trim();
       const loginContact = String(b.contact || b.username || b.email || b.phone || '').trim().toLowerCase();
-      const isConfiguredAdmin = !!adminEmail && loginContact === adminEmail && !!adminPasswordHash && hashPw(b.password || '') === adminPasswordHash;
-      if (!u || (!isConfiguredAdmin && u.pass !== hashPw(b.password || ''))) return res.json({ error: 'بيانات الدخول غلط' });
+      const adminCheck = !!adminEmail && loginContact === adminEmail && !!adminPasswordHash ? await verifyPw(b.password || '', adminPasswordHash) : { ok: false, legacy: false };
+      const passwordCheck = u ? await verifyPw(b.password || '', u.pass) : { ok: false, legacy: false };
+      if (!u || (!adminCheck.ok && !passwordCheck.ok)) return res.json({ error: 'بيانات الدخول غلط' });
       if (u.banned) return res.json({ error: 'الحساب محظور' });
+      if (passwordCheck.ok && passwordCheck.legacy && !adminCheck.ok) u.pass = await hashPw(b.password || '');
       u.lastSeen = Date.now(); await store.saveUser(u);
       const t = await issue(u);
       res.json({ ok: true, token: t.access, refresh: t.refresh, user: pub(u) });
@@ -244,11 +243,36 @@ module.exports = function (app) {
       const code = String(crypto.randomInt(100000, 1000000));
       const resetSnap = await store.getDb().collection('passwordResets').doc(email).get();
       if (resetSnap.exists && Date.now() - Number((resetSnap.data() || {}).lastSentAt || 0) < OTP_RESEND_GAP_MS) return res.status(429).json({ error: 'تم إرسال كود بالفعل، انتظر دقيقة قبل إعادة المحاولة' });
+      const resetRecord = { id: email, email, codeHash: codeHash(code), expiresAt: Date.now() + OTP_TTL_MS, attempts: 0, lastSentAt: Date.now(), createdAt: new Date().toISOString() };
+      await store.saveDoc('passwordResets', email, resetRecord);
       const sent = await sendPasswordResetEmail(email, u.name || u.username, code);
-      if (!sent.ok) return res.status(503).json({ error: sent.reason || 'تعذر إرسال رمز تغيير كلمة المرور حاليًا' });
-      await store.saveDoc('passwordResets', email, { id: email, email, codeHash: codeHash(code), expiresAt: Date.now() + OTP_TTL_MS, attempts: 0, lastSentAt: Date.now(), createdAt: new Date().toISOString() });
+      if (!sent.ok) {
+        await store.deleteDoc('passwordResets', email).catch(() => {});
+        return res.status(503).json({ error: sent.reason || 'تعذر إرسال رمز تغيير كلمة المرور حاليًا' });
+      }
       res.json({ ok: true, email, message: 'تم إرسال رمز تغيير كلمة المرور إلى بريدك' });
     } catch (e) { console.error('password request:', e.message); res.status(500).json({ error: 'تعذر إرسال الرمز حاليًا' }); }
+  });
+  app.post('/api/auth/password/resend', async (req, res) => {
+    try {
+      const email = String((req.body || {}).email || '').trim().toLowerCase();
+      if (!isEmail(email)) return res.json({ error: 'أدخل بريدًا إلكترونيًا صحيحًا' });
+      const u = await findUserByLogin(email);
+      const current = await store.getDb().collection('passwordResets').doc(email).get();
+      if (!u || !current.exists) return res.json({ error: 'ابدأ طلب استعادة كلمة المرور أولًا' });
+      const old = current.data() || {};
+      const remainingSec = Math.max(0, Math.ceil((OTP_RESEND_GAP_MS - (Date.now() - Number(old.lastSentAt || 0))) / 1000));
+      if (remainingSec > 0) return res.status(429).json({ error: 'انتظر قبل إعادة إرسال الرمز', remainingSec });
+      const code = String(crypto.randomInt(100000, 1000000));
+      const record = { codeHash: codeHash(code), expiresAt: Date.now() + OTP_TTL_MS, attempts: 0, lastSentAt: Date.now() };
+      await store.saveDoc('passwordResets', email, record);
+      const sent = await sendPasswordResetEmail(email, u.name || u.username, code);
+      if (!sent.ok) {
+        await store.saveDoc('passwordResets', email, old).catch(() => {});
+        return res.status(503).json({ error: sent.reason || 'تعذر إرسال الرمز حاليًا' });
+      }
+      res.json({ ok: true, message: 'تم إرسال رمز جديد' });
+    } catch (e) { console.error('password resend:', e.message); res.status(500).json({ error: 'تعذر إعادة إرسال الرمز حاليًا' }); }
   });
   app.post('/api/auth/password/reset', async (req, res) => {
     try {
@@ -264,12 +288,13 @@ module.exports = function (app) {
       if (reset.codeHash !== codeHash(code)) { await store.saveDoc('passwordResets', email, { attempts: Number(reset.attempts || 0) + 1 }); return res.json({ error: 'رمز التحقق غير صحيح' }); }
       const u = await findUserByLogin(email);
       if (!u) return res.json({ error: 'الحساب غير موجود' });
-      u.pass = hashPw(b.password); u.passwordChangedAt = new Date().toISOString();
+      u.pass = await hashPw(b.password); u.passwordChangedAt = new Date().toISOString();
       await store.saveUser(u); await store.deleteDoc('passwordResets', email);
       res.json({ ok: true, message: 'تم تغيير كلمة المرور بنجاح، يمكنك تسجيل الدخول الآن' });
     } catch (e) { console.error('password reset:', e.message); res.status(500).json({ error: 'تعذر تغيير كلمة المرور حاليًا' }); }
   });
   app.post('/api/auth/forgot/request', (req, res) => app._router ? res.redirect(307, '/api/auth/password/request') : res.json({ error: 'تعذر الطلب' }));
+  app.post('/api/auth/forgot/resend', (req, res) => app._router ? res.redirect(307, '/api/auth/password/resend') : res.json({ error: 'تعذر الطلب' }));
   app.post('/api/auth/forgot/reset', (req, res) => app._router ? res.redirect(307, '/api/auth/password/reset') : res.json({ error: 'تعذر الطلب' }));
   app.post('/api/auth/refresh', async (req, res) => {
     try {
