@@ -120,7 +120,14 @@ module.exports = function (app) {
       if (!/^[a-zA-Z0-9_\u0600-\u06ff]{3,30}$/.test(username)) return res.json({ error: 'اسم المستخدم من 3 إلى 30 حرفًا أو رقمًا' });
       if (String(b.password).length < 6) return res.json({ error: 'كلمة السر 6 أحرف على الأقل' });
       if (String(b.password) !== String(b.password2)) return res.json({ error: 'كلمتا السر غير متطابقتين' });
-      const existing = await findUserByLogin(email) || await findUserByLogin(username) || await findUserByLogin(phone);
+      // Read users once and compare normalized values. This avoids a sequence of
+      // Firestore queries that can fail independently and produce a generic 500.
+      const normalizedPhone = phone.replace(/[\s-]/g, '');
+      const users = await store.getUsers();
+      const existing = users.find(u => {
+        const values = [u.email, u.username, u.phone, u.contact].map(v => String(v || '').trim().toLowerCase());
+        return values.includes(email) || values.includes(username) || values.includes(normalizedPhone);
+      });
       if (existing) return res.json({ error: 'البريد أو الهاتف أو اسم المستخدم مستخدم بالفعل' });
       const code = String(crypto.randomInt(100000, 1000000));
       const pendingSnap = await store.getDb().collection('emailVerifications').doc(email).get();
@@ -129,11 +136,20 @@ module.exports = function (app) {
         const remainingSec = Math.max(0, Math.ceil((OTP_RESEND_GAP_MS - (Date.now() - lastSentAt)) / 1000));
         if (remainingSec > 0) return res.status(429).json({ error: 'تم إرسال كود بالفعل', remainingSec, message: 'انتظر ' + remainingSec + ' ثانية قبل إعادة المحاولة' });
       }
+      const pending = { id: email, email, name: display, username, phone: normalizedPhone, pass: hashPw(b.password), codeHash: codeHash(code), expiresAt: Date.now() + OTP_TTL_MS, attempts: 0, lastSentAt: Date.now(), createdAt: new Date().toISOString() };
+      // Save first so the verification step can never receive a code that has no record.
+      await store.saveDoc('emailVerifications', email, pending);
       const sent = await sendVerificationEmail(email, display, code);
-      if (!sent.ok) { console.error('verification email rejected:', sent.status || '', sent.reason || ''); return res.status(503).json({ error: sent.reason || 'تعذر إرسال رمز البريد حاليًا، حاول لاحقًا' }); }
-      await store.saveDoc('emailVerifications', email, { id: email, email, name: display, username, phone, pass: hashPw(b.password), codeHash: codeHash(code), expiresAt: Date.now() + OTP_TTL_MS, attempts: 0, lastSentAt: Date.now(), createdAt: new Date().toISOString() });
+      if (!sent.ok) {
+        await store.deleteDoc('emailVerifications', email).catch(() => {});
+        console.error('verification email rejected:', sent.status || '', sent.reason || '');
+        return res.status(503).json({ error: sent.reason || 'تعذر إرسال رمز البريد حاليًا، حاول لاحقًا' });
+      }
       return res.json({ ok: false, verificationRequired: true, email, message: 'تم إرسال رمز التحقق إلى بريدك، صالح لمدة 10 دقائق' });
-    } catch (e) { console.error('register:', e.message); res.status(500).json({ error: 'تعذر إنشاء الحساب حالياً' }); }
+    } catch (e) {
+      console.error('register failed:', e && e.stack ? e.stack : e);
+      res.status(500).json({ error: 'تعذر إنشاء الحساب حالياً', code: 'registration_server_error' });
+    }
   });
   app.post('/api/auth/email/verify', async (req, res) => {
     try {
