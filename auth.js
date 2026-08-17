@@ -108,6 +108,7 @@ async function issue(u) {
 
 module.exports = function (app) {
   app.post('/api/auth/register', async (req, res) => {
+    let registrationStage = 'start';
     try {
       const b = req.body || {};
       const email = String(b.email || '').trim().toLowerCase();
@@ -123,6 +124,7 @@ module.exports = function (app) {
       // Read users once and compare normalized values. This avoids a sequence of
       // Firestore queries that can fail independently and produce a generic 500.
       const normalizedPhone = phone.replace(/[\s-]/g, '');
+      registrationStage = 'users_read';
       const users = await store.getUsers();
       const existing = users.find(u => {
         const values = [u.email, u.username, u.phone, u.contact].map(v => String(v || '').trim().toLowerCase());
@@ -130,6 +132,7 @@ module.exports = function (app) {
       });
       if (existing) return res.json({ error: 'البريد أو الهاتف أو اسم المستخدم مستخدم بالفعل' });
       const code = String(crypto.randomInt(100000, 1000000));
+      registrationStage = 'pending_read';
       const pendingSnap = await store.getDb().collection('emailVerifications').doc(email).get();
       if (pendingSnap.exists) {
         const lastSentAt = Number((pendingSnap.data() || {}).lastSentAt || 0);
@@ -138,7 +141,9 @@ module.exports = function (app) {
       }
       const pending = { id: email, email, name: display, username, phone: normalizedPhone, pass: hashPw(b.password), codeHash: codeHash(code), expiresAt: Date.now() + OTP_TTL_MS, attempts: 0, lastSentAt: Date.now(), createdAt: new Date().toISOString() };
       // Save first so the verification step can never receive a code that has no record.
+      registrationStage = 'pending_write';
       await store.saveDoc('emailVerifications', email, pending);
+      registrationStage = 'email_send';
       const sent = await sendVerificationEmail(email, display, code);
       if (!sent.ok) {
         await store.deleteDoc('emailVerifications', email).catch(() => {});
@@ -147,8 +152,8 @@ module.exports = function (app) {
       }
       return res.json({ ok: false, verificationRequired: true, email, message: 'تم إرسال رمز التحقق إلى بريدك، صالح لمدة 10 دقائق' });
     } catch (e) {
-      console.error('register failed:', e && e.stack ? e.stack : e);
-      res.status(500).json({ error: 'تعذر إنشاء الحساب حالياً', code: 'registration_server_error' });
+      console.error('register failed at ' + registrationStage + ':', e && e.stack ? e.stack : e);
+      res.status(500).json({ error: 'تعذر إنشاء الحساب حالياً', code: 'registration_' + registrationStage + '_error' });
     }
   });
   app.post('/api/auth/email/verify', async (req, res) => {
