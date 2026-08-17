@@ -121,16 +121,18 @@ module.exports = function (app) {
       if (!/^[a-zA-Z0-9_\u0600-\u06ff]{3,30}$/.test(username)) return res.json({ error: 'اسم المستخدم من 3 إلى 30 حرفًا أو رقمًا' });
       if (String(b.password).length < 6) return res.json({ error: 'كلمة السر 6 أحرف على الأقل' });
       if (String(b.password) !== String(b.password2)) return res.json({ error: 'كلمتا السر غير متطابقتين' });
-      // Read users once and compare normalized values. This avoids a sequence of
-      // Firestore queries that can fail independently and produce a generic 500.
+      // Use indexed direct lookups instead of reading the entire users collection.
+      // This keeps registration fast and avoids a collection-read failure on Production.
       const normalizedPhone = phone.replace(/[\s-]/g, '');
-      registrationStage = 'users_read';
-      const users = await store.getUsers();
-      const existing = users.find(u => {
-        const values = [u.email, u.username, u.phone, u.contact].map(v => String(v || '').trim().toLowerCase());
-        return values.includes(email) || values.includes(username) || values.includes(normalizedPhone);
-      });
-      if (existing) return res.json({ error: 'البريد أو الهاتف أو اسم المستخدم مستخدم بالفعل' });
+      registrationStage = 'users_lookup';
+      const userCol = store.getDb().collection('users');
+      const lookups = await Promise.all([
+        userCol.where('contact', '==', email).limit(1).get(),
+        userCol.where('email', '==', email).limit(1).get(),
+        userCol.where('username', '==', username).limit(1).get(),
+        userCol.where('phone', '==', normalizedPhone).limit(1).get()
+      ]);
+      if (lookups.some(snap => !snap.empty)) return res.json({ error: 'البريد أو الهاتف أو اسم المستخدم مستخدم بالفعل' });
       const code = String(crypto.randomInt(100000, 1000000));
       registrationStage = 'pending_read';
       const pendingSnap = await store.getDb().collection('emailVerifications').doc(email).get();
@@ -153,7 +155,7 @@ module.exports = function (app) {
       return res.json({ ok: false, verificationRequired: true, email, message: 'تم إرسال رمز التحقق إلى بريدك، صالح لمدة 10 دقائق' });
     } catch (e) {
       console.error('register failed at ' + registrationStage + ':', e && e.stack ? e.stack : e);
-      res.status(500).json({ error: 'تعذر إنشاء الحساب حالياً', code: 'registration_' + registrationStage + '_error' });
+      res.status(500).json({ error: 'تعذر إنشاء الحساب حالياً' });
     }
   });
   app.post('/api/auth/email/verify', async (req, res) => {
