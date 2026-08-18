@@ -197,12 +197,16 @@ module.exports = function (app) {
       if (!idToken) return res.status(400).json({ error: 'بيانات Google غير مكتملة' });
       const r = await fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(idToken));
       const profile = await r.json().catch(() => ({}));
-      if (!r.ok || profile.aud !== clientId || !profile.sub || !profile.email || String(profile.email_verified) !== 'true') {
+      const audienceOk = Array.isArray(profile.aud) ? profile.aud.includes(clientId) : String(profile.aud || '') === clientId;
+      const emailVerified = profile.email_verified === true || String(profile.email_verified).toLowerCase() === 'true';
+      if (!r.ok || !audienceOk || !profile.sub || !profile.email || !emailVerified) {
         return res.status(401).json({ error: 'تعذر التحقق من حساب Google' });
       }
       const email = String(profile.email).trim().toLowerCase();
-      let users = await store.getUsers();
-      let u = users.find(x => String(x.googleId || '') === String(profile.sub)) || users.find(x => String(x.email || '').toLowerCase() === email || String(x.contact || '').toLowerCase() === email);
+      // Use indexed email lookup instead of scanning the entire users collection.
+      // Google accounts are uniquely identified by their verified email here; the
+      // Google subject is persisted after the account is found or created.
+      let u = await (store.findUserByEmail ? store.findUserByEmail(email) : store.findUserByContact(email));
       const display = String(profile.name || email.split('@')[0] || 'مستخدم Google').trim();
       if (!u) {
         u = newUser({ id: Date.now(), username: email, display_name: display, name: display, contact: email, phone: email, email, googleId: String(profile.sub), avatar: profile.picture || '', provider: 'google' });
