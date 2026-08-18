@@ -219,7 +219,7 @@ html[data-theme="pharaoh"] .bottom-nav{background:rgba(18,14,7,.96);border-color
 
 <main>
   <div class="sec-t"><span id="prodTitle">كل المنتجات</span></div>
-  <div class="store-tools"><button class="filter-toggle" id="filterToggle" type="button" onclick="toggleFilterPanel()">☷ الفلتر</button><div class="filter-panel" id="filterPanel"><label for="sorter">ترتيب المنتجات</label><select class="sorter" id="sorter" onchange="setSort(this.value)" aria-label="ترتيب المنتجات"><option value="featured">الأكثر ملاءمة</option><option value="price-low">السعر: من الأقل</option><option value="price-high">السعر: من الأعلى</option><option value="stock">الأعلى مخزونًا</option></select><button class="stock-filter" id="stockFilter" type="button" onclick="toggleStockFilter()">المتاح فقط</button><span class="live-note"><i class="live-dot"></i> مخزون محدث من المصدر</span></div></div>
+  <div class="store-tools"><button class="filter-toggle" id="filterToggle" type="button" onclick="toggleFilterPanel()">☷ الفلتر</button><div class="filter-panel" id="filterPanel"><label for="sorter">ترتيب المنتجات</label><select class="sorter" id="sorter" onchange="setSort(this.value)" aria-label="ترتيب المنتجات"><option value="featured">الأكثر ملاءمة</option><option value="price-low">السعر: من الأقل</option><option value="price-high">السعر: من الأعلى</option><option value="stock">الأعلى مخزونًا</option></select><button class="stock-filter" id="stockFilter" type="button" onclick="toggleStockFilter()">المتاح فقط</button><span class="live-note" id="stockLiveNote"><i class="live-dot"></i> مخزون محدث من المصدر</span></div></div>
   <div class="grid" id="mainGrid">
     <div class="skel-i"><div class="skel-img"></div><div class="skel-t"></div><div class="skel-p"></div></div>
     <div class="skel-i"><div class="skel-img"></div><div class="skel-t"></div><div class="skel-p"></div></div>
@@ -329,17 +329,27 @@ html[data-theme="pharaoh"] .bottom-nav{background:rgba(18,14,7,.96);border-color
 <div id="loginSuccessOverlay" class="login-success-overlay"><div class="login-success-card"><div class="like-icon">👍</div><div style="font-size:1.05rem;margin-top:12px">تم المتجر العام بنجاح</div></div></div>
 
 <script>
-var P=[],cart=[],cur=null,qty=1,GOVS=[],curCat='الكل',curQ='',curSort='featured',onlyAvailable=false;
+var P=[],cart=[],cur=null,qty=1,GOVS=[],curCat='الكل',curQ='',curSort='featured',onlyAvailable=false,stockRefreshTimer=null,lastStockUpdatedAt=null;
 
 function fmt(n){return Number(n||0).toLocaleString('ar-EG')+' ج.م'}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 
+function updateStockLiveNote(){
+  var el=document.getElementById('stockLiveNote'); if(!el)return;
+  if(!lastStockUpdatedAt){el.innerHTML='<i class="live-dot"></i> مخزون محدث من المصدر';return;}
+  var d=new Date(lastStockUpdatedAt); var time=d.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+  el.innerHTML='<i class="live-dot"></i> المخزون الأصلي · آخر تحديث '+esc(time);
+}
 function loadProducts(){
   if(window.__PRODUCTS && window.__PRODUCTS.length){ P=window.__PRODUCTS; afterLoad(); }
-  fetch('/api/products',{headers:{'Accept':'application/json'}}).then(function(r){return r.json().then(function(d){return {ok:r.ok,data:d}})}).then(function(x){
-    if(x.ok && Array.isArray(x.data)){ P=x.data; afterLoad(); }
+  return fetch('/api/products',{headers:{'Accept':'application/json','Cache-Control':'no-cache'},cache:'no-store'}).then(function(r){return r.json().then(function(d){return {ok:r.ok,data:d}})}).then(function(x){
+    if(x.ok && Array.isArray(x.data)){ P=x.data; lastStockUpdatedAt=(x.data[0]&&x.data[0].stockUpdatedAt)||new Date().toISOString(); afterLoad(); updateStockLiveNote(); }
     else if(!P.length){ P=[]; afterLoad(); }
   }).catch(function(){ if(!P.length) afterLoad(); });
+}
+function startStockRefresh(){
+  if(stockRefreshTimer)clearInterval(stockRefreshTimer);
+  stockRefreshTimer=setInterval(function(){loadProducts();},30000);
 }
 function afterLoad(){ renderCats(); renderGrid(); }
 
@@ -558,7 +568,7 @@ function toggleTheme(){
 }
 applyTheme(localStorage.getItem('earnify_theme')||'default');
 
-loadProducts(); setupWA();
+loadProducts(); startStockRefresh(); setupWA();
 var menuBtn=document.getElementById('menuBtn');
 if(menuBtn){menuBtn.addEventListener('click',function(ev){openSidebar(ev);},{passive:false});menuBtn.addEventListener('touchend',function(ev){openSidebar(ev);},{passive:false});}
 </script>

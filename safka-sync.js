@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
 const store = require('./firestore');
+const postgres = require('./lib/postgres');
 const { availableBalance } = require('./balance');
 
 const BASE_URL = process.env.SAFKA_PUBLIC_BASE_URL || 'https://api.safka-eg.com/api/v1/public';
@@ -47,18 +48,43 @@ async function notifyAll(title, body, type) {
   const users = await store.getUsers();
   await Promise.all(users.filter(u => u && u.id).map(u => global.notifyUser(u.id, title, body, '/store', type).catch(() => null)));
 }
+function productStock(product) {
+  const prop = (product && product.properties && product.properties[0]) || {};
+  const candidates = [prop.min, prop.stock, prop.quantity, product && product.stock, product && product.quantity];
+  for (const value of candidates) {
+    if (value !== undefined && value !== null && value !== '' && Number.isFinite(Number(value))) return Math.max(0, Math.floor(Number(value)));
+  }
+  return 0;
+}
+
+function dbProduct(product) {
+  const stock = productStock(product);
+  const base = Number(product.basePrice != null ? product.basePrice : (product.sale_price != null ? product.sale_price : (product.price || 0)));
+  return Object.assign({}, product, {
+    external_id: product.id || product._id,
+    stock,
+    active: product.is_active !== false && ((product.properties && product.properties[0] && product.properties[0].is_available) !== false),
+    basePrice: Number.isFinite(base) ? base : 0,
+    available: product.is_active !== false && stock > 0
+  });
+}
+
 async function syncProducts(options) {
   const products = await fetchAllProducts();
   const meta = await getMeta();
   const initialized = Array.isArray(meta.productIds);
   const previous = new Set((meta.productIds || []).map(String));
   const newProducts = initialized ? products.filter(p => p && p._id && !previous.has(String(p._id)) && p.is_active !== false) : [];
-  try { fs.writeFileSync(CACHE_FILE, JSON.stringify(products)); } catch (e) { console.warn('Safka cache write skipped:', e.message); }
-  await saveMeta({ productIds: products.map(p => String(p._id)).filter(Boolean), productCount: products.length, productsSyncedAt: new Date().toISOString() });
+  const prepared = products.map(dbProduct);
+  let database = null;
+  try { database = await postgres.upsertProducts(prepared); }
+  catch (e) { console.warn('Safka PostgreSQL stock import skipped:', e.message); }
+  try { fs.writeFileSync(CACHE_FILE, JSON.stringify(prepared)); } catch (e) { console.warn('Safka cache write skipped:', e.message); }
+  await saveMeta({ productIds: products.map(p => String(p._id || p.id)).filter(Boolean), productCount: products.length, productsSyncedAt: new Date().toISOString(), stockImportedAt: new Date().toISOString(), stockImported: database || { inserted: 0, updated: 0 } });
   if (newProducts.length && options && options.notify !== false) {
     await notifyAll('منتجات جديدة على rab7na', 'تمت إضافة ' + newProducts.length + ' منتج جديد متاح للتسويق.', 'new-product');
   }
-  return { ok: true, products: products.length, newProducts: newProducts.length };
+  return { ok: true, products: products.length, newProducts: newProducts.length, stockImported: database || { inserted: 0, updated: 0 } };
 }
 function statusUrl(order) {
   const template = String(process.env.SAFKA_ORDER_STATUS_URL || '').trim();

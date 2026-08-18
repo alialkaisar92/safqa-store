@@ -221,7 +221,8 @@ app.get('/api/products', async (req, res) => {
   });
   try {
     const live = await fetchLivePublicProducts();
-    const normalized = live.map(raw => normalizePublicProduct(raw, savedById.get(String(raw.id || raw._id)) || {}, priceUp));
+    const stockUpdatedAt = new Date().toISOString();
+    const normalized = live.map(raw => Object.assign(normalizePublicProduct(raw, savedById.get(String(raw.id || raw._id)) || {}, priceUp), { stockUpdatedAt }));
     try { fs.writeFileSync(path.join(__dirname, 'products-cache.json'), JSON.stringify(normalized)); } catch (e) { console.warn('Product cache write skipped:', e.message); }
     res.json(normalized);
   } catch (error) {
