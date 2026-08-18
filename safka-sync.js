@@ -24,8 +24,9 @@ async function requestJson(url, options) {
   return body;
 }
 async function getMeta() {
-  const snap = await store.getDb().collection('affiliateMeta').doc(META_DOC).get();
-  return snap.exists ? (snap.data() || {}) : {};
+  const rows = await store.all('affiliateMeta');
+  const row = rows.find(item => String(item.id) === META_DOC);
+  return row || {};
 }
 async function saveMeta(value) { await store.saveDoc('affiliateMeta', META_DOC, value); }
 async function fetchAllProducts() {
