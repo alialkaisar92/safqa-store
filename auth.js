@@ -78,8 +78,10 @@ async function sendEmail({ email, name, code, subject, purpose }) {
     });
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-      console.error('email api rejected:', response.status, body && body.name ? body.name : 'provider_error');
-      return { ok: false, reason: 'تعذر إرسال كود التحقق حاليًا. راجع إعدادات مزود البريد.' };
+      const providerName = String(body && (body.name || body.code) || 'provider_error').slice(0, 120);
+      const providerMessage = String(body && body.message || '').replace(/[\\r\\n]/g, ' ').slice(0, 240);
+      console.error('email api rejected:', response.status, providerName, providerMessage);
+      return { ok: false, status: response.status, providerName, reason: 'تعذر إرسال كود التحقق حاليًا. راجع إعدادات مزود البريد.' };
     }
     return { ok: true, provider: 'resend', id: body && body.id ? body.id : undefined };
   } catch (e) {
