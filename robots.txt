@@ -1,8 +1,9 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Allow: /login
+Allow: /register
 Disallow: /api/
-Disallow: /login
 Disallow: /account
 Disallow: /orders
 Disallow: /withdraw
