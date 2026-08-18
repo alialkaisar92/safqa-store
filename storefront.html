@@ -192,10 +192,10 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
 <body>
 
 <header>
-  <div class="header-top">
+  <div class="header-top" dir="rtl">
+    <button class="menu-btn" id="menuBtn" onclick="openSidebar()" aria-label="فتح قائمة المسوق">☰</button>
     <div class="logo">Rab<span>7na</span></div>
     <div class="search"><input id="q" placeholder="ابحث عن منتج..." oninput="doSearch(this.value)"></div>
-    <button class="menu-btn" id="menuBtn" onclick="openSidebar()" aria-label="فتح قائمة المسوق">☰</button>
     <button class="cart-btn" onclick="openCart()" aria-label="فتح السلة">🛒<i id="cc">0</i></button>
   </div>
   <div class="cats" id="catRow"></div>
