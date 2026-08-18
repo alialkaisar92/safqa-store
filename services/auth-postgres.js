@@ -16,7 +16,7 @@ function tokenHash(token) { return crypto.createHash('sha256').update(token).dig
 function newToken() { return crypto.randomBytes(32).toString('hex'); }
 function publicUser(row) {
   if (!row) return null;
-  return { id: row.id, name: row.name, email: row.email, email_verified: Boolean(row.email_verified), created_at: row.created_at, last_login: row.last_login };
+  return { id: row.id, name: row.name, email: row.email, email_verified: Boolean(row.email_verified), created_at: row.created_at, last_login: row.last_login, balance: Number(row.balance || 0), welcome_bonus_granted: Boolean(row.welcome_bonus_granted) };
 }
 function allowed(key) {
   const now = Date.now();
@@ -34,9 +34,9 @@ async function register({ name, email, password }) {
   if (!validatePassword(password)) throw new Error('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
   const passwordHash = await bcrypt.hash(password, 12);
   try {
-    const result = await query(`INSERT INTO users(name,email,password_hash,email_verified)
-      VALUES ($1,$2,$3,FALSE)
-      RETURNING id,name,email,email_verified,created_at,last_login`, [name, email, passwordHash]);
+    const result = await query(`INSERT INTO users(name,email,password_hash,email_verified,balance,welcome_bonus_granted)
+      VALUES ($1,$2,$3,FALSE,70.00,TRUE)
+      RETURNING id,name,email,email_verified,created_at,last_login,balance,welcome_bonus_granted`, [name, email, passwordHash]);
     return result.rows[0];
   } catch (error) {
     if (error && error.code === '23505') throw new Error('هذا البريد مستخدم بالفعل');
@@ -48,7 +48,7 @@ async function login({ email, password, ip }) {
   email = normalizeEmail(email);
   if (!allowed(`${ip || 'unknown'}:${email}`)) throw new Error('محاولات كثيرة؛ حاول بعد 15 دقيقة');
   if (!email || typeof password !== 'string') throw new Error('البريد وكلمة المرور مطلوبان');
-  const result = await query('SELECT id,name,email,password_hash,email_verified,created_at,last_login FROM users WHERE LOWER(email)=LOWER($1) LIMIT 1', [email]);
+  const result = await query('SELECT id,name,email,password_hash,email_verified,created_at,last_login,balance,welcome_bonus_granted FROM users WHERE LOWER(email)=LOWER($1) LIMIT 1', [email]);
   const user = result.rows[0];
   const valid = user ? await bcrypt.compare(password, user.password_hash) : false;
   if (!valid) throw new Error('البريد أو كلمة المرور غير صحيحة');
