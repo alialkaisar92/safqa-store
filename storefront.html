@@ -217,21 +217,16 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
 
 
 <div class="side-overlay" id="sideOverlay" onclick="closeSidebar()"></div>
-<aside class="side-drawer" id="sideDrawer" aria-label="قائمة المسوق">
+<aside class="side-drawer" id="sideDrawer" aria-label="قائمة المتجر">
   <div class="side-head"><div class="side-brand">Rab<span style="color:var(--ink)">7na</span></div><button class="side-close" onclick="closeSidebar()" aria-label="إغلاق القائمة">✕</button></div>
-  <div class="side-user" id="sideUser"><strong>مساحة المسوق</strong><span>سجّل الدخول للوصول إلى حسابك وطلباتك وأرباحك.</span></div>
+  <div class="side-user" id="sideUser"><strong>متجر Rab7na</strong><span>تصفح المنتجات وأرسل طلبك مباشرة دون حساب.</span></div>
   <div class="side-group">التنقل السريع</div>
   <button class="side-item" onclick="sideGoProducts()"><span class="side-ic">🛍️</span><span>المنتجات</span></button>
   <button class="side-item" onclick="closeSidebar();openCart()"><span class="side-ic">🛒</span><span>السلة <small id="sideCartCount"></small></span></button>
-  <button class="side-item" onclick="closeSidebar();openDashboard()"><span class="side-ic">📊</span><span>لوحة تحكم المسوق</span></button>
-  <button class="side-item" onclick="closeSidebar();openAcct()"><span class="side-ic">👤</span><span>حسابي وطلباتي</span></button>
-  <button class="side-item" onclick="closeSidebar();openWithdraw()"><span class="side-ic">💰</span><span>سحب الأرباح</span></button>
-  <div class="side-group">خدمات المسوق</div>
+  <div class="side-group">خدمات المتجر</div>
   <button class="side-item" onclick="closeSidebar();openShippingRates()"><span class="side-ic">🚚</span><span>أسعار الشحن حسب المحافظة</span></button>
   <button class="side-item" onclick="closeSidebar();document.getElementById('waFloat').click()"><span class="side-ic">💬</span><span>الدعم عبر واتساب</span></button>
   <button class="side-item" onclick="closeSidebar();toggleTheme()"><span class="side-ic">✨</span><span>تبديل مظهر المتجر</span></button>
-  <div class="side-divider"></div>
-  <button class="side-item danger" id="sideLogout" onclick="closeSidebar();acctLogout()" style="display:none"><span class="side-ic">↪</span><span>تسجيل الخروج</span></button>
 </aside>
 
 <footer>
@@ -306,7 +301,7 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
 @keyframes rab7naSpin{to{transform:rotate(360deg)}}
 .forgot-link{display:block;text-align:center;color:var(--forest-d);font-weight:800;font-size:.78rem;margin-top:10px}
 </style>
-<div id="loginSuccessOverlay" class="login-success-overlay"><div class="login-success-card"><div class="like-icon">👍</div><div style="font-size:1.05rem;margin-top:12px">تم تسجيل الدخول بنجاح</div></div></div>
+<div id="loginSuccessOverlay" class="login-success-overlay"><div class="login-success-card"><div class="like-icon">👍</div><div style="font-size:1.05rem;margin-top:12px">تم المتجر العام بنجاح</div></div></div>
 
 <script>
 var P=[],cart=[],cur=null,qty=1,GOVS=[],curCat='الكل',curQ='',curSort='featured',onlyAvailable=false;
@@ -464,7 +459,7 @@ function submitOrder(){
   if(!name||!phone||!addr||!gov){m.textContent='⚠️ اكمل بياناتك';m.className='msg err';return;}
   var items=cart.map(function(c){return {product:c.id,property:c.propId,qty:c.qty,originalPrice:Number(c.basePrice!=null?c.basePrice:c.price)||0,finalPrice:Number(c.finalPrice!=null?c.finalPrice:c.price)||0}});
   var total=cart.reduce(function(a,c){return a+cartLineTotal(c)},0)+shipCost;
-  fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':localStorage.getItem('etok')||''},
+  fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':null||''},
     body:JSON.stringify({client_name:name,client_phone1:phone,client_address:addr,shipping_governorate:gov,items:items,total:total,shipping_cost:shipCost})
   }).then(function(r){return r.json()}).then(function(d){
     if(d.error){m.textContent='⚠️ '+d.error;m.className='msg err';}
@@ -481,149 +476,23 @@ function closeM(id){document.getElementById(id).classList.remove('on')}
 function openSidebar(){updProfileBtn();document.getElementById('sideOverlay').classList.add('on');document.getElementById('sideDrawer').classList.add('on')}
 function closeSidebar(){document.getElementById('sideOverlay').classList.remove('on');document.getElementById('sideDrawer').classList.remove('on')}
 function sideGoProducts(){closeSidebar();document.getElementById('mainGrid').scrollIntoView({behavior:'smooth',block:'start'})}
-function openWithdraw(){var tok=localStorage.getItem('etok');if(!tok){openAcct();return;}openM('acct');acctWithdrawView()}
-function dashStatus(s){var x=String(s||'غير محدد');return x.replace(/تم التسليم|تم التوصيل|delivered|completed/i,'مكتمل').replace(/قيد التأكيد|pending/i,'قيد المراجعة').replace(/ملغي|cancelled|canceled/i,'ملغي')}
+function openWithdraw(){
+  ehToast('السحب متاح بعد إنشاء نظام الحسابات في إصدار لاحق.');
+}
 function openDashboard(){
-  var tok=localStorage.getItem('etok');
-  if(!tok){openAcct();return;}
-  openM('acct');
-  var b=document.getElementById('acctBody');
-  b.innerHTML='<div style="text-align:center;color:var(--muted);padding:28px">جاري تحميل لوحة المسوق...</div>';
-  fetch('/api/my/dashboard',{headers:{'x-auth-token':tok}}).then(function(r){return r.json()}).then(function(d){
-    if(d.error||!d.stats){acctAuthView('login');return;}
-    var u=d.user||{},st=d.stats||{},orders=Array.isArray(d.orders)?d.orders:[];
-    b.innerHTML='<div class="dashboard-panel"><h3 class="pm-name">لوحة تحكم المسوق</h3>'+
-      '<div class="dash-hero"><small>الرصيد المتاح للسحب</small><div class="dash-balance">'+fmt(u.balance||0)+'</div></div>'+
-      '<div class="dash-stats"><div class="dash-stat"><small>إجمالي الطلبات</small><b>'+Number(st.orders||0).toLocaleString('ar-EG')+'</b></div><div class="dash-stat"><small>الطلبات المكتملة</small><b>'+Number(st.completed||0).toLocaleString('ar-EG')+'</b></div><div class="dash-stat"><small>عمولة هذا الشهر</small><b>'+fmt(st.monthCommission||0)+'</b></div><div class="dash-stat"><small>عمولات قيد الانتظار</small><b>'+fmt(st.pendingCommission||0)+'</b></div></div>'+
-      '<button class="addbtn" onclick="acctWithdrawView()">سحب الأرباح 💰</button><div class="dash-section-title">آخر الطلبات وحالتها</div>'+
-      (orders.length?orders.slice(0,20).map(function(o){return '<div class="dash-order"><div><strong>'+(esc(o.client_name||'طلب'))+'</strong><span style="color:var(--muted)">'+new Date(o.date||Date.now()).toLocaleDateString('ar-EG')+' • '+fmt(o.total||0)+'</span></div><span class="dash-status">'+esc(dashStatus(o.status))+'</span></div>'}).join(''):'<div class="empty">لا توجد طلبات حتى الآن</div>')+
-      '<button type="button" onclick="acctLogout()" style="width:100%;background:#fdecea;color:var(--danger);border-radius:12px;padding:11px;font-weight:700;font-size:.82rem;margin-top:8px">تسجيل الخروج</button></div>';
-  }).catch(function(){b.innerHTML='<div class="msg err">تعذر تحميل لوحة المسوق حاليًا</div>';});
+  ehToast('المتجر العام لا يحتاج إلى لوحة حساب.');
 }
-
 function openAcct(){
-  var tok=localStorage.getItem('etok');
-  if(!tok){ acctAuthView('login'); }
-  else { acctLoadDashboard(); }
-  openM('acct');
+  ehToast('المتجر متاح مباشرة بدون تسجيل أو المتجر العام.');
 }
-var acctPendingEmail='';
-function acctAuthView(mode){
-  var b=document.getElementById('acctBody');
-  b.innerHTML = '<h3 class="pm-name">'+(mode==='login'?'تسجيل الدخول':'إنشاء حساب مسوّق')+'</h3>'+
-    (mode==='login' ?
-      '<label>البريد أو رقم الهاتف أو اسم المستخدم</label><input class="field" id="aContact" autocomplete="username" placeholder="أدخل بيانات الدخول">'+
-      '<label>كلمة السر</label><input class="field" id="aPass" type="password" autocomplete="current-password" placeholder="كلمة المرور">'+
-      '<button id="acctLoginBtn" class="addbtn auth-submit" onclick="acctDoLogin()" style="margin-top:14px">دخول</button><a href="#" class="forgot-link" onclick="acctForgotView();return false">نسيت كلمة السر؟</a>' :
-      '<p style="color:var(--muted);font-size:.78rem;line-height:1.7;margin:0 0 8px">أنشئ حسابك كمسوّق، وسنرسل رمز تفعيل إلى بريدك الإلكتروني.</p>'+
-      '<label>البريد الإلكتروني</label><input class="field" id="aEmail" type="email" autocomplete="email" placeholder="name@example.com">'+
-      '<label>رقم الموبايل</label><input class="field" id="aPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="01xxxxxxxxx">'+
-      '<label>اسم المستخدم</label><input class="field" id="aUsername" autocomplete="username" placeholder="مثال: ahmed_2026">'+
-      '<label>كلمة المرور</label><input class="field" id="aPass" type="password" autocomplete="new-password" placeholder="6 أحرف على الأقل">'+
-      '<label>إعادة كتابة كلمة المرور</label><input class="field" id="aPass2" type="password" autocomplete="new-password" placeholder="أعد كتابة كلمة المرور">'+
-      '<button class="addbtn" onclick="acctDoReg()" style="margin-top:14px">إنشاء الحساب وإرسال الرمز</button>')+
-    '<div class="msg" id="aMsg"></div><div style="text-align:center;margin-top:14px;font-size:.82rem;color:var(--muted)">'+
-      (mode==='login' ? 'مالكش حساب؟ <a href="#" onclick="acctAuthView(\'reg\');return false" style="color:var(--forest-d);font-weight:800">أنشئ واحد</a>' : 'عندك حساب؟ <a href="#" onclick="acctAuthView(\'login\');return false" style="color:var(--forest-d);font-weight:800">سجّل دخول</a>')+'</div>';
-}
-function acctVerifyView(note){var b=document.getElementById('acctBody');b.innerHTML='<h3 class="pm-name">فعّل حسابك</h3><p style="color:var(--muted);font-size:.8rem;line-height:1.8">'+note+'<br><b>'+acctPendingEmail+'</b></p><label>رمز التحقق المكوّن من 6 أرقام</label><input class="field" id="aCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000"><button class="addbtn" onclick="acctVerifyCode()" style="margin-top:14px">تفعيل الحساب</button><button type="button" onclick="acctResendCode()" style="width:100%;margin-top:8px;background:#fff;color:var(--forest-d);border:1px solid #cfe1dc;border-radius:12px;padding:10px;font-weight:800">إعادة إرسال الرمز</button><div class="msg" id="aMsg"></div>';}
-function acctVerifyCode(){var code=(document.getElementById('aCode').value||'').trim();if(!/^\d{6}$/.test(code))return acctMsg('اكتب الرمز المكوّن من 6 أرقام',false);fetch('/api/auth/email/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:acctPendingEmail,code:code})}).then(function(r){return r.json()}).then(function(d){if(d.ok){localStorage.setItem('etok',d.token);localStorage.setItem('euser',JSON.stringify(d.user));updProfileBtn();acctLoadDashboard()}else acctMsg(d.error||'رمز غير صحيح',false)}).catch(function(){acctMsg('تعذر الاتصال',false)})}
-function acctResendCode(){fetch('/api/auth/email/resend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:acctPendingEmail})}).then(function(r){return r.json()}).then(function(d){acctMsg(d.message||d.error||'تعذر إعادة الإرسال',!!d.ok)}).catch(function(){acctMsg('تعذر الاتصال',false)})}
-function acctMsg(t,ok){var e=document.getElementById('aMsg');if(e){e.textContent=t||'';e.className='msg '+(ok?'ok':'err');}}
-function acctDoLogin(){
-  var contact=document.getElementById('aContact').value.trim(), pass=document.getElementById('aPass').value, box=document.getElementById('acctBody'), btn=document.getElementById('acctLoginBtn');
-  if(!contact||!pass) return acctMsg('أكمل البريد أو الهاتف وكلمة السر',false);
-  box.classList.remove('auth-shake'); if(btn) btn.classList.add('loading');
-  fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contact:contact,password:pass})})
-  .then(function(r){return r.json().then(function(d){return {ok:r.ok,data:d}})}).then(function(x){
-    var d=x.data||{};
-    if(d.ok){ localStorage.setItem('etok',d.token); localStorage.setItem('euser',JSON.stringify(d.user)); updProfileBtn(); var ov=document.getElementById('loginSuccessOverlay'); if(ov) ov.classList.add('show'); setTimeout(function(){if(ov) ov.classList.remove('show'); acctLoadDashboard();},850); }
-    else { if(btn) btn.classList.remove('loading'); box.classList.add('auth-shake'); acctMsg(d.error||'بيانات الدخول غير صحيحة',false); setTimeout(function(){box.classList.remove('auth-shake')},550); }
-  }).catch(function(){if(btn) btn.classList.remove('loading');box.classList.add('auth-shake');acctMsg('تعذر الاتصال بالخادم، حاول مرة أخرى',false);setTimeout(function(){box.classList.remove('auth-shake')},550)});
-}
-function acctForgotView(){
-  var b=document.getElementById('acctBody');
-  b.innerHTML='<h3 class="pm-name">استرجاع كلمة السر</h3><p style="color:var(--muted);font-size:.8rem;line-height:1.8">اكتب بريدك المسجل، وسنرسل لك رمز تحقق صالحًا لمدة 10 دقائق.</p><label>البريد الإلكتروني</label><input class="field" id="forgotEmail" type="email" autocomplete="email" placeholder="name@example.com"><button id="forgotRequestBtn" class="addbtn auth-submit" onclick="acctForgotRequest()" style="margin-top:14px">إرسال رمز التحقق</button><div class="msg" id="aMsg"></div><div style="text-align:center;margin-top:14px;font-size:.82rem"><a href="#" onclick="acctAuthView(\'login\');return false" style="color:var(--forest-d);font-weight:800">العودة لتسجيل الدخول</a></div>';
-}
-function acctForgotRequest(){
-  var email=(document.getElementById('forgotEmail').value||'').trim().toLowerCase(), btn=document.getElementById('forgotRequestBtn');
-  if(!/^\S+@\S+\.\S+$/.test(email)) return acctMsg('اكتب بريدًا إلكترونيًا صحيحًا',false);
-  if(btn) btn.classList.add('loading');
-  fetch('/api/auth/password/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})}).then(function(r){return r.json().then(function(d){return {ok:r.ok,data:d}})}).then(function(x){var d=x.data||{};if(btn)btn.classList.remove('loading');if(d.ok){acctResetView(email);}else acctMsg(d.error||'تعذر إرسال الرمز حاليًا',false)}).catch(function(){if(btn)btn.classList.remove('loading');acctMsg('تعذر الاتصال بالخادم',false)});
-}
-var acctResetEmail='';
-function acctResetView(email){
-  acctResetEmail=email;
-  var b=document.getElementById('acctBody');
-  b.innerHTML='<h3 class="pm-name">تعيين كلمة سر جديدة</h3><p style="color:var(--muted);font-size:.8rem;line-height:1.8">تم إرسال الرمز إلى <b>'+esc(email)+'</b>.</p><label>رمز التحقق</label><input class="field" id="resetCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000"><label>كلمة السر الجديدة</label><input class="field" id="resetPass" type="password" autocomplete="new-password" placeholder="6 أحرف على الأقل"><label>تأكيد كلمة السر</label><input class="field" id="resetPass2" type="password" autocomplete="new-password" placeholder="أعد كتابة كلمة السر"><button id="resetBtn" class="addbtn auth-submit" onclick="acctDoResetFromForm()" style="margin-top:14px">حفظ كلمة السر الجديدة</button><button type="button" id="resetResendBtn" onclick="acctResendResetCode()" style="width:100%;margin-top:8px;background:#fff;color:var(--forest-d);border:1px solid #cfe1dc;border-radius:12px;padding:10px;font-weight:800">إعادة إرسال الرمز</button><div class="msg" id="aMsg"></div>';
-}
-  function acctResendResetCode(){var btn=document.getElementById('resetResendBtn');if(btn&&btn.disabled)return;if(btn){btn.disabled=true;btn.textContent='جاري الإرسال...'}fetch('/api/auth/password/resend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:acctResetEmail})}).then(function(r){return r.json().then(function(d){return {status:r.status,data:d}})}).then(function(x){var d=x.data||{};if(d.ok){acctMsg(d.message||'تم إرسال رمز جديد',true);var sec=60;var timer=setInterval(function(){sec--;if(btn)btn.textContent='إعادة الإرسال بعد '+sec+'ث';if(sec<=0){clearInterval(timer);if(btn){btn.disabled=false;btn.textContent='إعادة إرسال الرمز'}}},1000)}else{if(btn){btn.disabled=false;btn.textContent='إعادة إرسال الرمز'}acctMsg(d.error||'تعذر إعادة إرسال الرمز',false)}}).catch(function(){if(btn){btn.disabled=false;btn.textContent='إعادة إرسال الرمز'}acctMsg('تعذر الاتصال بالخادم',false)})}
-  function acctDoResetFromForm(){acctDoReset(acctResetEmail);}
-function acctDoReset(email){
-  var code=(document.getElementById('resetCode').value||'').trim(), pass=document.getElementById('resetPass').value, pass2=document.getElementById('resetPass2').value, btn=document.getElementById('resetBtn');
-  if(!/^\d{6}$/.test(code))return acctMsg('اكتب رمز التحقق المكوّن من 6 أرقام',false); if(pass.length<6)return acctMsg('كلمة السر 6 أحرف على الأقل',false); if(pass!==pass2)return acctMsg('كلمتا السر غير متطابقتين',false); if(btn)btn.classList.add('loading');
-  fetch('/api/auth/password/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,code:code,password:pass,password2:pass2})}).then(function(r){return r.json().then(function(d){return {ok:r.ok,data:d}})}).then(function(x){var d=x.data||{};if(btn)btn.classList.remove('loading');if(d.ok){acctAuthView('login');acctMsg('تم تغيير كلمة السر بنجاح، سجّل الدخول الآن',true)}else acctMsg(d.error||'تعذر تغيير كلمة السر',false)}).catch(function(){if(btn)btn.classList.remove('loading');acctMsg('تعذر الاتصال بالخادم',false)});
-}
-function acctDoReg(){
-  var email=(document.getElementById('aEmail').value||'').trim().toLowerCase(), phone=(document.getElementById('aPhone').value||'').trim(), username=(document.getElementById('aUsername').value||'').trim(), pass=document.getElementById('aPass').value, pass2=document.getElementById('aPass2').value;
-  if(!email||!phone||!username||!pass||!pass2) return acctMsg('أكمل بيانات التسجيل كلها',false);
-  if(!/^\S+@\S+\.\S+$/.test(email)) return acctMsg('اكتب بريدًا إلكترونيًا صحيحًا',false);
-  if(!/^01\d{9}$/.test(phone)) return acctMsg('رقم الموبايل يجب أن يكون 11 رقمًا ويبدأ بـ 01',false);
-  if(pass.length<6) return acctMsg('كلمة المرور 6 أحرف على الأقل',false);
-  if(pass!==pass2) return acctMsg('كلمتا المرور غير متطابقتين',false);
-  fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,phone:phone,username:username,name:username,display_name:username,password:pass,password2:pass2})}).then(function(r){return r.json()}).then(function(d){if(d.verificationRequired){acctPendingEmail=d.email||email;acctVerifyView(d.message||'تم إرسال رمز التحقق إلى بريدك')}else if(d.ok){localStorage.setItem('etok',d.token);localStorage.setItem('euser',JSON.stringify(d.user));updProfileBtn();acctLoadDashboard()}else acctMsg(d.error||'فشل إنشاء الحساب',false)}).catch(function(){acctMsg('تعذر الاتصال بخدمة التسجيل',false)});
-}
-function acctLogout(){ localStorage.removeItem('etok'); localStorage.removeItem('euser'); acctAuthView('login'); updProfileBtn(); }
-function acctLoadDashboard(){
-  var tok=localStorage.getItem('etok');
-  fetch('/api/auth/me',{headers:{'x-auth-token':tok}}).then(function(r){return r.json()}).then(function(d){
-    if(!d.logged){ localStorage.removeItem('etok'); acctAuthView('login'); return; }
-    var u=d.user;
-    var b=document.getElementById('acctBody');
-    b.innerHTML =
-      '<h3 class="pm-name">أهلاً، '+u.name+' 👋</h3>'+
-      '<div style="background:var(--mint);border-radius:14px;padding:16px;margin:12px 0;text-align:center">'+
-        '<div style="font-size:.78rem;color:var(--muted);margin-bottom:4px">رصيدك المتاح</div>'+
-        '<div style="font-size:1.6rem;font-weight:900;color:var(--forest-d)">'+fmt(u.balance||0)+'</div>'+
-      '</div>'+
-      '<button class="addbtn" onclick="acctWithdrawView()">سحب الأرباح 💰</button>'+
-      '<div style="height:10px"></div>'+
-      '<div id="acctOrders"><div style="text-align:center;color:var(--muted);font-size:.82rem;padding:16px 0">جاري تحميل طلباتك...</div></div>'+
-      '<button type="button" onclick="acctLogout()" style="width:100%;background:#fdecea;color:var(--danger);border-radius:12px;padding:11px;font-weight:700;font-size:.82rem;margin-top:14px">تسجيل الخروج</button>';
-    fetch('/api/my/orders',{headers:{'x-auth-token':tok}}).then(function(r){return r.json()}).then(function(orders){
-      var el=document.getElementById('acctOrders');
-      if(!orders || !orders.length){ el.innerHTML='<div style="text-align:center;color:var(--muted);font-size:.82rem;padding:10px 0">لسه معملتش أي طلب</div>'; return; }
-      el.innerHTML = '<div style="font-weight:800;font-size:.9rem;margin:10px 0 8px">طلباتي</div>' + orders.slice(0,15).map(function(o){
-        return '<div class="ci"><div class="n">'+(o.client_name||'طلب')+'<br><small>'+new Date(o.date).toLocaleDateString('ar-EG')+' • '+(o.status||'')+'</small></div><div class="p">'+fmt(o.total||0)+'</div></div>';
-      }).join('');
-    }).catch(function(){});
-  }).catch(function(){acctAuthView('login')});
-}
-function acctWithdrawView(){
-  var b=document.getElementById('acctBody');
-  b.innerHTML =
-    '<h3 class="pm-name">سحب الأرباح</h3>'+
-    '<label>المبلغ (ج.م)</label><input class="field" id="wAmount" type="number">'+
-    '<label>وسيلة الاستلام</label><select class="field" id="wMethod"><option value="فودافون كاش">فودافون كاش</option><option value="انستاباي">انستاباي</option><option value="محفظة بنكية">محفظة بنكية</option></select>'+
-    '<label>رقم المحفظة / الحساب</label><input class="field" id="wContact">'+
-    '<button class="addbtn" onclick="acctDoWithdraw()" style="margin-top:14px">إرسال طلب السحب</button>'+
-    '<div class="msg" id="aMsg"></div>'+
-    '<div style="text-align:center;margin-top:12px"><a href="#" onclick="acctLoadDashboard();return false" style="color:var(--forest-d);font-weight:800;font-size:.82rem">❮ رجوع</a></div>';
-}
-function acctDoWithdraw(){
-  var tok=localStorage.getItem('etok');
-  var amount=document.getElementById('wAmount').value, method=document.getElementById('wMethod').value, contact=document.getElementById('wContact').value.trim();
-  fetch('/api/my/withdraw',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':tok},body:JSON.stringify({amount:amount,method:method,contact:contact})})
-  .then(function(r){return r.json()}).then(function(d){
-    if(d.ok){ acctMsg('تم إرسال طلب السحب ✅',true); setTimeout(acctLoadDashboard,1200); }
-    else acctMsg(d.error||'فشل الطلب',false);
-  }).catch(function(){acctMsg('تعذر الاتصال',false)});
-}
+function acctLogout(){}
+function acctAuthView(){}
+function acctLoadDashboard(){}
+function acctWithdrawView(){}
 function updProfileBtn(){
-  var logged=!!localStorage.getItem('etok'),u={};
-  try{u=JSON.parse(localStorage.getItem('euser')||'{}')}catch(e){}
   var b=document.getElementById('sideUser'),lo=document.getElementById('sideLogout');
-  if(b)b.innerHTML=logged?'<strong>أهلاً '+esc(u.name||u.username||'يا مسوّق')+' 👋</strong><span>إدارة الطلبات والأرباح والحساب من مكان واحد.</span>':'<strong>مساحة المسوق</strong><span>سجّل الدخول للوصول إلى حسابك وطلباتك وأرباحك.</span>';
-  if(lo)lo.style.display=logged?'flex':'none';
+  if(b)b.innerHTML='<strong>متجر rab7na العام</strong><span>تصفح المنتجات وأرسل طلبك مباشرة دون حساب.</span>';
+  if(lo)lo.style.display='none';
 }
 updProfileBtn();
 updCC();

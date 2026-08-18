@@ -100,6 +100,31 @@ async function getToken(token) {
 }
 async function deleteToken(token) { if (token) await deleteDoc('authTokens', token); }
 
+async function purgeAuthCollections() {
+  const collections = ['users', 'authTokens', 'emailVerifications'];
+  const result = {};
+  for (const name of collections) {
+    const col = getDb().collection(name);
+    const snap = await col.get();
+    let batch = getDb().batch();
+    let pending = 0;
+    let deleted = 0;
+    for (const doc of snap.docs) {
+      batch.delete(doc.ref);
+      pending++;
+      deleted++;
+      if (pending >= 450) {
+        await batch.commit();
+        batch = getDb().batch();
+        pending = 0;
+      }
+    }
+    if (pending) await batch.commit();
+    result[name] = deleted;
+  }
+  return result;
+}
+
 async function getAffiliateData() {
   const [orders, products, withdrawals, tickets, meta] = await Promise.all([
     all('orders'), all('affiliateProducts'), all('withdrawals'), all('tickets'),
@@ -131,6 +156,6 @@ async function saveChats(chats) {
 
 module.exports = {
   getDb, getUsers, getUser, findUserByContact, findUserByEmail, saveUser, saveUsers,
-  saveToken, getToken, deleteToken, getAffiliateData, saveAffiliateData,
+  saveToken, getToken, deleteToken, purgeAuthCollections, getAffiliateData, saveAffiliateData,
   getChats, saveChats, all, saveDoc, deleteDoc
 };

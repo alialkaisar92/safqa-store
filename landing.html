@@ -146,7 +146,7 @@ footer{background:#10251D;color:#fff;padding:56px 0 24px}
     <h1>سوّق منتجات <b>مختارة بعناية</b><br>واربح عمولة على كل بيع</h1>
     <p>انضم لآلاف المسوقين، انسخ رابطك، شاركه، وتابع أرباحك أول بأول — العميل يدفع عند الاستلام وأنت تقبض عمولتك.</p>
     <div class="cta">
-      <a class="btn btn-p" href="#" onclick="lauthOpen('reg');return false">ابدأ التسويق مجانًا</a>
+      <a class="btn btn-p" href="/store">تصفح المتجر</a>
       <a class="btn btn-ghost" href="#how">اعرف أكتر</a>
     </div>
     <div class="trust"><span>تسجيل مجاني</span><span>الدفع عند الاستلام</span><span>حماية بيانات الحساب</span></div>
@@ -224,7 +224,6 @@ footer{background:#10251D;color:#fff;padding:56px 0 24px}
   <div class="copy">© 2026 rab7na — جميع الحقوق محفوظة</div>
 </div></footer>
 
-<div class="modal-ov" id="authM"></div>
 <script>
 function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2400);}
 function calcEarnings(){
@@ -254,66 +253,9 @@ fetch('/api/products').then(function(r){return r.json()}).then(function(d){
   d=d||[]; document.getElementById('featGrid').innerHTML=d.slice(0,8).map(card).join('');
 }).catch(function(){});
 
-/* ---- auth modal ---- */
-function hdr(){return {'Content-Type':'application/json'};}
-function done(d){localStorage.setItem('etok',d.token);localStorage.setItem('euser',JSON.stringify(d.user));location.href='/store';}
-function lmsg(t,ok){var e=document.getElementById('lmsg');if(e){e.textContent=t||'';e.style.color=ok?'#1F9D55':'#B3261E';}}
-var landingGoogleClientId='',landingPendingEmail='',landingResendTimer=null,landingResendUntil=0;
-function landingGoogleArea(){return '<div id="lgoogle" style="margin:12px 0 6px;text-align:center;min-height:42px"></div><div style="display:flex;align-items:center;gap:8px;color:#98A2B3;font-size:.72rem;margin:10px 0"><i style="height:1px;background:#EAECF0;flex:1"></i>أو باستخدام بياناتك<i style="height:1px;background:#EAECF0;flex:1"></i></div>';}
-function renderLandingGoogle(){var box=document.getElementById('lgoogle');if(!box||!landingGoogleClientId)return;if(!window.google||!google.accounts||!google.accounts.id){setTimeout(renderLandingGoogle,250);return}box.innerHTML='';google.accounts.id.initialize({client_id:landingGoogleClientId,callback:handleLandingGoogle,auto_select:false,cancel_on_tap_outside:true,use_fedcm_for_prompt:true});google.accounts.id.renderButton(box,{theme:'outline',size:'large',width:320,text:'continue_with',shape:'rectangular',logo_alignment:'center'});}
-async function handleLandingGoogle(response){lmsg('جارٍ التحقق من Google…',true);try{var r=await fetch('/api/auth/google',{method:'POST',headers:hdr(),body:JSON.stringify({credential:response.credential})});var d=await r.json();if(d.ok)done(d);else lmsg(d.error||'تعذر تسجيل الدخول عبر Google',false)}catch(e){lmsg('تعذر الاتصال بالخادم',false)}}
-async function loadLandingGoogle(){try{var r=await fetch('/api/auth/google-config');var d=await r.json();landingGoogleClientId=d.clientId||'';renderLandingGoogle()}catch(e){}}
-window.ldoLogin=function(){
-  fetch('/api/auth/login',{method:'POST',headers:hdr(),body:JSON.stringify({contact:document.getElementById('liC').value,password:document.getElementById('liP').value})})
-  .then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else lmsg(d.error,false)});
-};
-window.ldoReg=function(){
-  var email=(document.getElementById('rgE')||{}).value||'';
-  var phone=(document.getElementById('rgPh')||{}).value||'';
-  var username=(document.getElementById('rgU')||{}).value||'';
-  var password=(document.getElementById('rgP')||{}).value||'';
-  var password2=(document.getElementById('rgP2')||{}).value||'';
-  if(!email||!phone||!username||!password||!password2)return lmsg('املأ كل الحقول المطلوبة',false);
-  if(password!==password2)return lmsg('كلمتا السر غير متطابقتين',false);
-  lmsg('جارٍ إرسال رمز التحقق إلى بريدك…',true);
-  fetch('/api/auth/register',{method:'POST',headers:hdr(),body:JSON.stringify({name:username,email:email,phone:phone,username:username,password:password,password2:password2})})
-  .then(function(r){return r.json()}).then(function(d){
-    if(d.verificationRequired){
-      landingPendingEmail=d.email||email; document.getElementById('lbody').innerHTML='<label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">رمز التحقق المرسل إلى البريد</label><input id="rgCode" inputmode="numeric" maxlength="6" placeholder="أدخل الرمز المكوّن من 6 أرقام" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit;text-align:center;letter-spacing:6px"><button onclick="lverifyReg()" style="width:100%;margin-top:14px;padding:12px;border:none;border-radius:12px;background:#0E5B3A;color:#fff;font-weight:800;cursor:pointer;font-family:inherit">تفعيل الحساب</button><button id="lresend" onclick="lresendCode()" style="width:100%;margin-top:8px;padding:10px;border:1px solid #D8E8DE;border-radius:12px;background:#fff;color:#0E5B3A;font-weight:700;cursor:pointer;font-family:inherit">إعادة إرسال الرمز</button><p style="font-size:.75rem;text-align:center;color:#667085">الرمز صالح 10 دقائق، ويمكن إعادة الإرسال بعد دقيقة.</p>';lmsg(d.message||'تم إرسال الرمز إلى بريدك',true);lstartCountdown();
-    }else lmsg(d.error||'تعذر إرسال رمز البريد',false);
-  }).catch(function(){lmsg('تعذر الاتصال بالخادم',false)});
-};
-function lstartCountdown(){clearInterval(landingResendTimer);landingResendUntil=Date.now()+60000;var b=document.getElementById('lresend');function tick(){var left=Math.max(0,Math.ceil((landingResendUntil-Date.now())/1000));if(!b)return;if(left){b.disabled=true;b.textContent='إعادة الإرسال بعد '+left+' ثانية'}else{b.disabled=false;b.textContent='إعادة إرسال الرمز';clearInterval(landingResendTimer)}}tick();landingResendTimer=setInterval(tick,1000)}
-window.lresendCode=function(){var b=document.getElementById('lresend');if(b&&b.disabled)return;if(b){b.disabled=true;b.textContent='جاري الإرسال...'}fetch('/api/auth/email/resend',{method:'POST',headers:hdr(),body:JSON.stringify({email:landingPendingEmail})}).then(function(r){return r.json()}).then(function(d){lmsg(d.message||d.error||'تعذر إعادة إرسال الرمز',!!d.ok);if(d.ok)lstartCountdown();else if(b){b.disabled=false;b.textContent='إعادة إرسال الرمز'}}).catch(function(){lmsg('تعذر الاتصال بالخادم',false);if(b){b.disabled=false;b.textContent='إعادة إرسال الرمز'}})};
-window.lverifyReg=function(){var code=(document.getElementById('rgCode')||{}).value||'';if(!/^\d{6}$/.test(code.trim()))return lmsg('اكتب الرمز المكوّن من 6 أرقام',false);fetch('/api/auth/email/verify',{method:'POST',headers:hdr(),body:JSON.stringify({email:landingPendingEmail,code:code.trim()})}).then(function(r){return r.json()}).then(function(d){if(d.ok)done(d);else lmsg(d.error||'رمز التحقق غير صحيح',false)}).catch(function(){lmsg('تعذر الاتصال بالخادم',false)})};
-function ltab(t){
-  document.getElementById('ltL').style.background=t==='login'?'#0E5B3A':'#fff';
-  document.getElementById('ltL').style.color=t==='login'?'#fff':'#0A4229';
-  document.getElementById('ltR').style.background=t==='reg'?'#0E5B3A':'#fff';
-  document.getElementById('ltR').style.color=t==='reg'?'#fff':'#0A4229';
-  var b=document.getElementById('lbody');
-  if(t==='login'){
-    b.innerHTML=landingGoogleArea()+'<label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">رقم الهاتف أو الإيميل</label><input id="liC" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">كلمة السر</label><input id="liP" type="password" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><button onclick="ldoLogin()" style="width:100%;margin-top:14px;padding:12px;border:none;border-radius:12px;background:#0E5B3A;color:#fff;font-weight:800;cursor:pointer;font-family:inherit">دخول</button>';
-  }else{
-    b.innerHTML=landingGoogleArea()+'<label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">البريد الإلكتروني</label><input id="rgE" type="email" autocomplete="email" placeholder="name@example.com" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">رقم الموبايل</label><input id="rgPh" type="tel" inputmode="numeric" autocomplete="tel" placeholder="01xxxxxxxxx" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">اسم المستخدم</label><input id="rgU" autocomplete="username" placeholder="مثال: ahmed_2026" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">كلمة السر (6+ أحرف)</label><input id="rgP" type="password" autocomplete="new-password" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><label style="display:block;font-size:.82rem;font-weight:700;margin:10px 0 4px">إعادة كتابة كلمة السر</label><input id="rgP2" type="password" autocomplete="new-password" style="width:100%;padding:12px;border:1.5px solid #D8E8DE;border-radius:12px;font-family:inherit"><button onclick="ldoReg()" style="width:100%;margin-top:14px;padding:12px;border:none;border-radius:12px;background:#0E5B3A;color:#fff;font-weight:800;cursor:pointer;font-family:inherit">إنشاء الحساب وإرسال الرمز 🚀</button><div class="landing-wa-help"><button type="button" class="landing-wa-close" onclick="this.parentElement.remove()" aria-label="إغلاق رسالة الترحيب">×</button><b>أهلًا بك في rab7na</b><span>تحتاج مساعدة في التسجيل؟ نحن هنا لمساعدتك.</span><a href="https://wa.me/201131332636?text=%D9%85%D8%B1%D8%AD%D8%A8%D9%8B%D8%A7%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D9%85%D8%B3%D8%A7%D8%B9%D8%AF%D8%A9%20%D9%81%D9%8A%20%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84" target="_blank" rel="noopener">💬 تواصل معنا عبر واتساب <bdi dir="ltr">01131332636</bdi></a></div>';
-  }
-  renderLandingGoogle();
-}
-function lauthOpen(t){
-  var m=document.getElementById('authM');
-  m.innerHTML='<div style="background:#fff;border-radius:20px;padding:22px;max-width:400px;width:100%;position:relative"><button onclick="lauthClose()" style="position:absolute;top:12px;left:12px;border:none;background:#EEF7F1;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:14px">✕</button><div style="display:flex;gap:8px;margin-bottom:16px"><button id="ltL" style="flex:1;padding:11px;border-radius:12px;border:1.5px solid #D8E8DE;font-weight:800;cursor:pointer;font-family:inherit" onclick="ltab(\'login\')">تسجيل دخول</button><button id="ltR" style="flex:1;padding:11px;border-radius:12px;border:1.5px solid #D8E8DE;font-weight:800;cursor:pointer;font-family:inherit" onclick="ltab(\'reg\')">إنشاء حساب</button></div><div id="lbody"></div><p id="lmsg" style="text-align:center;font-size:.85rem;margin-top:10px;font-weight:700;min-height:1.2em"></p></div>';
-  m.classList.add('on'); ltab(t||'login');
-}
-function lauthClose(){document.getElementById('authM').classList.remove('on');}
-document.getElementById('authM').addEventListener('click',function(e){if(e.target.id==='authM')lauthClose();});
-
-loadLandingGoogle();
-if(localStorage.getItem('etok')){
-  document.getElementById('startBtn').textContent='المتجر ❯';
-  document.getElementById('startBtn').removeAttribute('onclick');
-}else{
-  document.getElementById('startBtn').onclick=function(e){e.preventDefault();lauthOpen('reg');};
-}
+// المتجر متاح للجميع بدون تسجيل أو إنشاء حساب.
+var startBtn=document.getElementById('startBtn');
+if(startBtn){startBtn.textContent='تصفح المتجر';startBtn.href='/store';startBtn.removeAttribute('onclick');}
 </script>
 <style>.landing-wa-help{position:relative;display:flex;flex-direction:column;gap:4px;margin-top:12px;padding:11px 34px 11px 12px;border:1px solid #B9E7CA;border-radius:13px;background:#F0FCF5;color:#176B43;font-size:.74rem;line-height:1.55;text-align:right}.landing-wa-help span{color:#4A7761;font-weight:600}.landing-wa-help a{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;padding:9px 10px;border-radius:10px;background:#25D366;color:#fff;text-decoration:none;font-weight:800}.landing-wa-close{position:absolute;top:6px;right:7px;width:22px;height:22px;border:0;border-radius:50%;background:#D9F4E3;color:#176B43;font-size:16px;line-height:20px;cursor:pointer}.rab7na-wa-public{position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:90;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#25D366;color:#fff;font-size:25px;box-shadow:0 10px 24px rgba(0,0,0,.2);text-decoration:none;transition:transform .2s ease}.rab7na-wa-public:hover{transform:scale(1.06)}@media(min-width:800px){.rab7na-wa-public{right:28px;bottom:28px}}</style><a class="rab7na-wa-public" href="#" target="_blank" rel="noopener" aria-label="الدعم عبر واتساب">💬</a>
 <script>(function(){var a=document.querySelector(".rab7na-wa-public");if(!a)return;fetch("/api/support/whatsapp").then(function(r){return r.json()}).then(function(d){var n=String(d.number||"");if(!/^\d{10,15}$/.test(n)){a.style.display="none";return}a.href="https://wa.me/"+n+"?text="+encodeURIComponent("مرحباً، أريد الاستفسار عن المنصة")}).catch(function(){a.style.display="none"})})()</script>

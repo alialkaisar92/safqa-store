@@ -261,16 +261,16 @@ app.get('/store', (req, res) => {
   res.sendFile(path.join(__dirname, 'storefront.html'));
 });
 
-app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'dashboard.html')));
-app.get('/api/me', async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.json({balance:0,orders:[],name:'',phone:''});const d=await readAffiliate();const orders=(d.orders||[]).filter(o=>String(o.userId)===String(u.id));const balance=await syncUserBalance(u,d);res.json({id:u.id,name:u.name||u.display_name||'',phone:u.phone||u.contact||'',balance,orders});}catch(e){res.status(500).json({error:'تعذر تحميل الحساب'});}});
-app.post('/api/profile', async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});if(req.body.name)u.name=String(req.body.name);if(req.body.phone)u.phone=String(req.body.phone);if(req.body.payoutMethod)u.payoutMethod=String(req.body.payoutMethod);if(req.body.payoutDetails)u.payoutDetails=String(req.body.payoutDetails);await firestore.saveUser(u);res.json({ok:true,message:'تم حفظ البيانات'});}catch(e){res.status(500).json({error:'فشل الحفظ'});}});
-app.get('/api/my/dashboard', async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});const d=await readAffiliate();const orders=(d.orders||[]).filter(o=>String(o.userId)===String(u.id));const withdrawals=(d.withdrawals||[]).filter(w=>String(w.userId)===String(u.id));const month=new Date().toISOString().slice(0,7);const completed=orders.filter(o=>o.status==='تم التسليم');const monthOrders=orders.filter(o=>String(o.date||'').slice(0,7)===month);const monthCommission=monthOrders.filter(o=>['تم التسليم','تم التوصيل','delivered','completed'].includes(String(o.status||'').trim().toLowerCase())).reduce((s,o)=>s+(+o.commission||0),0);const pendingCommission=monthOrders.filter(o=>!['تم التسليم','تم التوصيل','delivered','completed'].includes(String(o.status||'').trim().toLowerCase())).reduce((s,o)=>s+(+o.commission||0),0);const balance=await syncUserBalance(u,d);res.json({user:{id:u.id,name:u.name||u.display_name||'',phone:u.phone||u.contact||'',email:u.email||'',balance,payoutMethod:u.payoutMethod||'',payoutDetails:u.payoutDetails||''},stats:{orders:orders.length,completed:completed.length,monthCommission,pendingCommission},orders:orders.slice(0,100),withdrawals:withdrawals.slice(0,100)});}catch(e){res.status(500).json({error:'تعذر تحميل لوحة المسوّق'});}});
+app.get('/dashboard', (req, res) => res.redirect(302, '/store'));
+app.get('/api/me', (req,res) => res.json({ publicStore: true, balance: 0, orders: [], name: '', phone: '' }));
+app.post('/api/profile', (req,res) => res.status(410).json({ error: 'الملفات الشخصية غير متاحة في المتجر العام.' }));
+app.get('/api/my/dashboard', (req,res) => res.status(410).json({ error: 'لوحة المسوّق غير متاحة في المتجر العام.' }));
 app.post('/api/set-commission', (req,res)=>res.json({ok:true,message:'تم تحديث العمولة'}));
-app.post(['/api/withdraw','/api/my/withdraw'], async (req,res)=>{try{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});const d=await readAffiliate();const available=await syncUserBalance(u,d);const amount=Number(req.body&&req.body.amount)||0;if(amount<=0)return res.json({error:'أدخل مبلغ صحيح'});if(amount>available)return res.json({error:'الرصيد غير كافي للسحب؛ تُضاف العمولة بعد تأكيد التسليم'});d.withdrawals=d.withdrawals||[];const w={id:Date.now(),userId:u.id,userName:u.name||'',amount,method:req.body.method||'',details:req.body.details||'',status:'pending',date:new Date().toISOString()};d.withdrawals.unshift(w);const next=availableBalance(u,d);u.balance=next;u.totalWithdrawn=(+u.totalWithdrawn||0)+amount;await Promise.all([saveAffiliate(d),firestore.saveUser(u)]);res.json({ok:true,message:'تم إرسال طلب السحب بنجاح',balance:next});}catch(e){console.error('withdraw:',e.message);res.status(500).json({error:'تعذر إرسال طلب السحب حالياً'});}});
+app.post(['/api/withdraw','/api/my/withdraw'], (req,res) => res.status(410).json({ error: 'السحب غير متاح في المتجر العام.' }));
 
-require('./auth')(app);
-require('./admin')(app);
-require('./notify')(app);
+// المصادقة ولوحة الإدارة معطلتان نهائيًا: الموقع متجر عام بلا حسابات.
+app.all(['/login', '/register'], (req, res) => res.redirect(302, '/store'));
+app.use(['/api/auth', '/api/admin'], (req, res) => res.status(410).json({ error: 'هذه الميزة غير متاحة؛ المتجر يعمل بدون حسابات.' }));
 
 async function refreshProductsCache(){
   try { const result = await safkaSync.syncProducts({ notify: true }); console.log('✅ Safka products synced:', result.products, 'new:', result.newProducts); }
