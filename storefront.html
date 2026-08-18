@@ -475,7 +475,7 @@ function setupWA(){
 }
 function openM(id){document.getElementById(id).classList.add('on')}
 function closeM(id){document.getElementById(id).classList.remove('on')}
-function openSidebar(ev){if(ev){ev.preventDefault();ev.stopPropagation();}updProfileBtn();var overlay=document.getElementById('sideOverlay'),drawer=document.getElementById('sideDrawer'),btn=document.getElementById('menuBtn');if(!overlay||!drawer)return;overlay.classList.add('on');drawer.classList.add('on');if(btn)btn.setAttribute('aria-expanded','true');document.body.style.overflow='hidden'}
+function openSidebar(ev){if(ev){ev.preventDefault();ev.stopPropagation();}refreshRab7naAuth();var overlay=document.getElementById('sideOverlay'),drawer=document.getElementById('sideDrawer'),btn=document.getElementById('menuBtn');if(!overlay||!drawer)return;overlay.classList.add('on');drawer.classList.add('on');if(btn)btn.setAttribute('aria-expanded','true');document.body.style.overflow='hidden'}
 function closeSidebar(){var overlay=document.getElementById('sideOverlay'),drawer=document.getElementById('sideDrawer'),btn=document.getElementById('menuBtn');if(overlay)overlay.classList.remove('on');if(drawer)drawer.classList.remove('on');if(btn)btn.setAttribute('aria-expanded','false');if(!document.querySelector('.modal.on'))document.body.style.overflow=''}
 function sideGoProducts(){closeSidebar();document.getElementById('mainGrid').scrollIntoView({behavior:'smooth',block:'start'})}
 function openWithdraw(){
