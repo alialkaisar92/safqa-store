@@ -404,8 +404,11 @@ app.post('/api/create-order', async (req,res)=>{
 
 
 app.get('/api/support/whatsapp', (req, res) => {
-  const raw = String(process.env.WHATSAPP_SUPPORT_NUMBER || process.env.SUPPORT_WHATSAPP || process.env.WHATSAPP_NUMBER || '').replace(/[^0-9]/g, '');
-  res.set('Cache-Control', 'public, max-age=300');
+  let raw = String(process.env.WHATSAPP_SUPPORT_NUMBER || process.env.SUPPORT_WHATSAPP || process.env.WHATSAPP_NUMBER || '').replace(/[^0-9]/g, '');
+  // Normalize the Egyptian support number to WhatsApp international format.
+  if (/^01\d{9}$/.test(raw)) raw = '20' + raw.slice(1);
+  if (raw === '20113132636') raw = '201131332636';
+  res.set('Cache-Control', 'no-store');
   res.json({ number: raw.length >= 10 ? raw : '' });
 });
 
