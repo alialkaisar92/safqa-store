@@ -188,6 +188,21 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
 .card .imgwrap{background:#f8fafc}.card .b{padding:14px 13px 16px}.card .t{color:#172033;font-size:.84rem;line-height:1.55}.card .pr{font-size:1.02rem;margin-top:8px}.card .cod{display:none}.stock{display:inline-block;margin-top:8px;font-size:.68rem}
 .pm-b{padding:20px 18px 46px}.pm-b>img{border-radius:22px;box-shadow:0 10px 30px rgba(15,23,42,.08)}.box{background:#fbfdfc;border-color:#e8efec}.note-box{background:#f7f5eb}.btn-accent{background:var(--pd);color:#fff;box-shadow:0 8px 22px rgba(15,118,110,.22)}
 </style>
+<style id="premium-ui-overrides">
+:root{--pd:#0f766e;--pd-dark:#0b5d56;--pd-soft:#e9f7f3;--gold:#c9972b;--surface:#ffffff;--shadow:0 12px 32px rgba(15,118,110,.08)}
+body{background:#fbfdfc;padding-bottom:78px}
+header{background:rgba(255,255,255,.92);backdrop-filter:blur(18px);box-shadow:0 6px 28px rgba(15,23,42,.06)}
+.header-top{max-width:1180px;margin:auto;padding:14px 18px;gap:12px}.logo{font-size:1.8rem;letter-spacing:-.4px}.menu-btn{order:4;box-shadow:0 6px 18px rgba(15,118,110,.12)}.cart-btn{order:1;box-shadow:0 7px 18px rgba(15,118,110,.18)}.search{order:2}.logo{order:3}
+.search input{height:46px;background:#f1faf6;border-color:#dcece5;padding-right:44px;padding-left:16px}.search::before{right:15px;left:auto}.header-top>.menu-btn{margin-right:0}
+.cats{max-width:1180px;margin:auto;padding:4px 18px 14px;gap:9px}.cc{padding:9px 18px;font-size:.8rem;transition:.18s}.cc:hover{border-color:var(--pd);color:var(--pd)}.cc.on{background:var(--pd);box-shadow:0 7px 16px rgba(15,118,110,.18)}
+.ship-link{max-width:1180px;margin:0 auto 14px;border-radius:16px;padding:11px 14px;background:linear-gradient(135deg,#effaf5,#f8fffb);color:var(--pd-dark)}
+main{max-width:1180px;padding:22px 18px 34px}.sec-t{font-size:1.35rem;margin:2px 0 14px}.sec-t small{font-size:.76rem}.store-tools{justify-content:flex-start;margin-bottom:20px}.filter-toggle{border-radius:14px;padding:10px 16px;box-shadow:var(--shadow)}
+.grid{gap:16px}.card{position:relative;background:var(--surface);border:1px solid #e5efeb;border-radius:22px;box-shadow:0 9px 26px rgba(15,23,42,.055);transition:transform .2s ease,box-shadow .2s ease}.card:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(15,118,110,.12)}.card .imgwrap{aspect-ratio:1.05;background:#f4f8f6;overflow:hidden}.card img{transition:transform .35s ease}.card:hover img{transform:scale(1.035)}.card .b{padding:13px 13px 14px}.card .t{font-size:.88rem;min-height:2.7em;color:#15271f}.price-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:5px}.card .pr{font-size:1.08rem;color:var(--pd-dark);margin-top:0}.old-price{font-size:.7rem;color:#99a8a1}.discount{font-size:.62rem;font-weight:900;color:#a66018;background:#fff4d9;padding:3px 6px;border-radius:6px}.card-meta{display:flex;align-items:center;justify-content:space-between;gap:5px;min-height:22px;margin-top:5px}.rating{color:#c9972b;font-size:.68rem;font-weight:900;white-space:nowrap}.rating small{color:#8a9a92;font-weight:700}.card-meta .stock{margin-top:0}.comm-tag{margin-top:8px}.quick-add{width:100%;margin-top:11px;padding:9px 10px;border-radius:11px;background:var(--pd);color:#fff;font-size:.72rem;font-weight:900;transition:.18s}.quick-add:hover{background:var(--pd-dark)}.quick-add:disabled{background:#e7eeeb;color:#8c9d95;cursor:not-allowed}.fav-btn{position:absolute;top:10px;right:10px;z-index:3;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.94);color:#8b9b94;font-size:1.28rem;line-height:1;box-shadow:0 5px 16px rgba(15,23,42,.12)}.fav-btn.is-fav{color:#d14c63;background:#fff5f6}.sale-badge{position:absolute;top:12px;left:10px;background:#c9972b;color:#fff;border-radius:8px;padding:4px 7px;font-size:.62rem;font-weight:900;box-shadow:0 5px 12px rgba(145,98,12,.2)}
+.bottom-nav{position:fixed;right:0;left:0;bottom:0;z-index:120;display:flex;justify-content:space-around;align-items:center;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);backdrop-filter:blur(18px);border-top:1px solid #e3eee9;box-shadow:0 -8px 26px rgba(15,23,42,.08)}.bottom-nav button{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:58px;color:#71817a;font-size:.62rem;font-weight:800;padding:3px 9px;border-radius:12px}.bottom-nav button.active{color:var(--pd);background:var(--pd-soft)}.bn-icon{font-size:1.15rem;line-height:1.15}.bottom-nav b{position:absolute;top:-1px;right:4px;display:none;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;border-radius:50px;background:#d14c63;color:#fff;font-size:.55rem}
+footer{padding-bottom:28px}.side-drawer{padding-top:calc(22px + env(safe-area-inset-top))}
+@media(min-width:900px){body{padding-bottom:0}.bottom-nav{display:none}.header-top{padding-inline:28px}.search{max-width:550px}.grid{grid-template-columns:repeat(4,1fr);gap:18px}}
+html[data-theme="pharaoh"] .bottom-nav{background:rgba(18,14,7,.96);border-color:var(--line)}html[data-theme="pharaoh"] .card{background:var(--paper);border-color:var(--line)}html[data-theme="pharaoh"] .card .t{color:var(--ink)}html[data-theme="pharaoh"] .search input{background:#1b1509;border-color:var(--line)}
+</style>
 </head>
 <body>
 
@@ -235,6 +250,14 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
     <div class="logo"><span style="color:var(--forest);font-family:Lalezar">Rab<span style="color:var(--ink)">7na</span></span></div>
   <div>شحن لكل محافظات مصر • الدفع عند الاستلام • دعم عبر واتساب</div>
 </footer>
+
+<nav class="bottom-nav" aria-label="التنقل السريع">
+  <button type="button" onclick="openCart();setBottomActive(this)"><span class="bn-icon">🛒</span><span>السلة</span><b id="bottomCartCount">0</b></button>
+  <button type="button" onclick="goCategories();setBottomActive(this)"><span class="bn-icon">▦</span><span>التصنيفات</span></button>
+  <button type="button" class="active" onclick="goHome();setBottomActive(this)"><span class="bn-icon">⌂</span><span>الرئيسية</span></button>
+  <button type="button" onclick="goOrders();setBottomActive(this)"><span class="bn-icon">▣</span><span>طلباتي</span></button>
+  <button type="button" onclick="goAccount();setBottomActive(this)"><span class="bn-icon">♙</span><span>حسابي</span></button>
+</nav>
 
 <div class="modal" id="pm"><div class="sheet">
   <button class="sheet-x" onclick="closeM('pm')">✕</button>
@@ -365,9 +388,25 @@ function renderGrid(){
     var i=idx[p.id];
     var ci=commInfo(p);
     var commHtml = ci.comm>0 ? '<div class="comm-tag">💰 '+fmt(ci.comm)+'</div>' : '<div class="price-caption">السعر محسوب من تكلفة المنتج والزيادة المعتمدة</div>';
-    return '<div class="card" onclick="openP('+i+')"><div class="imgwrap"><img src="'+esc(p.image||'')+'" alt="'+esc(p.name||'منتج')+'" loading="lazy" onerror="this.style.display=\'none\'"></div><div class="b"><div class="t">'+esc(p.name)+'</div><div class="pr">'+fmt(p.price)+'</div>'+commHtml+stockLabel(p)+'</div></div>';
+    var original=Number(p.compareAtPrice!=null?p.compareAtPrice:(p.oldPrice!=null?p.oldPrice:p.basePrice||0));
+    var sale=Number(p.price||0); var discount=original>sale&&sale>0?Math.round((1-sale/original)*100):0;
+    var rating=Number(p.rating||p.rating_avg||p.ratingAverage||0); var reviews=Number(p.reviews_count||p.reviewCount||p.reviews||0);
+    var favorite=readFavorites().indexOf(String(p.id))!==-1;
+    var ratingHtml=rating>0 ? '<div class="rating" aria-label="تقييم '+rating+' من 5">★ '+rating.toFixed(1)+(reviews?' <small>('+reviews+')</small>':'')+'</div>' : '';
+    var oldHtml=original>sale&&sale>0 ? '<s class="old-price">'+fmt(original)+'</s><span class="discount">-'+discount+'%</span>' : '';
+    var disabled=(p.available===false||p.stock===null||p.stock===undefined||Number(p.stock)<=0);
+    return '<article class="card" onclick="openP('+i+')"><div class="imgwrap"><img src="'+esc(p.image||'')+'" alt="'+esc(p.name||'منتج')+'" loading="lazy" onerror="this.style.display=\'none\'"><button type="button" class="fav-btn '+(favorite?'is-fav':'')+'" aria-label="إضافة للمفضلة" onclick="toggleFavorite(\''+String(p.id).replace(/'/g,"\\'")+'\',event)">'+(favorite?'♥':'♡')+'</button>'+(discount?'<span class="sale-badge">خصم '+discount+'%</span>':'')+'</div><div class="b"><div class="t">'+esc(p.name)+'</div><div class="price-row"><strong class="pr">'+fmt(p.price)+'</strong>'+oldHtml+'</div><div class="card-meta">'+ratingHtml+stockLabel(p)+'</div>'+commHtml+'<button type="button" class="quick-add" '+(disabled?'disabled':'')+' onclick="quickAdd('+i+',event)">'+(disabled?'غير متاح':'أضف إلى السلة')+'</button></div></article>';
   }).join('') || '<div class="empty">لا توجد منتجات مطابقة 🔍</div>';
 }
+
+function readFavorites(){try{var v=JSON.parse(localStorage.getItem('rab7na_favorites')||'[]');return Array.isArray(v)?v.map(String):[]}catch(_){return []}}
+function toggleFavorite(id,ev){if(ev){ev.preventDefault();ev.stopPropagation();}var a=readFavorites(),key=String(id),i=a.indexOf(key);if(i>=0)a.splice(i,1);else a.push(key);localStorage.setItem('rab7na_favorites',JSON.stringify(a));renderGrid();ehToastLocal(i>=0?'تمت إزالة المنتج من المفضلة':'تمت إضافة المنتج للمفضلة');}
+function quickAdd(i,ev){if(ev){ev.preventDefault();ev.stopPropagation();}openP(i);setTimeout(function(){if(!document.getElementById('addBtn').disabled)addToCart();},80);}
+function setBottomActive(el){document.querySelectorAll('.bottom-nav button').forEach(function(b){b.classList.remove('active')});if(el)el.classList.add('active')}
+function goHome(){window.scrollTo({top:0,behavior:'smooth'})}
+function goCategories(){document.getElementById('catRow').scrollIntoView({behavior:'smooth',block:'center'})}
+function goOrders(){fetch('/api/auth/me',{credentials:'include'}).then(function(r){if(r.ok)return location.href='/store#account';location.href='/login';}).catch(function(){location.href='/login'})}
+function goAccount(){location.href='/login'}
 
 function copyDesc(){
   if(!cur) return;
@@ -415,7 +454,7 @@ function addToCart(){
   if(ex) ex.qty+=qty; else cart.push({id:cur.id,propId:cur.propId||'',name:cur.name,price:Number(cur.price)||0,basePrice:Number(cur.basePrice!=null?cur.basePrice:cur.price)||0,finalPrice:Number(cur.price)||0,image:cur.image,qty:qty});
   updCC(); closeM('pm'); openCart();
 }
-function updCC(){var n=cart.reduce(function(a,c){return a+c.qty},0);document.getElementById('cc').textContent=n;var s=document.getElementById('sideCartCount');if(s)s.textContent=n?'('+n+')':'';}
+function updCC(){var n=cart.reduce(function(a,c){return a+c.qty},0);document.getElementById('cc').textContent=n;var s=document.getElementById('sideCartCount');if(s)s.textContent=n?'('+n+')':'';var b=document.getElementById('bottomCartCount');if(b){b.textContent=n;b.style.display=n?'flex':'none';}}
 function setCartPrice(i,value){var n=Math.max(0,Number(value)||0);cart[i].finalPrice=n;openCart();}
 function cartLineTotal(c){return (Number(c.finalPrice!=null?c.finalPrice:c.price)||0)*(Number(c.qty)||1);}
 function openCart(){
