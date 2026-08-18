@@ -384,10 +384,11 @@ function commInfo(p){
 }
 function stockLabel(p){
   var s=p.stock;
-  if(s===null || s===undefined) return '<span class="stock stock-out">التوفر غير مؤكد</span>';
-  if(p.available===false || s<=0) return '<span class="stock stock-out">نفذ من المخزون</span>';
-  if(s<10) return '<span class="stock stock-low">كمية محدودة</span>';
-  return '<span class="stock stock-ok">متوفر</span>';
+  if(s===null || s===undefined || !Number.isFinite(Number(s))) return '<span class="stock stock-out">التوفر غير مؤكد</span>';
+  s=Math.max(0,Math.floor(Number(s)));
+  if(p.available===false || s<=0) return '<span class="stock stock-out">المخزون الأصلي: نفد</span>';
+  if(s<10) return '<span class="stock stock-low">المخزون الأصلي: '+s.toLocaleString('ar-EG')+' متبقي</span>';
+  return '<span class="stock stock-ok">المخزون الأصلي: '+s.toLocaleString('ar-EG')+' متوفر</span>';
 }
 function renderGrid(){
   var e=document.getElementById('mainGrid');
