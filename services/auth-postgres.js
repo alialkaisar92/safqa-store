@@ -60,7 +60,7 @@ async function login({ email, password, ip }) {
 
 async function currentUser(token) {
   if (!token) return null;
-  const result = await query(`SELECT u.id,u.name,u.email,u.email_verified,u.created_at,u.last_login
+  const result = await query(`SELECT u.id,u.name,u.email,u.email_verified,u.created_at,u.last_login,u.balance,u.welcome_bonus_granted
     FROM auth_sessions s JOIN users u ON u.id=s.user_id
     WHERE s.token_hash=$1 AND s.expires_at>NOW()`, [tokenHash(token)]);
   if (!result.rows[0]) return null;
