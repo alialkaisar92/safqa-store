@@ -15,9 +15,17 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'landing.html')));
 
 const crypto = require('crypto');
 const firestore = require('./firestore');
+const postgres = require('./lib/postgres');
+let postgresStatus = process.env.DATABASE_URL ? 'configured' : 'not_configured';
+async function initializePostgres() {
+  if (!process.env.DATABASE_URL) return;
+  try { await postgres.migrate(); postgresStatus = 'ready'; console.log('[postgres] schema ready'); }
+  catch (error) { postgresStatus = 'error'; console.error('[postgres] initialization failed:', error.message); }
+}
+initializePostgres();
 function authReqToken(req){const h=String(req.headers.authorization||'');return String(req.headers['x-auth-token']||req.headers['x-sq-token']||(h.toLowerCase().indexOf('bearer ')===0?h.slice(7):'')||'').trim();}
 async function currentAuthUser(req){const token=authReqToken(req);if(!token)return null;try{const jwt=global.verifyJWT&&global.verifyJWT(token);if(jwt)return await firestore.getUser(jwt.uid);}catch(e){}const rec=await firestore.getToken(token);return rec?await firestore.getUser(rec.uid):null;}
-app.get('/api/health',function(req,res){res.json({ok:true,status:'healthy',service:'rab7na',database:'firestore',time:new Date().toISOString()});});
+app.get('/api/health',function(req,res){res.json({ok:true,status:'healthy',service:'rab7na',database:'postgresql',database_status:postgresStatus,time:new Date().toISOString()});});
 app.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
 
 
@@ -417,3 +425,6 @@ app.listen(PORT, () => {
   getProducts();
   getPriceList();
 });
+
+process.on('SIGTERM', async () => { await postgres.close(); process.exit(0); });
+process.on('SIGINT', async () => { await postgres.close(); process.exit(0); });
