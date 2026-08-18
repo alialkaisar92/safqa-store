@@ -391,8 +391,9 @@ function openP(i){cur=P[i];qty=1;
   var ci=commInfo(cur);
   var commBox=document.getElementById('pmComm');
   if(ci){
-    var suggestedLine = '';
-    commBox.innerHTML = '<div class="crow"><span>سعر التكلفة الأصلي</span><b>'+fmt(cur.basePrice!=null?cur.basePrice:cur.price)+'</b></div>'+suggestedLine+'<div class="crow ctot"><span>عمولتك المتوقعة</span><b>'+fmt(ci.comm)+'</b></div>';
+    var basePrice = Number(cur.basePrice!=null?cur.basePrice:cur.price)||0;
+    var suggestedPrice = Number(cur.price)||0;
+    commBox.innerHTML = '<div class="crow"><span>سعر الجملة من المصنع</span><b>'+fmt(basePrice)+'</b></div><div class="crow"><span>سعر البيع المقترح</span><b>'+fmt(suggestedPrice)+'</b></div><div class="crow ctot"><span>عمولتك المتوقعة</span><b>'+fmt(ci.comm)+'</b></div>';
     commBox.style.display='block';
   } else { commBox.style.display='none'; commBox.innerHTML=''; }
   document.getElementById('pmDesc').textContent=(cur.desc||'').replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]*>/g,' ').replace(/\n{3,}/g,'\n\n').trim();
