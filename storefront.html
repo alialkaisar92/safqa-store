@@ -219,7 +219,9 @@ label{display:block;font-size:.78rem;font-weight:700;margin:12px 0 5px;color:var
 <div class="side-overlay" id="sideOverlay" onclick="closeSidebar()"></div>
 <aside class="side-drawer" id="sideDrawer" aria-label="قائمة المتجر">
   <div class="side-head"><div class="side-brand">Rab<span style="color:var(--ink)">7na</span></div><button class="side-close" onclick="closeSidebar()" aria-label="إغلاق القائمة">✕</button></div>
-  <div class="side-user" id="sideUser"><strong>متجر Rab7na</strong><span>تصفح المنتجات وأرسل طلبك مباشرة دون حساب.</span></div>
+  <div class="side-user" id="sideUser"><strong>متجر Rab7na</strong><span>تصفح المنتجات أو سجّل دخولك لإدارة حسابك.</span></div>
+  <button class="side-item" id="sideAuthLink" onclick="location.href='/login'"><span class="side-ic">👤</span><span>تسجيل الدخول / إنشاء حساب</span></button>
+  <button class="side-item" id="sideLogout" style="display:none" onclick="logoutRab7na()"><span class="side-ic">↪</span><span>تسجيل الخروج</span></button>
   <div class="side-group">التنقل السريع</div>
   <button class="side-item" onclick="sideGoProducts()"><span class="side-ic">🛍️</span><span>المنتجات</span></button>
   <button class="side-item" onclick="closeSidebar();openCart()"><span class="side-ic">🛒</span><span>السلة <small id="sideCartCount"></small></span></button>
@@ -489,12 +491,22 @@ function acctLogout(){}
 function acctAuthView(){}
 function acctLoadDashboard(){}
 function acctWithdrawView(){}
-function updProfileBtn(){
-  var b=document.getElementById('sideUser'),lo=document.getElementById('sideLogout');
-  if(b)b.innerHTML='<strong>متجر rab7na العام</strong><span>تصفح المنتجات وأرسل طلبك مباشرة دون حساب.</span>';
-  if(lo)lo.style.display='none';
+async function refreshRab7naAuth(){
+  var b=document.getElementById('sideUser'),link=document.getElementById('sideAuthLink'),lo=document.getElementById('sideLogout');
+  try{
+    var r=await fetch('/api/auth/me',{credentials:'include'}); var d=await r.json();
+    if(!r.ok||!d.user) throw new Error('guest');
+    if(b)b.innerHTML='<strong>مرحبًا، '+esc(d.user.name)+'</strong><span>'+esc(d.user.email)+'</span>';
+    if(link){link.querySelector('span:last-child').textContent='حسابي';link.onclick=function(){location.href='/store#account'};}
+    if(lo)lo.style.display='flex';
+  }catch(_){
+    if(b)b.innerHTML='<strong>متجر rab7na العام</strong><span>تصفح المنتجات أو سجّل دخولك لإدارة حسابك.</span>';
+    if(link){link.querySelector('span:last-child').textContent='تسجيل الدخول / إنشاء حساب';link.onclick=function(){location.href='/login'};}
+    if(lo)lo.style.display='none';
+  }
 }
-updProfileBtn();
+async function logoutRab7na(){try{await fetch('/api/auth/logout',{method:'POST',credentials:'include'});}finally{location.href='/store';}}
+refreshRab7naAuth();
 updCC();
 
 function applyTheme(t){

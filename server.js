@@ -16,6 +16,12 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'landing.html')));
 const crypto = require('crypto');
 const firestore = require('./firestore');
 const postgres = require('./lib/postgres');
+const authService = require('./services/auth-postgres');
+const SESSION_COOKIE = 'rab7na_session';
+function readCookie(req, name) { const raw = String(req.headers.cookie || ''); const found = raw.split(';').map(x => x.trim()).find(x => x.startsWith(name + '=')); return found ? decodeURIComponent(found.slice(name.length + 1)) : ''; }
+function authToken(req) { return authReqToken(req) || readCookie(req, SESSION_COOKIE); }
+function setSessionCookie(res, token) { const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''; res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; Max-Age=2592000; HttpOnly; SameSite=Lax${secure}`); }
+function clearSessionCookie(res) { res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`); }
 let postgresStatus = process.env.DATABASE_URL ? 'configured' : 'not_configured';
 async function initializePostgres() {
   if (!process.env.DATABASE_URL) return;
@@ -24,7 +30,7 @@ async function initializePostgres() {
 }
 initializePostgres();
 function authReqToken(req){const h=String(req.headers.authorization||'');return String(req.headers['x-auth-token']||req.headers['x-sq-token']||(h.toLowerCase().indexOf('bearer ')===0?h.slice(7):'')||'').trim();}
-async function currentAuthUser(req){const token=authReqToken(req);if(!token)return null;try{const jwt=global.verifyJWT&&global.verifyJWT(token);if(jwt)return await firestore.getUser(jwt.uid);}catch(e){}const rec=await firestore.getToken(token);return rec?await firestore.getUser(rec.uid):null;}
+async function currentAuthUser(req){const token=authToken(req);if(!token)return null;try{const user=await authService.currentUser(token);if(user)return user;}catch(e){}try{const jwt=global.verifyJWT&&global.verifyJWT(token);if(jwt)return await firestore.getUser(jwt.uid);}catch(e){}try{const rec=await firestore.getToken(token);return rec?await firestore.getUser(rec.uid):null;}catch(e){return null;}}
 app.get('/api/health',function(req,res){res.json({ok:true,status:'healthy',service:'rab7na',database:'postgresql',database_status:postgresStatus,time:new Date().toISOString()});});
 app.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
 
@@ -276,9 +282,20 @@ app.get('/api/my/dashboard', (req,res) => res.status(410).json({ error: 'لوح�
 app.post('/api/set-commission', (req,res)=>res.json({ok:true,message:'تم تحديث العمولة'}));
 app.post(['/api/withdraw','/api/my/withdraw'], (req,res) => res.status(410).json({ error: 'السحب غير متاح في المتجر العام.' }));
 
-// المصادقة ولوحة الإدارة معطلتان نهائيًا: الموقع متجر عام بلا حسابات.
-app.all(['/login', '/register'], (req, res) => res.redirect(302, '/store'));
-app.use(['/api/auth', '/api/admin'], (req, res) => res.status(410).json({ error: 'هذه الميزة غير متاحة؛ المتجر يعمل بدون حسابات.' }));
+app.get(['/login', '/register'], (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
+app.post('/api/auth/register', async (req, res) => {
+  try { const user = await authService.register(req.body || {}); res.status(201).json({ ok: true, user: authService.publicUser(user) }); }
+  catch (error) { const status = /مستخدم بالفعل|صحيح|مطلوب|8 أحرف/.test(error.message) ? 400 : 500; res.status(status).json({ error: status === 500 ? 'تعذر إنشاء الحساب حاليًا' : error.message }); }
+});
+app.post('/api/auth/login', async (req, res) => {
+  try { const result = await authService.login(Object.assign({}, req.body || {}, { ip: req.ip })); setSessionCookie(res, result.token); res.json({ ok: true, user: result.user }); }
+  catch (error) { const status = /محاولات كثيرة|مطلوبان|غير صحيحة/.test(error.message) ? 401 : 500; res.status(status).json({ error: status === 500 ? 'تعذر تسجيل الدخول حاليًا' : error.message }); }
+});
+app.post('/api/auth/logout', async (req, res) => { try { await authService.logout(authToken(req)); } catch (_) {} clearSessionCookie(res); res.json({ ok: true }); });
+app.get('/api/auth/me', async (req, res) => { try { const user = await authService.currentUser(authToken(req)); if (!user) return res.status(401).json({ error: 'غير مسجل الدخول' }); res.json({ ok: true, user }); } catch (_) { res.status(401).json({ error: 'غير مسجل الدخول' }); } });
+app.post('/api/auth/forgot-password', (req, res) => res.status(501).json({ error: 'استعادة كلمة المرور بالبريد غير مفعلة حاليًا؛ لا يتم إرسال رموز أو إنشاء رابط وهمي.' }));
+app.post('/api/auth/reset-password', (req, res) => res.status(501).json({ error: 'استعادة كلمة المرور بالبريد غير مفعلة حاليًا.' }));
+app.use('/api/admin', (req, res) => res.status(410).json({ error: 'لوحة الإدارة غير متاحة.' }));
 
 async function refreshProductsCache(){
   try { const result = await safkaSync.syncProducts({ notify: true }); console.log('✅ Safka products synced:', result.products, 'new:', result.newProducts); }
