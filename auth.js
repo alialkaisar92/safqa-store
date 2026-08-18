@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const fetch = require('node-fetch');
+const nodemailer = require('nodemailer');
 const store = require('./firestore');
 const SECRET = String(process.env.JWT_SECRET || '').trim();
 function ensureSecret() { if (!SECRET) throw new Error('JWT_SECRET is not configured'); }
@@ -56,37 +57,30 @@ function otpHtml(title, name, code, purpose) { return '<!doctype html><html lang
 async function sendEmail({ email, name, code, subject, purpose }) {
   const recipient = String(email || '').trim().toLowerCase();
   if (!isEmail(recipient)) return { ok: false, reason: 'أدخل بريدًا إلكترونيًا صحيحًا لإرسال كود التحقق.' };
-  // Support both the current Resend names and the older generic names.
-  // Vercel Production currently stores RESEND_API_KEY and RESEND_FROM.
-  const apiKey = String(process.env.RESEND_API_KEY || process.env.EMAIL_API_KEY || '').trim();
-  const from = String(process.env.RESEND_FROM || process.env.EMAIL_FROM || '').trim();
-  if (!apiKey || !from) {
-    console.error('email api unavailable: RESEND_API_KEY/EMAIL_API_KEY or RESEND_FROM/EMAIL_FROM is missing');
-    return { ok: false, reason: 'خدمة البريد غير مهيأة حاليًا. يلزم إعداد مزود البريد في Production.' };
+  const host = String(process.env.EMAIL_HOST || 'smtp.gmail.com').trim();
+  const port = Number(process.env.EMAIL_PORT || 465);
+  const user = String(process.env.EMAIL_USER || '').trim();
+  const password = String(process.env.EMAIL_PASSWORD || '').trim();
+  const from = String(process.env.EMAIL_FROM || user).trim();
+  const secureValue = String(process.env.EMAIL_SECURE || '').trim().toLowerCase();
+  const secure = secureValue ? secureValue === 'true' : port === 465;
+  if (!host || !user || !password || !from) {
+    console.error('smtp unavailable: EMAIL_HOST/EMAIL_USER/EMAIL_PASSWORD/EMAIL_FROM is missing');
+    return { ok: false, reason: 'خدمة البريد غير مهيأة في Production. راجع متغيرات SMTP.' };
   }
   try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from,
-        to: [recipient],
-        subject,
-        text: 'رمزك في Rab7na هو ' + code + '. صالح لمدة 10 دقائق.',
-        html: otpHtml(subject, name, code, purpose)
-      })
+    const transporter = nodemailer.createTransport({ host, port, secure, auth: { user, pass: password } });
+    const info = await transporter.sendMail({
+      from,
+      to: recipient,
+      subject,
+      text: 'رمزك في Rab7na هو ' + code + '. صالح لمدة 10 دقائق.',
+      html: otpHtml(subject, name, code, purpose)
     });
-    const body = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      const providerName = String(body && (body.name || body.code) || 'provider_error').slice(0, 120);
-      const providerMessage = String(body && body.message || '').replace(/[\\r\\n]/g, ' ').slice(0, 240);
-      console.error('email api rejected:', response.status, providerName, providerMessage);
-      return { ok: false, status: response.status, providerName, reason: 'تعذر إرسال كود التحقق حاليًا. راجع إعدادات مزود البريد.' };
-    }
-    return { ok: true, provider: 'resend', id: body && body.id ? body.id : undefined };
+    return { ok: true, provider: 'smtp', id: info && info.messageId };
   } catch (e) {
-    console.error('email api request failed:', String(e && e.message || 'network_error'));
-    return { ok: false, reason: 'تعذر الاتصال بخدمة البريد حاليًا. حاول مرة أخرى بعد قليل.' };
+    console.error('smtp request failed:', String(e && e.message || 'smtp_error'));
+    return { ok: false, reason: 'تعذر الاتصال بخدمة SMTP حاليًا. راجع إعدادات البريد في Production.' };
   }
 }
 async function sendVerificationEmail(email, name, code) { return sendEmail({ email, name, code, subject: 'كود تفعيل حسابك في Rab7na', purpose: 'استخدم الرمز التالي لتفعيل حسابك:' }); }
