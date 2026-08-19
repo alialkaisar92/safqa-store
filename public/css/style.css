@@ -105,8 +105,8 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-#p-checkout,
-.page#p-checkout {
+#coMdl,
+.page#coMdl {
   width: 100%;
   max-width: 680px;
   margin: 0 auto;
@@ -119,22 +119,22 @@ body {
   box-sizing: border-box;
 }
 
-#p-checkout *,
-.page#p-checkout * {
+#coMdl *,
+.page#coMdl * {
   touch-action: auto;
 }
 
-#p-checkout input,
-#p-checkout textarea,
-#p-checkout select,
-#p-checkout button {
+#coMdl input,
+#coMdl textarea,
+#coMdl select,
+#coMdl button {
   font-family: inherit;
   -webkit-tap-highlight-color: transparent;
 }
 
-#p-checkout input,
-#p-checkout textarea,
-#p-checkout select {
+#coMdl input,
+#coMdl textarea,
+#coMdl select {
   width: 100%;
   min-height: 50px;
   box-sizing: border-box;
@@ -147,19 +147,19 @@ body {
   transition: border-color .18s ease, box-shadow .18s ease;
 }
 
-#p-checkout input:focus,
-#p-checkout textarea:focus,
-#p-checkout select:focus {
+#coMdl input:focus,
+#coMdl textarea:focus,
+#coMdl select:focus {
   border-color: #0f766e;
   box-shadow: 0 0 0 4px rgba(15,118,110,.10);
 }
 
-#p-checkout textarea {
+#coMdl textarea {
   min-height: 105px;
   resize: vertical;
 }
 
-#p-checkout button {
+#coMdl button {
   min-height: 48px;
   border-radius: 14px;
   border: 0;
@@ -168,17 +168,186 @@ body {
 }
 
 @media (max-width: 600px) {
-  #p-checkout,
-  .page#p-checkout {
+  #coMdl,
+  .page#coMdl {
     max-width: none;
     padding: 12px 12px 115px;
   }
 }
 
 @media (min-width: 601px) {
-  #p-checkout,
-  .page#p-checkout {
+  #coMdl,
+  .page#coMdl {
     padding-top: 24px;
   }
+}
+
+
+/* ===== MODERN MOBILE CHECKOUT ===== */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+#coMdl {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  height: auto !important;
+  overflow: visible !important;
+  box-sizing: border-box;
+  padding: 16px 14px 120px;
+  touch-action: pan-y;
+}
+
+/* منع تكبير أندرويد عند الضغط على الحقول */
+#coMdl input,
+#coMdl textarea,
+#coMdl select {
+  font-size: 16px !important;
+  -webkit-text-size-adjust: 100%;
+  transform: none !important;
+  zoom: 1 !important;
+}
+
+/* حقول البيانات */
+#coMdl input,
+#coMdl textarea,
+#coMdl select {
+  width: 100%;
+  min-height: 52px;
+  box-sizing: border-box;
+  padding: 13px 15px;
+  border: 1px solid #dfe8e5;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #17231f;
+  font-family: inherit;
+  font-weight: 600;
+  outline: none;
+  transition:
+    border-color .18s ease,
+    box-shadow .18s ease,
+    background .18s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+#coMdl input:focus,
+#coMdl textarea:focus,
+#coMdl select:focus {
+  border-color: #0f766e;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(15,118,110,.10);
+}
+
+/* Placeholder */
+#coMdl input::placeholder,
+#coMdl textarea::placeholder {
+  color: #9aa8a3;
+  font-weight: 500;
+}
+
+/* Textarea */
+#coMdl textarea {
+  min-height: 105px;
+  resize: vertical;
+  line-height: 1.7;
+}
+
+/* Labels */
+#coMdl label {
+  display: block;
+  margin: 0 0 7px;
+  color: #263832;
+  font-size: .78rem;
+  font-weight: 900;
+}
+
+/* كل مجموعة */
+#coMdl .field,
+#coMdl .form-group {
+  margin-bottom: 14px;
+}
+
+/* الأزرار */
+#coMdl button {
+  min-height: 50px;
+  border: 0;
+  border-radius: 15px;
+  font-family: inherit;
+  font-size: .88rem;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform .12s ease,
+    box-shadow .18s ease,
+    opacity .18s ease;
+}
+
+#coMdl button:active {
+  transform: scale(.97);
+}
+
+/* زر تأكيد الطلب */
+#coMdl #btnSubmit,
+#coMdl .btn-primary {
+  width: 100%;
+  min-height: 54px;
+  margin-top: 10px;
+  background: linear-gradient(135deg,#0f766e,#0d9488);
+  color: #fff;
+  box-shadow: 0 10px 25px rgba(15,118,110,.20);
+}
+
+/* بطاقة ملخص الطلب */
+#coMdl .checkout-card,
+#coMdl .summary,
+#coMdl .order-summary {
+  background: #fff;
+  border: 1px solid #e7efec;
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 24px rgba(15,23,42,.055);
+}
+
+/* الهاتف */
+@media (max-width: 600px) {
+
+  #coMdl {
+    padding:
+      12px
+      12px
+      calc(115px + env(safe-area-inset-bottom));
+  }
+
+  #coMdl input,
+  #coMdl textarea,
+  #coMdl select {
+    min-height: 54px;
+    border-radius: 16px;
+  }
+
+  #coMdl button {
+    min-height: 52px;
+  }
+
+}
+
+/* منع أي عنصر داخل checkout من إجبار الصفحة على العرض */
+#coMdl * {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
