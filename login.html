@@ -71,4 +71,28 @@ async function doReg(e){e.preventDefault();var m=document.getElementById('rMsg')
     else{m.className='msg err';m.textContent='⚠️ '+(d.error||d.message||'فشل التسجيل');}
   }catch(err){m.className='msg err';m.textContent='⚠️ خطأ في الاتصال';}
 }
-</script></body></html>
+</script>
+<script id="localAuth">
+function getUsers(){try{return JSON.parse(localStorage.getItem('rab7_users')||'[]')}catch(e){return[]}}
+function setUsers(u){localStorage.setItem('rab7_users',JSON.stringify(u))}
+function localSave(phone,name){localStorage.setItem('sq_user_token','local_'+phone);localStorage.setItem('sq_user_id',phone);localStorage.setItem('sq_user',JSON.stringify({id:phone,name:name,phone:phone}));}
+async function doLogin(e){e.preventDefault();var m=document.getElementById('lMsg');m.className='msg';m.textContent='⏳ ...';
+  var ok=false;
+  try{var r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:lPhone.value,contact:lPhone.value,password:lPass.value})});
+    var d=await r.json();
+    if(r.ok&&(d.token||d.ok||d.data&&d.data.token)){var tok=d.token||(d.data&&d.data.token);localStorage.setItem('sq_user_token',tok);if(d.user)localStorage.setItem('sq_user',JSON.stringify(d.user));ok=true;}
+  }catch(err){}
+  if(!ok){var u=getUsers().find(function(x){return x.phone===lPhone.value&&x.pass===lPass.value});
+    if(u){localSave(u.phone,u.name);ok=true;}else{m.className='msg err';m.textContent='⚠️ بيانات غير صحيحة';return;}}
+  m.className='msg ok';m.textContent='✅ تم الدخول';setTimeout(function(){location.href='/store'},600);}
+async function doReg(e){e.preventDefault();var m=document.getElementById('rMsg');m.className='msg';m.textContent='⏳ ...';
+  var ok=false;
+  try{var r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:rName.value,phone:rPhone.value,contact:rPhone.value,password:rPass.value})});
+    var d=await r.json();
+    if(r.ok&&(d.token||d.ok||d.data&&d.data.token)){var tok=d.token||(d.data&&d.data.token);localStorage.setItem('sq_user_token',tok);if(d.user)localStorage.setItem('sq_user',JSON.stringify(d.user));ok=true;}
+  }catch(err){}
+  if(!ok){var u=getUsers();if(u.find(function(x){return x.phone===rPhone.value})){m.className='msg err';m.textContent='⚠️ الرقم مسجل بالفعل — سجل دخولك';return;}
+    u.push({name:rName.value,phone:rPhone.value,pass:rPass.value});setUsers(u);localSave(rPhone.value,rName.value);ok=true;}
+  m.className='msg ok';m.textContent='✅ تم إنشاء الحساب';setTimeout(function(){location.href='/store'},600);}
+</script>
+</body></html>
