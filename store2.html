@@ -64,7 +64,8 @@ img{display:block}
 .wa{position:fixed;bottom:92px;left:16px;z-index:80;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#25D366,#128C7E);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 8px 24px rgba(37,211,102,.4);text-decoration:none}
 @media(min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:1024px){.grid{grid-template-columns:repeat(4,1fr)}}
-</style></head><body>
+</style><style>.stk{position:absolute;bottom:8px;right:8px;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px}.stk.k{background:#d1fae5;color:#065f46}.stk.l{background:#fef3c7;color:#92400e}.stk.o{background:#fee2e2;color:#991b1b}.card.out .add{opacity:.5}</style>
+</head><body>
 <header class="hdr">
   <button class="ic" onclick="openDrw()">☰</button>
   <div class="logo">Rab<b>7na</b></div>
@@ -138,14 +139,21 @@ function renderGrid(){
   document.getElementById('grid').innerHTML=v.map(function(p){
     var i=P.indexOf(p);var price=p.price||p.sale_price||0;var old=Math.round(price*1.18);
     var img=p.image||((p.images&&p.images[0])||'');
-    return '<div class="card"><div class="img"><img loading="lazy" src="'+img+'"><span class="disc">-15%</span><button class="fav">♡</button></div>'
+    var st=stockOf(p);
+    return '<div class="card'+(st.out?' out':'')+'"><div class="img"><img loading="lazy" src="'+img+'"><span class="disc">-15%</span><span class="stk '+st.cls+'">'+st.label+'</span><button class="fav">♡</button></div>'
       +'<div class="bd"><div class="nm">'+(p.name||'')+'</div>'
       +'<div class="rate"><b>★</b> 4.8 (126)</div>'
       +'<div class="pr"><s>'+old+'</s><b>'+fmt(price)+'</b></div>'
-      +'<button class="add" onclick="addCart('+i+')">🛒 أضف إلى السلة</button></div></div>';
+      +'<button class="add" '+(st.out?'disabled':'onclick="addCart('+i+')"')+'>🛒 أضف إلى السلة</button></div></div>';
   }).join('')||'<p style="grid-column:1/-1;text-align:center;padding:30px;color:var(--mut)">لا توجد منتجات</p>';
 }
 function toggleSort(){P.reverse();renderGrid();}
+function stockOf(p){var v=0;var av=p.is_active!==false;
+ if(p.properties&&p.properties.length){v=p.properties[0].value||0;av=av&&p.properties[0].is_available!==false;}
+ else if(p.value!=null)v=p.value;
+ if(!av||v<=0)return{label:'نفد المخزون',cls:'o',out:true};
+ if(v<=5)return{label:'متبقي '+v,cls:'l',out:false};
+ return{label:'متوفر',cls:'k',out:false};}
 function addCart(i){var p=P[i];var ex=cart.find(function(c){return c.id===p._id});
   if(ex)ex.qty++;else cart.push({id:p._id,prop:(p.properties&&p.properties[0]&&p.properties[0]._id)||'',name:p.name,price:p.price||p.sale_price||0,image:p.image,qty:1});
   upd();openCart();}

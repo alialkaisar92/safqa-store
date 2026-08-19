@@ -36,6 +36,7 @@ app.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
 
 
 app.use(express.static(__dirname));
+app.get('/login',(req,res)=>res.sendFile(require('path').join(__dirname,'login.html')));
 // ===== Modern store (store2) =====
 app.get('/store',(req,res)=>res.sendFile(require('path').join(__dirname,'store2.html')));
 app.get('/shop',(req,res)=>res.sendFile(require('path').join(__dirname,'store2.html')));

@@ -324,5 +324,14 @@ if(startBtn){startBtn.textContent='تصفح المتجر';startBtn.href='/store'
   </svg>
 </a>
 
+
+<script id="landing-wire">
+document.addEventListener('click',function(e){
+  var el=e.target.closest('a,button');if(!el)return;var x=(el.textContent||'');
+  if(/إنشاء حساب|ابدأ مجان|سجل مجاني/.test(x)){e.preventDefault();location.href='/login.html#register';}
+  else if(/تسجيل الدخول|تسجيل الدخول/.test(x)){e.preventDefault();location.href='/login.html';}
+  else if(/تصفح المتجر/.test(x)){e.preventDefault();location.href='/store';}
+});
+</script>
 </body>
 </html>
