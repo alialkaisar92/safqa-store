@@ -231,55 +231,6 @@ function readProductCache() {
   return Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
 }
 
-// TEMPORARY: remove immediately after one production verification.
-app.get('/api/debug/verify-availability-307a037-8f2c6d', async (req, res) => {
-  try {
-    if (!API_KEY) return res.status(503).json({ ok: false, error: 'supplier key unavailable' });
-    const localResult = await postgres.query(`
-      SELECT external_id, name, active, stock, raw_data, updated_at
-      FROM products
-      WHERE external_id IS NOT NULL
-      ORDER BY RANDOM()
-      LIMIT 3
-    `);
-    const comparisons = await Promise.all(localResult.rows.map(async (local) => {
-      const response = await fetch(BASE_URL + '/product/' + encodeURIComponent(local.external_id), {
-        headers: { 'api-safka-key': API_KEY, 'Content-Type': 'application/json' }
-      });
-      const body = await response.json().catch(() => ({}));
-      const supplier = body && (body.product || body.data || body);
-      const supplierProps = Array.isArray(supplier && supplier.properties) ? supplier.properties : [];
-      const localRaw = local.raw_data && typeof local.raw_data === 'object' ? local.raw_data : {};
-      const localProps = Array.isArray(localRaw.properties) ? localRaw.properties : [];
-      return {
-        id: local.external_id,
-        name: local.name,
-        database: {
-          active: local.active,
-          stock: local.stock,
-          available: localRaw.available,
-          propertyIsAvailable: localProps.map(item => item && item.is_available),
-          updatedAt: local.updated_at
-        },
-        supplier: {
-          httpStatus: response.status,
-          isActive: supplier && supplier.is_active,
-          propertyIsAvailable: supplierProps.map(item => item && item.is_available),
-          propertyCount: supplierProps.length
-        },
-        match: {
-          propertyIsAvailable: JSON.stringify(localProps.map(item => item && item.is_available)) === JSON.stringify(supplierProps.map(item => item && item.is_available)),
-          isActive: local.active === (supplier && supplier.is_active)
-        }
-      };
-    }));
-    res.json({ ok: true, generatedAt: new Date().toISOString(), count: comparisons.length, comparisons });
-  } catch (error) {
-    console.error('[temporary-availability-debug]', error.message);
-    res.status(500).json({ ok: false, error: 'verification failed' });
-  }
-});
-
 app.get('/api/products', async (req, res) => {
   const affiliate = await getAffiliateSnapshotFast();
   const priceUp = Math.max(0, Math.min(200, Number(affiliate.priceUp) || 0));
