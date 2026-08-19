@@ -222,10 +222,15 @@ function goOrders(){toast('📦 سجل دخولك لمتابعة طلباتك');
   <div class="prow2 s"><span>🏷️ سعر البيع المقترح</span><b id="pSugg"></b></div>
   <div class="prow2 c"><span>💵 عمولتك المتوقعة</span><b id="pComm"></b></div>
   <div class="pdesc" id="pDesc"></div>
+  <div style="display:flex;gap:8px;margin:10px 0">
+    <a class="go" id="pMedia" target="_blank" rel="noopener" style="flex:1;text-decoration:none;display:flex;align-items:center;justify-content:center">📸 صور وفيديو على الطبيعة</a>
+    <button class="go" id="pCopy" style="flex:1;background:linear-gradient(135deg,#0284c7,#38bdf8)">📋 نسخ الوصف</button>
+  </div>
   <button class="go" id="pAdd">🛒 أضف إلى السلة</button>
   <button class="go" style="background:#f2f6f3;color:#8aa094;margin-top:8px" onclick="document.getElementById('pMdl').classList.remove('open')">إغلاق</button>
 </div></div>
 <script>
+function copyText(txt,msg){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast(msg||'✅ تم النسخ')})}else{var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();toast(msg||'✅ تم النسخ')}}
 function parseNote(p){var n=p.note||'';
  var s=n.match(/سعر البيع المقترح[^\d]{0,4}(\d+)/)||n.match(/سعر بيع مقترح[^\d]{0,4}(\d+)/);
  var cm=n.match(/عمولتك[^\d]{0,4}(\d+)/);
@@ -243,6 +248,10 @@ function openP(i){var p=P[i];if(!p)return;
  document.getElementById('pComm').textContent=comm+' ج.م';
  document.getElementById('pDesc').textContent=(p.description||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').slice(0,300);
  document.getElementById('pAdd').onclick=function(){addCart(i);document.getElementById('pMdl').classList.remove('open');};
+ var media=p.media_url||'';var pm=document.getElementById('pMedia');
+ if(media){pm.style.display='flex';pm.href=media;}else{pm.style.display='none';}
+ window._pdesc=(p.description||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+ document.getElementById('pCopy').onclick=function(){copyText(window._pdesc,'✅ تم نسخ الوصف — جاهز للمشاركة');};
  document.getElementById('pMdl').classList.add('open');}
 </script>
 </body></html>
