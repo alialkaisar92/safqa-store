@@ -175,6 +175,24 @@ function sourceStock(p) {
   }
   return null;
 }
+function extractCommission(note) {
+  if (!note) return 0;
+  const text = String(note).replace(/,/g, '');
+
+  const patterns = [
+    /عمولتك\s*[:\-]?\s*(\d+(?:\.\d+)?)/i,
+    /العمولة\s*[:\-]?\s*(\d+(?:\.\d+)?)/i,
+    /commission\s*[:\-]?\s*(\d+(?:\.\d+)?)/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) return Number(match[1]) || 0;
+  }
+
+  return 0;
+}
+
 function sourceAvailability(p) {
   if (!p || p.is_active === false) return false;
   if (typeof p.is_available === 'boolean') return p.is_available;
@@ -418,6 +436,7 @@ app.post('/api/create-order', async (req,res)=>{
     item.originalPrice = base;
     item.finalPrice = Math.max(base, Number(item.finalPrice) || base);
     item.property = item.property || source.propId || sourceProp._id || sourceProp.key || '';
+    item.commission = extractCommission(source.note || '');
   }
   let shippingCost=0;
   let shippingGovernorate;
@@ -428,8 +447,7 @@ app.post('/api/create-order', async (req,res)=>{
     shippingCost=Math.max(0,Number(shippingGovernorate.price)||0);
   }catch(e){return res.json({error:'تعذر التحقق من سعر الشحن، حاول مرة أخرى'});}
   const merchandiseTotal=items.reduce((sum,x)=>sum+Math.max(0,Number(x.finalPrice)||0)*(Number(x.qty)||1),0);
-  const maxCommission=items.reduce((sum,x)=>sum+Math.max(0,(Number(x.finalPrice)||0)-(Number(x.originalPrice)||0))*(Number(x.qty)||1),0);
-  const commission=maxCommission;
+  const commission=items.reduce((sum,x)=>sum+Math.max(0,Number(x.commission)||0)*(Number(x.qty)||1),0);
   const total=merchandiseTotal+shippingCost;
   const body={
     items:items,
