@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --g1:#16a34a; --g2:#22c55e; --g3:#4ade80; --g4:#86efac;
+  --bg:#f0fdf4; --card:#ffffff; --ink:#14532d; --mut:#4d7c5f;
+  --soft:#dcfce7; --soft2:#bbf7d0; --accent:#fde047;
+  --rad:22px; --rad-lg:28px;
+  --sh:0 10px 30px -12px rgba(22,163,74,.18);
+  --sh-lg:0 16px 40px -16px rgba(22,163,74,.25);
+}
+
+/* ===== الأساس ===== */
+*{font-family:'Baloo Bhaijaan 2','Cairo','Tajawal',system-ui,sans-serif !important;-webkit-tap-highlight-color:transparent}
+body{background:linear-gradient(180deg,var(--bg) 0%,#e8fbe9 100%) !important;color:var(--ink) !important}
+h1,h2,h3,h4{color:var(--ink) !important;font-weight:800 !important}
+a{color:var(--g1) !important}
+
+/* ===== الهيدر ===== */
+.hdr,.header,.topbar,header{
+  background:linear-gradient(135deg,var(--g1),var(--g2)) !important;
+  color:#fff !important;
+  border-radius:0 0 var(--rad-lg) var(--rad-lg) !important;
+  box-shadow:var(--sh-lg) !important;
+  border:none !important;
+}
+.hdr .eh-logo,.tb-brand b,.header b{color:#fff !important}
+
+/* ===== الكروت ===== */
+.card,.pcard,.stat,.summary,#sumBox,.conn-hero,.pbody{
+  background:var(--card) !important;
+  border:2px solid var(--soft2) !important;
+  border-radius:var(--rad) !important;
+  box-shadow:var(--sh) !important;
+  transition:all .25s ease !important;
+}
+.card:hover,.pcard:hover{transform:translateY(-4px) !important;box-shadow:var(--sh-lg) !important;border-color:var(--g3) !important}
+.conn-hero{background:linear-gradient(135deg,var(--g2),var(--g3)) !important;border:none !important;color:#fff !important}
+
+/* ===== الأزرار ===== */
+.btn,[class*="btn"],button.btn{
+  background:linear-gradient(135deg,var(--g1),var(--g2)) !important;
+  color:#fff !important;
+  border:none !important;
+  border-radius:999px !important;
+  font-weight:800 !important;
+  box-shadow:0 8px 20px -8px rgba(34,197,94,.5) !important;
+  transition:all .2s !important;
+}
+.btn:hover{transform:scale(1.04) !important;box-shadow:0 12px 26px -8px rgba(34,197,94,.6) !important}
+.btn:active{transform:scale(.97) !important}
+.btn-ghost{background:var(--soft) !important;color:var(--g1) !important}
+.btn-rose{background:linear-gradient(135deg,#f43f5e,#fb7185) !important}
+.btn-sky{background:linear-gradient(135deg,#0ea5e9,#38bdf8) !important}
+
+/* ===== الحقول ===== */
+input,select,textarea{
+  background:#fff !important;
+  border:2px solid var(--soft2) !important;
+  border-radius:16px !important;
+  color:var(--ink) !important;
+  font-weight:600 !important;
+  padding:12px 16px !important;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--g2) !important;box-shadow:0 0 0 4px var(--soft) !important;outline:none !important}
+label,.fld-lbl{color:var(--mut) !important;font-weight:700 !important}
+
+/* ===== الشبكة والمنتجات ===== */
+.grid,.pgrid{gap:14px !important}
+.card img,.pcard img{border-radius:18px 18px 0 0 !important}
+.card .t,.pname{color:var(--ink) !important;font-weight:700 !important}
+.card .pr,.pprice{color:var(--g1) !important;font-weight:800 !important}
+
+/* ===== العناوين ===== */
+.section-title,.card-head h3{
+  color:var(--ink) !important;
+  position:relative;
+  padding-right:14px !important;
+}
+.section-title:before,.card-head h3:before{
+  content:"";position:absolute;right:0;top:15%;bottom:15%;width:5px;
+  border-radius:5px;background:linear-gradient(180deg,var(--g2),var(--g3)) !important;
+}
+
+/* ===== الشارات ===== */
+.badge,[class*="badge"]{border-radius:999px !important;font-weight:800 !important}
+.badge-stock,.stock-ok,.b-success{background:var(--soft) !important;color:var(--g1) !important}
+.stock-low,.b-warn{background:#fef9c3 !important;color:#a16207 !important}
+.stock-out,.b-muted{background:#fee2e2 !important;color:#b91c1c !important}
+
+/* ===== القائمة السفلية ===== */
+.nav,.mnav,#mnav{
+  background:#fff !important;
+  border-radius:var(--rad-lg) var(--rad-lg) 0 0 !important;
+  box-shadow:0 -10px 30px -12px rgba(22,163,74,.2) !important;
+  border-top:2px solid var(--soft2) !important;
+}
+.nav button.active,.nav .active{color:var(--g1) !important}
+
+/* ===== الملخص ===== */
+.summary .line,.line{border-radius:12px !important}
+.summary .total,.line.total{background:var(--soft) !important;color:var(--g1) !important;border-radius:14px !important}
+.summary .comm,.line.comm{background:linear-gradient(135deg,var(--g1),var(--g2)) !important;color:#fff !important;border-radius:14px !important}
+
+/* ===== لمسات ودودة ===== */
+.hdr-ib,.hdr-acts button{border-radius:16px !important;background:rgba(255,255,255,.2) !important}
+::selection{background:var(--g3);color:var(--ink)}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-thumb{background:var(--g3);border-radius:8px}
