@@ -35,13 +35,9 @@ function authReqToken(req){const h=String(req.headers.authorization||'');return 
 async function currentAuthUser(req){const token=authToken(req);if(!token)return null;try{const user=await authService.currentUser(token);if(user)return user;}catch(e){}try{const jwt=global.verifyJWT&&global.verifyJWT(token);if(jwt)return await firestore.getUser(jwt.uid);}catch(e){}try{const rec=await firestore.getToken(token);return rec?await firestore.getUser(rec.uid):null;}catch(e){return null;}}
 
 // ===== MAIN STORE ROUTES =====
-app.get('/store', (req, res) => {
-  res.sendFile(path.join(__dirname, 'store2.html'));
-});
+app.get('/store', (req, res) => { res.sendFile(path.join(__dirname, 'store2.html')); });
 
-app.get('/shop', (req, res) => {
-  res.redirect(302, '/store');
-});
+app.get('/shop', (req, res) => res.redirect(302, '/store'));
 
 app.get('/api/health',function(req,res){res.json({ok:true,status:'healthy',service:'rab7na',database:'postgresql',database_status:postgresStatus,time:new Date().toISOString()});});
 app.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
