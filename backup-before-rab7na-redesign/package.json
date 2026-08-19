@@ -14,20 +14,13 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "lowdb": "^7.0.1",
-    "lucide-react": "^1.32.0",
-    "next": "^16.3.1",
     "node-fetch": "^2.7.0",
     "nodemailer": "^9.0.5",
     "pg": "^8.23.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
     "uuid": "^11.1.0",
     "web-push": "^3.6.7"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.3",
-    "nodemon": "^3.1.10",
-    "postcss": "^8.5.26",
-    "tailwindcss": "^4.3.3"
+    "nodemon": "^3.1.10"
   }
 }
