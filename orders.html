@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>طلباتي | Rab7na</title>
+<style>
+:root{--p:#0f766e;--pd:#0b5d56;--soft:#e9f7f3;--bg:#f7faf9;--ink:#172033;--mut:#71817a;--line:#e5eeea;--gold:#c9972b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,sans-serif;color:var(--ink)}
+header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.top{max-width:1100px;margin:auto;padding:16px 18px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:1.6rem;font-weight:900;color:var(--pd)}.logo span{color:var(--gold)}
+button{cursor:pointer}.back{border:0;background:var(--soft);color:var(--pd);padding:10px 14px;border-radius:12px;font-weight:800}
+main{max-width:1000px;margin:auto;padding:22px 16px 40px}
+h1{font-size:1.35rem;margin:0 0 16px}
+.order{background:#fff;border:1px solid var(--line);border-radius:18px;margin-bottom:12px;padding:16px;box-shadow:0 5px 18px rgba(15,23,42,.04)}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.id{font-weight:900}.date{font-size:.72rem;color:var(--mut);margin-top:4px}
+.status{background:var(--soft);color:var(--pd);border-radius:8px;padding:5px 9px;font-size:.7rem;font-weight:900}
+.details{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.detail{background:#f8fbfa;border-radius:11px;padding:10px}.detail small{display:block;color:var(--mut);font-size:.68rem;margin-bottom:5px}.detail b{font-size:.82rem}
+.profit{color:var(--gold)}
+@media(max-width:650px){.details{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="top">
+<div class="logo">Rab<span>7na</span></div>
+<button class="back" onclick="location.href='/dashboard'">← لوحة التحكم</button>
+</div></header>
+<main>
+<h1>📦 متابعة الطلبات</h1>
+<div id="list">جاري تحميل الطلبات...</div>
+</main>
+<script>
+function money(n){return Number(n||0).toLocaleString('ar-EG')+' ج.م'}
+async function load(){
+ try{
+  const r=await fetch('/api/me',{credentials:'include'});
+  const d=await r.json();const a=d.orders||[];
+  document.getElementById('list').innerHTML=a.slice().reverse().map((x,i)=>`
+   <article class="order">
+    <div class="row"><div><div class="id">طلب #${x.id||x.order_id||i+1}</div>
+    <div class="date">${x.created_at||x.date||'—'}</div></div>
+    <span class="status">${x.status||'جديد'}</span></div>
+    <div class="details">
+     <div class="detail"><small>إجمالي الطلب</small><b>${money(x.total)}</b></div>
+     <div class="detail"><small>الشحن</small><b>${money(x.shipping||x.ship||0)}</b></div>
+     <div class="detail"><small>العمولة / الربح المتوقع</small><b class="profit">${money(x.commission||x.profit||0)}</b></div>
+     <div class="detail"><small>العميل</small><b>${x.client_name||x.name||'—'}</b></div>
+    </div>
+   </article>`).join('')||'<div style="text-align:center;padding:40px;color:#71817a">لا توجد طلبات</div>';
+ }catch(e){document.getElementById('list').textContent='تعذر تحميل الطلبات';}
+}
+load();
+</script>
+</body>
+</html>

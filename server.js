@@ -296,8 +296,13 @@ app.get('/products.js',(req,res)=>{res.type('js').sendFile(require('path').join(
 
 
 
-app.get('/dashboard', (req, res) => res.redirect(302, '/store'));
-app.get('/api/me', (req,res) => res.json({ publicStore: true, balance: 0, orders: [], name: '', phone: '' }));
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dashboard.html'));
+});
+
+app.get('/orders', (req, res) => {
+  res.sendFile(path.join(__dirname, 'orders.html'));
+});
 app.post('/api/profile', (req,res) => res.status(410).json({ error: 'الملفات الشخصية غير متاحة في المتجر العام.' }));
 app.get('/api/my/dashboard', (req,res) => res.status(410).json({ error: 'لوحة المسوّق غير متاحة في المتجر العام.' }));
 app.post('/api/set-commission', (req,res)=>res.json({ok:true,message:'تم تحديث العمولة'}));
