@@ -16,3 +16,5 @@ Safka cache sync err: DATABASE_URL غير مضبوط؛ أضفه في بيئة ا
 Safka cache sync err: DATABASE_URL غير مضبوط؛ أضفه في بيئة التشغيل قبل استخدام PostgreSQL
 Safka cache sync err: DATABASE_URL غير مضبوط؛ أضفه في بيئة التشغيل قبل استخدام PostgreSQL
 Safka cache sync err: DATABASE_URL غير مضبوط؛ أضفه في بيئة التشغيل قبل استخدام PostgreSQL
+[availability-probe] sample: [{"id":"6a7c9cab42d4b8fe405be078","name":"فلانشة التقطيع الستانلس","propertyAvailability":[true]},{"id":"6a7c646e42d4b8fe402dbecb","name":"فيل التنفس والاحلام المضيء","propertyAvailability":[true]},{"id":"6a819176dd189c9923ee54a8","name":"جهاز قياس الضغط الناطق","propertyAvailability":[true]},{"id":"6a84b8d4c7b6f6cbf9c323d9","name":"جهاز تدليك الساقين والاسترخاء العضلي","propertyAvailability":[true]},{"id":"6a7c6bf942d4b8fe4034c054","name":"ملعقة القياس الذكية measure spoon ⚖️🥄","propertyAvailability":[true]}]
+Safka cache sync err: DATABASE_URL غير مضبوط؛ أضفه في بيئة التشغيل قبل استخدام PostgreSQL

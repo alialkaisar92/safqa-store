@@ -1,0 +1,184 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rab7na | تسوق المنتجات واربح عمولة</title>
+<style>
+:root{--g:#16a34a;--gd:#0b5d3b;--gdd:#0a3d2a;--bg:#f4f7f5;--card:#fff;--ink:#16281f;--mut:#8aa094;--line:#e6eee9;--rad:16px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;font-family:Cairo,Tajawal,system-ui,sans-serif}
+body{background:var(--bg);color:var(--ink);padding-bottom:84px}
+button{cursor:pointer;border:none;background:none}
+img{display:block}
+.hdr{position:sticky;top:0;z-index:50;background:#fff;display:flex;align-items:center;gap:10px;padding:12px 14px;box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.ic{background:#f2f6f3;width:46px;height:46px;border-radius:14px;font-size:20px;position:relative;flex:0 0 auto}
+.logo{font-weight:900;font-size:24px;color:#123;white-space:nowrap}.logo b{color:var(--g);font-weight:900}
+.search{flex:1}.search input{width:100%;border:1.5px solid var(--line);background:#f7faf8;border-radius:14px;padding:13px 16px;font-size:14px;outline:none}.search input:focus{border-color:var(--g)}
+.cbadge{position:absolute;top:-6px;left:-6px;background:var(--g);color:#fff;font-size:11px;font-weight:800;min-width:20px;height:20px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 5px}
+</style>
+<style>
+.hero{margin:14px;border-radius:20px;background:linear-gradient(135deg,var(--gdd),var(--gd) 60%,var(--g));color:#fff;padding:26px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 14px 32px -14px rgba(11,93,59,.55)}
+.hero h2{font-size:22px;font-weight:900;margin-bottom:4px}.hero p{opacity:.9;margin-bottom:14px}
+.hero button{background:var(--g);color:#fff;font-weight:800;padding:11px 22px;border-radius:12px;box-shadow:0 6px 14px -6px rgba(0,0,0,.4)}
+.hero .art{font-size:64px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.3))}
+.cats{display:flex;gap:10px;overflow-x:auto;padding:6px 14px 12px}.cats button{flex:0 0 auto;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:12px 22px;font-weight:800;color:var(--mut)}
+.cats button.on{background:var(--gd);color:#fff;border-color:var(--gd)}
+.sec{display:flex;justify-content:space-between;align-items:center;padding:8px 16px}.sec h3{font-size:18px;font-weight:900}.sec button{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px 16px;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);overflow:hidden;position:relative;box-shadow:0 4px 14px -8px rgba(0,0,0,.08);display:flex;flex-direction:column}
+.card .img{position:relative}.card .img img{width:100%;aspect-ratio:1;object-fit:cover;background:#eef3f0}
+.disc{position:absolute;top:8px;right:8px;background:var(--g);color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px}
+.fav{position:absolute;top:8px;left:8px;background:#fff;width:36px;height:36px;border-radius:12px;color:#c33;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.bd{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.nm{font-size:13px;font-weight:700;line-height:1.4;min-height:2.6em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rate{color:var(--mut);font-size:12px}.rate b{color:#f5a623}
+.pr{display:flex;align-items:baseline;gap:8px}.pr s{color:var(--mut);font-size:12px}.pr b{color:var(--gd);font-size:16px;font-weight:900}
+.add{margin-top:auto;background:var(--gd);color:#fff;font-weight:800;font-size:13px;padding:12px;border-radius:12px}
+.add:active{transform:scale(.97)}
+.bnav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;box-shadow:0 -6px 20px rgba(0,0,0,.08);z-index:60;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+.bnav button{flex:1;padding:8px 0;font-size:11px;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:4px}
+.bnav button.on{background:var(--gd);color:#fff;border-radius:14px;margin:2px}
+.bnav .bi{font-size:18px}
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:.25s;z-index:90}
+.ovl.open{opacity:1;pointer-events:auto}
+.drw{position:fixed;top:0;bottom:0;right:0;width:300px;max-width:86%;background:#fff;z-index:100;transform:translateX(100%);transition:.28s;overflow-y:auto}
+.drw.open{transform:none}
+.drw .hd{padding:24px 16px 8px;text-align:center}.drw .hd p{color:var(--mut);font-size:12px;margin-top:4px}
+.drw .x{position:absolute;top:14px;left:14px;background:#f2f6f3;width:38px;height:38px;border-radius:12px;font-size:15px}
+.di{display:flex;align-items:center;gap:12px;margin:6px 14px;padding:14px;border:1.5px solid var(--line);border-radius:14px;font-weight:700}
+.di.on{background:var(--gd);color:#fff;border-color:var(--gd)}
+.dsec{color:var(--mut);font-size:12px;margin:14px 20px 6px}
+.dlog{margin:16px 14px;background:#e9f5ee;border-radius:14px;padding:14px;font-size:13px;font-weight:700}
+.dft{padding:18px;text-align:center;color:var(--mut);font-size:12px}
+.soc{display:flex;justify-content:center;gap:12px;margin-bottom:10px}.soc a{width:38px;height:38px;border-radius:50%;background:#f2f6f3;display:flex;align-items:center;justify-content:center;font-size:15px;text-decoration:none}
+.mdl{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;z-index:120}
+.mdl.open{display:flex}
+.mdl .box{background:#fff;width:100%;max-height:88%;overflow-y:auto;border-radius:24px 24px 0 0;padding:18px}
+.mdl h3{font-size:17px;font-weight:900;margin-bottom:12px}
+.ci{display:flex;gap:10px;align-items:center;border:1.5px solid var(--line);border-radius:14px;padding:8px;margin-bottom:8px}
+.ci img{width:52px;height:52px;border-radius:10px;object-fit:cover}
+.ci .n{flex:1;font-size:12px;font-weight:700}
+.ci button{background:#fee2e2;color:#b91c1c;border-radius:10px;padding:6px 10px;font-weight:700}
+.fld{margin-bottom:10px}.fld label{display:block;font-size:12px;font-weight:800;color:var(--gd);margin-bottom:4px}
+.fld input,.fld select{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px;font-size:14px;outline:none;background:#fff}
+.fld input:focus,.fld select:focus{border-color:var(--g)}
+.go{width:100%;background:linear-gradient(135deg,var(--gd),var(--g));color:#fff;font-weight:900;font-size:15px;padding:15px;border-radius:14px}
+.tot{display:flex;justify-content:space-between;font-weight:900;font-size:16px;margin:10px 0}
+.wa{position:fixed;bottom:92px;left:16px;z-index:80;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#25D366,#128C7E);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 8px 24px rgba(37,211,102,.4);text-decoration:none}
+@media(min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1024px){.grid{grid-template-columns:repeat(4,1fr)}}
+</style></head><body>
+<header class="hdr">
+  <button class="ic" onclick="openDrw()">☰</button>
+  <div class="logo">Rab<b>7na</b></div>
+  <div class="search"><input id="q" placeholder="ابحث عن منتج..." oninput="doSearch(this.value)"></div>
+  <button class="ic" onclick="openCart()">🛒<span class="cbadge" id="cc">0</span></button>
+</header>
+<div class="ovl" id="ovl" onclick="closeDrw()"></div>
+<aside class="drw" id="drw">
+  <button class="x" onclick="closeDrw()">✕</button>
+  <div class="hd"><div class="logo">Rab<b>7na</b></div><p>تصفح المنتجات وأرسل طلبك</p></div>
+  <div class="di on">🏠 الرئيسية</div>
+  <div class="di" onclick="closeDrw();scrollTo({top:document.getElementById('grid').offsetTop,behavior:'smooth'})">🛍️ المنتجات</div>
+  <div class="di" onclick="closeDrw();openCart()">🛒 السلة</div>
+  <div class="dsec">خدمات المتجر</div>
+  <div class="di" onclick="closeDrw();openShip()">🚚 أسعار الشحن حسب المحافظة</div>
+  <div class="di" onclick="location.href='https://wa.me/201092876053'">💬 الدعم عبر واتساب</div>
+  <div class="dlog">👤 تسجيل الدخول / إنشاء حساب<br><small style="font-weight:400">للاستفادة من جميع الميزات</small></div>
+  <div class="dft"><div class="soc"><a>📘</a><a>📸</a><a>💬</a><a>✈️</a></div>جميع الحقوق محفوظة © Rab7na 2025</div>
+</aside>
+<div class="hero">
+  <div><h2>عرض أسعار الشحن</h2><p>حسب المحافظة</p><button onclick="openShip()">اعرف الآن</button></div>
+  <div class="art">🚚</div>
+</div>
+<div class="cats" id="cats"></div>
+<div class="sec"><h3 id="ptitle">كل المنتجات</h3><button onclick="toggleSort()">⇅ تصفية</button></div>
+<div class="grid" id="grid"></div>
+<nav class="bnav">
+  <button onclick="alert('حسابي')"><span class="bi">👤</span>حسابي</button>
+  <button onclick="alert('طلباتي')"><span class="bi">📦</span>طلباتي</button>
+  <button class="on"><span class="bi">🏠</span>الرئيسية</button>
+  <button onclick="scrollTo({top:0,behavior:'smooth'})"><span class="bi">🗂️</span>التصنيفات</button>
+  <button onclick="openCart()"><span class="bi">🛒</span>السلة</button>
+</nav>
+<div class="mdl" id="cartMdl"><div class="box">
+  <h3>🛒 السلة</h3>
+  <div id="citems"></div>
+  <div class="tot"><span>الإجمالي</span><span id="ctot">0 ج.م</span></div>
+  <button class="go" onclick="openCheckout()">إتمام الطلب ←</button>
+  <button class="go" style="background:#f2f6f3;color:var(--mut);margin-top:8px" onclick="closeCart()">متابعة التسوق</button>
+</div></div>
+<div class="mdl" id="coMdl"><div class="box">
+  <h3>📦 إتمام الطلب</h3>
+  <div class="fld"><label>اسم العميل</label><input id="fName"></div>
+  <div class="fld"><label>رقم الهاتف</label><input id="fPhone" type="tel"></div>
+  <div class="fld"><label>العنوان</label><input id="fAddr"></div>
+  <div class="fld"><label>المحافظة</label><select id="fGov" onchange="onGov()"></select></div>
+  <div class="fld"><label>المدينة</label><select id="fCity"></select></div>
+  <div class="tot"><span>الإجمالي (مع الشحن)</span><span id="cotot">0 ج.م</span></div>
+  <div id="comsg" style="font-size:13px;margin-bottom:8px"></div>
+  <button class="go" onclick="submitOrder()">تأكيد الطلب ✓</button>
+</div></div>
+<a class="wa" href="https://wa.me/201092876053" target="_blank">💬</a>
+<script>
+var P=[],cart=[],curCat='الكل',curQ='',PL=[],ship=50;
+function fmt(n){return n+' ج.م'}
+async function load(){
+  try{var r=await fetch('/api/products?all=1');var d=await r.json();P=d.data||d||[];}catch(e){P=[];}
+  renderCats();renderGrid();
+  try{var rp=await fetch('/api/price-list');var dp=await rp.json();PL=dp.data||dp||[];
+    var g=document.getElementById('fGov');
+    g.innerHTML='<option value="">اختر المحافظة</option>'+PL.map(function(x){return '<option value="'+x._id+'">'+(x.governorateNameAr||x.name)+'</option>'}).join('');
+  }catch(e){}
+}
+function getCats(){var s={};P.forEach(function(p){s[p.category||p.cat||'عام']=1});return ['الكل'].concat(Object.keys(s));}
+function renderCats(){document.getElementById('cats').innerHTML=getCats().map(function(c){return '<button class="'+(c===curCat?'on':'')+'" onclick="setCat(\''+c+'\')">'+c+'</button>'}).join('');}
+function setCat(c){curCat=c;renderCats();renderGrid();}
+function doSearch(q){curQ=q.trim();renderGrid();}
+function vis(){return P.filter(function(p){return (curCat==='الكل'||(p.category||p.cat||'عام')===curCat)&&(!curQ||(p.name||'').indexOf(curQ)>-1);});}
+function renderGrid(){
+  var v=vis();document.getElementById('ptitle').textContent='كل المنتجات ('+v.length+')';
+  document.getElementById('grid').innerHTML=v.map(function(p){
+    var i=P.indexOf(p);var price=p.price||p.sale_price||0;var old=Math.round(price*1.18);
+    var img=p.image||((p.images&&p.images[0])||'');
+    return '<div class="card"><div class="img"><img loading="lazy" src="'+img+'"><span class="disc">-15%</span><button class="fav">♡</button></div>'
+      +'<div class="bd"><div class="nm">'+(p.name||'')+'</div>'
+      +'<div class="rate"><b>★</b> 4.8 (126)</div>'
+      +'<div class="pr"><s>'+old+'</s><b>'+fmt(price)+'</b></div>'
+      +'<button class="add" onclick="addCart('+i+')">🛒 أضف إلى السلة</button></div></div>';
+  }).join('')||'<p style="grid-column:1/-1;text-align:center;padding:30px;color:var(--mut)">لا توجد منتجات</p>';
+}
+function toggleSort(){P.reverse();renderGrid();}
+function addCart(i){var p=P[i];var ex=cart.find(function(c){return c.id===p._id});
+  if(ex)ex.qty++;else cart.push({id:p._id,prop:(p.properties&&p.properties[0]&&p.properties[0]._id)||'',name:p.name,price:p.price||p.sale_price||0,image:p.image,qty:1});
+  upd();openCart();}
+function upd(){document.getElementById('cc').textContent=cart.reduce(function(a,c){return a+c.qty},0);}
+function openCart(){var b=document.getElementById('citems');
+  b.innerHTML=cart.length?cart.map(function(c,i){return '<div class="ci"><img src="'+(c.image||'')+'"><div class="n">'+c.name+'<br><small>'+c.qty+' × '+c.price+'</small></div><button onclick="rm('+i+')">حذف</button></div>'}).join(''):'<p style="text-align:center;color:var(--mut);padding:20px">السلة فارغة</p>';
+  document.getElementById('ctot').textContent=fmt(cart.reduce(function(a,c){return a+c.price*c.qty},0));
+  document.getElementById('cartMdl').classList.add('open');}
+function closeCart(){document.getElementById('cartMdl').classList.remove('open');}
+function rm(i){cart.splice(i,1);upd();openCart();}
+function openCheckout(){if(!cart.length)return;closeCart();document.getElementById('coMdl').classList.add('open');recalc();}
+function onGov(){var g=PL.find(function(x){return x._id===document.getElementById('fGov').value});
+  ship=g?(g.price||50):50;
+  document.getElementById('fCity').innerHTML='<option value="">اختر المدينة</option>'+((g&&g.cities)||[]).map(function(c){return '<option value="'+c.id+'">'+(c.city_name_ar||c.name)+'</option>'}).join('');
+  recalc();}
+function recalc(){var t=cart.reduce(function(a,c){return a+c.price*c.qty},0)+ship;document.getElementById('cotot').textContent=fmt(t);}
+async function submitOrder(){
+  var m=document.getElementById('comsg');
+  if(!fName.value||!fPhone.value||!fAddr.value||!fGov.value){m.textContent='⚠️ اكمل البيانات';return;}
+  var t=cart.reduce(function(a,c){return a+c.price*c.qty},0)+ship;
+  var body={client_name:fName.value,client_phone1:fPhone.value,client_address:fAddr.value,
+    shipping_governorate:fGov.value,city:fCity.value,
+    items:cart.map(function(c){return {product:c.id,property:c.prop,qty:c.qty}}),
+    total:t,commission:Math.round(t*0.1)};
+  m.textContent='⏳ جاري الإرسال...';
+  try{var r=await fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    var d=await r.json();
+    if(d.ok||d.order){m.textContent='✅ تم استلام طلبك';cart=[];upd();setTimeout(function(){document.getElementById('coMdl').classList.remove('open')},1200);}
+    else m.textContent='⚠️ '+(d.error||'فشل');
+  }catch(e){m.textContent='⚠️ خطأ اتصال';}
+}
+function openDrw(){document.getElementById('drw').classList.add('open');document.getElementById('ovl').classList.add('open');}
+function closeDrw(){document.getElementById('drw').classList.remove('open');document.getElementById('ovl').classList.remove('open');}
+function openShip(){alert('🚚 أسعار الشحن بتتحدد تلقائياً حسب المحافظة عند إتمام الطلب');}
+load();
+</script></body></html>
