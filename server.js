@@ -270,7 +270,68 @@ app.get('/shop',(req,res)=>res.redirect(302,'/store'));
 
 app.get('/product/:slug', (req,res)=>{
   const p=findSeoProduct(req.params.slug);
-  if(!p) return res.status(404).send('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>المنتج غير موجود | rab7na</title></head><body><h1>المنتج غير موجود</h1><a href="/store">العودة إلى المتجر</a></body></html>');
+  if(!p) return res.status(404).send('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>المنتج غير موجود | rab7na</title></head><body><h1>المنتج غير موجود</h1><a href="/store">العودة إلى المتجر</a>
+<!-- Rab7na Floating WhatsApp -->
+<style>
+#rab7na-whatsapp{
+  position:fixed;
+  right:18px;
+  bottom:20px;
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  background:#25D366;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+  z-index:99999;
+  box-shadow:0 6px 20px rgba(0,0,0,.22);
+  transition:transform .2s ease,box-shadow .2s ease;
+  font-size:30px;
+}
+#rab7na-whatsapp:hover{
+  transform:scale(1.08);
+  box-shadow:0 8px 26px rgba(0,0,0,.3);
+}
+#rab7na-whatsapp:active{
+  transform:scale(.94);
+}
+#rab7na-whatsapp::after{
+  content:"";
+  position:absolute;
+  inset:-4px;
+  border-radius:50%;
+  border:2px solid rgba(37,211,102,.35);
+  animation:rab7naWaPulse 2s infinite;
+}
+@keyframes rab7naWaPulse{
+  0%{transform:scale(.9);opacity:.8}
+  70%{transform:scale(1.25);opacity:0}
+  100%{transform:scale(1.25);opacity:0}
+}
+@media(max-width:600px){
+  #rab7na-whatsapp{
+    width:54px;
+    height:54px;
+    right:15px;
+    bottom:72px;
+    font-size:27px;
+  }
+}
+</style>
+
+<a id="rab7na-whatsapp"
+   href="https://wa.me/201XXXXXXXXX?text=مرحباً%20Rab7na%20أريد%20الاستفسار%20عن%20منتج"
+   target="_blank"
+   rel="noopener noreferrer"
+   aria-label="تواصل معنا عبر واتساب">
+  <span>◉</span>
+</a>
+<!-- End Rab7na Floating WhatsApp -->
+
+</body></html>');
   const name=seoText(p.name||'منتج على rab7na');
   const desc=seoDescription(p);
   const image=p.image || ((p.images&&p.images[0])||'');
