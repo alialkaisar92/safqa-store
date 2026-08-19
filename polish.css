@@ -1,92 +1,65 @@
-/* ===== MODERN PROFESSIONAL DESIGN SYSTEM v2 ===== */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+/* ===== PREMIUM SAGE + GOLD DESIGN v3 ===== */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Marhey:wght@500;700&display=swap');
 
 :root{
-  --p:#059669; --pd:#047857; --pl:#d1fae5;
-  --bg:#f6f8f7; --surf:#ffffff; --ink:#0b1b16; --mut:#6b7280;
-  --line:#e7eae8; --rad:14px;
-  --sh:0 1px 3px rgba(16,24,40,.07),0 1px 2px rgba(16,24,40,.05);
-  --sh-md:0 4px 12px -2px rgba(16,24,40,.08);
+  --bg:#e3ece8; --card:#ffffff; --deep:#123f33; --green:#1f6f54;
+  --gold1:#f3d789; --gold2:#c9a24a; --ink:#17332b; --mut:#7d948b;
+  --line:#e2eae6; --sh:0 2px 10px -2px rgba(18,63,51,.10); --sh-md:0 8px 24px -8px rgba(18,63,51,.18);
 }
 
-/* ===== الخط والخلفية ===== */
-*{font-family:'IBM Plex Sans Arabic',Cairo,Tajawal,system-ui,sans-serif !important;letter-spacing:0}
-body{background:var(--bg) !important;color:var(--ink) !important}
-h1,h2,h3,h4{font-weight:700 !important;color:var(--ink) !important;letter-spacing:-.01em}
+/* الخلفية النعناعية */
+*{font-family:'IBM Plex Sans Arabic',Cairo,sans-serif !important}
+body{background:radial-gradient(1200px 500px at 50% -100px,#eef5f1,transparent),var(--bg) !important;color:var(--ink) !important}
 
-/* ===== الهيدر ===== */
-.hdr{background:var(--surf) !important;border-bottom:1px solid var(--line) !important;box-shadow:none !important}
-.logo{font-weight:700 !important;color:var(--ink) !important}
-.logo b{color:var(--p) !important;font-weight:700 !important}
-.search input{background:#f3f5f4 !important;border:1px solid transparent !important;border-radius:12px !important;font-weight:400 !important}
-.search input:focus{background:#fff !important;border-color:var(--p) !important;box-shadow:0 0 0 3px var(--pl) !important}
-.ic{background:#f3f5f4 !important;border-radius:12px !important}
+/* الهيدر شفاف */
+.hdr{background:transparent !important;box-shadow:none !important;border:none !important}
+.logo{font-family:'Marhey',Cairo !important;font-size:26px !important;color:var(--deep) !important;text-shadow:0 2px 10px rgba(201,162,74,.45)}
+.logo b{color:var(--green) !important}
+.ic{background:#fff !important;border-radius:16px !important;box-shadow:var(--sh) !important}
+.search input{background:#fff !important;border:none !important;border-radius:999px !important;box-shadow:var(--sh) !important;padding:14px 20px !important}
 
-/* شارة الرصيد — chip هادي */
-#ubadge{background:var(--surf) !important;border:1px solid var(--line) !important;color:var(--pd) !important;box-shadow:var(--sh) !important;border-radius:999px !important;height:36px !important;padding:0 14px !important;font-size:12px !important;font-weight:600 !important}
-#ubadge::before{content:"💰";font-size:13px}
+/* الهيرو + الزر الذهبي */
+.hero{background:linear-gradient(140deg,#0e3a2f,#1f6f54) !important;border-radius:24px !important;box-shadow:var(--sh-md) !important;border:1px solid rgba(255,255,255,.15)}
+.hero button,.hero2-btn{background:linear-gradient(135deg,var(--gold1),var(--gold2)) !important;color:#3a2c07 !important;font-weight:700 !important;border-radius:14px !important;box-shadow:0 6px 18px -6px rgba(201,162,74,.7),inset 0 1px 0 rgba(255,255,255,.5) !important}
 
-/* ===== الأزرار — Flat حديثة ===== */
-.btn,.go,.add,.add2,button.go,.hero button{
-  background:var(--p) !important;
-  color:#fff !important;
-  border:none !important;
-  border-radius:12px !important;
-  font-weight:600 !important;
-  font-size:14px !important;
-  padding:12px 20px !important;
-  box-shadow:var(--sh) !important;
-  transition:background .15s,transform .1s !important;
-}
-.btn:hover,.go:hover,.add:hover,.add2:hover{background:var(--pd) !important;transform:none !important}
-.btn:active,.go:active,.add:active{transform:scale(.985) !important}
-/* أزرار ثانوية */
-.btn-ghost,.btn-secondary{background:var(--surf) !important;color:var(--ink) !important;border:1px solid var(--line) !important;box-shadow:var(--sh) !important}
+/* التصنيفات — كروت بيضا بأيقونات */
+.cats button{background:#fff !important;border:none !important;border-radius:18px !important;padding:12px 20px !important;color:var(--ink) !important;font-weight:600 !important;box-shadow:var(--sh) !important;display:inline-flex !important;gap:8px !important;align-items:center}
+.cats button.on{background:var(--green) !important;color:#fff !important}
 
-/* ===== الهيرو ===== */
-.hero{background:linear-gradient(135deg,#064e3b,#047857) !important;border-radius:20px !important;box-shadow:var(--sh-md) !important}
-.hero h2{font-weight:700 !important}
-.hero button{background:rgba(255,255,255,.14) !important;backdrop-filter:blur(6px) !important;border:1px solid rgba(255,255,255,.25) !important}
-.hero button:hover{background:rgba(255,255,255,.22) !important}
+/* الكروت */
+.card,.pcard2{background:var(--card) !important;border:none !important;border-radius:22px !important;box-shadow:var(--sh) !important;overflow:hidden}
+.card:hover{box-shadow:var(--sh-md) !important;transform:none !important}
+.nm{font-weight:600 !important}
+.pr b{color:var(--deep) !important;font-weight:700 !important}
 
-/* ===== التصنيفات ===== */
-.cats button{background:var(--surf) !important;border:1px solid var(--line) !important;color:var(--mut) !important;border-radius:999px !important;font-weight:500 !important;box-shadow:var(--sh) !important}
-.cats button.on{background:var(--ink) !important;color:#fff !important;border-color:var(--ink) !important}
+/* زر الإضافة — أخضر غامق متوهج */
+.add,.add2{background:linear-gradient(180deg,#1d5c49,var(--deep)) !important;color:#eafff5 !important;border-radius:14px !important;font-weight:600 !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 6px 14px -6px rgba(18,63,51,.5) !important}
 
-/* ===== الكروت ===== */
-.card,.pcard2{background:var(--surf) !important;border:1px solid var(--line) !important;border-radius:16px !important;box-shadow:var(--sh) !important}
-.card:hover,.pcard2:hover{transform:none !important;box-shadow:var(--sh-md) !important}
-.nm,.pname2{font-weight:500 !important;color:var(--ink) !important}
-.pr b,.pprice{color:var(--ink) !important;font-weight:700 !important}
-.pr s{color:var(--mut) !important}
-.rate{color:var(--mut) !important;font-weight:400 !important}
+/* الشارات */
+.disc{background:var(--green) !important;border-radius:10px !important;font-weight:600 !important}
+.stk{border-radius:10px !important;font-weight:600 !important}
+.stk.k{background:#d8ece2 !important;color:var(--deep) !important}
 
-/* ===== الشريط السفلي ===== */
-.bnav{background:var(--surf) !important;border-top:1px solid var(--line) !important;box-shadow:none !important}
-.bnav button{color:var(--mut) !important;font-weight:500 !important}
-.bnav button.on{background:var(--pl) !important;color:var(--pd) !important;border-radius:12px !important;margin:4px !important}
+/* الشريط السفلي — كارت عائم */
+.bnav{left:12px !important;right:12px !important;bottom:12px !important;width:auto !important;background:#fff !important;border-radius:22px !important;box-shadow:0 12px 32px -8px rgba(18,63,51,.25) !important;border:1px solid var(--line) !important;padding:8px !important}
+.bnav button{color:var(--mut) !important;font-weight:500 !important;border-radius:16px !important}
+.bnav button.on{background:none !important;color:var(--green) !important}
+.bnav button.on .bi{background:#d7e9e0 !important;border-radius:16px !important;width:46px;height:34px;display:inline-flex;align-items:center;justify-content:center}
+body{padding-bottom:100px !important}
 
-/* ===== المودالات ===== */
-.mdl .box{background:var(--surf) !important;border-radius:24px 24px 0 0 !important;box-shadow:0 -8px 40px rgba(16,24,40,.15) !important}
-.mdl h3{font-weight:700 !important}
-.prow2{border-radius:12px !important;font-weight:500 !important}
-.prow2.g{background:#f3f5f4 !important;color:var(--ink) !important}
-.prow2.s{background:var(--pl) !important;color:var(--pd) !important;border-right:none !important}
-.prow2.c{background:var(--ink) !important;color:#fff !important;box-shadow:none !important}
+/* المودالات */
+.mdl .box{background:#fbfdfc !important;border-radius:28px 28px 0 0 !important}
+.prow2.c{background:linear-gradient(135deg,var(--deep),var(--green)) !important;box-shadow:none !important}
+.go{background:linear-gradient(180deg,#1d5c49,var(--deep)) !important;border-radius:14px !important;box-shadow:0 6px 14px -6px rgba(18,63,51,.5) !important}
 
-/* ===== الحقول ===== */
-.fld input,.fld select{background:#f9fbfa !important;border:1px solid var(--line) !important;border-radius:12px !important;font-weight:400 !important}
-.fld input:focus,.fld select:focus{background:#fff !important;border-color:var(--p) !important;box-shadow:0 0 0 3px var(--pl) !important}
+/* الدرج */
+.drw{background:#fbfdfc !important}
+.di{border:1px solid var(--line) !important;border-radius:16px !important;box-shadow:var(--sh) !important}
+.di.on{background:var(--green) !important;border-color:var(--green) !important}
 
-/* ===== الدرج ===== */
-.drw{background:var(--surf) !important}
-.di{border:1px solid var(--line) !important;border-radius:12px !important;font-weight:500 !important;box-shadow:var(--sh) !important}
-.di.on{background:var(--ink) !important;color:#fff !important;border-color:var(--ink) !important}
+/* حقول */
+.fld input,.fld select{background:#fff !important;border:1px solid var(--line) !important;border-radius:14px !important}
+.fld input:focus{border-color:var(--green) !important;box-shadow:0 0 0 3px #d8ece2 !important}
 
-/* ===== واتساب ===== */
-.wa{box-shadow:var(--sh-md) !important}
-
-/* ===== لمسات أخيرة ===== */
-::selection{background:var(--pl)}
-.disc{background:var(--p) !important;font-weight:600 !important}
-.stk{font-weight:600 !important}
+/* شارة الرصيد */
+#ubadge{background:#fff !important;border:1px solid var(--line) !important;color:var(--deep) !important;box-shadow:var(--sh) !important}

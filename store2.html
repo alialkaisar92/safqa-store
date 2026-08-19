@@ -345,4 +345,14 @@ function updHeader(){var h=document.querySelector('.hdr');if(!h)return;var b=doc
  } else if(b)b.remove();}
 setInterval(updHeader,2000);updHeader();
 </script>
+
+<script id="catEmoji">
+(function(){
+  var M={'الكل':'🗂️','مطبخ':'🍲','أطفال':'👶','صحة ولياقة':'💪','سيارات':'🚗','أدوات':'🛠️','أحذية':'👟','ملابس':'👕','إلكترونيات':'🎧','منزل':'🛋️','أخرى':'📦','عام':'📦'};
+  function emo(){document.querySelectorAll('.cats button').forEach(function(b){
+    if(b.dataset.emo)return;b.dataset.emo=1;var t=(b.textContent||'').trim();
+    var e=M[t]||'🏷️';var s=document.createElement('span');s.textContent=e;b.insertBefore(s,b.firstChild);});}
+  setInterval(emo,1200);emo();
+})();
+</script>
 </body></html>
