@@ -33,6 +33,16 @@ async function initializePostgres() {
 initializePostgres();
 function authReqToken(req){const h=String(req.headers.authorization||'');return String(req.headers['x-auth-token']||req.headers['x-sq-token']||(h.toLowerCase().indexOf('bearer ')===0?h.slice(7):'')||'').trim();}
 async function currentAuthUser(req){const token=authToken(req);if(!token)return null;try{const user=await authService.currentUser(token);if(user)return user;}catch(e){}try{const jwt=global.verifyJWT&&global.verifyJWT(token);if(jwt)return await firestore.getUser(jwt.uid);}catch(e){}try{const rec=await firestore.getToken(token);return rec?await firestore.getUser(rec.uid):null;}catch(e){return null;}}
+
+// ===== MAIN STORE ROUTES =====
+app.get('/store', (req, res) => {
+  res.sendFile(path.join(__dirname, 'store2.html'));
+});
+
+app.get('/shop', (req, res) => {
+  res.redirect(302, '/store');
+});
+
 app.get('/api/health',function(req,res){res.json({ok:true,status:'healthy',service:'rab7na',database:'postgresql',database_status:postgresStatus,time:new Date().toISOString()});});
 app.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
 
@@ -277,42 +287,14 @@ app.post('/api/my/theme',async (req,res)=>{const u=await currentUser(req);if(!u)
 app.get('/premium.js',(req,res)=>res.sendFile(require('path').join(__dirname,'themes','premium.js')));
 app.get('/premium.css',(req,res)=>res.sendFile(require('path').join(__dirname,'themes','premium.css')));
 app.get('/products.js',(req,res)=>{res.type('js').sendFile(require('path').join(__dirname,'products.js'));});
-app.get('/shop',(req,res)=>res.redirect(302,'/store'));
 
-app.get('/product/:slug', (req,res)=>{
-  const p=findSeoProduct(req.params.slug);
-  if(!p) return res.status(404).send('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>المنتج غير موجود | rab7na</title></head><body><h1>المنتج غير موجود</h1><a href="/store">العودة إلى المتجر</a></body></html>');
-  const name=seoText(p.name||'منتج على rab7na');
-  const desc=seoDescription(p);
-  const image=p.image || ((p.images&&p.images[0])||'');
-  const price=p.price!=null?p.price:(p.sale_price!=null?p.sale_price:null);
-  const productUrl=SEO_ORIGIN+'/product/'+encodeURIComponent(sitemapSlug(p));
-  const schema={
-    '@context':'https://schema.org', '@type':'Product', name, description:desc, url:productUrl,
-    image:image?[image]:undefined, sku:p.id||p._id,
-    category:p.category||p.cat||undefined,
-    offers:price!=null?{'@type':'Offer',url:productUrl,priceCurrency:'EGP',price:Number(price),availability:productAvailability(p)}:undefined
-  };
-  const breadcrumb={'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[
-    {'@type':'ListItem',position:1,name:'rab7na',item:SEO_ORIGIN+'/'},
-    {'@type':'ListItem',position:2,name:'المتجر',item:SEO_ORIGIN+'/store'},
-    {'@type':'ListItem',position:3,name,item:productUrl}
-  ]};
-  const imageHtml=image?'<img src="'+seoEsc(image)+'" alt="'+seoEsc(name)+'" loading="eager" decoding="async" style="max-width:420px;width:100%;height:auto;border-radius:16px">':'';
-  const priceHtml=price!=null?'<p><strong>السعر: '+seoEsc(Number(price).toLocaleString('ar-EG'))+' جنيه مصري</strong></p>':'';
-  res.type('html').send('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+seoEsc(name)+' | rab7na</title><meta name="description" content="'+seoEsc(desc)+'"><meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="'+seoEsc(productUrl)+'"><meta property="og:type" content="product"><meta property="og:site_name" content="rab7na"><meta property="og:title" content="'+seoEsc(name)+' | rab7na"><meta property="og:description" content="'+seoEsc(desc)+'"><meta property="og:url" content="'+seoEsc(productUrl)+'">'+(image?'<meta property="og:image" content="'+seoEsc(image)+'"><meta property="og:image:alt" content="'+seoEsc(name)+'">':'')+'<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="'+seoEsc(name)+' | rab7na"><meta name="twitter:description" content="'+seoEsc(desc)+'">'+(image?'<meta name="twitter:image" content="'+seoEsc(image)+'">':'')+'<script type="application/ld+json">'+JSON.stringify(schema).replace(/<\//g,'<\\/')+'</script><script type="application/ld+json">'+JSON.stringify(breadcrumb).replace(/<\//g,'<\\/')+'</script><style>body{font-family:Arial,sans-serif;max-width:900px;margin:0 auto;padding:24px;line-height:1.8;color:#172033}a{color:#0f766e}main{display:grid;gap:18px}h1{font-size:clamp(1.6rem,4vw,2.6rem)}</style></head><body><main><nav><a href="/">rab7na</a> / <a href="/store">المتجر</a></nav><article><h1>'+seoEsc(name)+'</h1>'+imageHtml+'<p>'+seoEsc(desc)+'</p>'+priceHtml+'<p><a href="/store">العودة إلى المتجر واكتشاف المنتجات</a></p></article></main></body></html>');
-});
 
 
 
 // ===== MAIN STORE ROUTES =====
-app.get('/store', (req, res) => {
-  res.sendFile(path.join(__dirname, 'store2.html'));
-});
 
-app.get('/shop', (req, res) => {
-  res.redirect(302, '/store');
-});
+
+
 
 app.get('/dashboard', (req, res) => res.redirect(302, '/store'));
 app.get('/api/me', (req,res) => res.json({ publicStore: true, balance: 0, orders: [], name: '', phone: '' }));
