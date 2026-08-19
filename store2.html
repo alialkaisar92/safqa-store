@@ -140,11 +140,11 @@ function renderGrid(){
     var i=P.indexOf(p);var price=p.price||p.sale_price||0;var old=Math.round(price*1.18);
     var img=p.image||((p.images&&p.images[0])||'');
     var st=stockOf(p);
-    return '<div class="card'+(st.out?' out':'')+'"><div class="img"><img loading="lazy" src="'+img+'"><span class="disc">-15%</span><span class="stk '+st.cls+'">'+st.label+'</span><button class="fav">♡</button></div>'
+    return '<div class="card'+(st.out?' out':'')+'" onclick="openP('+i+')"><div class="img"><img loading="lazy" src="'+img+'"><span class="disc">-15%</span><span class="stk '+st.cls+'">'+st.label+'</span><button class="fav">♡</button></div>'
       +'<div class="bd"><div class="nm">'+(p.name||'')+'</div>'
       +'<div class="rate"><b>★</b> 4.8 (126)</div>'
       +'<div class="pr"><s>'+old+'</s><b>'+fmt(price)+'</b></div>'
-      +'<button class="add" '+(st.out?'disabled':'onclick="addCart('+i+')"')+'>🛒 أضف إلى السلة</button></div></div>';
+      +'<button class="add" '+(st.out?'disabled':'onclick="event.stopPropagation();addCart('+i+')"')+'>🛒 أضف إلى السلة</button></div></div>';
   }).join('')||'<p style="grid-column:1/-1;text-align:center;padding:30px;color:var(--mut)">لا توجد منتجات</p>';
 }
 function toggleSort(){P.reverse();renderGrid();}
@@ -204,5 +204,45 @@ load();
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1800);}
 function goAccount(){toast('👤 سجل دخولك أولاً');setTimeout(function(){location.href='/login.html'},900);}
 function goOrders(){toast('📦 سجل دخولك لمتابعة طلباتك');setTimeout(function(){location.href='/login.html'},900);}
+</script>
+
+<style>
+.pimg-big{width:100%;aspect-ratio:1.2;object-fit:cover;border-radius:16px;background:#eef3f0}
+.prow2{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-radius:12px;margin-bottom:8px;font-weight:800;font-size:14px}
+.prow2.g{background:#f2f6f3;color:#16281f}
+.prow2.s{background:#e9f5ee;color:#0b5d3b}
+.prow2.c{background:linear-gradient(135deg,#0b5d3b,#16a34a);color:#fff}
+.pdesc{font-size:13px;color:#8aa094;line-height:1.7;margin:10px 0;max-height:110px;overflow-y:auto}
+</style>
+<div class="mdl" id="pMdl"><div class="box">
+  <img id="pImg" class="pimg-big" src="">
+  <h3 id="pName" style="margin-top:12px"></h3>
+  <div id="pStk" style="margin:6px 0"></div>
+  <div class="prow2 g"><span>💰 سعر الجملة</span><b id="pWhole"></b></div>
+  <div class="prow2 s"><span>🏷️ سعر البيع المقترح</span><b id="pSugg"></b></div>
+  <div class="prow2 c"><span>💵 عمولتك المتوقعة</span><b id="pComm"></b></div>
+  <div class="pdesc" id="pDesc"></div>
+  <button class="go" id="pAdd">🛒 أضف إلى السلة</button>
+  <button class="go" style="background:#f2f6f3;color:#8aa094;margin-top:8px" onclick="document.getElementById('pMdl').classList.remove('open')">إغلاق</button>
+</div></div>
+<script>
+function parseNote(p){var n=p.note||'';
+ var s=n.match(/سعر البيع المقترح[^\d]{0,4}(\d+)/)||n.match(/سعر بيع مقترح[^\d]{0,4}(\d+)/);
+ var cm=n.match(/عمولتك[^\d]{0,4}(\d+)/);
+ return{sugg:s?+s[1]:0,comm:cm?+cm[1]:0};}
+function openP(i){var p=P[i];if(!p)return;
+ var np=parseNote(p);var price=p.price||p.sale_price||0;
+ var sugg=np.sugg||Math.round(price*1.18);
+ var comm=np.comm||Math.max(0,sugg-price);
+ var st=stockOf(p);
+ document.getElementById('pImg').src=p.image||((p.images&&p.images[0])||'');
+ document.getElementById('pName').textContent=p.name||'';
+ document.getElementById('pStk').innerHTML='<span class="stk '+st.cls+'" style="position:static">'+st.label+'</span>';
+ document.getElementById('pWhole').textContent=price+' ج.م';
+ document.getElementById('pSugg').textContent=sugg+' ج.م';
+ document.getElementById('pComm').textContent=comm+' ج.م';
+ document.getElementById('pDesc').textContent=(p.description||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').slice(0,300);
+ document.getElementById('pAdd').onclick=function(){addCart(i);document.getElementById('pMdl').classList.remove('open');};
+ document.getElementById('pMdl').classList.add('open');}
 </script>
 </body></html>
