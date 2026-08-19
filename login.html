@@ -95,4 +95,33 @@ async function doReg(e){e.preventDefault();var m=document.getElementById('rMsg')
     u.push({name:rName.value,phone:rPhone.value,pass:rPass.value});setUsers(u);localSave(rPhone.value,rName.value);ok=true;}
   m.className='msg ok';m.textContent='✅ تم إنشاء الحساب';setTimeout(function(){location.href='/store'},600);}
 </script>
+
+<style>
+.benefits{display:flex;flex-direction:column;gap:8px;margin:0 0 12px}
+.benefits div{background:#e9f5ee;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700;color:#0b5d3b}
+.eye{position:absolute;left:12px;top:38px;border:none;background:none;font-size:16px;cursor:pointer}
+.fld{position:relative}
+</style>
+<script id="validatePhone">
+function vPhone(p){return /^01[0125][0-9]{8}$/.test(p);}
+(function(){
+  var reg=document.getElementById('fReg');
+  if(reg&&!document.getElementById('ben')){
+    var d=document.createElement('div');d.id='ben';d.className='benefits';
+    d.innerHTML='<div>✅ تسجيل مجاني 100% — بدون رسوم</div><div>💵 عمولة على كل طلب توصله</div><div>📦 تابع طلباتك وأرباحك لحظياً</div><div>💳 اسحب أرباحك فودافون كاش وغيره</div>';
+    reg.insertBefore(d,reg.firstChild);
+  }
+})();
+</script>
+
+<script id="forceValidate">
+var _reg=doReg,_log=doLogin;
+doReg=async function(e){e.preventDefault();var m=document.getElementById('rMsg');
+ if(!vPhone(rPhone.value)){m.className='msg err';m.textContent='⚠️ رقم هاتف مصري غير صحيح (01xxxxxxxxx)';return;}
+ if(rPass.value.length<6){m.className='msg err';m.textContent='⚠️ كلمة المرور 6 أحرف على الأقل';return;}
+ _reg(e);}
+doLogin=async function(e){e.preventDefault();var m=document.getElementById('lMsg');
+ if(!vPhone(lPhone.value)){m.className='msg err';m.textContent='⚠️ رقم هاتف غير صحيح';return;}
+ _log(e);}
+</script>
 </body></html>

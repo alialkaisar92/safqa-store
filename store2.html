@@ -181,7 +181,7 @@ async function submitOrder(){
   m.textContent='⏳ جاري الإرسال...';
   try{var r=await fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     var d=await r.json();
-    if(d.ok||d.order){m.textContent='✅ تم استلام طلبك';cart=[];upd();setTimeout(function(){document.getElementById('coMdl').classList.remove('open')},1200);}
+    if(d.ok||d.order){saveOrder(body);m.textContent='✅ تم استلام طلبك';cart=[];upd();setTimeout(function(){document.getElementById('coMdl').classList.remove('open')},1200);}
     else m.textContent='⚠️ '+(d.error||'فشل');
   }catch(e){m.textContent='⚠️ خطأ اتصال';}
 }
@@ -253,5 +253,93 @@ function openP(i){var p=P[i];if(!p)return;
  window._pdesc=(p.description||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
  document.getElementById('pCopy').onclick=function(){copyText(window._pdesc,'✅ تم نسخ الوصف — جاهز للمشاركة');};
  document.getElementById('pMdl').classList.add('open');}
+</script>
+
+<script id="core-session">
+function isLoggedIn(){return !!localStorage.getItem('sq_user_token');}
+function getUser(){try{return JSON.parse(localStorage.getItem('sq_user')||'null')}catch(e){return null}}
+function myPhone(){var u=getUser();return (u&&(u.phone||u.id))||localStorage.getItem('sq_user_id')||'';}
+function getOrders(){try{return JSON.parse(localStorage.getItem('rab7_orders_'+myPhone())||'[]')}catch(e){return[]}}
+function getWd(){try{return JSON.parse(localStorage.getItem('rab7_wd_'+myPhone())||'[]')}catch(e){return[]}}
+function saveOrder(b){var o=getOrders();o.unshift({id:Date.now(),name:b.client_name,phone:b.client_phone1,total:b.total,commission:b.commission,items:(b.items||[]).length,status:'pending',status_ar:'قيد المراجعة',date:new Date().toLocaleString('ar-EG')});localStorage.setItem('rab7_orders_'+myPhone(),JSON.stringify(o));}
+function totalComm(){return getOrders().reduce(function(a,o){return a+(+o.commission||0)},0)}
+function withdrawn(){return getWd().filter(function(w){return w.status!=='rejected'}).reduce(function(a,w){return a+(+w.amount||0)},0)}
+function avail(){return Math.max(0,totalComm()-withdrawn());}
+function goAccount(){if(!isLoggedIn()){toast('👤 سجل دخولك أولاً');setTimeout(function(){location.href='/login.html'},800);return;}openAccount();}
+function goOrders(){if(!isLoggedIn()){toast('📦 سجل دخولك لمتابعة طلباتك');setTimeout(function(){location.href='/login.html'},800);return;}openOrders();}
+</script>
+
+<div class="mdl" id="accMdl"><div class="box">
+  <div style="text-align:center;padding:8px 0 14px">
+    <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#0b5d3b,#16a34a);color:#fff;font-size:28px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 8px" id="aAv">👤</div>
+    <h3 id="aName" style="margin:0"></h3>
+    <p id="aPhone" style="color:#8aa094;font-size:13px"></p>
+  </div>
+  <div class="prow2 g"><span>🛍️ طلباتي</span><b id="aOrders">0</b></div>
+  <div class="prow2 s"><span>💵 إجمالي عمولاتي</span><b id="aComm">0 ج.م</b></div>
+  <div class="prow2 c"><span>💰 الرصيد المتاح للسحب</span><b id="aAvail">0 ج.م</b></div>
+  <button class="go" onclick="document.getElementById('accMdl').classList.remove('open');openWallet()">💳 سحب الأرباح</button>
+  <button class="go" style="background:#fee2e2;color:#b91c1c;margin-top:8px" onclick="logout()">🚪 تسجيل الخروج</button>
+  <button class="go" style="background:#f2f6f3;color:#8aa094;margin-top:8px" onclick="document.getElementById('accMdl').classList.remove('open')">إغلاق</button>
+</div></div>
+<script>
+function openAccount(){var u=getUser()||{};
+ document.getElementById('aAv').textContent=(u.name||'👤').charAt(0);
+ document.getElementById('aName').textContent=u.name||'مسوق Rab7na';
+ document.getElementById('aPhone').textContent=u.phone||myPhone();
+ document.getElementById('aOrders').textContent=getOrders().length;
+ document.getElementById('aComm').textContent=totalComm()+' ج.م';
+ document.getElementById('aAvail').textContent=avail()+' ج.م';
+ document.getElementById('accMdl').classList.add('open');}
+function logout(){localStorage.removeItem('sq_user_token');localStorage.removeItem('sq_user');toast('👋 تم الخروج');setTimeout(function(){location.href='/store'},700);}
+</script>
+
+<div class="mdl" id="ordMdl"><div class="box">
+  <h3>📦 طلباتي</h3>
+  <div id="ordList"></div>
+  <button class="go" style="background:#f2f6f3;color:#8aa094" onclick="document.getElementById('ordMdl').classList.remove('open')">إغلاق</button>
+</div></div>
+<script>
+var ST={'pending':['قيد المراجعة','#fef3c7','#92400e'],'preparing':['جارٍ التجهيز','#e0f2fe','#0369a1'],'shipped':['تم الشحن','#e0e7ff','#4338ca'],'delivered':['تم التسليم ✓','#d1fae5','#065f46'],'returned':['مرتجع','#fee2e2','#991b1b'],'rejected':['مرفوض','#fee2e2','#991b1b']};
+function openOrders(){var o=getOrders();var b=document.getElementById('ordList');
+ b.innerHTML=o.length?o.map(function(x){var s=ST[x.status]||[x.status_ar||'قيد المراجعة','#fef3c7','#92400e'];
+  return '<div style="border:1.5px solid #e6eee9;border-radius:14px;padding:12px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-weight:800"><span>#'+String(x.id).slice(-6)+'</span><span style="background:'+s[1]+';color:'+s[2]+';padding:3px 10px;border-radius:999px;font-size:11px">'+s[0]+'</span></div><div style="font-size:12px;color:#8aa094;margin:6px 0">'+x.date+' • '+x.items+' منتج</div><div style="display:flex;justify-content:space-between;font-weight:800"><span>الإجمالي: '+x.total+' ج.م</span><span style="color:#0b5d3b">عمولتك: '+x.commission+' ج.م</span></div></div>';
+ }).join(''):'<p style="text-align:center;color:#8aa094;padding:30px">لا توجد طلبات بعد 🛒</p>';
+ document.getElementById('ordMdl').classList.add('open');}
+</script>
+
+<div class="mdl" id="walMdl"><div class="box">
+  <h3>💳 سحب الأرباح</h3>
+  <div class="prow2 c"><span>الرصيد المتاح</span><b id="wAvail">0 ج.م</b></div>
+  <div class="fld"><label>وسيلة السحب</label><select id="wMethod">
+    <option>فودافون كاش</option><option>اتصالات كاش</option><option>أورنج كاش</option>
+    <option>وي باي</option><option>إنستا باي</option><option>حساب بنكي</option>
+  </select></div>
+  <div class="fld"><label>رقم المحفظة / الحساب</label><input id="wNum" type="tel" placeholder="01xxxxxxxxx"></div>
+  <div class="fld"><label>المبلغ (ج.م)</label><input id="wAmt" type="number" min="50" placeholder="الحد الأدنى 50"></div>
+  <div class="msg" id="wMsg" style="font-size:13px;margin-bottom:8px"></div>
+  <button class="go" onclick="submitWd()">📨 إرسال طلب السحب</button>
+  <h3 style="margin-top:16px">طلبات السحب السابقة</h3>
+  <div id="wdList"></div>
+  <button class="go" style="background:#f2f6f3;color:#8aa094;margin-top:8px" onclick="document.getElementById('walMdl').classList.remove('open')">إغلاق</button>
+</div></div>
+<script>
+function openWallet(){document.getElementById('wAvail').textContent=avail()+' ج.م';renderWd();document.getElementById('walMdl').classList.add('open');}
+function renderWd(){var w=getWd();document.getElementById('wdList').innerHTML=w.length?w.map(function(x){return '<div style="display:flex;justify-content:space-between;border:1.5px solid #e6eee9;border-radius:12px;padding:10px;margin-bottom:8px;font-size:13px;font-weight:700"><span>'+x.method+'<br><small style="color:#8aa094">'+x.date+'</small></span><span style="color:'+(x.status==='approved'?'#065f46':x.status==='rejected'?'#991b1b':'#92400e')+'">'+x.amount+' ج.م<br><small>'+(x.status==='approved'?'تم الصرف':x.status==='rejected'?'مرفوض':'قيد المعالجة')+'</small></span></div>'}).join(''):'<p style="color:#8aa094;font-size:13px">لا توجد طلبات سحب</p>';}
+function submitWd(){var m=document.getElementById('wMsg');var amt=+document.getElementById('wAmt').value;
+ if(!/^01[0125][0-9]{8}$/.test(document.getElementById('wNum').value)){m.textContent='⚠️ رقم محفظة غير صحيح';return;}
+ if(!amt||amt<50){m.textContent='⚠️ الحد الأدنى للسحب 50 ج.م';return;}
+ if(amt>avail()){m.textContent='⚠️ المبلغ أكبر من رصيدك';return;}
+ var w=getWd();w.unshift({id:Date.now(),method:document.getElementById('wMethod').value,number:document.getElementById('wNum').value,amount:amt,status:'pending',date:new Date().toLocaleString('ar-EG')});
+ localStorage.setItem('rab7_wd_'+myPhone(),JSON.stringify(w));
+ m.textContent='✅ تم استلام طلب السحب — سيتم الصرف خلال 24 ساعة';
+ document.getElementById('wAmt').value='';renderWd();document.getElementById('wAvail').textContent=avail()+' ج.م';}
+</script>
+
+<script>
+function updHeader(){var h=document.querySelector('.hdr');if(!h)return;var b=document.getElementById('ubadge');
+ if(isLoggedIn()){if(!b){b=document.createElement('button');b.id='ubadge';b.className='ic';b.style.cssText='font-size:11px;font-weight:900;color:#0b5d3b;background:#d1fae5';b.onclick=openAccount;h.insertBefore(b,h.children[1]||null);}b.textContent='💰'+avail();}
+ else if(b)b.remove();}
+setInterval(updHeader,2000);updHeader();
 </script>
 </body></html>
