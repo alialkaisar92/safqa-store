@@ -66,97 +66,6 @@ img{display:block}
 @media(min-width:1024px){.grid{grid-template-columns:repeat(4,1fr)}}
 </style><style>.stk{position:absolute;bottom:8px;right:8px;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px}.stk.k{background:#d1fae5;color:#065f46}.stk.l{background:#fef3c7;color:#92400e}.stk.o{background:#fee2e2;color:#991b1b}.card.out .add{opacity:.5}</style>
 <link rel="stylesheet" href="/polish.css?v=2">
-
-<style id="safe-cart-style">
-.cart-product{
-display:flex;
-align-items:center;
-gap:10px;
-padding:12px 0;
-border-bottom:1px solid #e5eee9;
-}
-
-.cart-product img{
-width:65px;
-height:65px;
-object-fit:cover;
-border-radius:12px;
-background:#f1f7f4;
-}
-
-.cart-product-info{
-flex:1;
-min-width:0;
-}
-
-.cart-product-info>b{
-display:block;
-font-size:.78rem;
-margin-bottom:4px;
-}
-
-.cart-product-info small{
-display:block;
-font-size:.65rem;
-color:#82918b;
-}
-
-.cart-product>strong{
-font-size:.75rem;
-color:#0f766e;
-white-space:nowrap;
-}
-
-.cart-controls{
-display:flex;
-align-items:center;
-gap:6px;
-margin-top:8px;
-}
-
-.cart-controls button{
-width:30px;
-height:30px;
-border:0;
-border-radius:8px;
-background:#e9f7f3;
-color:#0f766e;
-font-weight:900;
-font-size:16px;
-}
-
-.cart-controls .cart-remove{
-width:auto;
-padding:0 8px;
-background:#fff1f2;
-color:#c24157;
-font-size:11px;
-}
-
-.cart-empty-pro{
-text-align:center;
-padding:35px 10px;
-color:#84938c;
-}
-
-.cart-empty-pro b{
-display:block;
-color:#17251f;
-margin-top:8px;
-}
-
-.cart-empty-pro small{
-display:block;
-margin-top:4px;
-font-size:11px;
-}
-
-#cartProfit,
-#checkoutProfit{
-color:#0f766e;
-font-weight:900;
-}
-</style>
 </head><body>
 <header class="hdr">
   <button class="ic" onclick="openDrw()">☰</button>
@@ -185,7 +94,7 @@ font-weight:900;
 <div class="sec"><h3 id="ptitle">كل المنتجات</h3><button onclick="toggleSort()">⇅ تصفية</button></div>
 <div class="grid" id="grid"></div>
 <nav class="bnav">
-  <button onclick="goAccount()"><span class="bi"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"/></svg></span>حسابي</button>
+  <button onclick="location.href='/dashboard'">📊 لوحة المسوق</button><button onclick="goAccount()"><span class="bi"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"/></svg></span>حسابي</button>
   <button onclick="goOrders()"><span class="bi"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8Zm-9 9.5L5 14V9.6l7 3.9v4Zm1 0v-4l7-3.9V14l-7 3.5Z"/></svg></span>طلباتي</button>
   <button class="on"><span class="bi"><svg viewBox="0 0 24 24"><path d="M12 3l9 8h-3v9h-4v-6h-4v6H6v-9H3l9-8Z"/></svg></span>الرئيسية</button>
   <button onclick="scrollTo({top:document.getElementById('cats').offsetTop-60,behavior:'smooth'})"><span class="bi"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z"/></svg></span>التصنيفات</button>
@@ -198,17 +107,391 @@ font-weight:900;
   <button class="go" onclick="openCheckout()">إتمام الطلب ←</button>
   <button class="go" style="background:#f2f6f3;color:var(--mut);margin-top:8px" onclick="closeCart()">متابعة التسوق</button>
 </div></div>
-<div class="mdl" id="coMdl"><div class="box">
-  <h3>📦 إتمام الطلب</h3>
-  <div class="fld"><label>اسم العميل</label><input id="fName"></div>
-  <div class="fld"><label>رقم الهاتف</label><input id="fPhone" type="tel"></div>
-  <div class="fld"><label>العنوان</label><input id="fAddr"></div>
-  <div class="fld"><label>المحافظة</label><select id="fGov" onchange="onGov()"></select></div>
-  <div class="fld"><label>المدينة</label><select id="fCity"></select></div>
-  <div class="tot"><span>الإجمالي (مع الشحن)</span><span id="cotot">0 ج.م</span></div>
-  <div id="comsg" style="font-size:13px;margin-bottom:8px"></div>
-  <button class="go" onclick="submitOrder()">تأكيد الطلب ✓</button>
-</div></div>
+<div class="checkout-page" id="coMdl">
+  <div class="checkout-wrap">
+
+    <div class="checkout-head">
+      <button class="back-checkout" onclick="closeCheckout()">←</button>
+      <div>
+        <h2>إتمام الطلب</h2>
+        <p>راجع تفاصيل الطلب والأرباح المتوقعة قبل التأكيد</p>
+      </div>
+    </div>
+
+    <div class="checkout-grid">
+
+      <section class="checkout-card">
+        <div class="checkout-title">
+          <span>🛍️</span>
+          <div>
+            <b>منتجات الطلب</b>
+            <small id="coCount">0 منتج</small>
+          </div>
+        </div>
+        <div id="coItems"></div>
+      </section>
+
+      <section class="checkout-card">
+        <div class="checkout-title">
+          <span>👤</span>
+          <div>
+            <b>بيانات العميل</b>
+            <small>أدخل بيانات الشحن بدقة</small>
+          </div>
+        </div>
+
+        <div class="co-fields">
+          <div class="fld">
+            <label>اسم العميل</label>
+            <input id="fName" placeholder="اسم العميل بالكامل">
+          </div>
+
+          <div class="fld">
+            <label>رقم الهاتف</label>
+            <input id="fPhone" type="tel" placeholder="01xxxxxxxxx">
+          </div>
+
+          <div class="fld">
+            <label>العنوان بالتفصيل</label>
+            <input id="fAddr" placeholder="الشارع - المنطقة - رقم المنزل">
+          </div>
+
+          <div class="fld">
+            <label>المحافظة</label>
+            <select id="fGov" onchange="onGov()"></select>
+          </div>
+
+          <div class="fld">
+            <label>المدينة</label>
+            <select id="fCity">
+              <option value="">اختر المدينة</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="checkout-card profit-card">
+        <div class="checkout-title">
+          <span>📈</span>
+          <div>
+            <b>ملخص الأرباح</b>
+            <small>الأرباح المتوقعة من الطلب</small>
+          </div>
+        </div>
+
+        <div class="summary-row">
+          <span>إجمالي البيع</span>
+          <b id="coSale">0 ج.م</b>
+        </div>
+
+        <div class="summary-row">
+          <span>تكلفة المنتجات</span>
+          <b id="coCost">0 ج.م</b>
+        </div>
+
+        <div class="summary-row">
+          <span>الشحن</span>
+          <b id="coShip">0 ج.م</b>
+        </div>
+
+        <div class="summary-profit">
+          <span>💰 الربح المتوقع</span>
+          <b id="coProfit">0 ج.م</b>
+        </div>
+
+        <div class="summary-total">
+          <span>إجمالي ما سيدفعه العميل</span>
+          <b id="cotot">0 ج.م</b>
+        </div>
+
+        <div id="comsg" class="co-msg"></div>
+
+        <button class="confirm-order" onclick="submitOrder()">
+          تأكيد الطلب ✓
+        </button>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<style>
+.checkout-page{
+  position:fixed;
+  inset:0;
+  z-index:500;
+  display:none;
+  overflow:auto;
+  background:#f5faf8;
+  direction:rtl;
+}
+.checkout-page.open{display:block}
+
+.checkout-wrap{
+  width:min(1120px,100%);
+  margin:auto;
+  padding:18px 16px 45px;
+}
+
+.checkout-head{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:18px;
+  background:#fff;
+  border:1px solid #e5eee9;
+  border-radius:20px;
+  padding:16px;
+  box-shadow:0 8px 28px rgba(15,118,110,.06);
+}
+
+.checkout-head h2{
+  margin:0;
+  font-size:1.25rem;
+  color:#10251f;
+}
+
+.checkout-head p{
+  margin:4px 0 0;
+  color:#789087;
+  font-size:.75rem;
+}
+
+.back-checkout{
+  width:42px;
+  height:42px;
+  border:0;
+  border-radius:13px;
+  background:#eaf7f3;
+  color:#0f766e;
+  font-size:1.3rem;
+  cursor:pointer;
+}
+
+.checkout-grid{
+  display:grid;
+  gap:15px;
+}
+
+.checkout-card{
+  background:#fff;
+  border:1px solid #e5eee9;
+  border-radius:20px;
+  padding:17px;
+  box-shadow:0 8px 28px rgba(15,23,42,.045);
+}
+
+.checkout-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:15px;
+}
+
+.checkout-title>span{
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:13px;
+  background:#eaf7f3;
+  font-size:1.2rem;
+}
+
+.checkout-title b{
+  display:block;
+  color:#14261f;
+  font-size:.92rem;
+}
+
+.checkout-title small{
+  display:block;
+  color:#87968f;
+  margin-top:3px;
+  font-size:.68rem;
+}
+
+.co-item{
+  display:grid;
+  grid-template-columns:62px 1fr auto;
+  gap:10px;
+  align-items:center;
+  padding:11px 0;
+  border-bottom:1px solid #edf2f0;
+}
+
+.co-item:last-child{border-bottom:0}
+
+.co-item img{
+  width:62px;
+  height:62px;
+  object-fit:cover;
+  border-radius:13px;
+  background:#f3f7f5;
+}
+
+.co-name{
+  font-size:.78rem;
+  font-weight:800;
+  color:#172a23;
+}
+
+.co-price{
+  margin-top:4px;
+  color:#0f766e;
+  font-size:.72rem;
+  font-weight:800;
+}
+
+.co-controls{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-top:7px;
+}
+
+.co-controls button{
+  width:28px;
+  height:28px;
+  border:0;
+  border-radius:8px;
+  background:#eaf7f3;
+  color:#0f766e;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.co-controls b{
+  min-width:22px;
+  text-align:center;
+  font-size:.78rem;
+}
+
+.co-item-total{
+  text-align:left;
+  font-size:.78rem;
+  font-weight:900;
+  color:#0f766e;
+}
+
+.co-fields{
+  display:grid;
+  gap:10px;
+}
+
+.fld label{
+  display:block;
+  margin-bottom:5px;
+  color:#64756d;
+  font-size:.72rem;
+  font-weight:800;
+}
+
+.fld input,
+.fld select{
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid #dfeae5;
+  background:#fbfdfc;
+  border-radius:12px;
+  padding:12px;
+  outline:none;
+  font-size:.82rem;
+  color:#182a24;
+}
+
+.fld input:focus,
+.fld select:focus{
+  border-color:#0f766e;
+  box-shadow:0 0 0 3px rgba(15,118,110,.08);
+}
+
+.summary-row{
+  display:flex;
+  justify-content:space-between;
+  padding:10px 0;
+  border-bottom:1px dashed #e4ece8;
+  font-size:.78rem;
+  color:#71817a;
+}
+
+.summary-row b{color:#263b33}
+
+.summary-profit{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:12px;
+  padding:14px;
+  border-radius:14px;
+  background:#eaf8f1;
+  color:#08755f;
+  font-size:.82rem;
+  font-weight:900;
+}
+
+.summary-profit b{font-size:1.15rem}
+
+.summary-total{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+  padding:14px;
+  border-radius:14px;
+  background:#f5f8f7;
+  color:#52635b;
+  font-size:.78rem;
+  font-weight:800;
+}
+
+.summary-total b{
+  color:#102a22;
+  font-size:1.08rem;
+}
+
+.confirm-order{
+  width:100%;
+  margin-top:14px;
+  border:0;
+  border-radius:14px;
+  padding:14px;
+  background:#0f766e;
+  color:#fff;
+  font-size:.9rem;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 9px 22px rgba(15,118,110,.2);
+}
+
+.confirm-order:active{transform:scale(.98)}
+
+.co-msg{
+  text-align:center;
+  font-size:.75rem;
+  font-weight:800;
+  margin-top:10px;
+}
+
+@media(min-width:800px){
+  .checkout-grid{
+    grid-template-columns:1.15fr .85fr;
+    align-items:start;
+  }
+  .profit-card{
+    grid-column:2;
+    grid-row:1 / span 2;
+    position:sticky;
+    top:15px;
+  }
+  .checkout-card:first-child{
+    grid-column:1;
+  }
+  .checkout-card:nth-child(2){
+    grid-column:1;
+  }
+}
+</style>
 <a class="wa" href="https://wa.me/201092876053" target="_blank"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg></a>
 <script>
 var P=[],cart=[],curCat='الكل',curQ='',PL=[],ship=50;
@@ -246,179 +529,85 @@ function stockOf(p){var v=0;var av=p.is_active!==false;
  if(!av||v<=0)return{label:'نفد المخزون',cls:'o',out:true};
  if(v<=5)return{label:'متبقي '+v,cls:'l',out:false};
  return{label:'متوفر: '+v,cls:'k',out:false};}
-function addCart(i){
-  var p=P[i];
-  if(!p)return;
-
-  var price=Number(p.price||p.sale_price||0);
-  var ex=cart.find(function(c){return c.id===p._id});
-
-  if(ex){
-    ex.qty++;
-  }else{
-    cart.push({
-      id:p._id,
-      prop:(p.properties&&p.properties[0]&&p.properties[0]._id)||'',
-      name:p.name||'منتج',
-      price:price,
-      cost:price,
-      image:p.image||((p.images&&p.images[0])||''),
-      qty:1
-    });
-  }
-
-  upd();
-  openCart();
-}
-
-function upd(){
-  var el=document.getElementById('cc');
-  if(el){
-    el.textContent=cart.reduce(function(a,c){
-      return a+Number(c.qty||0);
-    },0);
-  }
-}
-
-function changeCartQty(i,d){
-  var c=cart[i];
-  if(!c)return;
-
-  c.qty=Math.max(1,Number(c.qty||1)+d);
-
-  upd();
-  openCart();
-}
-
-function removeCartItem(i){
-  cart.splice(i,1);
-  upd();
-  openCart();
-}
-
-function cartProductsTotal(){
-  return cart.reduce(function(a,c){
-    return a+(Number(c.price)||0)*(Number(c.qty)||0);
-  },0);
-}
-
-function cartCostTotal(){
-  return cart.reduce(function(a,c){
-    return a+(Number(c.cost)||0)*(Number(c.qty)||0);
-  },0);
-}
-
-function cartProfit(){
-  return Math.max(0,cartProductsTotal()-cartCostTotal());
-}
-
-function openCart(){
-  var b=document.getElementById('citems');
-
-  if(!cart.length){
-    b.innerHTML='<div class="cart-empty-pro">🛒<br><b>السلة فارغة</b><small>أضف منتجًا للمتابعة</small></div>';
-  }else{
-    b.innerHTML=cart.map(function(c,i){
-      return '<div class="cart-product">'+
-        '<img src="'+(c.image||'')+'">'+
-        '<div class="cart-product-info">'+
-          '<b>'+c.name+'</b>'+
-          '<small>سعر البيع: '+fmt(c.price)+'</small>'+
-          '<div class="cart-controls">'+
-            '<button onclick="changeCartQty('+i+',-1)">−</button>'+
-            '<b>'+c.qty+'</b>'+
-            '<button onclick="changeCartQty('+i+',1)">+</button>'+
-            '<button class="cart-remove" onclick="removeCartItem('+i+')">حذف</button>'+
-          '</div>'+
-        '</div>'+
-        '<strong>'+fmt(c.price*c.qty)+'</strong>'+
-      '</div>';
-    }).join('');
-  }
-
-  var total=document.getElementById('ctot');
-  if(total)total.textContent=fmt(cartProductsTotal());
-
-  var profit=document.getElementById('cartProfit');
-  if(profit)profit.textContent=fmt(cartProfit());
-
-  var cost=document.getElementById('cartCost');
-  if(cost)cost.textContent=fmt(cartCostTotal());
-
-  document.getElementById('cartMdl').classList.add('open');
-}
-
-function closeCart(){
-  document.getElementById('cartMdl').classList.remove('open');
-}
-
-function rm(i){
-  removeCartItem(i);
-}
-
+function addCart(i){var p=P[i];var ex=cart.find(function(c){return c.id===p._id});
+  if(ex)ex.qty++;else cart.push({id:p._id,prop:(p.properties&&p.properties[0]&&p.properties[0]._id)||'',name:p.name,price:p.price||p.sale_price||0,image:p.image,qty:1});
+  upd();openCart();}
+function upd(){document.getElementById('cc').textContent=cart.reduce(function(a,c){return a+c.qty},0);}
+function openCart(){var b=document.getElementById('citems');
+  b.innerHTML=cart.length?cart.map(function(c,i){return '<div class="ci"><img src="'+(c.image||'')+'"><div class="n">'+c.name+'<br><small>'+c.qty+' × '+c.price+'</small></div><button onclick="rm('+i+')">حذف</button></div>'}).join(''):'<p style="text-align:center;color:var(--mut);padding:20px">السلة فارغة</p>';
+  document.getElementById('ctot').textContent=fmt(cart.reduce(function(a,c){return a+c.price*c.qty},0));
+  document.getElementById('cartMdl').classList.add('open');}
+function closeCart(){document.getElementById('cartMdl').classList.remove('open');}
+function rm(i){cart.splice(i,1);upd();openCart();}
 function openCheckout(){
   if(!cart.length)return;
-
   closeCart();
-
   document.getElementById('coMdl').classList.add('open');
-
-  renderCheckoutSummary();
+  renderCheckout();
   recalc();
 }
+function closeCheckout(){
+  document.getElementById('coMdl').classList.remove('open');
+}
+function renderCheckout(){
+  var box=document.getElementById('coItems');
+  if(!box)return;
+  var count=cart.reduce(function(a,c){return a+c.qty},0);
+  document.getElementById('coCount').textContent=count+' منتج';
 
-function renderCheckoutSummary(){
-  var el=document.getElementById('checkoutItems');
-  if(!el)return;
-
-  el.innerHTML=cart.map(function(c){
-    return '<div class="checkout-item">'+
-      '<img src="'+(c.image||'')+'">'+
-      '<div>'+
-        '<b>'+c.name+'</b>'+
-        '<small>'+c.qty+' × '+fmt(c.price)+'</small>'+
-      '</div>'+
-      '<strong>'+fmt(c.price*c.qty)+'</strong>'+
-    '</div>';
+  box.innerHTML=cart.map(function(c,i){
+    return '<div class="co-item">'
+      +'<img src="'+(c.image||'')+'">'
+      +'<div>'
+      +'<div class="co-name">'+c.name+'</div>'
+      +'<div class="co-price">'+fmt(c.price)+' للقطعة</div>'
+      +'<div class="co-controls">'
+      +'<button onclick="coQty('+i+',-1)">−</button>'
+      +'<b>'+c.qty+'</b>'
+      +'<button onclick="coQty('+i+',1)">+</button>'
+      +'</div></div>'
+      +'<div class="co-item-total">'+fmt(c.price*c.qty)+'</div>'
+      +'</div>';
   }).join('');
-
-  var sell=document.getElementById('checkoutSell');
-  var profit=document.getElementById('checkoutProfit');
-
-  if(sell)sell.textContent=fmt(cartProductsTotal());
-  if(profit)profit.textContent=fmt(cartProfit());
 }
-
-function onGov(){
-  var g=PL.find(function(x){
-    return x._id===document.getElementById('fGov').value;
-  });
-
-  ship=g?(g.price||50):50;
-
-  document.getElementById('fCity').innerHTML=
-    '<option value="">اختر المدينة</option>'+
-    ((g&&g.cities)||[]).map(function(c){
-      return '<option value="'+c.id+'">'+
-      (c.city_name_ar||c.name)+
-      '</option>';
-    }).join('');
-
+function coQty(i,d){
+  if(!cart[i])return;
+  cart[i].qty=Math.max(1,cart[i].qty+d);
+  upd();
+  renderCheckout();
   recalc();
 }
-
+function onGov(){var g=PL.find(function(x){return x._id===document.getElementById('fGov').value});
+  ship=g?(g.price||50):50;
+  document.getElementById('fCity').innerHTML='<option value="">اختر المدينة</option>'+((g&&g.cities)||[]).map(function(c){return '<option value="'+c.id+'">'+(c.city_name_ar||c.name)+'</option>'}).join('');
+  recalc();}
 function recalc(){
-  var total=cartProductsTotal()+ship;
+  var sale=cart.reduce(function(a,c){return a+c.price*c.qty},0);
+  var cost=cart.reduce(function(a,c){return a+(Number(c.basePrice!=null?c.basePrice:c.price)*c.qty)},0);
+  var profit=sale-cost;
+  var total=sale+ship;
 
-  document.getElementById('cotot').textContent=fmt(total);
-
-  var sh=document.getElementById('checkoutShipping');
-  if(sh)sh.textContent=fmt(ship);
-
-  var pr=document.getElementById('checkoutProfit');
-  if(pr)pr.textContent=fmt(cartProfit());
+  var x=document.getElementById('coSale');if(x)x.textContent=fmt(sale);
+  x=document.getElementById('coCost');if(x)x.textContent=fmt(cost);
+  x=document.getElementById('coShip');if(x)x.textContent=fmt(ship);
+  x=document.getElementById('coProfit');if(x)x.textContent=fmt(profit);
+  x=document.getElementById('cotot');if(x)x.textContent=fmt(total);
 }
-
+async function submitOrder(){
+  var m=document.getElementById('comsg');
+  if(!fName.value||!fPhone.value||!fAddr.value||!fGov.value){m.textContent='⚠️ اكمل البيانات';return;}
+  var t=cart.reduce(function(a,c){return a+c.price*c.qty},0)+ship;
+  var body={client_name:fName.value,client_phone1:fPhone.value,client_address:fAddr.value,
+    shipping_governorate:fGov.value,city:fCity.value,
+    items:cart.map(function(c){return {product:c.id,property:c.prop,qty:c.qty}}),
+    total:t,commission:Math.round(t*0.1)};
+  m.textContent='⏳ جاري الإرسال...';
+  try{var r=await fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    var d=await r.json();
+    if(d.ok||d.order){saveOrder(body);m.textContent='✅ تم استلام طلبك';cart=[];upd();setTimeout(function(){document.getElementById('coMdl').classList.remove('open')},1200);}
+    else m.textContent='⚠️ '+(d.error||'فشل');
+  }catch(e){m.textContent='⚠️ خطأ اتصال';}
+}
 function openDrw(){document.getElementById('drw').classList.add('open');document.getElementById('ovl').classList.add('open');}
 function closeDrw(){document.getElementById('drw').classList.remove('open');document.getElementById('ovl').classList.remove('open');}
 function openShip(){var b=document.getElementById('shiplist');b.innerHTML=(PL&&PL.length)?PL.map(function(g){return '<div class="shipline"><span>'+(g.governorateNameAr||g.name)+'</span><b>'+(g.price||0)+' ج.م</b></div>'}).join(''):'<p style="text-align:center;color:var(--mut)">جاري التحميل...</p>';document.getElementById('shipMdl').classList.add('open');}
