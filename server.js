@@ -462,11 +462,16 @@ app.get('/api/support/whatsapp', (req, res) => {
   res.json({ number: raw.length >= 10 ? raw : '' });
 });
 
-app.listen(PORT, () => {
+if (require.main === module) {
+  app.listen(PORT, () => {
   console.log('المتجر: http://localhost:' + PORT);
   getProducts();
   getPriceList();
 });
+}
+
+module.exports = app;
+
 
 process.on('SIGTERM', async () => { await postgres.close(); process.exit(0); });
 process.on('SIGINT', async () => { await postgres.close(); process.exit(0); });
