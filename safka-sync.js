@@ -64,15 +64,23 @@ function productStock(product) {
   return null;
 }
 
+function sourceAvailable(product) {
+  if (!product || product.is_active === false) return false;
+  if (typeof product.is_available === 'boolean') return product.is_available;
+  const props = Array.isArray(product.properties) ? product.properties : [];
+  const flags = props.map(item => item && item.is_available).filter(value => typeof value === 'boolean');
+  return flags.some(Boolean);
+}
+
 function dbProduct(product) {
   const stock = productStock(product);
   const base = Number(product.basePrice != null ? product.basePrice : (product.sale_price != null ? product.sale_price : (product.price || 0)));
   return Object.assign({}, product, {
     external_id: product.id || product._id,
     stock,
-    active: product.is_active !== false && ((product.properties && product.properties[0] && product.properties[0].is_available) !== false),
+    active: product.is_active !== false,
     basePrice: Number.isFinite(base) ? base : 0,
-    available: product.is_active !== false && stock !== null && stock > 0
+    available: sourceAvailable(product)
   });
 }
 
@@ -83,6 +91,13 @@ async function syncProducts(options) {
   const previous = new Set((meta.productIds || []).map(String));
   const newProducts = initialized ? products.filter(p => p && p._id && !previous.has(String(p._id)) && p.is_active !== false) : [];
   const prepared = products.map(dbProduct);
+  console.log('[availability-sync] sample:', JSON.stringify(products.slice(0, 5).map(product => ({
+    id: product && (product.id || product._id),
+    name: product && (product.name || product.title),
+    is_available: product && product.is_available,
+    propertyAvailability: Array.isArray(product && product.properties) ? product.properties.slice(0, 5).map(item => item && item.is_available) : [],
+    available: prepared.find(item => String(item.external_id) === String(product && (product.id || product._id)))?.available === true
+  }))));
   let database = null;
   try { database = await postgres.upsertProducts(prepared); }
   catch (e) { console.warn('Safka PostgreSQL stock import skipped:', e.message); }

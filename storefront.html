@@ -369,7 +369,7 @@ function visible(){
   var v=P.filter(function(p){
     if(curCat!=='الكل' && safeCat(p)!==curCat) return false;
     if(curQ && (p.name||'').toLowerCase().indexOf(curQ.toLowerCase())===-1 && String(p.barcode||'').toLowerCase().indexOf(curQ.toLowerCase())===-1) return false;
-    if(onlyAvailable && (p.available===false || Number(p.stock||0)<=0)) return false;
+    if(onlyAvailable && p.available!==true) return false;
     return true;
   });
   if(curSort==='price-low') v.sort(function(a,b){return Number(a.price||0)-Number(b.price||0);});
@@ -383,12 +383,7 @@ function commInfo(p){
   return {comm:comm, suggested:null};
 }
 function stockLabel(p){
-  var s=p.stock;
-  if(s===null || s===undefined || !Number.isFinite(Number(s))) return '<span class="stock stock-out">التوفر غير مؤكد</span>';
-  s=Math.max(0,Math.floor(Number(s)));
-  if(p.available===false || s<=0) return '<span class="stock stock-out">المخزون الأصلي: نفد</span>';
-  if(s<10) return '<span class="stock stock-low">المخزون الأصلي: '+s.toLocaleString('ar-EG')+' متبقي</span>';
-  return '<span class="stock stock-ok">المخزون الأصلي: '+s.toLocaleString('ar-EG')+' متوفر</span>';
+  return p && p.available===true ? '<span class="stock stock-ok">متوفر</span>' : '<span class="stock stock-out">غير متوفر</span>';
 }
 function renderGrid(){
   var e=document.getElementById('mainGrid');
@@ -405,7 +400,7 @@ function renderGrid(){
     var favorite=readFavorites().indexOf(String(p.id))!==-1;
     var ratingHtml=rating>0 ? '<div class="rating" aria-label="تقييم '+rating+' من 5">★ '+rating.toFixed(1)+(reviews?' <small>('+reviews+')</small>':'')+'</div>' : '';
     var oldHtml=original>sale&&sale>0 ? '<s class="old-price">'+fmt(original)+'</s><span class="discount">-'+discount+'%</span>' : '';
-    var disabled=(p.available===false||p.stock===null||p.stock===undefined||Number(p.stock)<=0);
+    var disabled=(p.available!==true);
     return '<article class="card" onclick="openP('+i+')"><div class="imgwrap"><img src="'+esc(p.image||'')+'" alt="'+esc(p.name||'منتج')+'" loading="lazy" onerror="this.style.display=\'none\'"><button type="button" class="fav-btn '+(favorite?'is-fav':'')+'" aria-label="إضافة للمفضلة" onclick="toggleFavorite(\''+String(p.id).replace(/'/g,"\\'")+'\',event)">'+(favorite?'♥':'♡')+'</button>'+(discount?'<span class="sale-badge">خصم '+discount+'%</span>':'')+'</div><div class="b"><div class="t">'+esc(p.name)+'</div><div class="price-row"><strong class="pr">'+fmt(p.price)+'</strong>'+oldHtml+'</div><div class="card-meta">'+ratingHtml+stockLabel(p)+'</div>'+commHtml+'<button type="button" class="quick-add" '+(disabled?'disabled':'')+' onclick="quickAdd('+i+',event)">'+(disabled?'غير متاح':'أضف إلى السلة')+'</button></div></article>';
   }).join('') || '<div class="empty">لا توجد منتجات مطابقة 🔍</div>';
 }
@@ -445,22 +440,20 @@ function openP(i){cur=P[i];qty=1;
   } else { commBox.style.display='none'; commBox.innerHTML=''; }
   document.getElementById('pmDesc').textContent=(cur.desc||'').replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]*>/g,' ').replace(/\n{3,}/g,'\n\n').trim();
   document.getElementById('qV').textContent=1;
-  var out = cur.available===false || cur.stock===null || cur.stock===undefined || Number(cur.stock)<=0;
+  var out = !cur || cur.available!==true;
   document.getElementById('addBtn').disabled=out;
   document.getElementById('addBtn').textContent = out ? 'غير متاح حالياً' : 'أضف إلى السلة';
   var stockEl=document.getElementById('pmStock');
-  if(out){ stockEl.textContent='نفذ من المخزون'; stockEl.style.color='var(--danger)'; }
-  else if(cur.stock && cur.stock<10){ stockEl.textContent='الكمية المتوفرة: '+cur.stock; stockEl.style.color='var(--warn)'; }
-  else{ stockEl.textContent='متوفر ('+Number(cur.stock).toLocaleString('ar-EG')+')'; stockEl.style.color='var(--leaf)'; }
+  if(out){ stockEl.textContent='غير متوفر'; stockEl.style.color='var(--danger)'; }
+  else{ stockEl.textContent='متوفر'; stockEl.style.color='var(--leaf)'; }
   var drive=document.getElementById('pmDrive');
   var mediaUrl=cur.media||cur.media_url||cur.mediaVideo||cur.media_video||cur.mediaImages||cur.media_images||'';
   if(mediaUrl){ drive.href=mediaUrl; drive.style.display='flex'; } else { drive.style.display='none'; }
   openM('pm');
 }
-function chQ(d){var max=cur&&cur.stock!=null?Number(cur.stock):0;qty=Math.max(1,Math.min(Math.max(1,max),qty+d));document.getElementById('qV').textContent=qty;}
+function chQ(d){qty=Math.max(1,qty+d);document.getElementById('qV').textContent=qty;}
 function addToCart(){
-  if(!cur || cur.available===false || cur.stock==null || Number(cur.stock)<=0){ ehToastLocal('المنتج غير متاح حاليًا'); return; }
-  if(qty>Number(cur.stock)){ ehToastLocal('الكمية المطلوبة أكبر من المخزون الأصلي'); return; }
+  if(!cur || cur.available!==true){ ehToastLocal('المنتج غير متاح حاليًا'); return; }
   var ex=cart.find(function(c){return c.id===cur.id});
   if(ex) ex.qty+=qty; else cart.push({id:cur.id,propId:cur.propId||'',name:cur.name,price:Number(cur.price)||0,basePrice:Number(cur.basePrice!=null?cur.basePrice:cur.price)||0,finalPrice:Number(cur.price)||0,image:cur.image,qty:qty});
   updCC(); closeM('pm'); openCart();

@@ -158,9 +158,12 @@ function sourceStock(p) {
   }
   return null;
 }
-function sourceAvailability(p, stock) {
-  const prop = (p && p.properties && p.properties[0]) || {};
-  return p && p.is_active !== false && prop.is_available !== false && stock !== null && stock > 0;
+function sourceAvailability(p) {
+  if (!p || p.is_active === false) return false;
+  if (typeof p.is_available === 'boolean') return p.is_available;
+  const props = Array.isArray(p.properties) ? p.properties : [];
+  const flags = props.map(item => item && item.is_available).filter(value => typeof value === 'boolean');
+  return flags.some(Boolean);
 }
 function productMedia(p, local) {
   const first = (...values) => values.find(v => v !== undefined && v !== null && String(v).trim()) || '';
@@ -193,7 +196,7 @@ function normalizePublicProduct(p, local, priceUp) {
     propId: raw.propId || prop._id || '',
     propKey: raw.propKey || prop.key || '',
     stock,
-    available: sourceAvailability(raw, stock),
+    available: sourceAvailability(raw),
     stockSource: 'safka'
   }, media);
 }
@@ -208,6 +211,15 @@ async function fetchLivePublicProducts() {
   };
   const first = await readPage(1);
   if (!first.rows.length) return [];
+  if (Date.now() - stockProbeLoggedAt > 10 * 60 * 1000) {
+    stockProbeLoggedAt = Date.now();
+    console.log('[availability-probe] sample:', JSON.stringify(first.rows.slice(0, 5).map(product => ({
+      id: product && (product.id || product._id),
+      name: product && (product.name || product.title),
+      is_available: product && product.is_available,
+      propertyAvailability: Array.isArray(product && product.properties) ? product.properties.slice(0, 5).map(item => item && item.is_available) : []
+    }))));
+  }
   const pages = Math.min(100, Math.max(1, Number(first.body.pages || 1)));
   if (pages === 1) return first.rows;
   const rest = await Promise.all(Array.from({ length: pages - 1 }, (_, i) => readPage(i + 2)));
