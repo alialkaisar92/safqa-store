@@ -75,6 +75,7 @@ function seoDescription(p){const d=seoText(p.description||p.desc||'');return (d|
 function productAvailability(p){return p.available===false || p.is_active===false ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock';}
 
 let productsCache = [], priceListCache = [], lastFetch = 0;
+let stockProbeLoggedAt = 0;
 let affiliateSnapshot = null, affiliateSnapshotAt = 0;
 async function getAffiliateSnapshotFast() {
   if (affiliateSnapshot && Date.now() - affiliateSnapshotAt < 15000) return affiliateSnapshot;
@@ -200,6 +201,21 @@ async function fetchLivePublicProducts() {
   };
   const first = await readPage(1);
   if (!first.rows.length) return [];
+  if (Date.now() - stockProbeLoggedAt > 10 * 60 * 1000) {
+    stockProbeLoggedAt = Date.now();
+    console.log('[stock-probe] raw product sample:', JSON.stringify(first.rows.slice(0, 5).map(p => ({
+      id: p && (p.id || p._id),
+      name: p && (p.name || p.title),
+      stock: p && p.stock,
+      quantity: p && p.quantity,
+      available_qty: p && p.available_qty,
+      inventory: p && p.inventory,
+      inventory_quantity: p && p.inventory_quantity,
+      available: p && p.available,
+      is_active: p && p.is_active,
+      properties: p && p.properties
+    }))));
+  }
   const pages = Math.min(100, Math.max(1, Number(first.body.pages || 1)));
   if (pages === 1) return first.rows;
   const rest = await Promise.all(Array.from({ length: pages - 1 }, (_, i) => readPage(i + 2)));
