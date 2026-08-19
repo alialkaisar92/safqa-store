@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>rab7na | متجر منتجات التسويق بالعمولة في مصر</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -207,6 +207,637 @@ html[data-theme="pharaoh"] .bottom-nav{background:rgba(18,14,7,.96);border-color
 
 
 <link rel="stylesheet" href="/theme-emerald.css?v=4">
+
+
+
+
+<style id="checkout-final-mobile-fix">
+/* ===== FINAL MOBILE CHECKOUT UI ===== */
+
+html, body {
+  width: 100%;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+#p-checkout {
+  width: 100% !important;
+  max-width: 680px !important;
+  min-width: 0 !important;
+  margin: 0 auto !important;
+  padding: 14px 14px calc(120px + env(safe-area-inset-bottom)) !important;
+  box-sizing: border-box !important;
+
+  height: auto !important;
+  min-height: calc(100dvh - 70px) !important;
+
+  overflow: visible !important;
+  overflow-x: hidden !important;
+
+  touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch !important;
+
+  font-family: Cairo, Arial, sans-serif !important;
+}
+
+/* منع أي عنصر داخلي من توسيع الصفحة */
+#p-checkout,
+#p-checkout * {
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+}
+
+/* عناوين الحقول */
+#p-checkout label {
+  display: block !important;
+  margin: 14px 2px 7px !important;
+  color: #263832 !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  font-weight: 800 !important;
+}
+
+/* جميع الحقول */
+#p-checkout input,
+#p-checkout textarea,
+#p-checkout select {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+
+  min-height: 54px !important;
+  padding: 13px 15px !important;
+
+  border: 1px solid #dce7e2 !important;
+  border-radius: 15px !important;
+
+  background: #ffffff !important;
+  color: #17231f !important;
+
+  font-family: Cairo, Arial, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+
+  outline: none !important;
+  box-shadow: 0 2px 8px rgba(15,118,110,.035) !important;
+
+  transform: none !important;
+  zoom: 1 !important;
+
+  -webkit-appearance: none !important;
+  appearance: none !important;
+
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* التركيز */
+#p-checkout input:focus,
+#p-checkout textarea:focus,
+#p-checkout select:focus {
+  border-color: #0f766e !important;
+  box-shadow:
+    0 0 0 3px rgba(15,118,110,.10),
+    0 5px 16px rgba(15,118,110,.07) !important;
+}
+
+/* Placeholder */
+#p-checkout input::placeholder,
+#p-checkout textarea::placeholder {
+  color: #9aa8a3 !important;
+  opacity: 1 !important;
+  font-weight: 500 !important;
+}
+
+/* الملاحظات */
+#p-checkout textarea {
+  min-height: 110px !important;
+  line-height: 1.7 !important;
+  resize: vertical !important;
+}
+
+/* زر تأكيد الطلب */
+#p-checkout #btnSubmit {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 100% !important;
+  min-height: 56px !important;
+
+  margin-top: 18px !important;
+  padding: 14px 18px !important;
+
+  border: 0 !important;
+  border-radius: 17px !important;
+
+  background: linear-gradient(135deg,#0f766e,#0d9488) !important;
+  color: #fff !important;
+
+  font-family: Cairo, Arial, sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+
+  box-shadow: 0 10px 25px rgba(15,118,110,.20) !important;
+
+  cursor: pointer !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* ضغط الزر */
+#p-checkout #btnSubmit:active {
+  transform: scale(.985) !important;
+  box-shadow: 0 5px 14px rgba(15,118,110,.16) !important;
+}
+
+/* بطاقات الطلب */
+#p-checkout .checkout-card,
+#p-checkout .form-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  background: #fff !important;
+  border: 1px solid #e5eee9 !important;
+  border-radius: 20px !important;
+
+  padding: 15px !important;
+  margin-bottom: 12px !important;
+
+  box-shadow: 0 5px 20px rgba(15,23,42,.045) !important;
+}
+
+/* Android */
+@media (max-width: 600px) {
+
+  #p-checkout {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-bottom: calc(125px + env(safe-area-inset-bottom)) !important;
+  }
+
+  #p-checkout input,
+  #p-checkout textarea,
+  #p-checkout select {
+    font-size: 16px !important;
+  }
+
+  #p-checkout label {
+    font-size: 12.5px !important;
+  }
+}
+
+/* شاشات صغيرة جدًا */
+@media (max-width: 380px) {
+
+  #p-checkout {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  #p-checkout input,
+  #p-checkout textarea,
+  #p-checkout select {
+    min-height: 52px !important;
+    padding: 12px 13px !important;
+  }
+}
+</style>
+
+
+<style id="rab7na-mobile-checkout-final">
+
+/* =========================================
+   RAB7NA — FINAL ANDROID MOBILE CHECKOUT
+   ========================================= */
+
+html,
+body{
+  width:100%;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  overflow-x:hidden!important;
+  -webkit-text-size-adjust:100%!important;
+  text-size-adjust:100%!important;
+}
+
+*,
+*::before,
+*::after{
+  box-sizing:border-box!important;
+}
+
+button,
+input,
+textarea,
+select{
+  font-family:Cairo,system-ui,sans-serif!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+
+/* Checkout container */
+#p-checkout{
+  width:100%!important;
+  max-width:620px!important;
+  min-width:0!important;
+  min-height:100dvh!important;
+  height:auto!important;
+  margin:0 auto!important;
+  padding:14px 14px calc(110px + env(safe-area-inset-bottom))!important;
+
+  overflow:visible!important;
+
+  transform:none!important;
+  zoom:1!important;
+
+  touch-action:pan-y!important;
+}
+
+/* Checkout content */
+#p-checkout > *,
+#p-checkout section,
+#p-checkout form,
+#p-checkout .checkout-form,
+#p-checkout .checkout-box{
+  max-width:100%!important;
+  min-width:0!important;
+}
+
+/* Labels */
+#p-checkout label{
+  display:block!important;
+  margin:0 0 7px!important;
+  color:#263832!important;
+  font-size:13px!important;
+  line-height:1.5!important;
+  font-weight:800!important;
+}
+
+/* Inputs */
+#p-checkout input,
+#p-checkout textarea,
+#p-checkout select{
+  display:block!important;
+
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+
+  min-height:52px!important;
+
+  padding:13px 15px!important;
+
+  border:1px solid #dce7e2!important;
+  border-radius:15px!important;
+
+  background:#fff!important;
+  color:#17231f!important;
+
+  font-size:16px!important;
+  line-height:1.45!important;
+  font-weight:600!important;
+
+  outline:none!important;
+
+  -webkit-appearance:none!important;
+  appearance:none!important;
+
+  transform:none!important;
+  zoom:1!important;
+
+  box-shadow:none!important;
+
+  transition:
+    border-color .18s ease,
+    box-shadow .18s ease,
+    background .18s ease!important;
+}
+
+/*
+ Android Chrome:
+ 16px prevents automatic input zoom.
+*/
+#p-checkout input{
+  font-size:16px!important;
+}
+
+#p-checkout input:focus,
+#p-checkout textarea:focus,
+#p-checkout select:focus{
+  border-color:#0f766e!important;
+  background:#fff!important;
+  box-shadow:0 0 0 3px rgba(15,118,110,.10)!important;
+}
+
+/* Placeholder */
+#p-checkout input::placeholder,
+#p-checkout textarea::placeholder{
+  color:#9aa8a3!important;
+  opacity:1!important;
+  font-weight:500!important;
+}
+
+/* Textarea */
+#p-checkout textarea{
+  min-height:100px!important;
+  height:auto!important;
+  line-height:1.7!important;
+  resize:vertical!important;
+}
+
+/* Select */
+#p-checkout select{
+  cursor:pointer!important;
+}
+
+/* Buttons */
+#p-checkout button{
+  min-height:50px!important;
+  min-width:0!important;
+
+  border-radius:15px!important;
+
+  font-family:Cairo,system-ui,sans-serif!important;
+  font-size:14px!important;
+  font-weight:900!important;
+
+  touch-action:manipulation!important;
+  -webkit-tap-highlight-color:transparent!important;
+
+  transform:none;
+}
+
+/* Main submit button */
+#p-checkout #btnSubmit{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+
+  width:100%!important;
+  min-height:56px!important;
+
+  margin:14px 0 0!important;
+
+  border:0!important;
+  border-radius:17px!important;
+
+  background:linear-gradient(
+    135deg,
+    #0f766e,
+    #0d9488
+  )!important;
+
+  color:#fff!important;
+
+  font-size:15px!important;
+  font-weight:900!important;
+
+  box-shadow:
+    0 8px 22px rgba(15,118,110,.20)!important;
+
+  cursor:pointer!important;
+}
+
+#p-checkout #btnSubmit:active{
+  transform:none!important;
+  filter:brightness(.96)!important;
+}
+
+/* Prevent wide children */
+#p-checkout img,
+#p-checkout video,
+#p-checkout iframe{
+  max-width:100%!important;
+  height:auto!important;
+}
+
+/* Mobile */
+@media(max-width:600px){
+
+  #p-checkout{
+    width:100vw!important;
+    max-width:100vw!important;
+
+    padding:
+      12px
+      12px
+      calc(105px + env(safe-area-inset-bottom))
+      !important;
+  }
+
+  #p-checkout input,
+  #p-checkout textarea,
+  #p-checkout select{
+    width:100%!important;
+    max-width:100%!important;
+
+    min-height:52px!important;
+
+    font-size:16px!important;
+  }
+
+  #p-checkout label{
+    font-size:12px!important;
+  }
+
+  #p-checkout #btnSubmit{
+    min-height:56px!important;
+  }
+}
+
+/* Small Android phones */
+@media(max-width:380px){
+
+  #p-checkout{
+    padding-left:10px!important;
+    padding-right:10px!important;
+  }
+
+  #p-checkout input,
+  #p-checkout textarea,
+  #p-checkout select{
+    padding-left:12px!important;
+    padding-right:12px!important;
+  }
+}
+
+</style>
+
+
+<style id="rab7na-android-final">
+/* ===== RAB7NA MODERN ANDROID ===== */
+
+html{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+}
+
+body{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  margin:0;
+  overflow-x:hidden;
+}
+
+/* Checkout */
+#p-checkout{
+  width:100%!important;
+  max-width:680px!important;
+  min-width:0!important;
+  min-height:100dvh!important;
+  margin:0 auto!important;
+  padding:14px 14px calc(110px + env(safe-area-inset-bottom))!important;
+  box-sizing:border-box!important;
+  overflow-x:hidden!important;
+  overflow-y:visible!important;
+  transform:none!important;
+}
+
+/* كل عناصر نموذج الطلب */
+#p-checkout *,
+#p-checkout *::before,
+#p-checkout *::after{
+  box-sizing:border-box!important;
+  max-width:100%!important;
+}
+
+/* الحقول */
+#p-checkout input,
+#p-checkout textarea,
+#p-checkout select{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:52px!important;
+  padding:13px 15px!important;
+
+  border:1px solid #dce7e2!important;
+  border-radius:15px!important;
+
+  background:#fff!important;
+  color:#17231f!important;
+
+  font-family:Cairo,system-ui,sans-serif!important;
+  font-size:16px!important;
+  line-height:1.45!important;
+  font-weight:600!important;
+
+  outline:none!important;
+  transform:none!important;
+  zoom:1!important;
+
+  -webkit-appearance:none!important;
+  appearance:none!important;
+
+  -webkit-text-size-adjust:100%!important;
+  text-size-adjust:100%!important;
+}
+
+/* التركيز */
+#p-checkout input:focus,
+#p-checkout textarea:focus,
+#p-checkout select:focus{
+  border-color:#0f766e!important;
+  box-shadow:0 0 0 3px rgba(15,118,110,.10)!important;
+}
+
+/* العناوين */
+#p-checkout label{
+  display:block!important;
+  margin:0 0 7px!important;
+  font-family:Cairo,system-ui,sans-serif!important;
+  font-size:13px!important;
+  line-height:1.5!important;
+  font-weight:800!important;
+}
+
+/* النص */
+#p-checkout textarea{
+  min-height:100px!important;
+  line-height:1.7!important;
+  resize:vertical!important;
+}
+
+/* الأزرار */
+#p-checkout button{
+  min-width:0!important;
+  min-height:50px!important;
+  border-radius:15px!important;
+  font-family:Cairo,system-ui,sans-serif!important;
+  font-size:14px!important;
+  font-weight:900!important;
+  touch-action:manipulation!important;
+  -webkit-tap-highlight-color:transparent!important;
+  transform:none!important;
+}
+
+/* زر إتمام الطلب */
+#p-checkout #btnSubmit{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-height:56px!important;
+  margin:14px 0 0!important;
+  border:0!important;
+  border-radius:17px!important;
+  background:linear-gradient(135deg,#0f766e,#0d9488)!important;
+  color:#fff!important;
+  font-family:Cairo,system-ui,sans-serif!important;
+  font-size:15px!important;
+  font-weight:900!important;
+  box-shadow:0 8px 22px rgba(15,118,110,.20)!important;
+  touch-action:manipulation!important;
+}
+
+#p-checkout #btnSubmit:active{
+  filter:brightness(.96)!important;
+  transform:none!important;
+}
+
+/* صور وعناصر خارجية */
+#p-checkout img,
+#p-checkout video,
+#p-checkout iframe{
+  max-width:100%!important;
+}
+
+/* الموبايل */
+@media(max-width:600px){
+  #p-checkout{
+    width:100%!important;
+    max-width:100%!important;
+    padding-left:12px!important;
+    padding-right:12px!important;
+  }
+}
+
+/* الموبايلات الصغيرة */
+@media(max-width:380px){
+  #p-checkout{
+    padding-left:10px!important;
+    padding-right:10px!important;
+  }
+
+  #p-checkout input,
+  #p-checkout textarea,
+  #p-checkout select{
+    padding-left:12px!important;
+    padding-right:12px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 
@@ -629,3 +1260,5 @@ if(menuBtn){menuBtn.addEventListener('click',function(ev){openSidebar(ev);},{pas
 
 </body>
 </html>
+
+
