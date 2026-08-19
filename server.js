@@ -145,7 +145,14 @@ async function getPriceList() {
 
 function sourceStock(p) {
   const prop = (p && p.properties && p.properties[0]) || {};
-  const candidates = [prop.min, prop.stock, prop.quantity, p && p.stock, p && p.quantity];
+  const inventory = p && p.inventory;
+  const candidates = [
+    prop.stock, prop.quantity, prop.available_qty, prop.availableQuantity,
+    p && p.stock, p && p.quantity, p && p.available_qty,
+    p && p.availableQuantity, p && p.inventory_quantity,
+    inventory && inventory.stock, inventory && inventory.quantity, inventory && inventory.available,
+    inventory && inventory.available_qty
+  ];
   for (const value of candidates) {
     if (value !== undefined && value !== null && value !== '' && Number.isFinite(Number(value))) return Math.max(0, Number(value));
   }
@@ -201,21 +208,6 @@ async function fetchLivePublicProducts() {
   };
   const first = await readPage(1);
   if (!first.rows.length) return [];
-  if (Date.now() - stockProbeLoggedAt > 10 * 60 * 1000) {
-    stockProbeLoggedAt = Date.now();
-    console.log('[stock-probe] raw product sample:', JSON.stringify(first.rows.slice(0, 5).map(p => ({
-      id: p && (p.id || p._id),
-      name: p && (p.name || p.title),
-      stock: p && p.stock,
-      quantity: p && p.quantity,
-      available_qty: p && p.available_qty,
-      inventory: p && p.inventory,
-      inventory_quantity: p && p.inventory_quantity,
-      available: p && p.available,
-      is_active: p && p.is_active,
-      properties: p && p.properties
-    }))));
-  }
   const pages = Math.min(100, Math.max(1, Number(first.body.pages || 1)));
   if (pages === 1) return first.rows;
   const rest = await Promise.all(Array.from({ length: pages - 1 }, (_, i) => readPage(i + 2)));

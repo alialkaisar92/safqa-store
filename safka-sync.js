@@ -50,11 +50,18 @@ async function notifyAll(title, body, type) {
 }
 function productStock(product) {
   const prop = (product && product.properties && product.properties[0]) || {};
-  const candidates = [prop.min, prop.stock, prop.quantity, product && product.stock, product && product.quantity];
+  const inventory = product && product.inventory;
+  const candidates = [
+    prop.stock, prop.quantity, prop.available_qty, prop.availableQuantity,
+    product && product.stock, product && product.quantity, product && product.available_qty,
+    product && product.availableQuantity, product && product.inventory_quantity,
+    inventory && inventory.stock, inventory && inventory.quantity, inventory && inventory.available,
+    inventory && inventory.available_qty
+  ];
   for (const value of candidates) {
     if (value !== undefined && value !== null && value !== '' && Number.isFinite(Number(value))) return Math.max(0, Math.floor(Number(value)));
   }
-  return 0;
+  return null;
 }
 
 function dbProduct(product) {
@@ -65,7 +72,7 @@ function dbProduct(product) {
     stock,
     active: product.is_active !== false && ((product.properties && product.properties[0] && product.properties[0].is_available) !== false),
     basePrice: Number.isFinite(base) ? base : 0,
-    available: product.is_active !== false && stock > 0
+    available: product.is_active !== false && stock !== null && stock > 0
   });
 }
 
@@ -79,6 +86,8 @@ async function syncProducts(options) {
   let database = null;
   try { database = await postgres.upsertProducts(prepared); }
   catch (e) { console.warn('Safka PostgreSQL stock import skipped:', e.message); }
+  const missingStock = prepared.filter(product => product.stock === null);
+  if (missingStock.length) console.warn('[stock-sync] Missing explicit stock field for ' + missingStock.length + ' products; stored as unavailable instead of using a guessed quantity. Sample IDs: ' + missingStock.slice(0, 5).map(product => String(product.external_id || '')).join(', '));
   try { fs.writeFileSync(CACHE_FILE, JSON.stringify(prepared)); } catch (e) { console.warn('Safka cache write skipped:', e.message); }
   await saveMeta({ productIds: products.map(p => String(p._id || p.id)).filter(Boolean), productCount: products.length, productsSyncedAt: new Date().toISOString(), stockImportedAt: new Date().toISOString(), stockImported: database || { inserted: 0, updated: 0 } });
   if (newProducts.length && options && options.notify !== false) {
