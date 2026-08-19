@@ -692,42 +692,222 @@ function stockOf(p){
   return {label:'متوفر: '+v,cls:'k',out:false,qty:v};
 }
 
+var selectedProduct=null;
+var selectedQty=1;
+var selectedBase=0;
+var selectedSale=0;
+
 function addCart(i){
  var p=P[i];
- var base=Number(p.cost!=null?p.cost:(p.basePrice!=null?p.basePrice:(p.price||p.sale_price||0)));
- var suggested=Number((p.note||'').match(/سعر البيع المقترح\s+(\d+)/)?.[1]||0);
- if(!suggested)suggested=Math.max(base,Math.round(base*1.5/10)*10);
+ if(!p)return;
 
- var sale=prompt(
-   'حدد سعر البيع للعميل\n\nتكلفة المنتج: '+base+' ج.م\nالربح المتوقع لكل قطعة: '+Math.max(0,suggested-base)+' ج.م',
-   suggested
+ selectedProduct=p;
+ selectedQty=1;
+
+ selectedBase=Number(
+   p.cost!=null?p.cost:
+   (p.basePrice!=null?p.basePrice:
+   (p.price||p.sale_price||0))
  );
 
- if(sale===null)return;
- sale=Number(sale);
+ var suggested=Number((p.note||'').match(/سعر البيع المقترح\s+(\d+)/)?.[1]||0);
 
- if(!Number.isFinite(sale)||sale<base){
-   alert('❌ سعر البيع لا يمكن أن يكون أقل من تكلفة المنتج ('+base+' ج.م)');
+ if(!suggested)
+   suggested=Math.max(
+     selectedBase,
+     Math.round(selectedBase*1.5/10)*10
+   );
+
+ selectedSale=suggested;
+
+ showPriceModal();
+}
+
+function showPriceModal(){
+
+ var old=document.getElementById('priceModal');
+ if(old)old.remove();
+
+ var img=selectedProduct.image ||
+   ((selectedProduct.images&&selectedProduct.images[0])||'');
+
+ var name=selectedProduct.name||'المنتج';
+
+ var profit=Math.max(
+   0,
+   selectedSale-selectedBase
+ );
+
+ var h=document.createElement('div');
+
+ h.innerHTML=
+ '<div id="priceModal" class="price-modal">'+
+   '<div class="price-modal-box">'+
+
+     '<button class="price-close" onclick="closePriceModal()">×</button>'+
+
+     '<div class="price-product">'+
+       '<img src="'+img+'">'+
+       '<div>'+
+         '<div class="price-product-name">'+name+'</div>'+
+         '<div class="price-product-cost">تكلفة المنتج: <b>'+selectedBase.toLocaleString('ar-EG')+' ج.م</b></div>'+
+       '</div>'+
+     '</div>'+
+
+     '<div class="price-section">'+
+       '<label>سعر البيع للعميل</label>'+
+       '<div class="price-input-wrap">'+
+         '<input id="salePriceInput" type="number" value="'+selectedSale+'" min="'+selectedBase+'" oninput="updatePricePreview()">'+
+         '<span>ج.م</span>'+
+       '</div>'+
+       '<div id="priceError" class="price-error"></div>'+
+     '</div>'+
+
+     '<div class="profit-card">'+
+       '<div>'+
+         '<span>ربحك المتوقع</span>'+
+         '<small>لكل قطعة</small>'+
+       '</div>'+
+       '<strong id="profitPreview">'+profit.toLocaleString('ar-EG')+' ج.م</strong>'+
+     '</div>'+
+
+     '<div class="qty-section">'+
+       '<span>الكمية</span>'+
+       '<div class="qty-control">'+
+         '<button onclick="changeSelectedQty(-1)">−</button>'+
+         '<b id="selectedQty">1</b>'+
+         '<button onclick="changeSelectedQty(1)">+</button>'+
+       '</div>'+
+     '</div>'+
+
+     '<div class="total-preview">'+
+       '<span>إجمالي البيع</span>'+
+       '<b id="saleTotal">'+selectedSale.toLocaleString('ar-EG')+' ج.م</b>'+
+     '</div>'+
+
+     '<button class="add-confirm" onclick="confirmAddCart()">'+
+       '🛒 إضافة إلى السلة'+
+     '</button>'+
+
+   '</div>'+
+ '</div>';
+
+ document.body.appendChild(h.firstElementChild);
+
+ setTimeout(function(){
+   var m=document.getElementById('priceModal');
+   if(m)m.classList.add('show');
+ },20);
+}
+
+function updatePricePreview(){
+
+ var input=document.getElementById('salePriceInput');
+ var error=document.getElementById('priceError');
+ var profit=document.getElementById('profitPreview');
+ var total=document.getElementById('saleTotal');
+
+ if(!input)return;
+
+ var price=Number(input.value)||0;
+
+ if(price<selectedBase){
+
+   error.textContent=
+     '⚠️ أقل سعر مسموح '+selectedBase.toLocaleString('ar-EG')+' ج.م';
+
+   profit.textContent='0 ج.م';
+   total.textContent='—';
+
    return;
  }
 
- var ex=cart.find(function(c){return c.id===p._id && c.price===sale});
+ error.textContent='';
 
- if(ex)ex.qty++;
- else cart.push({
-   id:p._id,
-   prop:(p.properties&&p.properties[0]&&p.properties[0]._id)||p.propId||'',
-   name:p.name,
-   price:sale,
-   cost:base,
-   profit:sale-base,
-   image:p.image||((p.images&&p.images[0])||''),
-   qty:1
+ selectedSale=price;
+
+ var p=Math.max(0,price-selectedBase);
+
+ profit.textContent=
+   (p*selectedQty).toLocaleString('ar-EG')+' ج.م';
+
+ total.textContent=
+   (price*selectedQty).toLocaleString('ar-EG')+' ج.م';
+}
+
+function changeSelectedQty(d){
+
+ selectedQty=Math.max(1,selectedQty+d);
+
+ var q=document.getElementById('selectedQty');
+ if(q)q.textContent=selectedQty;
+
+ updatePricePreview();
+}
+
+function closePriceModal(){
+
+ var m=document.getElementById('priceModal');
+
+ if(m){
+   m.classList.remove('show');
+
+   setTimeout(function(){
+     if(m)m.remove();
+   },180);
+ }
+}
+
+function confirmAddCart(){
+
+ var input=document.getElementById('salePriceInput');
+ var price=Number(input&&input.value)||0;
+
+ if(price<selectedBase){
+
+   var e=document.getElementById('priceError');
+
+   if(e)e.textContent=
+     '⚠️ لا يمكن البيع بأقل من تكلفة المنتج';
+
+   return;
+ }
+
+ selectedSale=price;
+
+ var p=selectedProduct;
+
+ var ex=cart.find(function(c){
+   return c.id===p._id && Number(c.price)===price;
  });
 
+ if(ex){
+
+   ex.qty+=selectedQty;
+
+ }else{
+
+   cart.push({
+     id:p._id,
+     prop:(p.properties&&p.properties[0]&&p.properties[0]._id)||p.propId||'',
+     name:p.name,
+     price:price,
+     cost:selectedBase,
+     profit:price-selectedBase,
+     image:p.image||((p.images&&p.images[0])||''),
+     qty:selectedQty
+   });
+ }
+
  upd();
- openCart();
+
+ closePriceModal();
+
+ setTimeout(function(){
+   openCart();
+ },200);
 }
+
 function upd(){
   var n=cart.reduce(function(a,c){return a+Number(c.qty||0)},0);
   var el=document.getElementById('cc');
@@ -1199,5 +1379,250 @@ setInterval(updHeader,2000);updHeader();
 body{
  padding-bottom:95px!important;
 }
+</style>
+
+<style id="price-modal-css">
+
+.price-modal{
+ position:fixed;
+ inset:0;
+ z-index:100000;
+ background:rgba(15,23,42,.62);
+ backdrop-filter:blur(7px);
+ -webkit-backdrop-filter:blur(7px);
+ display:flex;
+ align-items:flex-end;
+ justify-content:center;
+ opacity:0;
+ transition:.2s;
+}
+
+.price-modal.show{
+ opacity:1;
+}
+
+.price-modal-box{
+ width:min(100%,520px);
+ background:#fff;
+ border-radius:28px 28px 0 0;
+ padding:22px 18px calc(24px + env(safe-area-inset-bottom));
+ box-shadow:0 -15px 50px rgba(0,0,0,.2);
+ transform:translateY(30px);
+ transition:.25s;
+ direction:rtl;
+}
+
+.price-modal.show .price-modal-box{
+ transform:translateY(0);
+}
+
+.price-close{
+ position:absolute;
+ left:18px;
+ top:16px;
+ width:38px;
+ height:38px;
+ border:0;
+ border-radius:50%;
+ background:#f1f5f9;
+ color:#334155;
+ font-size:25px;
+ cursor:pointer;
+}
+
+.price-product{
+ display:flex;
+ align-items:center;
+ gap:13px;
+ padding-bottom:18px;
+ border-bottom:1px solid #eef2f7;
+}
+
+.price-product img{
+ width:70px;
+ height:70px;
+ object-fit:cover;
+ border-radius:16px;
+ background:#f8fafc;
+}
+
+.price-product-name{
+ font-size:16px;
+ font-weight:900;
+ color:#0f172a;
+ line-height:1.5;
+}
+
+.price-product-cost{
+ margin-top:5px;
+ font-size:12px;
+ color:#64748b;
+}
+
+.price-product-cost b{
+ color:#0f766e;
+}
+
+.price-section{
+ margin-top:20px;
+}
+
+.price-section label{
+ display:block;
+ margin-bottom:8px;
+ font-size:13px;
+ font-weight:800;
+ color:#334155;
+}
+
+.price-input-wrap{
+ display:flex;
+ align-items:center;
+ background:#f8fafc;
+ border:2px solid #e2e8f0;
+ border-radius:16px;
+ overflow:hidden;
+ transition:.2s;
+}
+
+.price-input-wrap:focus-within{
+ border-color:#0f766e;
+ background:#fff;
+ box-shadow:0 0 0 4px rgba(15,118,110,.08);
+}
+
+.price-input-wrap input{
+ flex:1;
+ border:0;
+ outline:0;
+ background:transparent;
+ padding:15px;
+ font-size:21px;
+ font-weight:900;
+ color:#0f172a;
+ direction:ltr;
+}
+
+.price-input-wrap span{
+ padding:0 15px;
+ color:#64748b;
+ font-weight:800;
+}
+
+.price-error{
+ min-height:19px;
+ margin-top:6px;
+ color:#dc2626;
+ font-size:12px;
+ font-weight:700;
+}
+
+.profit-card{
+ margin-top:4px;
+ padding:15px;
+ border-radius:17px;
+ background:linear-gradient(135deg,#ecfdf5,#f0fdfa);
+ border:1px solid #ccfbf1;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+}
+
+.profit-card span{
+ display:block;
+ font-size:14px;
+ font-weight:900;
+ color:#065f46;
+}
+
+.profit-card small{
+ display:block;
+ margin-top:3px;
+ color:#64748b;
+}
+
+.profit-card strong{
+ color:#059669;
+ font-size:20px;
+}
+
+.qty-section{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-top:18px;
+ font-weight:800;
+ color:#334155;
+}
+
+.qty-control{
+ display:flex;
+ align-items:center;
+ gap:16px;
+}
+
+.qty-control button{
+ width:40px;
+ height:40px;
+ border:0;
+ border-radius:12px;
+ background:#f0fdfa;
+ color:#0f766e;
+ font-size:23px;
+ font-weight:900;
+}
+
+.qty-control b{
+ min-width:25px;
+ text-align:center;
+ font-size:17px;
+}
+
+.total-preview{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-top:18px;
+ padding-top:15px;
+ border-top:1px solid #eef2f7;
+ color:#64748b;
+ font-weight:800;
+}
+
+.total-preview b{
+ color:#0f172a;
+ font-size:19px;
+}
+
+.add-confirm{
+ width:100%;
+ margin-top:17px;
+ border:0;
+ border-radius:17px;
+ padding:15px;
+ background:linear-gradient(135deg,#0f766e,#115e59);
+ color:#fff;
+ font-size:16px;
+ font-weight:900;
+ box-shadow:0 8px 20px rgba(15,118,110,.25);
+ cursor:pointer;
+}
+
+.add-confirm:active{
+ transform:scale(.98);
+}
+
+@media(min-width:600px){
+ .price-modal{
+   align-items:center;
+   padding:20px;
+ }
+
+ .price-modal-box{
+   border-radius:28px;
+   max-width:480px;
+ }
+}
+
 </style>
 </body></html>
