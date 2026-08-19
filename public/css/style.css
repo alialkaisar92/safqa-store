@@ -93,3 +93,92 @@ textarea{min-height:90px;resize:vertical}
 .field-row{display:flex;gap:10px;align-items:center}
 .field-row input{flex:1}
 .section-title{font-size:1rem;font-weight:800;margin-bottom:12px}
+
+/* ===== Modern Android Checkout UX ===== */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  overscroll-behavior-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#p-checkout,
+.page#p-checkout {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  min-height: calc(100dvh - 70px);
+  height: auto !important;
+  overflow: visible !important;
+  touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 14px 110px;
+  box-sizing: border-box;
+}
+
+#p-checkout *,
+.page#p-checkout * {
+  touch-action: auto;
+}
+
+#p-checkout input,
+#p-checkout textarea,
+#p-checkout select,
+#p-checkout button {
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#p-checkout input,
+#p-checkout textarea,
+#p-checkout select {
+  width: 100%;
+  min-height: 50px;
+  box-sizing: border-box;
+  border: 1px solid #dce5e2;
+  border-radius: 15px;
+  background: #fff;
+  padding: 12px 14px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+#p-checkout input:focus,
+#p-checkout textarea:focus,
+#p-checkout select:focus {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 4px rgba(15,118,110,.10);
+}
+
+#p-checkout textarea {
+  min-height: 105px;
+  resize: vertical;
+}
+
+#p-checkout button {
+  min-height: 48px;
+  border-radius: 14px;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation !important;
+}
+
+@media (max-width: 600px) {
+  #p-checkout,
+  .page#p-checkout {
+    max-width: none;
+    padding: 12px 12px 115px;
+  }
+}
+
+@media (min-width: 601px) {
+  #p-checkout,
+  .page#p-checkout {
+    padding-top: 24px;
+  }
+}
+

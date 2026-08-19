@@ -58,7 +58,7 @@ function openP(i){
   const d=document.getElementById('pm-drive');
   if(cur.media){d.href=cur.media;d.style.display='block'}else d.style.display='none';
   document.getElementById('pm').classList.add('show');
-  document.body.style.overflow='hidden';
+  document.body.style.overflow='';
 }
 function closeP(){document.getElementById('pm').classList.remove('show');document.body.style.overflow=''}
 
