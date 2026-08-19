@@ -1,0 +1,21 @@
+
+/* تغطية أمان: أي زرار في الموقع حتى لو مالوش كلاس btn */
+button:not(.btn),
+input[type="submit"]:not(.btn),
+input[type="button"]:not(.btn){
+  font-family:var(--font-display);
+  font-weight:700;
+  border:none;
+  border-radius:var(--radius-md);
+  padding:12px 24px;
+  cursor:pointer;
+  background:linear-gradient(135deg, var(--primary-800), var(--primary-950));
+  color:#fff;
+  transition:var(--transition);
+}
+button:not(.btn):hover,
+input[type="submit"]:not(.btn):hover,
+input[type="button"]:not(.btn):hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 28px rgba(45,36,86,.35);
+}
