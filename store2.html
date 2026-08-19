@@ -65,6 +65,7 @@ img{display:block}
 @media(min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:1024px){.grid{grid-template-columns:repeat(4,1fr)}}
 </style><style>.stk{position:absolute;bottom:8px;right:8px;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px}.stk.k{background:#d1fae5;color:#065f46}.stk.l{background:#fef3c7;color:#92400e}.stk.o{background:#fee2e2;color:#991b1b}.card.out .add{opacity:.5}</style>
+<link rel="stylesheet" href="/polish.css?v=1">
 </head><body>
 <header class="hdr">
   <button class="ic" onclick="openDrw()">☰</button>
@@ -270,7 +271,7 @@ function goOrders(){if(!isLoggedIn()){toast('📦 سجل دخولك لمتابع
 </script>
 
 <div class="mdl" id="accMdl"><div class="box">
-  <div style="text-align:center;padding:8px 0 14px">
+  <div style="text-align:center;padding:4px 0 20px;background:linear-gradient(180deg,#ecfdf5 0%,transparent 100%);margin:-24px -20px 16px;padding:28px 20px;border-radius:20px">
     <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#0b5d3b,#16a34a);color:#fff;font-size:28px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 8px" id="aAv">👤</div>
     <h3 id="aName" style="margin:0"></h3>
     <p id="aPhone" style="color:#8aa094;font-size:13px"></p>
@@ -278,7 +279,7 @@ function goOrders(){if(!isLoggedIn()){toast('📦 سجل دخولك لمتابع
   <div class="prow2 g"><span>🛍️ طلباتي</span><b id="aOrders">0</b></div>
   <div class="prow2 s"><span>💵 إجمالي عمولاتي</span><b id="aComm">0 ج.م</b></div>
   <div class="prow2 c"><span>💰 الرصيد المتاح للسحب</span><b id="aAvail">0 ج.م</b></div>
-  <button class="go" onclick="document.getElementById('accMdl').classList.remove('open');openWallet()">💳 سحب الأرباح</button>
+  <div style="height:1px;background:#e2e8f0;margin:16px 0"></div><button class="go" onclick="document.getElementById('accMdl').classList.remove('open');openWallet()">💳 سحب الأرباح</button>
   <button class="go" style="background:#fee2e2;color:#b91c1c;margin-top:8px" onclick="logout()">🚪 تسجيل الخروج</button>
   <button class="go" style="background:#f2f6f3;color:#8aa094;margin-top:8px" onclick="document.getElementById('accMdl').classList.remove('open')">إغلاق</button>
 </div></div>
@@ -338,8 +339,10 @@ function submitWd(){var m=document.getElementById('wMsg');var amt=+document.getE
 
 <script>
 function updHeader(){var h=document.querySelector('.hdr');if(!h)return;var b=document.getElementById('ubadge');
- if(isLoggedIn()){if(!b){b=document.createElement('button');b.id='ubadge';b.className='ic';b.style.cssText='font-size:11px;font-weight:900;color:#0b5d3b;background:#d1fae5';b.onclick=openAccount;h.insertBefore(b,h.children[1]||null);}b.textContent='💰'+avail();}
- else if(b)b.remove();}
+ if(isLoggedIn()){
+   if(!b){b=document.createElement('button');b.id='ubadge';b.onclick=openAccount;h.insertBefore(b,h.children[1]||null);}
+   var amt=avail();b.innerHTML='<span style="opacity:.85;font-weight:700">رصيدك</span> <b style="font-size:14px">'+amt+' ج.م</b>';
+ } else if(b)b.remove();}
 setInterval(updHeader,2000);updHeader();
 </script>
 </body></html>
