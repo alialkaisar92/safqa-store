@@ -92,11 +92,11 @@ img{display:block}
 <div class="sec"><h3 id="ptitle">كل المنتجات</h3><button onclick="toggleSort()">⇅ تصفية</button></div>
 <div class="grid" id="grid"></div>
 <nav class="bnav">
-  <button onclick="alert('حسابي')"><span class="bi">👤</span>حسابي</button>
-  <button onclick="alert('طلباتي')"><span class="bi">📦</span>طلباتي</button>
-  <button class="on"><span class="bi">🏠</span>الرئيسية</button>
-  <button onclick="scrollTo({top:0,behavior:'smooth'})"><span class="bi">🗂️</span>التصنيفات</button>
-  <button onclick="openCart()"><span class="bi">🛒</span>السلة</button>
+  <button onclick="goAccount()"><span class="bi"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"/></svg></span>حسابي</button>
+  <button onclick="goOrders()"><span class="bi"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8Zm-9 9.5L5 14V9.6l7 3.9v4Zm1 0v-4l7-3.9V14l-7 3.5Z"/></svg></span>طلباتي</button>
+  <button class="on"><span class="bi"><svg viewBox="0 0 24 24"><path d="M12 3l9 8h-3v9h-4v-6h-4v6H6v-9H3l9-8Z"/></svg></span>الرئيسية</button>
+  <button onclick="scrollTo({top:document.getElementById('cats').offsetTop-60,behavior:'smooth'})"><span class="bi"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z"/></svg></span>التصنيفات</button>
+  <button onclick="openCart()"><span class="bi"><svg viewBox="0 0 24 24"><path d="M7 18a2 2 0 1 0 2 2 2 2 0 0 0-2-2Zm10 0a2 2 0 1 0 2 2 2 2 0 0 0-2-2ZM3 3h2l3.6 12.6A2 2 0 0 0 10.5 17H19v-2H10.6L10 13h9.3a1 1 0 0 0 1-.8L22 6H6.2L5.6 3H3Z"/></svg></span>السلة</button>
 </nav>
 <div class="mdl" id="cartMdl"><div class="box">
   <h3>🛒 السلة</h3>
@@ -116,7 +116,7 @@ img{display:block}
   <div id="comsg" style="font-size:13px;margin-bottom:8px"></div>
   <button class="go" onclick="submitOrder()">تأكيد الطلب ✓</button>
 </div></div>
-<a class="wa" href="https://wa.me/201092876053" target="_blank">💬</a>
+<a class="wa" href="https://wa.me/201092876053" target="_blank"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg></a>
 <script>
 var P=[],cart=[],curCat='الكل',curQ='',PL=[],ship=50;
 function fmt(n){return n+' ج.م'}
@@ -179,6 +179,22 @@ async function submitOrder(){
 }
 function openDrw(){document.getElementById('drw').classList.add('open');document.getElementById('ovl').classList.add('open');}
 function closeDrw(){document.getElementById('drw').classList.remove('open');document.getElementById('ovl').classList.remove('open');}
-function openShip(){alert('🚚 أسعار الشحن بتتحدد تلقائياً حسب المحافظة عند إتمام الطلب');}
+function openShip(){var b=document.getElementById('shiplist');b.innerHTML=(PL&&PL.length)?PL.map(function(g){return '<div class="shipline"><span>'+(g.governorateNameAr||g.name)+'</span><b>'+(g.price||0)+' ج.م</b></div>'}).join(''):'<p style="text-align:center;color:var(--mut)">جاري التحميل...</p>';document.getElementById('shipMdl').classList.add('open');}
 load();
-</script></body></html>
+</script>
+<style>
+.bi svg{width:20px;height:20px;fill:currentColor}
+.wa svg{width:30px;height:30px;fill:#fff}
+.shipline{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;margin-bottom:8px;font-weight:700}
+.shipline b{color:var(--gd)}
+#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--gdd);color:#fff;padding:12px 24px;border-radius:999px;font-weight:700;font-size:14px;z-index:300;opacity:0;pointer-events:none;transition:.3s;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+#toast.show{opacity:1}
+</style>
+<div class="mdl" id="shipMdl"><div class="box"><h3>🚚 أسعار الشحن حسب المحافظة</h3><div id="shiplist"></div><button class="go" onclick="document.getElementById('shipMdl').classList.remove('open')">حسناً</button></div></div>
+<div id="toast"></div>
+<script>
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1800);}
+function goAccount(){toast('👤 سجل دخولك أولاً');setTimeout(function(){location.href='/login.html'},900);}
+function goOrders(){toast('📦 سجل دخولك لمتابعة طلباتك');setTimeout(function(){location.href='/login.html'},900);}
+</script>
+</body></html>
