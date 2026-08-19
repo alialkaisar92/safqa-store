@@ -397,8 +397,24 @@ app.post('/api/create-order', async (req,res)=>{
     const stock = sourceStock(source);
     const base = Number(source.basePrice != null ? source.basePrice : (source.sale_price != null ? source.sale_price : (source.price != null ? source.price : 0)));
     if (!Number.isFinite(base) || base <= 0) return res.json({error:'سعر المنتج الأصلي غير متاح حاليًا'});
-    if (stock === null || source.is_active === false || sourceProp.is_available === false || stock <= 0) return res.json({error:'المنتج نفد من المخزون الأصلي'});
-    if (item.qty < 1 || item.qty > stock) return res.json({error:'الكمية المطلوبة أكبر من المخزون الأصلي'});
+    const productAvailable =
+      source.is_active !== false &&
+      sourceProp.is_available !== false &&
+      sourceAvailability(source) !== false;
+
+    if (!productAvailable) {
+      return res.json({error:'المنتج غير متاح حاليًا'});
+    }
+
+    if (item.qty < 1) {
+      return res.json({error:'الكمية المطلوبة غير صحيحة'});
+    }
+
+    // stock=null من سوقلي لا يعني أن المنتج نفد.
+    // إذا كان هناك رقم مخزون فعلي، نتحقق من الكمية.
+    if (typeof stock === 'number' && stock >= 0 && item.qty > stock) {
+      return res.json({error:'الكمية المطلوبة أكبر من المخزون الأصلي'});
+    }
     item.originalPrice = base;
     item.finalPrice = Math.max(base, Number(item.finalPrice) || base);
     item.property = item.property || source.propId || sourceProp._id || sourceProp.key || '';
