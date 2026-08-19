@@ -11,7 +11,9 @@ const safkaSync = require('./safka-sync');
 const { availableBalance } = require('./balance');
 app.use(express.json({limit:'50mb'}));
 
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'landing.html')));
+app.get('/', (req, res) => {
+  res.redirect(302, '/store');
+});
 
 const crypto = require('crypto');
 const firestore = require('./firestore');
@@ -38,8 +40,8 @@ app.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
 app.use(express.static(__dirname));
 app.get('/login',(req,res)=>res.sendFile(require('path').join(__dirname,'login.html')));
 // ===== Modern store (store2) =====
-app.get('/store',(req,res)=>res.sendFile(require('path').join(__dirname,'store2.html')));
-app.get('/shop',(req,res)=>res.sendFile(require('path').join(__dirname,'store2.html')));
+
+
 
 
 
@@ -301,8 +303,15 @@ app.get('/product/:slug', (req,res)=>{
   res.type('html').send('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+seoEsc(name)+' | rab7na</title><meta name="description" content="'+seoEsc(desc)+'"><meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="'+seoEsc(productUrl)+'"><meta property="og:type" content="product"><meta property="og:site_name" content="rab7na"><meta property="og:title" content="'+seoEsc(name)+' | rab7na"><meta property="og:description" content="'+seoEsc(desc)+'"><meta property="og:url" content="'+seoEsc(productUrl)+'">'+(image?'<meta property="og:image" content="'+seoEsc(image)+'"><meta property="og:image:alt" content="'+seoEsc(name)+'">':'')+'<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="'+seoEsc(name)+' | rab7na"><meta name="twitter:description" content="'+seoEsc(desc)+'">'+(image?'<meta name="twitter:image" content="'+seoEsc(image)+'">':'')+'<script type="application/ld+json">'+JSON.stringify(schema).replace(/<\//g,'<\\/')+'</script><script type="application/ld+json">'+JSON.stringify(breadcrumb).replace(/<\//g,'<\\/')+'</script><style>body{font-family:Arial,sans-serif;max-width:900px;margin:0 auto;padding:24px;line-height:1.8;color:#172033}a{color:#0f766e}main{display:grid;gap:18px}h1{font-size:clamp(1.6rem,4vw,2.6rem)}</style></head><body><main><nav><a href="/">rab7na</a> / <a href="/store">المتجر</a></nav><article><h1>'+seoEsc(name)+'</h1>'+imageHtml+'<p>'+seoEsc(desc)+'</p>'+priceHtml+'<p><a href="/store">العودة إلى المتجر واكتشاف المنتجات</a></p></article></main></body></html>');
 });
 
+
+
+// ===== MAIN STORE ROUTES =====
 app.get('/store', (req, res) => {
-  res.sendFile(path.join(__dirname, 'storefront.html'));
+  res.sendFile(path.join(__dirname, 'store2.html'));
+});
+
+app.get('/shop', (req, res) => {
+  res.redirect(302, '/store');
 });
 
 app.get('/dashboard', (req, res) => res.redirect(302, '/store'));
