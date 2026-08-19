@@ -190,7 +190,7 @@ function extractCommission(note) {
     if (match) return Number(match[1]) || 0;
   }
 
-  return 0;
+  console.warn("⚠️ فشل استخراج العمولة من note:", JSON.stringify(note)); return 0;
 }
 
 function sourceAvailability(p) {
