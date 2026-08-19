@@ -133,3 +133,22 @@ label,.fld-lbl{color:var(--e800) !important;font-weight:800 !important;font-size
 ::-webkit-scrollbar-thumb{background:var(--e300,#6ee7b7);border-radius:8px}
 ::-webkit-scrollbar-track{background:transparent}
 /* cache-bust 1787108130 */
+
+/* ===== OVERRIDE: هيدر أبيض زي الريفرنس ===== */
+.hdr,.header,.topbar,header{background:#fff !important;color:#16281f !important;border-radius:0 !important;box-shadow:0 2px 12px rgba(0,0,0,.07) !important}
+.hdr b,.hdr .eh-logo,.header b{color:#123 !important}
+.hdr .eh-logo b span,.logo2 span{color:var(--e600) !important}
+
+/* بانر أسعار الشحن → هيرو أخضر داكن */
+.heroX{background:linear-gradient(135deg,#0a3d2a,#0b5d3b 60%,#16a34a) !important;color:#fff !important;border:none !important;border-radius:20px !important;padding:22px !important;font-weight:800 !important;box-shadow:0 12px 30px -12px rgba(11,93,59,.5) !important;width:calc(100% - 28px) !important;margin:14px !important;display:block !important}
+
+/* شارة الخصم */
+.disc{position:absolute;top:8px;right:8px;background:var(--e600);color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;z-index:3}
+.card,.pcard{position:relative !important}
+
+/* السعر القديم المشطوب */
+.oldp{color:#93a89c;font-size:12px;text-decoration:line-through;margin-left:8px}
+
+/* التقييم */
+.rate{color:#8aa094;font-size:12px;margin:4px 0}
+.rate:before{content:"★ ";color:#f5a623;font-weight:800}

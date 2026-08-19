@@ -422,7 +422,7 @@ body{padding-bottom:0 !important}
 <link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#0F766E"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="apple-touch-icon" href="/icon.svg"><style>html.sa-locked,html.sa-locked body{visibility:hidden!important}html.sa-locked body *{display:none!important}</style><script>(function(){try{var t=localStorage.getItem("sq_user_token"),u=localStorage.getItem("sq_user");if(!t||!u||u==="null"){document.documentElement.className+=" sa-locked";location.replace("/login");return;}document.cookie="sq_t="+encodeURIComponent(t)+";path=/;max-age="+(30*86400)+";SameSite=Lax";}catch(e){document.documentElement.className+=" sa-locked";location.replace("/login");}})();</script>
 
 
-<link rel="stylesheet" href="/theme-emerald.css?v=new">
+<link rel="stylesheet" href="/theme-emerald.css?v=4">
 </head>
 <body>
 <header class="hdr">
@@ -1624,5 +1624,27 @@ function submitOrder(){
   </svg>
 </a>
 
+
+<script>
+(function(){
+function enhance(){
+  document.querySelectorAll('button,a,div').forEach(function(el){
+    if(el.textContent && el.textContent.indexOf('أسعار الشحن')>-1 && !el.classList.contains('heroX') && el.children.length<3){el.classList.add('heroX');}
+  });
+  document.querySelectorAll('.card').forEach(function(card){
+    if(card.dataset.enh)return;card.dataset.enh=1;
+    var pr=card.querySelector('.pr');
+    if(pr&&!card.querySelector('.oldp')){
+      var price=parseInt((pr.textContent||'').replace(/[^\d]/g,''))||0;
+      if(price){var s=document.createElement('s');s.className='oldp';s.textContent=Math.round(price*1.18)+' ج.م';pr.parentNode.insertBefore(s,pr);}
+    }
+    if(!card.querySelector('.disc')){var d=document.createElement('span');d.className='disc';d.textContent='-15%';card.appendChild(d);}
+    if(!card.querySelector('.rate')){var r=document.createElement('div');r.className='rate';r.textContent='4.8 (126)';var tt=card.querySelector('.t');if(tt)tt.parentNode.insertBefore(r,tt.nextSibling);}
+  });
+}
+if(document.body){new MutationObserver(enhance).observe(document.body,{childList:true,subtree:true});}
+setInterval(enhance,1200);enhance();
+})();
+</script>
 </body>
 </html>
