@@ -1397,3 +1397,348 @@ if(menuBtn){menuBtn.addEventListener('click',function(ev){openSidebar(ev);},{pas
 </html>
 
 
+
+<style id="rab7na-order-summary-mobile">
+/* ===== RAB7NA ORDER SUMMARY — MOBILE ===== */
+
+#p-checkout .order-summary,
+#p-checkout .checkout-summary,
+#p-checkout .summary,
+#p-checkout .total-box{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+
+/* أي صف داخل ملخص الطلب */
+#p-checkout .order-summary .row,
+#p-checkout .checkout-summary .row,
+#p-checkout .summary .row,
+#p-checkout .total-box .row{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  flex-wrap:nowrap!important;
+  box-sizing:border-box!important;
+}
+
+/* النص */
+#p-checkout .order-summary *,
+#p-checkout .checkout-summary *,
+#p-checkout .summary *,
+#p-checkout .total-box *{
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+
+/* الأرقام */
+#p-checkout .order-summary b,
+#p-checkout .checkout-summary b,
+#p-checkout .summary b,
+#p-checkout .total-box b{
+  white-space:nowrap!important;
+  flex-shrink:0!important;
+}
+
+/* الموبايل */
+@media(max-width:600px){
+
+  #p-checkout .order-summary,
+  #p-checkout .checkout-summary,
+  #p-checkout .summary,
+  #p-checkout .total-box{
+    width:100vw!important;
+    max-width:100%!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    padding:14px!important;
+    border-radius:18px!important;
+  }
+
+  #p-checkout .order-summary .row,
+  #p-checkout .checkout-summary .row,
+  #p-checkout .summary .row,
+  #p-checkout .total-box .row{
+    width:100%!important;
+    padding:7px 0!important;
+  }
+
+  #p-checkout .order-summary span,
+  #p-checkout .checkout-summary span,
+  #p-checkout .summary span,
+  #p-checkout .total-box span{
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+}
+</style>
+
+
+<style id="rab7na-modern-checkout">
+/* =========================================
+   RAB7NA — MODERN ANDROID CHECKOUT
+   ========================================= */
+
+/* شاشة إتمام الطلب */
+#co{
+  align-items:flex-end!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+  padding:0!important;
+}
+
+/* صندوق الطلب */
+#co .sheet{
+  width:100%!important;
+  max-width:560px!important;
+  max-height:92dvh!important;
+  margin:0 auto!important;
+  padding:18px 16px calc(20px + env(safe-area-inset-bottom))!important;
+
+  border-radius:24px 24px 0 0!important;
+
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+
+  box-sizing:border-box!important;
+
+  background:#fff!important;
+}
+
+/* عنوان الصفحة */
+#co .pm-name{
+  font-family:Cairo,system-ui,sans-serif!important;
+  font-size:1.15rem!important;
+  font-weight:900!important;
+  color:#17231f!important;
+  margin:4px 0 18px!important;
+  text-align:right!important;
+}
+
+/* زر الإغلاق */
+#co .sheet-x{
+  width:38px!important;
+  height:38px!important;
+  border-radius:50%!important;
+  background:#f1f6f4!important;
+  color:#263832!important;
+  border:0!important;
+  font-size:16px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+
+/* labels */
+#co label{
+  display:block!important;
+  margin:0 0 7px!important;
+  color:#263832!important;
+  font-family:Cairo,system-ui,sans-serif!important;
+  font-size:12px!important;
+  font-weight:800!important;
+}
+
+/* inputs */
+#co input.field,
+#co textarea.field,
+#co select.field{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+
+  min-height:52px!important;
+
+  padding:13px 14px!important;
+
+  border:1px solid #dce7e2!important;
+  border-radius:15px!important;
+
+  background:#f9fbfa!important;
+  color:#17231f!important;
+
+  font-family:Cairo,system-ui,sans-serif!important;
+  font-size:16px!important;
+  font-weight:600!important;
+
+  outline:none!important;
+
+  box-sizing:border-box!important;
+
+  -webkit-appearance:none!important;
+  appearance:none!important;
+}
+
+#co input.field:focus,
+#co textarea.field:focus,
+#co select.field:focus{
+  background:#fff!important;
+  border-color:#0f766e!important;
+  box-shadow:0 0 0 3px rgba(15,118,110,.10)!important;
+}
+
+/* العنوان */
+#co textarea.field{
+  min-height:90px!important;
+  resize:none!important;
+  line-height:1.7!important;
+}
+
+/* المسافات بين الحقول */
+#co label + input,
+#co label + textarea,
+#co label + select{
+  margin-bottom:14px!important;
+}
+
+/* =========================================
+   ملخص الدفع
+   ========================================= */
+
+#co .tot{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+
+  margin:8px 0 14px!important;
+  padding:14px!important;
+
+  border:1px solid #e2ece7!important;
+  border-radius:18px!important;
+
+  background:#f5faf7!important;
+
+  box-sizing:border-box!important;
+}
+
+/* السطر */
+#co .tot span,
+#co .tot b{
+  white-space:normal!important;
+  min-width:0!important;
+}
+
+/* المبلغ */
+#co .tot b{
+  font-size:1.05rem!important;
+  font-weight:900!important;
+  color:#0f766e!important;
+}
+
+/* زر تأكيد الطلب */
+#co .addbtn{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+
+  width:100%!important;
+  max-width:100%!important;
+
+  min-height:56px!important;
+
+  margin:0!important;
+
+  border:0!important;
+  border-radius:17px!important;
+
+  background:linear-gradient(135deg,#0f766e,#0d9488)!important;
+  color:#fff!important;
+
+  font-family:Cairo,system-ui,sans-serif!important;
+  font-size:15px!important;
+  font-weight:900!important;
+
+  box-shadow:0 8px 22px rgba(15,118,110,.20)!important;
+
+  touch-action:manipulation!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+
+/* رسالة الخطأ/النجاح */
+#co .msg{
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  overflow-wrap:anywhere!important;
+}
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media(max-width:600px){
+
+  #co{
+    width:100vw!important;
+    max-width:100vw!important;
+    left:0!important;
+    right:0!important;
+  }
+
+  #co .sheet{
+    width:100vw!important;
+    max-width:100vw!important;
+
+    max-height:94dvh!important;
+
+    padding:
+      16px
+      14px
+      calc(18px + env(safe-area-inset-bottom))
+      !important;
+
+    border-radius:24px 24px 0 0!important;
+  }
+
+  #co .pm-name{
+    font-size:1.05rem!important;
+    margin-bottom:15px!important;
+  }
+
+  #co input.field,
+  #co textarea.field,
+  #co select.field{
+    width:100%!important;
+    max-width:100%!important;
+    font-size:16px!important;
+  }
+
+  #co .tot{
+    padding:13px!important;
+    border-radius:16px!important;
+  }
+
+  #co .tot span{
+    font-size:.78rem!important;
+  }
+
+  #co .tot b{
+    font-size:1rem!important;
+  }
+}
+
+/* موبايلات صغيرة */
+@media(max-width:380px){
+
+  #co .sheet{
+    padding-left:10px!important;
+    padding-right:10px!important;
+  }
+
+  #co input.field,
+  #co textarea.field,
+  #co select.field{
+    padding-left:12px!important;
+    padding-right:12px!important;
+  }
+}
+</style>
+
