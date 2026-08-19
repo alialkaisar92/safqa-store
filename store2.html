@@ -207,11 +207,35 @@ img{display:block}
 <div class="sec"><h3 id="ptitle">كل المنتجات</h3><button onclick="toggleSort()">⇅ تصفية</button></div>
 <div class="grid" id="grid"></div>
 <nav class="bnav">
-  <button onclick="location.href='/dashboard'">📊 لوحة المسوق</button><button onclick="goAccount()"><span class="bi"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"/></svg></span>حسابي</button>
-  <button onclick="goOrders()"><span class="bi"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8Zm-9 9.5L5 14V9.6l7 3.9v4Zm1 0v-4l7-3.9V14l-7 3.5Z"/></svg></span>طلباتي</button>
-  <button class="on"><span class="bi"><svg viewBox="0 0 24 24"><path d="M12 3l9 8h-3v9h-4v-6h-4v6H6v-9H3l9-8Z"/></svg></span>الرئيسية</button>
-  <button onclick="scrollTo({top:document.getElementById('cats').offsetTop-60,behavior:'smooth'})"><span class="bi"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z"/></svg></span>التصنيفات</button>
-  <button onclick="openCart()"><span class="bi"><svg viewBox="0 0 24 24"><path d="M7 18a2 2 0 1 0 2 2 2 2 0 0 0-2-2Zm10 0a2 2 0 1 0 2 2 2 2 0 0 0-2-2ZM3 3h2l3.6 12.6A2 2 0 0 0 10.5 17H19v-2H10.6L10 13h9.3a1 1 0 0 0 1-.8L22 6H6.2L5.6 3H3Z"/></svg></span>السلة</button>
+  <button onclick="goAccount()">
+    <span class="bi"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg></span>
+    <span>حسابي</span>
+  </button>
+
+  <button onclick="goOrders()">
+    <span class="bi"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5Zm3 2v2h10V7H7Zm0 4v2h10v-2H7Zm0 4v2h6v-2H7Z"/></svg></span>
+    <span>طلباتي</span>
+  </button>
+
+  <button class="home-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <span class="home-icon">
+      <svg viewBox="0 0 24 24"><path d="m12 3 9 8h-3v9h-5v-6h-2v6H6v-9H3l9-8Z"/></svg>
+    </span>
+    <span>الرئيسية</span>
+  </button>
+
+  <button onclick="scrollTo({top:document.getElementById('cats').offsetTop-70,behavior:'smooth'})">
+    <span class="bi"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z"/></svg></span>
+    <span>الأقسام</span>
+  </button>
+
+  <button class="cart-nav" onclick="openCart()">
+    <span class="bi cart-icon">
+      <svg viewBox="0 0 24 24"><path d="M3 4h2l1.7 10.2A3 3 0 0 0 9.7 17H18a3 3 0 0 0 2.9-2.2L22 7H7.2l-.5-3H3Zm6 16a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm9 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>
+      <span class="cbadge" id="cc">0</span>
+    </span>
+    <span>السلة</span>
+  </button>
 </nav>
 <div class="mdl" id="cartMdl"><div class="box">
   <h3>🛒 السلة</h3>
@@ -1032,4 +1056,148 @@ setInterval(updHeader,2000);updHeader();
   setInterval(emo,1200);emo();
 })();
 </script>
+
+<style id="premium-bottom-nav">
+.bnav{
+ position:fixed!important;
+ bottom:12px!important;
+ left:12px!important;
+ right:12px!important;
+ height:68px!important;
+ z-index:9999!important;
+ display:grid!important;
+ grid-template-columns:repeat(5,1fr)!important;
+ align-items:center!important;
+ padding:6px!important;
+ border-radius:24px!important;
+ background:rgba(255,255,255,.94)!important;
+ backdrop-filter:blur(18px)!important;
+ -webkit-backdrop-filter:blur(18px)!important;
+ border:1px solid rgba(15,118,110,.10)!important;
+ box-shadow:0 12px 35px rgba(15,23,42,.16),0 2px 8px rgba(15,23,42,.06)!important;
+}
+
+.bnav button{
+ position:relative!important;
+ border:0!important;
+ background:transparent!important;
+ color:#64748b!important;
+ height:56px!important;
+ border-radius:18px!important;
+ display:flex!important;
+ flex-direction:column!important;
+ align-items:center!important;
+ justify-content:center!important;
+ gap:4px!important;
+ font-family:inherit!important;
+ font-size:11px!important;
+ font-weight:700!important;
+ cursor:pointer!important;
+ transition:all .2s ease!important;
+ -webkit-tap-highlight-color:transparent!important;
+}
+
+.bnav button:active{
+ transform:scale(.91)!important;
+}
+
+.bnav .bi{
+ width:30px!important;
+ height:28px!important;
+ display:grid!important;
+ place-items:center!important;
+ position:relative!important;
+}
+
+.bnav .bi svg{
+ width:22px!important;
+ height:22px!important;
+ fill:currentColor!important;
+}
+
+.bnav button:hover{
+ color:#0f766e!important;
+}
+
+.bnav .home-btn{
+ color:#fff!important;
+ overflow:visible!important;
+}
+
+.bnav .home-btn::before{
+ content:""!important;
+ position:absolute!important;
+ width:57px!important;
+ height:57px!important;
+ top:-16px!important;
+ border-radius:20px!important;
+ background:linear-gradient(145deg,#0f766e,#115e59)!important;
+ box-shadow:0 8px 20px rgba(15,118,110,.30)!important;
+ z-index:-1!important;
+}
+
+.bnav .home-icon{
+ width:48px!important;
+ height:48px!important;
+ margin-top:-15px!important;
+ border-radius:17px!important;
+ display:grid!important;
+ place-items:center!important;
+ background:linear-gradient(145deg,#0f766e,#115e59)!important;
+ box-shadow:0 8px 20px rgba(15,118,110,.30)!important;
+}
+
+.bnav .home-icon svg{
+ width:24px!important;
+ height:24px!important;
+ fill:#fff!important;
+}
+
+.bnav .home-btn span:last-child{
+ margin-top:-1px!important;
+}
+
+.bnav .cart-nav{
+ color:#0f766e!important;
+}
+
+.bnav .cart-icon{
+ position:relative!important;
+}
+
+.bnav .cbadge{
+ position:absolute!important;
+ top:-6px!important;
+ right:-7px!important;
+ min-width:18px!important;
+ height:18px!important;
+ padding:0 4px!important;
+ border-radius:20px!important;
+ background:#ef4444!important;
+ color:#fff!important;
+ font-size:10px!important;
+ font-weight:900!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ border:2px solid #fff!important;
+}
+
+@media(max-width:380px){
+ .bnav{
+   left:7px!important;
+   right:7px!important;
+   bottom:8px!important;
+   height:64px!important;
+   border-radius:21px!important;
+ }
+ .bnav button{
+   font-size:10px!important;
+ }
+}
+
+body{
+ padding-bottom:95px!important;
+}
+</style>
 </body></html>
