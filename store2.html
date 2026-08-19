@@ -179,6 +179,35 @@ img{display:block}
   margin-top:4px;
 }
 </style>
+
+<style id="price-edit-modal-css">
+#priceEditModal{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px}
+.pem-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.68);backdrop-filter:blur(7px)}
+.pem-card{position:relative;width:min(430px,100%);background:#fff;border-radius:26px;padding:26px;box-shadow:0 25px 80px rgba(0,0,0,.3);animation:pemIn .22s ease}
+@keyframes pemIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+.pem-close{position:absolute;top:14px;left:14px;width:34px;height:34px;border:0;border-radius:50%;background:#f1f3f5;font-size:25px;cursor:pointer}
+.pem-icon{width:58px;height:58px;border-radius:18px;background:linear-gradient(135deg,#07152f,#164a8a);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px}
+.pem-card h2{text-align:center;margin:0;font-size:22px;color:#111827}
+.pem-name{text-align:center;color:#6b7280;margin:7px 0 20px;font-size:14px}
+.pem-info{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.pem-info>div{background:#f7f8fa;border-radius:15px;padding:12px;text-align:center}
+.pem-info span{display:block;color:#6b7280;font-size:12px;margin-bottom:5px}
+.pem-info b{font-size:15px;color:#111827}
+.pem-label{display:block;font-weight:700;color:#1f2937;margin-bottom:7px}
+.pem-input-wrap{display:flex;align-items:center;border:2px solid #dbe2ea;border-radius:15px;height:55px;padding:0 14px;background:#fff;transition:.2s}
+.pem-input-wrap:focus-within{border-color:#1769aa;box-shadow:0 0 0 4px rgba(23,105,170,.1)}
+.pem-input-wrap input{border:0;outline:0;width:100%;font-size:21px;font-weight:800;background:transparent;text-align:right;color:#111827}
+.pem-input-wrap span{font-weight:700;color:#6b7280;white-space:nowrap}
+.pem-profit{margin-top:14px;background:#eefbf3;border:1px solid #c9efd7;border-radius:15px;padding:14px;display:flex;align-items:center;justify-content:space-between}
+.pem-profit span{font-weight:700;color:#176b3a}
+.pem-profit strong{font-size:19px;color:#168344}
+.pem-warning{display:none;margin-top:10px;background:#fff4f4;color:#c62828;border-radius:12px;padding:11px;font-size:13px;font-weight:700;text-align:center}
+.pem-actions{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-top:18px}
+.pem-actions button{height:50px;border:0;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer}
+.pem-cancel{background:#f1f3f5;color:#374151}
+.pem-save{background:linear-gradient(135deg,#07152f,#1769aa);color:#fff;box-shadow:0 8px 20px rgba(23,105,170,.2)}
+@media(max-width:420px){.pem-card{padding:22px 17px}.pem-info{gap:7px}}
+</style>
 </head><body>
 <header class="hdr">
   <button class="ic" onclick="openDrw()">☰</button>
