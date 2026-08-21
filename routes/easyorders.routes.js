@@ -37,6 +37,11 @@ router.post('/auth/login', wrap(function (req, res) {
   res.json(r);
 }));
 
+router.post('/auth/logout', requireAuth, wrap(function (req, res) {
+  auth.logout(req.marketerToken);
+  res.json({ ok: true, message: 'تم تسجيل الخروج' });
+}));
+
 router.get('/auth/me', requireAuth, wrap(function (req, res) {
   const c = ctrl.getConnectionSafe(marketerId(req));
   res.json({ ok: true, marketer: req.marketer, connection: c });

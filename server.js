@@ -9,7 +9,12 @@ const API_KEY = process.env.SAFKA_API_KEY || '';
 const BASE_URL='https://api.safka-eg.com/api/v1/public';
 const safkaSync = require('./safka-sync');
 const { availableBalance } = require('./balance');
+const easyordersDb = require('./services/db');
+const easyordersRoutes = require('./routes/easyorders.routes');
 app.use(express.json({limit:'50mb'}));
+// Affiliate/EasyOrders module: initialize its local persistence before mounting protected routes.
+try { easyordersDb.initDb(); } catch (e) { console.error('[easyorders] database initialization failed:', e.message); }
+app.use('/api/easyorders', easyordersRoutes);
 
 app.get('/', (req, res) => {
   res.redirect(302, '/store');
