@@ -509,6 +509,8 @@ function affiliateOrderForUser(order, userId) {
     unknown: 'قيد التحقق',
     accepted: 'قيد التأكيد',
     confirmed: 'تم التأكيد',
+    cancel_requested: 'طلب الإلغاء قيد المراجعة',
+    cancelled: 'تم إلغاء الطلب',
     failed: 'فشل'
   };
   const requestStatus = order.requestStatus || (queueStatusMap[queueStatus] ? queueStatus : null);
@@ -526,6 +528,9 @@ function affiliateOrderForUser(order, userId) {
     status,
     requestStatus,
     failureReason: requestStatus === 'failed' ? (order.failureReason || queue && queue.failureReason || '') : '',
+    cancelReason: order.cancelReason || queue && queue.cancelReason || '',
+    cancelRequestedAt: order.cancelRequestedAt || queue && queue.cancelRequestedAt || null,
+    cancelledAt: order.cancelledAt || queue && queue.cancelledAt || null,
     externalId: order.externalId || order.supplierOrderId || queue && queue.supplierOrderId || null,
     date: order.date || order.createdAt || null,
     statusSyncedAt: order.statusSyncedAt || queue && queue.updatedAt || null
@@ -713,6 +718,8 @@ function queueStatusMessage(status) {
     unknown: 'تم استلام طلبك، وجاري التحقق من حالته. لا تقم بإرسال الطلب مرة أخرى.',
     accepted: 'تم إرسال الطلب للمورد وجارٍ تأكيده',
     confirmed: 'تم تأكيد الطلب بنجاح',
+    cancel_requested: 'تم استلام طلب الإلغاء وجارٍ مراجعته',
+    cancelled: 'تم إلغاء الطلب',
     failed: 'تعذر تأكيد الطلب من المورد؛ راجع البيانات وأنشئ طلبًا جديدًا'
   };
   return messages[String(status || '').toLowerCase()] || 'جاري متابعة الطلب';
@@ -728,6 +735,9 @@ function queueStatusPayload(row, order) {
     total: Number(safeOrder.total || 0),
     commission: Number(safeOrder.commission || 0),
     message: queueStatusMessage(status),
+    cancelReason: row.cancel_reason || safeOrder.cancelReason || '',
+    cancelRequestedAt: row.cancel_requested_at || safeOrder.cancelRequestedAt || null,
+    cancelledAt: row.cancelled_at || safeOrder.cancelledAt || null,
     failureReason: status === 'failed' ? String(row.failure_reason || '') : ''
   };
 }
@@ -842,6 +852,29 @@ app.get('/api/affiliate/order-status/:id', async (req,res)=>{
     res.set('Cache-Control','no-store');
     res.json({ok:true,order:queueStatusPayload(row,order),updatedAt:row.updated_at});
   }catch(error){console.error('[order] status read failed:',error.message);res.status(503).json({error:'تعذر قراءة حالة الطلب حاليًا'});}
+});
+
+app.post('/api/affiliate/order-cancel', async (req,res)=>{
+  const user=await currentAuthUser(req);
+  try { await postgresReady; } catch (error) { console.error('[order] postgres cancel initialization failed:', error.message); return res.status(503).json({error:'خدمة إلغاء الطلب تجهز حاليًا'}); }
+  if(!user)return res.status(401).json({error:'سجّل الدخول لإلغاء الطلب'});
+  const body=req.body||{};
+  const orderId=cleanSupplierText(body.order_id||body.orderId||'');
+  const reason=String(body.reason||body.cancel_reason||'').trim();
+  if(orderId.length<6||orderId.length>200)return res.status(400).json({error:'معرّف الطلب غير صحيح'});
+  if(reason.length<3)return res.status(400).json({error:'اكتب سبب إلغاء الطلب'});
+  if(reason.length>500)return res.status(400).json({error:'سبب الإلغاء طويل جدًا'});
+  try{
+    const result=await postgres.cancelAffiliateOrder(user.id,orderId,reason);
+    res.set('Cache-Control','no-store');
+    res.json({ok:true,status:result.status,cancelRequested:Boolean(result.cancelRequested),duplicate:Boolean(result.duplicate),message:result.duplicate?(result.cancelRequested?'تم تسجيل طلب الإلغاء مسبقًا وجارٍ مراجعته':'تم إلغاء الطلب مسبقًا'): (result.cancelRequested?'تم استلام طلب الإلغاء وجارٍ مراجعته':'تم إلغاء الطلب بنجاح'),order:result.order});
+  }catch(error){
+    if(error.code==='INVALID_CANCEL_REASON')return res.status(400).json({error:'اكتب سبب إلغاء الطلب'});
+    if(error.code==='ORDER_NOT_FOUND')return res.status(404).json({error:'الطلب غير موجود'});
+    if(error.code==='ORDER_NOT_CANCELLABLE')return res.status(409).json({error:error.message});
+    console.error('[order] cancel failed:',error.message);
+    res.status(503).json({error:'تعذر تسجيل إلغاء الطلب حاليًا'});
+  }
 });
 
 

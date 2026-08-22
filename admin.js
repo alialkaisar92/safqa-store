@@ -15,7 +15,7 @@ const ROLE_PERMISSIONS = {
   finance: ['dashboard', 'orders', 'withdrawals'],
   products: ['dashboard', 'products']
 };
-const ORDER_STATUSES = ['جديد', 'قيد التأكيد', 'تم التأكيد', 'جاري التجهيز', 'تم الشحن', 'تم التوصيل', 'تم التحصيل', 'تم التسليم', 'مرتجع', 'طلب استبدال', 'ملغي', 'مرفوض', 'فشل'];
+const ORDER_STATUSES = ['جديد', 'قيد التأكيد', 'تم التأكيد', 'جاري التجهيز', 'تم الشحن', 'تم التوصيل', 'تم التحصيل', 'تم التسليم', 'مرتجع', 'طلب استبدال', 'طلب الإلغاء قيد المراجعة', 'تم إلغاء الطلب', 'ملغي', 'مرفوض', 'فشل'];
 const WITHDRAWAL_STATUSES = ['pending', 'approved', 'rejected', 'paid', 'قيد المراجعة', 'مقبول', 'مرفوض', 'مدفوع'];
 const ADMIN_ROLES = ['owner', 'admin', 'manager', 'support', 'finance', 'products'];
 const SAFKA_BASE_URL = String(process.env.SAFKA_PUBLIC_BASE_URL || 'https://api.safka-eg.com/api/v1/public').replace(/\/$/, '');

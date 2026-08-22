@@ -42,6 +42,12 @@ assert(worker.includes("'X-Idempotency-Key'"), 'supplier attempts must carry the
 assert(client.includes("sessionStorage.getItem('rab7na_order_idempotency_key')"), 'refresh-safe idempotency key is missing');
 assert(client.includes('rab7na_pending_order_v1') && client.includes('fetchQueuedOrderStatus'), 'checkout must retain and poll queued orders');
 assert(server.includes('const queue = order._queue || null') && server.includes('queueStatusMap'), 'affiliate orders must expose queue status rather than stale app data only');
+assert(server.includes("app.post('/api/affiliate/order-cancel'") && server.includes('postgres.cancelAffiliateOrder(user.id,orderId,reason)'), 'affiliate cancellation must be authenticated and persisted server-side');
+assert(postgres.includes('cancel_reason') && postgres.includes('cancel_requested_at') && postgres.includes('cancelled_at'), 'cancellation audit fields are missing');
+assert(postgres.includes('ORDER_NOT_CANCELLABLE') && postgres.includes("cancel_requested'"), 'cancellation must reject final states and support supplier review');
+assert(postgres.includes("status IN ('cancel_requested','cancelled')") && postgres.includes('cancellationProtected'), 'worker/admin updates must not overwrite a cancellation');
+assert(client.includes('affiliateCancelMdl') && client.includes('affiliateCancelReason') && client.includes('submitAffiliateCancellation'), 'affiliate cancellation reason UI is missing');
+assert(client.includes("/api/affiliate/order-cancel") && client.includes('setInterval(refreshAffiliateLive,5000)'), 'affiliate dashboard must refresh live and post cancellation safely');
 assert(client.includes("r.status===202&&d.ok") || client.includes("d.ok&&d.queued"), 'checkout must accept the immediate queued contract');
 console.log('order reliability checks: PASS');
 console.log('save-first queue contract: YES');

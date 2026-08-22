@@ -1902,13 +1902,25 @@ body{
 <div class="affiliate-sheet" id="affiliateMdl" aria-hidden="true">
   <div class="affiliate-top"><div class="affiliate-brand"><div class="affiliate-brand-mark">R7</div><div><h2>مركز المسوّق</h2><p>تابع أداءك وطلباتك من مكان واحد</p></div></div><button class="affiliate-close" onclick="closeAffiliate()" aria-label="إغلاق">✕</button></div>
   <main class="affiliate-wrap">
-    <section class="affiliate-welcome"><div><h1 id="affiliateWelcome">أهلًا بك في مركز المسوّق</h1><p>بياناتك محدثة من الخادم، والعمولات تُحتسب حسب حالة الطلب.</p></div><div class="affiliate-avatar" id="affiliateAvatar">م</div></section>
+    <section class="affiliate-welcome"><div><h1 id="affiliateWelcome">أهلًا بك في مركز المسوّق</h1><p>الحالات والعمولات تتحدث تلقائيًا من الخادم.</p></div><div class="affiliate-avatar" id="affiliateAvatar">م</div></section>
     <nav class="affiliate-tabs"><button data-tab="overview" onclick="setAffiliateTab('overview')">نظرة عامة</button><button data-tab="orders" onclick="setAffiliateTab('orders')">الطلبات</button><button data-tab="wallet" onclick="setAffiliateTab('wallet')">المحفظة</button><button data-tab="profile" onclick="setAffiliateTab('profile')">الحساب</button></nav>
-    <section class="affiliate-pane" id="affiliateOverviewPane"><div class="affiliate-stats"><div class="affiliate-stat green"><span class="label">الرصيد المتاح</span><b id="affiliateBalance">0 ج.م</b></div><div class="affiliate-stat"><span class="label">إجمالي العمولات</span><b id="affiliateTotalCommission">0 ج.م</b></div><div class="affiliate-stat"><span class="label">الطلبات المكتملة</span><b id="affiliateDelivered">0</b></div><div class="affiliate-stat"><span class="label">طلبات قيد المتابعة</span><b id="affiliatePending">0</b></div></div><div class="affiliate-card"><div class="affiliate-card-head"><h3>اختصارات سريعة</h3><span id="affiliateLastSync">آخر تحديث الآن</span></div><div class="affiliate-actions"><button class="affiliate-action" onclick="setAffiliateTab('orders')"><b>📦 راجع طلباتك</b><small>تابع الحالة والعمولة لكل طلب</small></button><button class="affiliate-action" onclick="setAffiliateTab('wallet')"><b>💳 اطلب سحب الأرباح</b><small>الحد الأدنى للسحب 50 ج.م</small></button></div></div></section>
+    <section class="affiliate-pane" id="affiliateOverviewPane"><div class="affiliate-stats"><div class="affiliate-stat green"><span class="label">الرصيد المتاح</span><b id="affiliateBalance">0 ج.م</b></div><div class="affiliate-stat"><span class="label">إجمالي العمولات</span><b id="affiliateTotalCommission">0 ج.م</b></div><div class="affiliate-stat"><span class="label">الطلبات المكتملة</span><b id="affiliateDelivered">0</b></div><div class="affiliate-stat"><span class="label">طلبات قيد المتابعة</span><b id="affiliatePending">0</b></div></div><div class="affiliate-card"><div class="affiliate-card-head"><h3>اختصارات سريعة</h3><span id="affiliateLastSync">تحديث تلقائي كل 5 ثوانٍ</span></div><div class="affiliate-actions"><button class="affiliate-action" onclick="setAffiliateTab('orders')"><b>📦 راجع طلباتك</b><small>تابع الحالة والعمولة لكل طلب</small></button><button class="affiliate-action" onclick="setAffiliateTab('wallet')"><b>💳 اطلب سحب الأرباح</b><small>الحد الأدنى للسحب 50 ج.م</small></button></div></div></section>
     <section class="affiliate-pane" id="affiliateOrdersPane"><div class="affiliate-card"><div class="affiliate-card-head"><h3>سجل الطلبات</h3><span id="affiliateOrdersCount">0 طلب</span></div><div id="affiliateOrdersList"></div></div></section>
     <section class="affiliate-pane" id="affiliateWalletPane"><div class="affiliate-balance"><div><small>الرصيد المتاح للسحب</small><strong id="affiliateWalletBalance">0 ج.م</strong></div><button class="affiliate-primary" onclick="document.getElementById('affiliateWithdrawalForm').scrollIntoView({behavior:'smooth'})">طلب سحب</button></div><div class="affiliate-card" id="affiliateWithdrawalForm"><div class="affiliate-card-head"><h3>طلب سحب جديد</h3><span>مراجعة آمنة من الإدارة</span></div><div class="affiliate-field"><label for="affiliateMethod">وسيلة السحب</label><select id="affiliateMethod"><option>فودافون كاش</option><option>اتصالات كاش</option><option>أورنج كاش</option><option>وي باي</option><option>إنستا باي</option><option>حساب بنكي</option></select></div><div class="affiliate-field"><label for="affiliateDetails">رقم المحفظة أو بيانات الحساب</label><input id="affiliateDetails" placeholder="أدخل البيانات المطلوبة" autocomplete="off"></div><div class="affiliate-field"><label for="affiliateAmount">المبلغ بالجنيه</label><input id="affiliateAmount" type="number" min="50" placeholder="الحد الأدنى 50"></div><div class="affiliate-message" id="affiliateWithdrawalMessage"></div><button class="affiliate-submit" onclick="submitAffiliateWithdrawal()">إرسال طلب السحب</button></div><div class="affiliate-card"><div class="affiliate-card-head"><h3>طلبات السحب السابقة</h3></div><div id="affiliateWithdrawalsList"></div></div></section>
     <section class="affiliate-pane" id="affiliateProfilePane"><div class="affiliate-card"><div class="affiliate-card-head"><h3>بيانات الحساب</h3><span>محمية بجلسة الخادم</span></div><div class="affiliate-profile-row"><span>الاسم</span><b id="affiliateProfileName">—</b></div><div class="affiliate-profile-row"><span>البريد الإلكتروني</span><b id="affiliateProfileEmail">—</b></div><div class="affiliate-profile-row"><span>تاريخ الانضمام</span><b id="affiliateProfileCreated">—</b></div><button class="affiliate-logout" onclick="affiliateLogout()">تسجيل الخروج الآمن</button></div></section>
   </main>
+</div>
+
+<div class="affiliate-cancel-modal mdl" id="affiliateCancelMdl" aria-hidden="true">
+  <div class="affiliate-cancel-box" role="dialog" aria-modal="true" aria-labelledby="affiliateCancelTitle">
+    <button class="affiliate-close" type="button" onclick="closeAffiliateCancellation()" aria-label="إغلاق">✕</button>
+    <h3 id="affiliateCancelTitle">إلغاء الطلب</h3>
+    <p>اكتب سبب إلغاء العميل حتى يتم حفظه ومراجعته مع الطلب.</p>
+    <label for="affiliateCancelReason">سبب الإلغاء</label>
+    <textarea id="affiliateCancelReason" maxlength="500" minlength="3" placeholder="مثال: العميل طلب الإلغاء قبل الشحن"></textarea>
+    <div class="affiliate-cancel-message" id="affiliateCancelMessage" role="status" aria-live="polite"></div>
+    <div class="affiliate-cancel-actions"><button type="button" class="affiliate-secondary" onclick="closeAffiliateCancellation()">رجوع</button><button type="button" class="affiliate-danger" id="affiliateCancelSubmit" onclick="submitAffiliateCancellation()">تأكيد الإلغاء</button></div>
+  </div>
 </div>
 
 <script id="affiliate-pro-runtime">
@@ -1917,7 +1929,7 @@ body{
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function money(v){return (Number(v)||0).toLocaleString('ar-EG')+' ج.م'}
   function date(v){if(!v)return '—';try{return new Date(v).toLocaleDateString('ar-EG',{day:'numeric',month:'short',year:'numeric'})}catch(e){return esc(v)}}
-  var statusMap={pending:['قيد التجهيز','#fff7d6','#936b00'],processing:['جاري التأكيد','#e4f3ff','#12659b'],retry:['إعادة المحاولة تلقائيًا','#fff7d6','#936b00'],unknown:['جاري التحقق','#fff7d6','#936b00'],accepted:['تم الاستلام من المورد','#e4f3ff','#12659b'],confirmed:['تم التأكيد','#dcfce7','#176b3a'],failed:['تعذر التأكيد','#fee2e2','#a61b1b'],preparing:['جارٍ التجهيز','#e4f3ff','#12659b'],shipped:['تم الشحن','#e9eaff','#4545a0'],delivered:['تم التسليم','#dcfce7','#176b3a'],returned:['مرتجع','#fee2e2','#a61b1b'],rejected:['مرفوض','#fee2e2','#a61b1b'],'قيد المتابعة':['قيد التجهيز','#fff7d6','#936b00'],'قيد التحقق':['جاري التحقق','#fff7d6','#936b00'],'قيد التأكيد':['قيد التأكيد','#fff7d6','#936b00'],'تم التأكيد':['تم التأكيد','#dcfce7','#176b3a'],'تم التسليم':['تم التسليم','#dcfce7','#176b3a']};
+  var statusMap={pending:['قيد التجهيز','#fff7d6','#936b00'],processing:['جاري التأكيد','#e4f3ff','#12659b'],retry:['إعادة المحاولة تلقائيًا','#fff7d6','#936b00'],unknown:['جاري التحقق','#fff7d6','#936b00'],accepted:['تم الاستلام من المورد','#e4f3ff','#12659b'],confirmed:['تم التأكيد','#dcfce7','#176b3a'],cancel_requested:['طلب الإلغاء قيد المراجعة','#fff7d6','#936b00'],cancelled:['تم إلغاء الطلب','#fee2e2','#a61b1b'],failed:['تعذر التأكيد','#fee2e2','#a61b1b'],preparing:['جارٍ التجهيز','#e4f3ff','#12659b'],shipped:['تم الشحن','#e9eaff','#4545a0'],delivered:['تم التسليم','#dcfce7','#176b3a'],returned:['مرتجع','#fee2e2','#a61b1b'],rejected:['مرفوض','#fee2e2','#a61b1b'],'قيد المتابعة':['قيد التجهيز','#fff7d6','#936b00'],'قيد التحقق':['جاري التحقق','#fff7d6','#936b00'],'قيد التأكيد':['قيد التأكيد','#fff7d6','#936b00'],'تم التأكيد':['تم التأكيد','#dcfce7','#176b3a'],'تم التسليم':['تم التسليم','#dcfce7','#176b3a'],'تم إلغاء الطلب':['تم إلغاء الطلب','#fee2e2','#a61b1b'],'طلب الإلغاء قيد المراجعة':['طلب الإلغاء قيد المراجعة','#fff7d6','#936b00']};
   function getStatus(s){return statusMap[s]||[s||'قيد المتابعة','#f1f5f9','#475569']}
   async function loadAffiliate(){
     var r=await fetch('/api/affiliate/me',{credentials:'include',cache:'no-store'});
@@ -1926,6 +1938,20 @@ body{
     if(!r.ok||!d.ok)throw new Error(d.error||'تعذر تحميل بيانات الأفليت');
     state=Object.assign(state,d,{loaded:true});return true;
   }
+  function cancelableOrder(o){
+    var key=String(o&&o.requestStatus||o&&o.status||'').trim().toLowerCase();
+    return !['confirmed','delivered','completed','shipped','returned','rejected','failed','cancel_requested','cancelled','تم التأكيد','تم التسليم','تم التوصيل','تم الشحن','مرتجع','مرفوض','فشل','طلب الإلغاء قيد المراجعة','تم إلغاء الطلب'].includes(key);
+  }
+  var affiliateRefreshTimer=0,affiliateRefreshBusy=false;
+  async function refreshAffiliateLive(){
+    var panel=document.getElementById('affiliateMdl');
+    if(!panel||!panel.classList.contains('open')){stopAffiliateLiveRefresh();return}
+    if(affiliateRefreshBusy||!state.user)return;
+    affiliateRefreshBusy=true;
+    try{await loadAffiliate();render();}catch(e){console.warn('[affiliate] live refresh skipped',e&&e.message||e)}finally{affiliateRefreshBusy=false}
+  }
+  function startAffiliateLiveRefresh(){if(affiliateRefreshTimer)return;affiliateRefreshTimer=setInterval(refreshAffiliateLive,5000)}
+  function stopAffiliateLiveRefresh(){if(affiliateRefreshTimer){clearInterval(affiliateRefreshTimer);affiliateRefreshTimer=0}}
   function render(){
     var u=state.user||{},s=state.stats||{};
     document.getElementById('affiliateWelcome').textContent='أهلًا '+(u.name||'بك')+'، جاهز تنمّي أرباحك؟';
@@ -1933,8 +1959,9 @@ body{
     document.getElementById('affiliateBalance').textContent=money(s.balance);document.getElementById('affiliateWalletBalance').textContent=money(s.balance);document.getElementById('affiliateTotalCommission').textContent=money(s.totalCommission);document.getElementById('affiliateDelivered').textContent=Number(s.deliveredOrders||0).toLocaleString('ar-EG');document.getElementById('affiliatePending').textContent=Number(s.pendingOrders||0).toLocaleString('ar-EG');document.getElementById('affiliateOrdersCount').textContent=state.orders.length.toLocaleString('ar-EG')+' طلب';document.getElementById('affiliateProfileName').textContent=u.name||'—';document.getElementById('affiliateProfileEmail').textContent=u.email||'—';document.getElementById('affiliateProfileCreated').textContent=date(u.created_at);document.getElementById('affiliateLastSync').textContent='آخر تحديث '+new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
     var orders=document.getElementById('affiliateOrdersList');
     orders.innerHTML=state.orders.length?state.orders.map(function(o){
-      var st=getStatus(o.requestStatus||o.status), names=(o.products||[]).slice(0,2).join('، ')||'طلب منتجات';
-      return `<article class="affiliate-order"><div class="affiliate-order-top"><span>طلب #${esc(String(o.serial||o.id).slice(-8))}</span><span class="affiliate-status" style="background:${st[1]};color:${st[2]}">${esc(st[0])}</span></div><div style="font-size:12px;color:#71847a;margin-top:8px">${esc(names)}${o.products&&o.products.length>2?' …':''}</div><div class="affiliate-order-bottom"><span>${date(o.date)} · ${Number(o.items||0).toLocaleString('ar-EG')} منتج</span><b>عمولتك: ${money(o.commission)}</b></div></article>`;
+      var st=getStatus(o.requestStatus||o.status), names=(o.products||[]).slice(0,2).join('، ')||'طلب منتجات', cancelButton=cancelableOrder(o)?`<button class="affiliate-cancel-order" type="button" onclick="openAffiliateCancellation('${esc(String(o.id||''))}')">إلغاء الطلب</button>`:'';
+      var cancelNote=o.cancelReason?`<div class="affiliate-cancel-note">سبب الإلغاء: ${esc(o.cancelReason)}</div>`:'';
+      return `<article class="affiliate-order"><div class="affiliate-order-top"><span>طلب #${esc(String(o.serial||o.id).slice(-8))}</span><span class="affiliate-status" style="background:${st[1]};color:${st[2]}">${esc(st[0])}</span></div><div style="font-size:12px;color:#71847a;margin-top:8px">${esc(names)}${o.products&&o.products.length>2?' …':''}</div><div class="affiliate-order-bottom"><span>${date(o.date)} · ${Number(o.items||0).toLocaleString('ar-EG')} منتج</span><b>عمولتك: ${money(o.commission)}</b></div>${cancelNote}${cancelButton}</article>`;
     }).join(''):'<div class="affiliate-empty"><div style="font-size:34px">📦</div><b>لم تنشئ أي طلبات بعد</b><small>ابدأ من المنتجات وشارك عروضك مع عملائك.</small></div>';
     var wd=document.getElementById('affiliateWithdrawalsList');
     wd.innerHTML=state.withdrawals.length?state.withdrawals.map(function(w){
@@ -1945,8 +1972,18 @@ body{
     }).join(''):'<div class="affiliate-empty"><b>لا توجد طلبات سحب</b><small>ستظهر طلباتك هنا بعد إرسالها.</small></div>';
   }
   window.setAffiliateTab=function(tab){state.tab=tab;document.querySelectorAll('.affiliate-tabs button').forEach(function(b){b.classList.toggle('active',b.dataset.tab===tab)});document.querySelectorAll('.affiliate-pane').forEach(function(p){p.classList.remove('active')});var pane=document.getElementById('affiliate'+tab.charAt(0).toUpperCase()+tab.slice(1)+'Pane');if(pane)pane.classList.add('active')};
-  window.openAffiliate=async function(tab){openModalById('affiliateMdl');document.getElementById('affiliateMdl').setAttribute('aria-hidden','false');setAffiliateTab(tab||'overview');try{await loadAffiliate();render();}catch(e){toast(e.message||'تعذر تحميل الحساب');closeAffiliate();}};
-  window.closeAffiliate=function(options){closeModalById('affiliateMdl',options);document.getElementById('affiliateMdl').setAttribute('aria-hidden','true')};
+  var cancelOrderId='',cancelSubmitting=false;
+  window.openAffiliateCancellation=function(orderId){if(!orderId)return;cancelOrderId=String(orderId);var reason=document.getElementById('affiliateCancelReason'),message=document.getElementById('affiliateCancelMessage');if(reason)reason.value='';if(message){message.textContent='';message.style.color=''}openModalById('affiliateCancelMdl',{history:false});setTimeout(function(){if(reason)reason.focus()},30)};
+  window.closeAffiliateCancellation=function(){if(cancelSubmitting)return;cancelOrderId='';closeModalById('affiliateCancelMdl',{history:false})};
+  window.submitAffiliateCancellation=async function(){
+    if(cancelSubmitting||!cancelOrderId)return;
+    var reasonEl=document.getElementById('affiliateCancelReason'),message=document.getElementById('affiliateCancelMessage'),button=document.getElementById('affiliateCancelSubmit'),reason=String(reasonEl&&reasonEl.value||'').trim();
+    if(reason.length<3){if(message){message.textContent='اكتب سبب الإلغاء أولًا';message.style.color='#b91c1c'}if(reasonEl)reasonEl.focus();return}
+    cancelSubmitting=true;if(button){button.disabled=true;button.textContent='جارٍ الحفظ…'}if(message){message.textContent='';message.style.color=''}
+    try{var r=await fetch('/api/affiliate/order-cancel',{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_id:cancelOrderId,reason:reason})}),d=await r.json().catch(function(){return{}});if(!r.ok)throw new Error(d.error||'تعذر تسجيل الإلغاء');closeModalById('affiliateCancelMdl',{history:false});toast(d.message||'تم تسجيل الإلغاء');await loadAffiliate();render();}catch(e){if(message){message.textContent=e.message||'تعذر تسجيل الإلغاء';message.style.color='#b91c1c'}}finally{cancelSubmitting=false;if(button){button.disabled=false;button.textContent='تأكيد الإلغاء'}}
+  };
+  window.openAffiliate=async function(tab){openModalById('affiliateMdl');document.getElementById('affiliateMdl').setAttribute('aria-hidden','false');setAffiliateTab(tab||'overview');try{await loadAffiliate();render();startAffiliateLiveRefresh();}catch(e){toast(e.message||'تعذر تحميل الحساب');closeAffiliate();}};
+  window.closeAffiliate=function(options){stopAffiliateLiveRefresh();closeModalById('affiliateMdl',options);document.getElementById('affiliateMdl').setAttribute('aria-hidden','true')};
   window.goAccount=function(){openAffiliate('overview')};window.goOrders=function(){openAffiliate('orders')};window.openAccount=function(){openAffiliate('overview')};window.openOrders=function(){openAffiliate('orders')};window.openWallet=function(){openAffiliate('wallet')};
   var withdrawalIdempotencyKey='',withdrawalSubmitting=false;
   function getWithdrawalIdempotencyKey(){if(withdrawalIdempotencyKey)return withdrawalIdempotencyKey;withdrawalIdempotencyKey=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'wd_'+Date.now()+'_'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);return withdrawalIdempotencyKey;}
@@ -2202,7 +2239,7 @@ body{
   var MODAL_STATE_KEY='rab7naModal';
   var modalStack=[];
   var suppressPop=false;
-  var managedIds=['cartMdl','coMdl','pMdl','priceModal','shipMdl','accMdl','ordMdl','walMdl','drw','affiliateMdl','storeAiMdl'];
+  var managedIds=['cartMdl','coMdl','pMdl','priceModal','shipMdl','accMdl','ordMdl','walMdl','drw','affiliateMdl','affiliateCancelMdl','storeAiMdl'];
 
   function byId(id){return document.getElementById(id);}
   function isShown(el){
@@ -2339,4 +2376,24 @@ body.store-ai-open .bnav,body.store-ai-open #storeAiLaunch{display:none!importan
   .modal-x,.checkout-close{width:44px;height:44px;font-size:28px}
   .mdl .box{max-height:calc(100dvh - 12px);padding-top:64px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
 }
+</style>
+
+<style id="affiliate-cancel-style">
+.affiliate-cancel-modal{position:fixed;inset:0;z-index:1200;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(15,46,38,.38);backdrop-filter:blur(8px)}
+.affiliate-cancel-modal.open{display:flex}
+.affiliate-cancel-box{position:relative;width:min(100%,460px);background:#fff;border:1px solid #e4eee9;border-radius:24px;padding:28px;box-shadow:0 24px 80px rgba(15,46,38,.2);direction:rtl}
+.affiliate-cancel-box h3{margin:0 0 8px;color:#173b31;font-size:20px}
+.affiliate-cancel-box p{margin:0 0 20px;color:#71847a;font-size:13px;line-height:1.8}
+.affiliate-cancel-box>label{display:block;margin-bottom:8px;color:#315449;font-size:13px;font-weight:800}
+#affiliateCancelReason{display:block;width:100%;min-height:116px;resize:vertical;border:1px solid #d9e8e1;border-radius:14px;padding:12px;box-sizing:border-box;font:700 13px Cairo, sans-serif;color:#173b31;outline:none}
+#affiliateCancelReason:focus{border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.12)}
+.affiliate-cancel-message{min-height:24px;margin-top:9px;font-size:12px;font-weight:800}
+.affiliate-cancel-actions{display:flex;gap:10px;margin-top:10px}
+.affiliate-secondary,.affiliate-danger,.affiliate-cancel-order{font:800 12px Cairo, sans-serif;border-radius:12px;cursor:pointer;touch-action:manipulation}
+.affiliate-secondary{flex:1;padding:11px 14px;border:1px solid #dce9e3;background:#f7faf8;color:#547066}
+.affiliate-danger{flex:1;padding:11px 14px;border:0;background:#b4233c;color:#fff}
+.affiliate-danger:disabled{opacity:.6;cursor:not-allowed}
+.affiliate-cancel-order{margin-top:12px;padding:8px 13px;border:1px solid #f2cbd3;background:#fff5f6;color:#a61b1b}
+.affiliate-cancel-order:hover{background:#ffecef}
+@media(max-width:520px){.affiliate-cancel-box{padding:23px 18px;border-radius:20px}.affiliate-cancel-actions{position:sticky;bottom:0;background:#fff;padding-top:8px}}
 </style>
