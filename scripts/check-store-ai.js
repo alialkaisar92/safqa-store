@@ -8,7 +8,7 @@ const checks = [
   ['store assistant uses protected history endpoint', html.includes("/api/affiliate/ai/history")],
   ['store assistant uses protected chat endpoint', html.includes("/api/affiliate/ai/chat")],
   ['store assistant requests compact store replies', html.includes("compact:true") && html.includes("surface:'store'")],
-  ['store assistant has mobile bounded layout', html.includes('height:min(640px,calc(100dvh - 34px))') && html.includes('z-index:10001!important')],
+  ['store assistant has mobile bounded layout', html.includes('height:auto;max-height:min(640px,76dvh)') && html.includes('z-index:10001!important')],
   ['store assistant hides launcher and bottom nav while open', html.includes('store-ai-open') && html.includes('body.store-ai-open .bnav,body.store-ai-open #storeAiLaunch')],
   ['store assistant limits displayed product bullets', html.includes('productLines>3') && html.includes('omittedProduct')],
   ['store assistant new conversation control is wired', html.includes('newStoreAiConversation') && html.includes('clearStoreAiConversation')],
