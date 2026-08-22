@@ -29,7 +29,7 @@ img{display:block}
 .bd{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
 .nm{font-size:13px;font-weight:700;line-height:1.4;min-height:2.6em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .rate{color:var(--mut);font-size:12px}.rate b{color:#f5a623}
-.pr{display:flex;align-items:baseline;gap:8px}.pr s{color:var(--mut);font-size:12px}.pr b{color:var(--gd);font-size:16px;font-weight:900}
+.pr{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}.pr b{color:var(--gd);font-size:16px;font-weight:900}.pr small{color:var(--mut);font-size:10px}.price-meta{display:grid;grid-template-columns:1fr;gap:3px;padding:7px 8px;border:1px solid #e3eee7;border-radius:10px;background:#f8fcf9;color:#6b7f74;font-size:10px;line-height:1.45}.price-meta span{display:flex;justify-content:space-between;gap:6px}.price-meta b{color:#0b5d3b;font-size:11px;white-space:nowrap}
 .add{margin-top:auto;background:var(--gd);color:#fff;font-weight:800;font-size:13px;padding:12px;border-radius:12px}
 .add:active{transform:scale(.97)}
 .bnav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;box-shadow:0 -6px 20px rgba(0,0,0,.08);z-index:60;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
@@ -698,16 +698,29 @@ function renderCats(){document.getElementById('cats').innerHTML=getCats().map(fu
 function setCat(c){curCat=c;renderCats();renderGrid();}
 function doSearch(q){curQ=q.trim();renderGrid();}
 function vis(){return P.filter(function(p){return (curCat==='الكل'||(p.category||p.cat||'عام')===curCat)&&(!curQ||(p.name||'').indexOf(curQ)>-1);});}
+function wholePriceOf(p){
+  var value=p&&p.basePrice!=null?p.basePrice:(p&&p.cost!=null?p.cost:(p&&p.sale_price!=null?p.sale_price:(p&&p.price||0)));
+  return Math.max(0,Number(value)||0);
+}
+function salePriceOf(p){
+  var value=p&&p.price!=null?p.price:(p&&p.suggestedSalePrice!=null?p.suggestedSalePrice:(p&&p.sale_price!=null?p.sale_price:wholePriceOf(p)));
+  return Math.max(0,Number(value)||0);
+}
+function commissionOf(p){
+  var explicit=Number(p&&p.commission);
+  if(Number.isFinite(explicit)&&explicit>0)return explicit;
+  return Math.max(0,salePriceOf(p)-wholePriceOf(p));
+}
 function renderGrid(){
   var v=vis();document.getElementById('ptitle').textContent='كل المنتجات ('+v.length+')';
   document.getElementById('grid').innerHTML=v.map(function(p){
-    var i=P.indexOf(p);var price=p.price||p.sale_price||0;var old=Math.round(price*1.18);
+    var i=P.indexOf(p);var whole=wholePriceOf(p);var sale=salePriceOf(p);var commission=commissionOf(p);
     var img=p.image||((p.images&&p.images[0])||'');
     var st=stockOf(p);
-    return '<div class="card'+(st.out?' out':'')+'" onclick="openP('+i+')"><div class="img"><img loading="lazy" src="'+img+'"><span class="disc">-15%</span><span class="stk '+st.cls+'">'+st.label+'</span><button class="fav">♡</button></div>'
+    return '<div class="card'+(st.out?' out':'')+'" onclick="openP('+i+')"><div class="img"><img loading="lazy" src="'+img+'"><span class="stk '+st.cls+'">'+st.label+'</span><button class="fav">♡</button></div>'
       +'<div class="bd"><div class="nm">'+(p.name||'')+'</div>'
-      +'<div class="rate"><b>★</b> 4.8 (126)</div>'
-      +'<div class="pr"><s>'+old+'</s><b>'+fmt(price)+'</b></div>'
+      +'<div class="price-meta"><span>الجملة: <b>'+fmt(whole)+'</b></span><span>المقترح: <b>'+fmt(sale)+'</b></span><span>عمولتك: <b>'+fmt(commission)+'</b></span></div>'
+      +'<div class="pr"><b>'+fmt(sale)+'</b><small> سعر البيع المقترح</small></div>'
       +'<button class="add" '+(st.out?'disabled':'onclick="event.stopPropagation();addCart('+i+')"')+'>🛒 أضف إلى السلة</button></div></div>';
   }).join('')||'<p style="grid-column:1/-1;text-align:center;padding:30px;color:var(--mut)">لا توجد منتجات</p>';
 }
@@ -732,23 +745,8 @@ function addCart(i){
 
  selectedProduct=p;
  selectedQty=1;
-
- selectedBase=Number(
-   p.cost!=null?p.cost:
-   (p.basePrice!=null?p.basePrice:
-   (p.price||p.sale_price||0))
- );
-
- var suggested=Number((p.note||'').match(/سعر البيع المقترح\s+(\d+)/)?.[1]||0);
-
- if(!suggested)
-   suggested=Math.max(
-     selectedBase,
-     Math.round(selectedBase*1.5/10)*10
-   );
-
- selectedSale=suggested;
-
+ selectedBase=wholePriceOf(p);
+ selectedSale=Math.max(selectedBase,salePriceOf(p));
  showPriceModal();
 }
 
@@ -779,12 +777,12 @@ function showPriceModal(){
        '<img src="'+img+'">'+
        '<div>'+
          '<div class="price-product-name">'+name+'</div>'+
-         '<div class="price-product-cost">تكلفة المنتج: <b>'+selectedBase.toLocaleString('ar-EG')+' ج.م</b></div>'+
+         '<div class="price-product-cost">سعر الجملة من المصنع: <b>'+selectedBase.toLocaleString('ar-EG')+' ج.م</b></div>'+
        '</div>'+
      '</div>'+
 
      '<div class="price-section">'+
-       '<label>سعر البيع للعميل</label>'+
+       '<label>سعر البيع المقترح للعميل</label>'+
        '<div class="price-input-wrap">'+
          '<input id="salePriceInput" type="number" value="'+selectedSale+'" min="'+selectedBase+'" oninput="updatePricePreview()">'+
          '<span>ج.م</span>'+
@@ -794,7 +792,7 @@ function showPriceModal(){
 
      '<div class="profit-card">'+
        '<div>'+
-         '<span>ربحك المتوقع</span>'+
+         '<span>عمولتك التقديرية</span>'+
          '<small>لكل قطعة</small>'+
        '</div>'+
        '<strong id="profitPreview">'+profit.toLocaleString('ar-EG')+' ج.م</strong>'+
@@ -1082,6 +1080,12 @@ function recalc(){
   +'</div>';
 }
 var orderSubmitting=false;
+var orderIdempotencyKey='';
+function getOrderIdempotencyKey(){
+  if(orderIdempotencyKey)return orderIdempotencyKey;
+  orderIdempotencyKey=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'ord_'+Date.now()+'_'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);
+  return orderIdempotencyKey;
+}
 async function submitOrder(){
   var m=document.getElementById('comsg');
   if(orderSubmitting)return;
@@ -1100,11 +1104,11 @@ async function submitOrder(){
     var body={client_name:fName.value,client_phone1:fPhone.value,client_address:fAddr.value,
       shipping_governorate:fGov.value,city:fCity.value,
       items:cart.map(function(c){return {product:c.id,property:c.prop,qty:c.qty}}),
-      total:t,commission:Math.round(t*0.1)};
+      total:t,commission:Math.round(t*0.1),idempotency_key:getOrderIdempotencyKey()};
     m.textContent='⏳ جاري إرسال الطلب مرة واحدة...';
-    var r=await fetch('/api/create-order',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    var r=await fetch('/api/create-order',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json','X-Idempotency-Key':body.idempotency_key},body:JSON.stringify(body)});
     var d=await r.json().catch(function(){return {};});
-    if(r.ok&&d.ok){m.textContent='✅ '+(d.message||'تم إرسال الطلب');cart=[];upd();setTimeout(function(){document.getElementById('coMdl').classList.remove('open')},1800);}
+    if(r.ok&&d.ok){m.textContent='✅ '+(d.message||'تم إرسال الطلب');cart=[];orderIdempotencyKey='';upd();setTimeout(function(){document.getElementById('coMdl').classList.remove('open')},1800);}
     else m.textContent='⚠️ '+(d.error||'فشل إرسال الطلب');
   }catch(e){m.textContent='⚠️ '+(e.message||'تعذر الاتصال، لم يتم تأكيد الطلب');}
   finally{orderSubmitting=false;}
@@ -1155,14 +1159,14 @@ function goOrders(){toast('📦 سجل دخولك لمتابعة طلباتك');
 </div></div>
 <script>
 function copyText(txt,msg){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast(msg||'✅ تم النسخ')})}else{var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();toast(msg||'✅ تم النسخ')}}
-function parseNote(p){var n=p.note||'';
- var s=n.match(/سعر البيع المقترح[^\d]{0,4}(\d+)/)||n.match(/سعر بيع مقترح[^\d]{0,4}(\d+)/);
- var cm=n.match(/عمولتك[^\d]{0,4}(\d+)/);
+function parseNote(p){var n=String(p&&p.note||'').replace(/,/g,'');
+ var s=n.match(/سعر\s*البيع\s*المقترح[^\d]{0,6}(\d+(?:\.\d+)?)/i)||n.match(/سعر\s*بيع\s*مقترح[^\d]{0,6}(\d+(?:\.\d+)?)/i);
+ var cm=n.match(/عمولتك[^\d]{0,6}(\d+(?:\.\d+)?)/i);
  return{sugg:s?+s[1]:0,comm:cm?+cm[1]:0};}
 function openP(i){var p=P[i];if(!p)return;
- var np=parseNote(p);var price=p.price||p.sale_price||0;
- var sugg=np.sugg||Math.round(price*1.18);
- var comm=np.comm||Math.max(0,sugg-price);
+ var np=parseNote(p);var price=wholePriceOf(p);
+ var sugg=Math.max(price,salePriceOf(p),np.sugg||0);
+ var comm=commissionOf(p)>0?commissionOf(p):Math.max(0,sugg-price);
  var st=stockOf(p);
  document.getElementById('pImg').src=p.image||((p.images&&p.images[0])||'');
  document.getElementById('pName').textContent=p.name||'';
@@ -1711,7 +1715,18 @@ body{
   window.openAffiliate=async function(tab){document.getElementById('affiliateMdl').classList.add('open');document.getElementById('affiliateMdl').setAttribute('aria-hidden','false');setAffiliateTab(tab||'overview');try{await loadAffiliate();render();}catch(e){toast(e.message||'تعذر تحميل الحساب');closeAffiliate();}};
   window.closeAffiliate=function(){document.getElementById('affiliateMdl').classList.remove('open');document.getElementById('affiliateMdl').setAttribute('aria-hidden','true')};
   window.goAccount=function(){openAffiliate('overview')};window.goOrders=function(){openAffiliate('orders')};window.openAccount=function(){openAffiliate('overview')};window.openOrders=function(){openAffiliate('orders')};window.openWallet=function(){openAffiliate('wallet')};
-  window.submitAffiliateWithdrawal=async function(){var msg=document.getElementById('affiliateWithdrawalMessage'),amount=Number(document.getElementById('affiliateAmount').value),details=document.getElementById('affiliateDetails').value.trim(),method=document.getElementById('affiliateMethod').value;msg.textContent='';if(!Number.isFinite(amount)||amount<50){msg.textContent='أدخل مبلغًا لا يقل عن 50 ج.م';msg.style.color='#b91c1c';return}if(details.length<6){msg.textContent='أدخل بيانات السحب بشكل صحيح';msg.style.color='#b91c1c';return}msg.textContent='جارٍ إرسال الطلب…';msg.style.color='#315449';try{var r=await fetch('/api/affiliate/withdraw',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:amount,method:method,details:details})}),d=await r.json().catch(function(){return{}});if(!r.ok)throw new Error(d.error||'تعذر إرسال الطلب');msg.textContent=d.message||'تم استلام طلب السحب';msg.style.color='#176b3a';document.getElementById('affiliateAmount').value='';document.getElementById('affiliateDetails').value='';await loadAffiliate();render();}catch(e){msg.textContent=e.message||'تعذر إرسال الطلب';msg.style.color='#b91c1c'}};
+  var withdrawalIdempotencyKey='',withdrawalSubmitting=false;
+  function getWithdrawalIdempotencyKey(){if(withdrawalIdempotencyKey)return withdrawalIdempotencyKey;withdrawalIdempotencyKey=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'wd_'+Date.now()+'_'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);return withdrawalIdempotencyKey;}
+  window.submitAffiliateWithdrawal=async function(){
+    if(withdrawalSubmitting)return;
+    var msg=document.getElementById('affiliateWithdrawalMessage'),amount=Number(document.getElementById('affiliateAmount').value),details=document.getElementById('affiliateDetails').value.trim(),method=document.getElementById('affiliateMethod').value;
+    msg.textContent='';
+    if(!Number.isFinite(amount)||amount<50){msg.textContent='أدخل مبلغًا لا يقل عن 50 ج.م';msg.style.color='#b91c1c';return}
+    if(details.length<6){msg.textContent='أدخل بيانات السحب بشكل صحيح';msg.style.color='#b91c1c';return}
+    withdrawalSubmitting=true;msg.textContent='جارٍ إرسال الطلب…';msg.style.color='#315449';
+    var key=getWithdrawalIdempotencyKey();
+    try{var r=await fetch('/api/affiliate/withdraw',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json','X-Idempotency-Key':key},body:JSON.stringify({amount:amount,method:method,details:details,idempotency_key:key})}),d=await r.json().catch(function(){return{}});if(!r.ok)throw new Error(d.error||'تعذر إرسال الطلب');msg.textContent=d.message||'تم استلام طلب السحب';msg.style.color='#176b3a';withdrawalIdempotencyKey='';document.getElementById('affiliateAmount').value='';document.getElementById('affiliateDetails').value='';await loadAffiliate();render();}catch(e){msg.textContent=e.message||'تعذر إرسال الطلب';msg.style.color='#b91c1c'}finally{withdrawalSubmitting=false}
+  };
   window.affiliateLogout=async function(){try{await fetch('/api/auth/logout',{method:'POST',credentials:'include'})}catch(e){}localStorage.removeItem('sq_user_token');localStorage.removeItem('sq_user');localStorage.removeItem('sq_user_id');location.href='/store'};
   window.saveOrder=function(){};window.getOrders=function(){return[]};window.getWd=function(){return[]};window.totalComm=function(){return 0};window.withdrawn=function(){return 0};window.avail=function(){return state.stats?Number(state.stats.balance||0):0};
   var legacyAdd=window.addCart;window.addCart=function(i){var p=window.P&&P[i];if(!p||p.available!==true){toast('هذا المنتج غير متوفر حاليًا');return}return legacyAdd(i)};

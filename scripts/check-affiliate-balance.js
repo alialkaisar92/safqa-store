@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const root = path.join(__dirname, '..');
 const server = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
+const postgres = fs.readFileSync(path.join(root, 'lib', 'postgres.js'), 'utf8');
 const { availableBalance } = require(path.join(root, 'balance.js'));
 
 function assert(condition, message) {
@@ -23,11 +24,11 @@ const affiliate = {
 };
 
 assert(availableBalance(user, affiliate) === 95, 'availableBalance must be manual credits + delivered commission - active withdrawals');
-assert(server.includes('const balance = await syncUserBalance(user, affiliate);'), 'affiliate dashboard must use the central balance calculation');
+assert(server.includes('const balance = await syncUserBalanceScoped(user, { orders, withdrawals });'), 'affiliate dashboard must use the central scoped balance calculation');
 assert(!server.includes('Number(user.balance || 0) - pendingWithdrawals'), 'affiliate dashboard must not subtract withdrawals twice');
-assert(server.includes('const balance = availableBalance(user, affiliate);'), 'withdrawal validation must use the central balance calculation');
+assert(server.includes('postgres.createAffiliateWithdrawal({ userId: user.id, amount, method, details, requestKey })'), 'withdrawal must use the atomic PostgreSQL reservation');
 assert(!server.includes('Number(user.balance || 0) - reserved'), 'withdrawal validation must not subtract withdrawals twice');
-assert(server.includes('user.balance = availableBalance(user, affiliate);'), 'post-withdrawal balance must be persisted');
+assert(postgres.includes("UPDATE users SET balance=$2, updated_at=NOW()"), 'post-withdrawal balance must be persisted atomically');
 console.log('affiliate balance checks: PASS');
 console.log('expected available balance: 95');
 console.log('dashboard and withdrawal double-subtraction: NO');

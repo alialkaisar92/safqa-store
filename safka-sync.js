@@ -3,7 +3,6 @@ const path = require('path');
 const fetch = require('node-fetch');
 const store = require('./firestore');
 const postgres = require('./lib/postgres');
-const { availableBalance } = require('./balance');
 
 const BASE_URL = process.env.SAFKA_PUBLIC_BASE_URL || 'https://api.safka-eg.com/api/v1/public';
 const CACHE_FILE = path.join(__dirname, 'products-cache.json');
@@ -119,28 +118,27 @@ function statusUrl(order) {
 async function syncOrderStatuses() {
   const template = String(process.env.SAFKA_ORDER_STATUS_URL || '').trim();
   if (!template) return { ok: true, skipped: true, reason: 'SAFKA_ORDER_STATUS_URL غير مضبوط في التوثيق العام' };
-  const affiliate = await store.getAffiliateData();
-  const orders = affiliate.orders || []; let changed = 0; let delivered = 0;
-  for (const order of orders) {
-    if (!statusUrl(order)) continue;
-    try {
-      const body = await requestJson(statusUrl(order));
-      const raw = body.status || (body.data && (body.data.status || body.data.order_status)) || (body.order && body.order.status);
-      const next = mapStatus(raw);
-      if (!raw || next === order.status) continue;
-      const previous = order.status; order.status = next; order.safkaStatus = raw; order.statusSyncedAt = new Date().toISOString(); changed++;
-      if (order.userId != null) {
-        const user = await store.getUser(order.userId);
-        if (user) {
-          if (next === 'تم التسليم' && previous !== 'تم التسليم' && (+order.commission || 0) > 0) { user.totalEarned = (+user.totalEarned || 0) + (+order.commission || 0); delivered++; }
-          user.balance = availableBalance(user, affiliate);
-          await store.saveUser(user);
-        }
-      }
-      if (global.notifyUser && order.userId != null) await global.notifyUser(order.userId, 'تحديث حالة طلب', 'حالة طلبك الآن: ' + next, '/', 'order-status').catch(() => null);
-    } catch (e) { console.warn('Safka status sync skipped order', order.id, e.message); }
-  }
-  if (changed) await store.saveAffiliateData(affiliate);
+  const orders = await postgres.listAffiliateOrdersForSync();
+  let changed = 0; let delivered = 0; let cursor = 0;
+  const worker = async () => {
+    while (true) {
+      const order = orders[cursor++];
+      if (!order) return;
+      if (!statusUrl(order)) continue;
+      try {
+        const body = await requestJson(statusUrl(order));
+        const raw = body.status || (body.data && (body.data.status || body.data.order_status)) || (body.order && body.order.status);
+        const next = mapStatus(raw);
+        if (!raw || next === order.status) continue;
+        const updated = await postgres.updateAffiliateOrderStatus(order.id || order.serial, { status: next, safkaStatus: raw, statusSyncedAt: new Date().toISOString() });
+        if (!updated) continue;
+        changed++;
+        if (updated.delivered) delivered++;
+        if (global.notifyUser && order.userId != null) await global.notifyUser(order.userId, 'تحديث حالة طلب', 'حالة طلبك الآن: ' + next, '/', 'order-status').catch(() => null);
+      } catch (e) { console.warn('Safka status sync skipped order', order.id, e.message); }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(5, Math.max(1, orders.length)) }, () => worker()));
   return { ok: true, checked: orders.length, changed, delivered };
 }
 async function runSync(options) {

@@ -102,7 +102,7 @@ let affiliateSnapshot = null, affiliateSnapshotAt = 0;
 async function getAffiliateSnapshotFast() {
   if (affiliateSnapshot && Date.now() - affiliateSnapshotAt < 15000) return affiliateSnapshot;
   try {
-    affiliateSnapshot = await firestore.getAffiliateData();
+    affiliateSnapshot = await postgres.getAffiliateCatalogData();
     affiliateSnapshotAt = Date.now();
   } catch (e) {}
   return affiliateSnapshot || {};
@@ -112,6 +112,11 @@ async function readAffiliate(){ return firestore.getAffiliateData(); }
 async function saveAffiliate(d){ return firestore.saveAffiliateData(d); }
 async function syncUserBalance(user, affiliate) {
   const next = availableBalance(user, affiliate);
+  if (Number(user.balance || 0) !== next) { user.balance = next; await firestore.saveUser(user); }
+  return next;
+}
+async function syncUserBalanceScoped(user, records) {
+  const next = availableBalance(user, { orders: records && records.orders || [], withdrawals: records && records.withdrawals || [] });
   if (Number(user.balance || 0) !== next) { user.balance = next; await firestore.saveUser(user); }
   return next;
 }
@@ -280,6 +285,28 @@ async function fetchLivePublicProducts() {
   const rest = await Promise.all(Array.from({ length: pages - 1 }, (_, i) => readPage(i + 2)));
   return first.rows.concat(...rest.map(x => x.rows));
 }
+let liveProductsPromise = null;
+async function getLivePublicProductsCached(force) {
+  const cacheAge = Date.now() - lastFetch;
+  if (!force && productsCache.length && cacheAge < 600000) return productsCache;
+  if (liveProductsPromise) return liveProductsPromise;
+  liveProductsPromise = fetchLivePublicProducts().then(async live => {
+    productsCache = live;
+    lastFetch = Date.now();
+    try {
+      const affiliate = await getAffiliateSnapshotFast();
+      const priceUp = Math.max(0, Math.min(200, Number(affiliate.priceUp) || 0));
+      const saved = Array.isArray(affiliate.products) ? affiliate.products : [];
+      const savedById = new Map();
+      saved.forEach(item => [item.id, item._id, item.productId, item.safkaId].filter(Boolean).forEach(id => savedById.set(String(id), item)));
+      const normalized = live.map(raw => normalizePublicProduct(raw, savedById.get(String(raw.id || raw._id)) || {}, priceUp));
+      fs.writeFileSync(path.join(__dirname, 'products-cache.json'), JSON.stringify(normalized));
+    } catch (error) { console.warn('Product cache write skipped:', error.message); }
+    return live;
+  }).finally(() => { liveProductsPromise = null; });
+  return liveProductsPromise;
+}
+
 function readProductCache() {
   const fp = path.join(__dirname, 'products-cache.json');
   const data = JSON.parse(fs.readFileSync(fp, 'utf8'));
@@ -295,10 +322,10 @@ app.get('/api/products', async (req, res) => {
     [item.id, item._id, item.productId, item.safkaId].filter(v => v !== undefined && v !== null && String(v) !== '').forEach(v => savedById.set(String(v), item));
   });
   try {
-    const live = await fetchLivePublicProducts();
+    const live = await getLivePublicProductsCached(false);
     const stockUpdatedAt = new Date().toISOString();
     const normalized = live.map(raw => Object.assign(normalizePublicProduct(raw, savedById.get(String(raw.id || raw._id)) || {}, priceUp), { stockUpdatedAt }));
-    try { fs.writeFileSync(path.join(__dirname, 'products-cache.json'), JSON.stringify(normalized)); } catch (e) { console.warn('Product cache write skipped:', e.message); }
+    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
     res.json(normalized);
   } catch (error) {
     console.error('Live products unavailable:', error.message);
@@ -368,9 +395,9 @@ app.get(['/api/affiliate/me', '/api/me'], async (req, res) => {
   const user = await currentUser(req);
   if (!user) return res.status(401).json({ error: 'يجب تسجيل الدخول أولًا' });
   try {
-    const affiliate = await readAffiliate();
-    const orders = (affiliate.orders || []).map(order => affiliateOrderForUser(order, user.id)).filter(Boolean);
-    const withdrawals = (affiliate.withdrawals || []).map(item => affiliateWithdrawalForUser(item, user.id)).filter(Boolean);
+    const scoped = await postgres.getAffiliateUserData(user.id);
+    const orders = (scoped.orders || []).map(order => affiliateOrderForUser(order, user.id)).filter(Boolean);
+    const withdrawals = (scoped.withdrawals || []).map(item => affiliateWithdrawalForUser(item, user.id)).filter(Boolean);
     const deliveredStatuses = ['تم التسليم', 'تم التوصيل', 'delivered', 'completed'];
     const rejectedStatuses = ['مرفوض', 'rejected', 'رفض'];
     const delivered = orders.filter(order => deliveredStatuses.includes(String(order.status || '').trim().toLowerCase()));
@@ -379,7 +406,7 @@ app.get(['/api/affiliate/me', '/api/me'], async (req, res) => {
     const confirmedCommission = delivered.reduce((sum, order) => sum + Math.max(0, Number(order.commission) || 0), 0);
     const pendingWithdrawals = withdrawals.filter(item => !['rejected', 'مرفوض', 'رفض'].includes(String(item.status || '').trim().toLowerCase())).reduce((sum, item) => sum + Math.max(0, Number(item.amount) || 0), 0);
     // availableBalance already subtracts all non-rejected withdrawals; do not subtract them again here.
-    const balance = await syncUserBalance(user, affiliate);
+    const balance = await syncUserBalanceScoped(user, { orders, withdrawals });
     res.set('Cache-Control', 'no-store');
     res.json({ ok: true, user, stats: { totalOrders: orders.length, pendingOrders: pending.length, deliveredOrders: delivered.length, totalCommission, confirmedCommission, pendingWithdrawals, balance }, orders, withdrawals });
   } catch (error) {
@@ -397,24 +424,18 @@ app.post(['/api/affiliate/withdraw','/api/withdraw','/api/my/withdraw'], async (
   const amount = Number(req.body && req.body.amount);
   const method = String(req.body && req.body.method || '').trim();
   const details = String(req.body && (req.body.details || req.body.number) || '').trim();
+  const requestKey = String((req.headers['x-idempotency-key'] || req.body && req.body.idempotency_key || '')).trim();
   const methods = new Set(['فودافون كاش','اتصالات كاش','أورنج كاش','وي باي','إنستا باي','حساب بنكي']);
   if (!Number.isFinite(amount) || amount < 50) return res.status(400).json({ error: 'الحد الأدنى للسحب 50 ج.م' });
   if (!methods.has(method)) return res.status(400).json({ error: 'اختر وسيلة سحب صحيحة' });
   if (details.length < 6 || details.length > 120) return res.status(400).json({ error: 'أدخل بيانات السحب بشكل صحيح' });
+  if (requestKey.length < 16 || requestKey.length > 160) return res.status(400).json({ error: 'تعذر التحقق من طلب السحب، أعد المحاولة من الصفحة' });
   try {
-    const affiliate = await readAffiliate();
-    const withdrawals = affiliate.withdrawals || [];
-    // Compute from the source-of-truth records, not from a stale cached user.balance.
-    const balance = availableBalance(user, affiliate);
-    if (amount > balance) return res.status(400).json({ error: 'المبلغ أكبر من الرصيد المتاح' });
-    withdrawals.unshift({ id: 'wd_' + Date.now() + '_' + crypto.randomBytes(3).toString('hex'), userId: user.id, method, details, amount, status: 'pending', date: new Date().toISOString() });
-    affiliate.withdrawals = withdrawals;
-    await saveAffiliate(affiliate);
-    // Persist the post-withdrawal balance immediately so a second request cannot reuse the old balance.
-    user.balance = availableBalance(user, affiliate);
-    await firestore.saveUser(user);
-    res.status(201).json({ ok: true, message: 'تم استلام طلب السحب وسيتم مراجعته قريبًا' });
+    const result = await postgres.createAffiliateWithdrawal({ userId: user.id, amount, method, details, requestKey });
+    if (result.duplicate) return res.status(200).json({ ok: true, duplicate: true, message: 'تم تسجيل طلب السحب مسبقًا', balance: result.balance });
+    res.status(201).json({ ok: true, message: 'تم استلام طلب السحب وسيتم مراجعته قريبًا', balance: result.balance });
   } catch (error) {
+    if (error.code === 'INSUFFICIENT_BALANCE') return res.status(400).json({ error: error.message });
     console.error('[affiliate] withdrawal failed:', error.message);
     res.status(503).json({ error: 'تعذر إرسال طلب السحب حاليًا' });
   }
@@ -561,7 +582,7 @@ app.post('/api/create-order', async (req,res)=>{
   if(!items.length)return res.status(400).json({error:'السلة فارغة'});
   // لا نثق بالسعر الأصلي أو المخزون القادم من المتصفح؛ نتحقق من المصدر الحي أولًا.
   let sourceRows=[];
-  try { sourceRows = await fetchLivePublicProducts(); }
+  try { sourceRows = await getLivePublicProductsCached(false); }
   catch (e) { console.error('[order] live product verification failed:',e.message); return res.status(502).json({error:'تعذر التحقق من المنتج الأصلي حاليًا، حاول مرة أخرى'}); }
   const sourceById = new Map();
   sourceRows.forEach(p => { [p && p.id, p && p._id].filter(Boolean).forEach(id => sourceById.set(String(id), p)); });
@@ -626,6 +647,21 @@ app.post('/api/create-order', async (req,res)=>{
     commission:Number(commission),
     total:Number(total)
   };
+  const requestKey = String(req.headers['x-idempotency-key'] || b.idempotency_key || '').trim();
+  if (requestKey.length < 16 || requestKey.length > 160) return res.status(400).json({error:'تعذر التحقق من مفتاح الطلب، أعد المحاولة من المتجر'});
+  const requestData = { userId: String(affiliateUser.id), client_name: body.client_name, client_phone1: body.client_phone1, client_address: body.client_address, shipping_governorate: body.shipping_governorate, city: body.city, items: supplierItems };
+  let claim;
+  try { claim = await postgres.claimAffiliateOrderRequest(affiliateUser.id, requestKey, requestData); }
+  catch (claimError) {
+    if (claimError.code === 'IDEMPOTENCY_CONFLICT') return res.status(409).json({error:'مفتاح الطلب مستخدم لحساب آخر'});
+    console.error('[order] idempotency claim failed:', claimError.message);
+    return res.status(503).json({error:'تعذر تجهيز الطلب حاليًا، حاول مرة أخرى'});
+  }
+  if (claim.mode === 'duplicate') {
+    const saved = claim.row && claim.row.supplier_response ? claim.row.supplier_response : {};
+    return res.status(200).json({ok:true,duplicate:true,message:'تم تسجيل الطلب مسبقًا، لا حاجة لإرساله مرة أخرى',status:saved.status||null,order:saved.order||saved});
+  }
+  if (claim.mode === 'in_progress') return res.status(409).json({error:'الطلب قيد المعالجة بالفعل، انتظر لحظات ولا تعِد الإرسال'});
   try{
     const r=await fetch(BASE_URL+'/orders',{method:'POST',headers:{'api-safka-key':API_KEY,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(body)});
     const d=await r.json().catch(()=>({}));
@@ -638,6 +674,7 @@ app.post('/api/create-order', async (req,res)=>{
       const reason=supplierMessage || supplierErrors.join('، ') || malformed || 'فشل إرسال الطلب إلى المورد';
       console.warn('[order] supplier rejected or malformed response', { status:r.status, supplierStatus:outcome.status || null, error:reason });
       const safeMessage=reason.includes('محظور') || reason.includes('سلوكه') ? 'الرقم ده محظور في rab7na - استخدم رقمًا حقيقيًا' : reason+statusLabel;
+      await postgres.completeAffiliateOrderRequest(requestKey, 'failed', { error: safeMessage, supplierStatus: outcome.status || null }, null).catch(error => console.error('[order] failed-request state save failed:', error.message));
       return res.status(r.status>=400&&r.status<500 ? r.status : 502).json({error:safeMessage});
     }
     const customer=affiliateUser;
@@ -646,17 +683,17 @@ app.post('/api/create-order', async (req,res)=>{
     const savedOrder={id:externalId,serial:external.serial_number||external.serial||externalId,userId:customer.id,products:b.productNames||items.map(x=>x.product),items,client_name:body.client_name,client_phone1:body.client_phone1,client_address:body.client_address,status:'قيد التأكيد',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:shippingCost,originalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.originalPrice||0)*(x.qty||1),0),finalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.finalPrice||0)*(x.qty||1),0),external:external};
     let trackingSaved=true;
     try {
-      const affiliate=await readAffiliate();
-      affiliate.orders=affiliate.orders||[];
-      if (!affiliate.orders.some(order => String(order.id||order.serial)===String(savedOrder.id))) affiliate.orders.unshift(savedOrder);
-      await saveAffiliate(affiliate);
+      await postgres.saveAffiliateOrder(savedOrder);
     } catch (trackingError) {
       trackingSaved=false;
       console.error('[order] supplier accepted; affiliate tracking save failed:',trackingError.message);
     }
+    const requestStatus = trackingSaved ? 'accepted' : 'accepted_untracked';
+    await postgres.completeAffiliateOrderRequest(requestKey, requestStatus, { order: external, status: outcome.status || null }, externalId).catch(error => { trackingSaved=false; console.error('[order] idempotency result save failed:', error.message); });
     const confirmationMessage=outcome.status==='pending' ? 'تم إرسال الطلب وجارٍ تأكيده من المورد' : 'تم إرسال الطلب بنجاح';
     res.status(201).json({ok:true,message:confirmationMessage,status:outcome.status||null,order:external,trackingSaved});
   }catch(e){
+    await postgres.completeAffiliateOrderRequest(requestKey, 'failed', { error: 'supplier_connection_failed' }, null).catch(error => console.error('[order] connection-failure state save failed:', error.message));
     console.error('[order] supplier connection failed:',e.message);
     res.status(502).json({error:'تعذر الاتصال بالمورد حاليًا، حاول مرة أخرى'});
   }
