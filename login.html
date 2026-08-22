@@ -51,24 +51,24 @@ function tab(m){
   document.getElementById('fReg').classList.toggle('on',m==='reg');
 }
 if(location.hash==='#register')tab('reg');
-function save(d){
-  var tok=d.token||(d.data&&d.data.token)||d.accessToken||'';
-  var usr=d.user||(d.data&&d.data.user)||null;
-  if(tok)localStorage.setItem('sq_user_token',tok);
-  if(usr)localStorage.setItem('sq_user',JSON.stringify(usr));
-  if(usr&&usr.id)localStorage.setItem('sq_user_id',usr.id);
+function save(){
+  // جلسة المصادقة تُدار عبر HttpOnly cookie من الخادم، لا عبر localStorage.
+}
+function safeReturnPath(){
+  var value=new URLSearchParams(location.search).get('return')||'/store';
+  return value.startsWith('/')&&!value.startsWith('//')?value:'/store';
 }
 async function doLogin(e){e.preventDefault();var m=document.getElementById('lMsg');m.className='msg';m.textContent='⏳ ...';
   try{var r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:lEmail.value,password:lPass.value})});
     var d=await r.json();
-    if(r.ok&&(d.token||d.data&&d.data.token||d.ok)){save(d);m.className='msg ok';m.textContent='✅ تم الدخول';setTimeout(function(){location.href='/store'},700);}
+    if(r.ok&&(d.token||d.data&&d.data.token||d.ok)){save(d);m.className='msg ok';m.textContent='✅ تم الدخول';setTimeout(function(){location.href=safeReturnPath()},700);}
     else{m.className='msg err';m.textContent='⚠️ '+(d.error||d.message||'بيانات غير صحيحة');}
   }catch(err){m.className='msg err';m.textContent='⚠️ خطأ في الاتصال';}
 }
 async function doReg(e){e.preventDefault();var m=document.getElementById('rMsg');m.className='msg';m.textContent='⏳ ...';
   try{var r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:rName.value,email:rEmail.value,password:rPass.value})});
     var d=await r.json();
-    if(r.ok&&(d.token||d.data&&d.data.token||d.ok)){save(d);m.className='msg ok';m.textContent='✅ تم إنشاء الحساب';setTimeout(function(){location.href='/store'},700);}
+    if(r.ok&&(d.token||d.data&&d.data.token||d.ok)){save(d);m.className='msg ok';m.textContent='✅ تم إنشاء الحساب';setTimeout(function(){location.href=safeReturnPath()},700);}
     else{m.className='msg err';m.textContent='⚠️ '+(d.error||d.message||'فشل التسجيل');}
   }catch(err){m.className='msg err';m.textContent='⚠️ خطأ في الاتصال';}
 }

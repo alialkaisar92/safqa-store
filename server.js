@@ -524,6 +524,10 @@ function supplierResponseAccepted(httpResponse, payload) {
 app.post('/api/create-order', async (req,res)=>{
   res.set('Cache-Control','no-store');
   if(!API_KEY.trim())return res.status(503).json({error:'إعدادات الطلب غير مكتملة حاليًا. يرجى المحاولة لاحقًا.'});
+  // لا نعتمد على IP لربط العمولة؛ عنوان IP متغير ولا يثبت هوية المسوّق.
+  // يجب أن يكون الطلب صادرًا من جلسة مسوّق صالحة حتى لا يضيع userId.
+  const affiliateUser=await currentAuthUser(req);
+  if(!affiliateUser)return res.status(401).json({error:'سجّل الدخول بحساب المسوّق قبل إنشاء الطلب حتى تُحتسب العمولة لحسابك'});
   const b=req.body||{};
   const clean=(value)=>String(value==null?'':value).trim();
   const clientName=clean(b.client_name);
@@ -603,18 +607,20 @@ app.post('/api/create-order', async (req,res)=>{
   const merchandiseTotal=items.reduce((sum,x)=>sum+Math.max(0,Number(x.finalPrice)||0)*(Number(x.qty)||1),0);
   const commission=items.reduce((sum,x)=>sum+Math.max(0,Number(x.commission)||0)*(Number(x.qty)||1),0);
   const total=merchandiseTotal+shippingCost;
+  // Safka Public API documents only product/property/qty inside items.
+  // Keep internal pricing fields out of the supplier payload to avoid strict-schema rejection.
+  const supplierItems=items.map(item=>({product:String(item.product),property:String(item.property),qty:String(item.qty)}));
   const body={
-    items:items,
+    items:supplierItems,
     client_name:clientName,
     client_phone1:clientPhone,
     client_phone2:clientPhone2,
     client_address:clientAddress,
     shipping_governorate:govId,
-    city:b.city||'',
-    note:b.note||'',
-    commission:commission,
-    shipping_cost:shippingCost,
-    total:total
+    city:clean(b.city),
+    note:clean(b.note),
+    commission:Number(commission),
+    total:Number(total)
   };
   try{
     const r=await fetch(BASE_URL+'/orders',{method:'POST',headers:{'api-safka-key':API_KEY,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(body)});
@@ -630,10 +636,10 @@ app.post('/api/create-order', async (req,res)=>{
       const safeMessage=reason.includes('محظور') || reason.includes('سلوكه') ? 'الرقم ده محظور في rab7na - استخدم رقمًا حقيقيًا' : reason+statusLabel;
       return res.status(r.status>=400&&r.status<500 ? r.status : 502).json({error:safeMessage});
     }
-    const customer=await currentUser(req);
+    const customer=affiliateUser;
     const external=outcome.record;
     const externalId=outcome.externalId;
-    const savedOrder={id:externalId,serial:external.serial_number||external.serial||externalId,userId:customer&&customer.id||null,products:b.productNames||items.map(x=>x.product),items,client_name:body.client_name,client_phone1:body.client_phone1,client_address:body.client_address,status:'قيد التأكيد',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:shippingCost,originalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.originalPrice||0)*(x.qty||1),0),finalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.finalPrice||0)*(x.qty||1),0),external:external};
+    const savedOrder={id:externalId,serial:external.serial_number||external.serial||externalId,userId:customer.id,products:b.productNames||items.map(x=>x.product),items,client_name:body.client_name,client_phone1:body.client_phone1,client_address:body.client_address,status:'قيد التأكيد',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:shippingCost,originalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.originalPrice||0)*(x.qty||1),0),finalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.finalPrice||0)*(x.qty||1),0),external:external};
     let trackingSaved=true;
     try {
       const affiliate=await readAffiliate();
