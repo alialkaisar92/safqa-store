@@ -322,10 +322,84 @@ app.get('/dashboard', (req, res) => {
 app.get('/orders', (req, res) => {
   res.sendFile(path.join(__dirname, 'orders.html'));
 });
+function affiliateOrderForUser(order, userId) {
+  if (!order || String(order.userId) !== String(userId)) return null;
+  return {
+    id: order.id,
+    serial: order.serial || order.id,
+    products: Array.isArray(order.products) ? order.products : [],
+    items: Array.isArray(order.items) ? order.items.length : Number(order.items || 0),
+    client_name: order.client_name || order.customer || '',
+    total: Number(order.total || 0),
+    commission: Number(order.commission || 0),
+    status: order.status || 'قيد التأكيد',
+    date: order.date || order.createdAt || null,
+    statusSyncedAt: order.statusSyncedAt || null
+  };
+}
+
+function affiliateWithdrawalForUser(withdrawal, userId) {
+  if (!withdrawal || String(withdrawal.userId) !== String(userId)) return null;
+  return {
+    id: withdrawal.id,
+    method: withdrawal.method || '—',
+    amount: Number(withdrawal.amount || 0),
+    status: withdrawal.status || 'pending',
+    date: withdrawal.date || withdrawal.createdAt || null
+  };
+}
+
+app.get(['/api/affiliate/me', '/api/me'], async (req, res) => {
+  const user = await currentUser(req);
+  if (!user) return res.status(401).json({ error: 'يجب تسجيل الدخول أولًا' });
+  try {
+    const affiliate = await readAffiliate();
+    const orders = (affiliate.orders || []).map(order => affiliateOrderForUser(order, user.id)).filter(Boolean);
+    const withdrawals = (affiliate.withdrawals || []).map(item => affiliateWithdrawalForUser(item, user.id)).filter(Boolean);
+    const deliveredStatuses = ['تم التسليم', 'تم التوصيل', 'delivered', 'completed'];
+    const rejectedStatuses = ['مرفوض', 'rejected', 'رفض'];
+    const delivered = orders.filter(order => deliveredStatuses.includes(String(order.status || '').trim().toLowerCase()));
+    const pending = orders.filter(order => !deliveredStatuses.includes(String(order.status || '').trim().toLowerCase()) && !rejectedStatuses.includes(String(order.status || '').trim().toLowerCase()));
+    const totalCommission = orders.reduce((sum, order) => sum + Math.max(0, Number(order.commission) || 0), 0);
+    const confirmedCommission = delivered.reduce((sum, order) => sum + Math.max(0, Number(order.commission) || 0), 0);
+    const pendingWithdrawals = withdrawals.filter(item => !['rejected', 'مرفوض', 'رفض'].includes(String(item.status || '').trim().toLowerCase())).reduce((sum, item) => sum + Math.max(0, Number(item.amount) || 0), 0);
+    const balance = Math.max(0, Number(user.balance || 0) - pendingWithdrawals);
+    res.set('Cache-Control', 'no-store');
+    res.json({ ok: true, user, stats: { totalOrders: orders.length, pendingOrders: pending.length, deliveredOrders: delivered.length, totalCommission, confirmedCommission, pendingWithdrawals, balance }, orders, withdrawals });
+  } catch (error) {
+    console.error('[affiliate] dashboard read failed:', error.message);
+    res.status(503).json({ error: 'تعذر تحميل بيانات الأفليت حاليًا' });
+  }
+});
+
 app.post('/api/profile', (req,res) => res.status(410).json({ error: 'الملفات الشخصية غير متاحة في المتجر العام.' }));
-app.get('/api/my/dashboard', (req,res) => res.status(410).json({ error: 'لوحة المسوّق غير متاحة في المتجر العام.' }));
-app.post('/api/set-commission', (req,res)=>res.json({ok:true,message:'تم تحديث العمولة'}));
-app.post(['/api/withdraw','/api/my/withdraw'], (req,res) => res.status(410).json({ error: 'السحب غير متاح في المتجر العام.' }));
+app.get('/api/my/dashboard', (req, res) => res.redirect(307, '/api/affiliate/me'));
+app.post('/api/set-commission', (req,res)=>res.status(403).json({error:'تعديل العمولة غير مسموح من المتجر العام'}));
+app.post(['/api/affiliate/withdraw','/api/withdraw','/api/my/withdraw'], async (req, res) => {
+  const user = await currentUser(req);
+  if (!user) return res.status(401).json({ error: 'يجب تسجيل الدخول أولًا' });
+  const amount = Number(req.body && req.body.amount);
+  const method = String(req.body && req.body.method || '').trim();
+  const details = String(req.body && (req.body.details || req.body.number) || '').trim();
+  const methods = new Set(['فودافون كاش','اتصالات كاش','أورنج كاش','وي باي','إنستا باي','حساب بنكي']);
+  if (!Number.isFinite(amount) || amount < 50) return res.status(400).json({ error: 'الحد الأدنى للسحب 50 ج.م' });
+  if (!methods.has(method)) return res.status(400).json({ error: 'اختر وسيلة سحب صحيحة' });
+  if (details.length < 6 || details.length > 120) return res.status(400).json({ error: 'أدخل بيانات السحب بشكل صحيح' });
+  try {
+    const affiliate = await readAffiliate();
+    const withdrawals = affiliate.withdrawals || [];
+    const reserved = withdrawals.filter(item => String(item.userId) === String(user.id) && !['rejected','مرفوض','رفض'].includes(String(item.status || '').trim().toLowerCase())).reduce((sum, item) => sum + Math.max(0, Number(item.amount) || 0), 0);
+    const balance = Math.max(0, Number(user.balance || 0) - reserved);
+    if (amount > balance) return res.status(400).json({ error: 'المبلغ أكبر من الرصيد المتاح' });
+    withdrawals.unshift({ id: 'wd_' + Date.now() + '_' + crypto.randomBytes(3).toString('hex'), userId: user.id, method, details, amount, status: 'pending', date: new Date().toISOString() });
+    affiliate.withdrawals = withdrawals;
+    await saveAffiliate(affiliate);
+    res.status(201).json({ ok: true, message: 'تم استلام طلب السحب وسيتم مراجعته قريبًا' });
+  } catch (error) {
+    console.error('[affiliate] withdrawal failed:', error.message);
+    res.status(503).json({ error: 'تعذر إرسال طلب السحب حاليًا' });
+  }
+});
 
 app.get(['/login', '/register'], (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
 app.post('/api/auth/register', async (req, res) => {

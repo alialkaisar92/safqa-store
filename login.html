@@ -29,14 +29,14 @@ form.on{display:flex}
     <button id="tReg" onclick="tab('reg')">إنشاء حساب</button>
   </div>
   <form id="fLogin" class="on" onsubmit="doLogin(event)">
-    <div class="fld"><label>رقم الهاتف</label><input id="lPhone" type="tel" placeholder="01xxxxxxxxx" required></div>
+    <div class="fld"><label>البريد الإلكتروني</label><input id="lEmail" type="email" placeholder="name@example.com" autocomplete="email" required></div>
     <div class="fld"><label>كلمة المرور</label><input id="lPass" type="password" placeholder="••••••••" required></div>
     <div class="msg" id="lMsg"></div>
     <button class="go">دخول ←</button>
   </form>
   <form id="fReg" onsubmit="doReg(event)">
     <div class="fld"><label>الاسم الكامل</label><input id="rName" placeholder="اسمك" required></div>
-    <div class="fld"><label>رقم الهاتف</label><input id="rPhone" type="tel" placeholder="01xxxxxxxxx" required></div>
+    <div class="fld"><label>البريد الإلكتروني</label><input id="rEmail" type="email" placeholder="name@example.com" autocomplete="email" required></div>
     <div class="fld"><label>كلمة المرور</label><input id="rPass" type="password" placeholder="٦ أحرف على الأقل" minlength="6" required></div>
     <div class="msg" id="rMsg"></div>
     <button class="go">إنشاء الحساب ✓</button>
@@ -59,43 +59,21 @@ function save(d){
   if(usr&&usr.id)localStorage.setItem('sq_user_id',usr.id);
 }
 async function doLogin(e){e.preventDefault();var m=document.getElementById('lMsg');m.className='msg';m.textContent='⏳ ...';
-  try{var r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:lPhone.value,contact:lPhone.value,password:lPass.value})});
+  try{var r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:lEmail.value,password:lPass.value})});
     var d=await r.json();
     if(r.ok&&(d.token||d.data&&d.data.token||d.ok)){save(d);m.className='msg ok';m.textContent='✅ تم الدخول';setTimeout(function(){location.href='/store'},700);}
     else{m.className='msg err';m.textContent='⚠️ '+(d.error||d.message||'بيانات غير صحيحة');}
   }catch(err){m.className='msg err';m.textContent='⚠️ خطأ في الاتصال';}
 }
 async function doReg(e){e.preventDefault();var m=document.getElementById('rMsg');m.className='msg';m.textContent='⏳ ...';
-  try{var r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:rName.value,phone:rPhone.value,contact:rPhone.value,password:rPass.value})});
+  try{var r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:rName.value,email:rEmail.value,password:rPass.value})});
     var d=await r.json();
     if(r.ok&&(d.token||d.data&&d.data.token||d.ok)){save(d);m.className='msg ok';m.textContent='✅ تم إنشاء الحساب';setTimeout(function(){location.href='/store'},700);}
     else{m.className='msg err';m.textContent='⚠️ '+(d.error||d.message||'فشل التسجيل');}
   }catch(err){m.className='msg err';m.textContent='⚠️ خطأ في الاتصال';}
 }
 </script>
-<script id="localAuth">
-function getUsers(){try{return JSON.parse(localStorage.getItem('rab7_users')||'[]')}catch(e){return[]}}
-function setUsers(u){localStorage.setItem('rab7_users',JSON.stringify(u))}
-function localSave(phone,name){localStorage.setItem('sq_user_token','local_'+phone);localStorage.setItem('sq_user_id',phone);localStorage.setItem('sq_user',JSON.stringify({id:phone,name:name,phone:phone}));}
-async function doLogin(e){e.preventDefault();var m=document.getElementById('lMsg');m.className='msg';m.textContent='⏳ ...';
-  var ok=false;
-  try{var r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:lPhone.value,contact:lPhone.value,password:lPass.value})});
-    var d=await r.json();
-    if(r.ok&&(d.token||d.ok||d.data&&d.data.token)){var tok=d.token||(d.data&&d.data.token);localStorage.setItem('sq_user_token',tok);if(d.user)localStorage.setItem('sq_user',JSON.stringify(d.user));ok=true;}
-  }catch(err){}
-  if(!ok){var u=getUsers().find(function(x){return x.phone===lPhone.value&&x.pass===lPass.value});
-    if(u){localSave(u.phone,u.name);ok=true;}else{m.className='msg err';m.textContent='⚠️ بيانات غير صحيحة';return;}}
-  m.className='msg ok';m.textContent='✅ تم الدخول';setTimeout(function(){location.href='/store'},600);}
-async function doReg(e){e.preventDefault();var m=document.getElementById('rMsg');m.className='msg';m.textContent='⏳ ...';
-  var ok=false;
-  try{var r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:rName.value,phone:rPhone.value,contact:rPhone.value,password:rPass.value})});
-    var d=await r.json();
-    if(r.ok&&(d.token||d.ok||d.data&&d.data.token)){var tok=d.token||(d.data&&d.data.token);localStorage.setItem('sq_user_token',tok);if(d.user)localStorage.setItem('sq_user',JSON.stringify(d.user));ok=true;}
-  }catch(err){}
-  if(!ok){var u=getUsers();if(u.find(function(x){return x.phone===rPhone.value})){m.className='msg err';m.textContent='⚠️ الرقم مسجل بالفعل — سجل دخولك';return;}
-    u.push({name:rName.value,phone:rPhone.value,pass:rPass.value});setUsers(u);localSave(rPhone.value,rName.value);ok=true;}
-  m.className='msg ok';m.textContent='✅ تم إنشاء الحساب';setTimeout(function(){location.href='/store'},600);}
-</script>
+
 
 <style>
 .benefits{display:flex;flex-direction:column;gap:8px;margin:0 0 12px}
@@ -103,26 +81,7 @@ async function doReg(e){e.preventDefault();var m=document.getElementById('rMsg')
 .eye{position:absolute;left:12px;top:38px;border:none;background:none;font-size:16px;cursor:pointer}
 .fld{position:relative}
 </style>
-<script id="validatePhone">
-function vPhone(p){return /^01[0125][0-9]{8}$/.test(p);}
-(function(){
-  var reg=document.getElementById('fReg');
-  if(reg&&!document.getElementById('ben')){
-    var d=document.createElement('div');d.id='ben';d.className='benefits';
-    d.innerHTML='<div>✅ تسجيل مجاني 100% — بدون رسوم</div><div>💵 عمولة على كل طلب توصله</div><div>📦 تابع طلباتك وأرباحك لحظياً</div><div>💳 اسحب أرباحك فودافون كاش وغيره</div>';
-    reg.insertBefore(d,reg.firstChild);
-  }
-})();
-</script>
 
-<script id="forceValidate">
-var _reg=doReg,_log=doLogin;
-doReg=async function(e){e.preventDefault();var m=document.getElementById('rMsg');
- if(!vPhone(rPhone.value)){m.className='msg err';m.textContent='⚠️ رقم هاتف مصري غير صحيح (01xxxxxxxxx)';return;}
- if(rPass.value.length<6){m.className='msg err';m.textContent='⚠️ كلمة المرور 6 أحرف على الأقل';return;}
- _reg(e);}
-doLogin=async function(e){e.preventDefault();var m=document.getElementById('lMsg');
- if(!vPhone(lPhone.value)){m.className='msg err';m.textContent='⚠️ رقم هاتف غير صحيح';return;}
- _log(e);}
-</script>
+
+
 </body></html>
