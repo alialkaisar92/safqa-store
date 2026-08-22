@@ -14,9 +14,9 @@ const checks = [
   ['cart open does not auto-navigate to checkout', html.includes("window.openCart=function(){") && html.includes("window.openModalById('cartMdl')")],
   ['price editor is included in modal stack', html.includes("'priceModal'")],
   ['account orders wallet ids match actual markup', ['accMdl','ordMdl','walMdl'].every(id => html.includes(`id="${id}"`) && html.includes(`'${id}'`)),],
-  ['order success still follows server response', html.includes('if(r.ok&&d.ok)') && html.includes('تم تأكيد الأوردر بنجاح')],
-  ['checkout hides normal progress messages', html.includes("m.textContent='';") && html.includes("confirmButton.textContent='جاري الإرسال…'")],
-  ['checkout retries a pending request safely', html.includes('r.status===202&&d.pending') && html.includes('requestOptions')],
+  ['order success still follows server response', html.includes('if(r.ok&&d.ok)') && html.includes('showSuccessfulOrder')],
+  ['checkout hides normal progress messages', html.includes("m.textContent='';") && html.includes("confirmButton.textContent='جاري حفظ الطلب…'")],
+  ['checkout accepts queued response and polls safely', html.includes('showQueuedOrder') && html.includes('trackQueuedOrder') && html.includes('fetchQueuedOrderStatus')],
 ];
 
 let failed = 0;

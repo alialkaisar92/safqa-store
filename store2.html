@@ -701,6 +701,17 @@ img{display:block}
   padding:10px 12px;
 }
 
+.co-msg.queued,.co-msg.pending{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  padding:14px 13px;
+  border:1px solid #bfdbfe;
+  border-radius:16px;
+  background:linear-gradient(135deg,#eff6ff,#f0fdfa);
+  color:#155e75;
+}
+
 .co-msg.success{
   display:flex;
   flex-direction:column;
@@ -715,6 +726,8 @@ img{display:block}
 
 .order-success-title{font-size:.95rem;font-weight:950}
 .order-success-subtitle{font-size:.76rem;color:#3f6659;font-weight:750}
+.order-queue-number{font-size:.78rem;color:#315e70;font-weight:850}
+.order-queue-note{font-size:.72rem;color:#55736d;font-weight:700}
 .co-msg:not(.success):not(.error):empty{display:none}
 .confirm-order:disabled{opacity:.7;cursor:wait;transform:none}
 .confirm-order.is-processing{opacity:.82}
@@ -1235,64 +1248,87 @@ function recalc(){
  });
 }
 var orderSubmitting=false;
+var orderQueued=false;
 var orderIdempotencyKey='';
+var submittedCartBackup=[];
+var pendingOrderStorageKey='rab7na_pending_order_v1';
 function getOrderIdempotencyKey(){
   if(orderIdempotencyKey)return orderIdempotencyKey;
+  try{var saved=sessionStorage.getItem('rab7na_order_idempotency_key');if(saved&&saved.length>=16){orderIdempotencyKey=saved;return orderIdempotencyKey;}}catch(e){}
   orderIdempotencyKey=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'ord_'+Date.now()+'_'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);
+  try{sessionStorage.setItem('rab7na_order_idempotency_key',orderIdempotencyKey)}catch(e){}
   return orderIdempotencyKey;
+}
+function clearOrderIdempotencyKey(){orderIdempotencyKey='';try{sessionStorage.removeItem('rab7na_order_idempotency_key')}catch(e){}}
+function rememberPendingOrder(order,key){try{sessionStorage.setItem(pendingOrderStorageKey,JSON.stringify({id:order&&order.id,serial:order&&order.serial,key:key,createdAt:Date.now()}))}catch(e){}}
+function clearPendingOrder(){try{sessionStorage.removeItem(pendingOrderStorageKey)}catch(e){}}
+function resetOrderMessage(){var m=document.getElementById('comsg');if(m){m.className='co-msg';m.textContent='';}}
+function orderNumber(order){return String(order&&((order.serial||order.id))||'—').slice(-14)}
+function showQueuedOrder(order,title,note){var m=document.getElementById('comsg');if(!m)return;m.className='co-msg queued';m.innerHTML='<span class="order-success-title">'+title+'</span><span class="order-queue-number">رقم الطلب: #'+orderNumber(order)+'</span><span class="order-queue-note">'+note+' لا تعيد إرسال الطلب.</span>';}
+function showSuccessfulOrder(order,message){var m=document.getElementById('comsg');if(!m)return;m.className='co-msg success';m.innerHTML='<span class="order-success-title">'+message+'</span><span class="order-queue-number">رقم الطلب: #'+orderNumber(order)+'</span><small class="order-success-subtitle">هنتابع مع عميلك لحد ما يستلم</small>';}
+function restoreCartAfterQueueFailure(){if(submittedCartBackup.length&&!cart.length){cart=submittedCartBackup.slice();upd();}}
+async function fetchQueuedOrderStatus(id){var r=await fetch('/api/affiliate/order-status/'+encodeURIComponent(String(id)),{credentials:'include',cache:'no-store'});var d=await r.json().catch(function(){return{}});return {response:r,data:d};}
+async function trackQueuedOrder(id){
+  var started=Date.now(),last='';
+  while(Date.now()-started<90000){
+    await new Promise(function(resolve){setTimeout(resolve,1500)});
+    try{
+      var result=await fetchQueuedOrderStatus(id),r=result.response,d=result.data;
+      if(!r.ok||!d.ok)continue;
+      var order=d.order||{},state=String(order.requestStatus||'pending').toLowerCase();
+      if(state!==last){last=state;showQueuedOrder(order,state==='accepted'?'تم استلام الطلب من المورد':'تم استلام طلبك بنجاح',state==='accepted'?'جاري تأكيد الطلب من المورد…':(order.message||'جاري تجهيز الإرسال…'));}
+      if(state==='confirmed'){
+        showSuccessfulOrder(order,'تم تأكيد الطلب بنجاح');
+        clearPendingOrder();clearOrderIdempotencyKey();orderQueued=false;
+        var button=document.querySelector('.confirm-order');if(button){button.disabled=false;button.classList.remove('is-processing');button.textContent='تأكيد الطلب ✓';}
+        setTimeout(function(){closeCheckout();resetOrderMessage();},3600);
+        return;
+      }
+      if(state==='failed'){
+        restoreCartAfterQueueFailure();clearPendingOrder();clearOrderIdempotencyKey();orderQueued=false;
+        var failed=document.getElementById('comsg');if(failed){failed.className='co-msg error';failed.textContent=order.failureReason||'تعذر تأكيد الطلب من المورد؛ راجع البيانات وأنشئ طلبًا جديدًا';}
+        var retryButton=document.querySelector('.confirm-order');if(retryButton){retryButton.disabled=false;retryButton.classList.remove('is-processing');retryButton.textContent='تأكيد الطلب ✓';}
+        return;
+      }
+    }catch(e){}
+  }
+  var pending=document.getElementById('comsg');if(pending){pending.className='co-msg pending';pending.innerHTML='<span class="order-success-title">تم استلام طلبك</span><span class="order-queue-number">رقم الطلب: #'+orderNumber({id:id})+'</span><span class="order-queue-note">جاري التحقق من حالته. لا تقم بإرسال الطلب مرة أخرى.</span>';}
+}
+async function resumePendingOrder(){
+  var saved=null;try{saved=JSON.parse(sessionStorage.getItem(pendingOrderStorageKey)||'null')}catch(e){}
+  if(!saved||!saved.id)return;
+  try{var result=await fetchQueuedOrderStatus(saved.id),d=result.data;if(result.response.ok&&d.ok){var state=String(d.order&&d.order.requestStatus||'').toLowerCase();if(state==='confirmed'||state==='failed'){clearPendingOrder();if(state==='confirmed')clearOrderIdempotencyKey();}else toast('لديك طلب رقم #'+orderNumber(saved)+' قيد المتابعة');}}catch(e){}
 }
 async function submitOrder(){
   var m=document.getElementById('comsg');
   var confirmButton=document.querySelector('.confirm-order');
-  if(orderSubmitting)return;
+  if(orderSubmitting||orderQueued)return;
   if(!fName.value||!fPhone.value||!fAddr.value||!fGov.value){m.className='co-msg error';m.textContent='أكمل بيانات العميل قبل التأكيد';return;}
   orderSubmitting=true;
   var orderSucceeded=false;
-  if(confirmButton){confirmButton.disabled=true;confirmButton.classList.add('is-processing');confirmButton.textContent='جاري الإرسال…';}
-  m.className='co-msg';
-  m.textContent='';
+  if(confirmButton){confirmButton.disabled=true;confirmButton.classList.add('is-processing');confirmButton.textContent='جاري حفظ الطلب…';}
+  m.className='co-msg';m.textContent='';
   try{
     var auth=await fetch('/api/auth/me',{credentials:'include',cache:'no-store'});
-    if(auth.status===401){
-      m.className='co-msg error';
-      m.textContent='سجّل الدخول أولًا حتى تُحتسب العمولة لحسابك';
-      setTimeout(function(){location.href='/login.html?return=%2Fstore'},900);
-      return;
-    }
+    if(auth.status===401){m.className='co-msg error';m.textContent='سجّل الدخول أولًا حتى تُحتسب العمولة لحسابك';setTimeout(function(){location.href='/login.html?return=%2Fstore'},900);return;}
     if(!auth.ok)throw new Error('تعذر التحقق من جلسة المسوّق');
     var t=cart.reduce(function(a,c){return a+c.price*c.qty},0)+ship;
-    var body={client_name:fName.value,client_phone1:fPhone.value,client_address:fAddr.value,
-      shipping_governorate:fGov.value,city:fCity.value,
-      items:cart.map(function(c){return {product:c.id,property:c.prop,qty:c.qty,originalPrice:Number(c.cost||0),finalPrice:Number(c.price||0)}}),
-      total:t,commission:Math.round(t*0.1),idempotency_key:getOrderIdempotencyKey()};
+    var body={client_name:fName.value,client_phone1:fPhone.value,client_address:fAddr.value,shipping_governorate:fGov.value,city:fCity.value,items:cart.map(function(c){return {product:c.id,property:c.prop,qty:c.qty,originalPrice:Number(c.cost||0),finalPrice:Number(c.price||0)}}),total:t,commission:Math.round(t*0.1),idempotency_key:getOrderIdempotencyKey()};
     var requestOptions={method:'POST',credentials:'include',headers:{'Content-Type':'application/json','X-Idempotency-Key':body.idempotency_key},body:JSON.stringify(body)};
-    var r=await fetch('/api/create-order',requestOptions);
-    var d=await r.json().catch(function(){return {};});
-    // حالة 202 تعني أن محاولة سابقة بنفس المفتاح ما زالت تعمل؛ ننتظر ثم نسترجع نتيجتها بدل عرض خطأ أو إرسال طلب جديد.
-    for(var retry=0;r.status===202&&d.pending&&retry<4;retry++){
-      await new Promise(function(resolve){setTimeout(resolve,Number(d.retry_after_ms)||800);});
-      r=await fetch('/api/create-order',requestOptions);
-      d=await r.json().catch(function(){return {};});
+    var r=await fetch('/api/create-order',requestOptions),d=await r.json().catch(function(){return {}});
+    if(d.ok&&d.queued&&d.order&&d.order.id){
+      var existingState=String(d.order.requestStatus||d.status||'pending').toLowerCase();
+      if(existingState==='confirmed'){
+        orderSucceeded=true;clearPendingOrder();clearOrderIdempotencyKey();showSuccessfulOrder(d.order,d.message||'تم تأكيد الطلب بنجاح');cart=[];upd();setTimeout(function(){closeCheckout();resetOrderMessage();},3600);
+      }else{
+        orderQueued=true;submittedCartBackup=cart.slice();cart=[];upd();rememberPendingOrder(d.order,body.idempotency_key);showQueuedOrder(d.order,existingState==='accepted'?'تم استلام الطلب من المورد':'تم استلام طلبك بنجاح',d.message||'جاري إرساله للمورد…');trackQueuedOrder(d.order.id);
+      }
+      return;
     }
-    if(r.ok&&d.ok){
-      orderSucceeded=true;
-      m.className='co-msg success';
-      m.innerHTML='<span class="order-success-title">تم تأكيد الأوردر بنجاح</span><small class="order-success-subtitle">هنتابع مع عميلك لحد ما يستلم</small>';
-      if(confirmButton){confirmButton.textContent='تم التأكيد ✓';}
-      cart=[];orderIdempotencyKey='';upd();
-      setTimeout(function(){
-        closeCheckout();
-        m.className='co-msg';
-        m.textContent='';
-        if(confirmButton){confirmButton.disabled=false;confirmButton.classList.remove('is-processing');confirmButton.textContent='تأكيد الطلب ✓';}
-      },3600);
-    }
-    else {m.className='co-msg error';m.textContent=d.error||'تعذر إرسال الطلب حاليًا';}
-  }catch(e){m.className='co-msg error';m.textContent=e.message||'تعذر الاتصال، لم يتم تأكيد الطلب';}
-  finally{
-    orderSubmitting=false;
-    if(confirmButton&&!orderSucceeded){confirmButton.disabled=false;confirmButton.classList.remove('is-processing');confirmButton.textContent='تأكيد الطلب ✓';}
-  }
+    if(r.ok&&d.ok){orderSucceeded=true;clearPendingOrder();clearOrderIdempotencyKey();showSuccessfulOrder(d.order||{},d.message||'تم تأكيد الطلب بنجاح');cart=[];upd();setTimeout(function(){closeCheckout();resetOrderMessage();},3600);}
+    else {m.className='co-msg error';m.textContent=d.error||'تعذر حفظ الطلب حاليًا؛ لم يتم إرساله للمورد';}
+  }catch(e){m.className='co-msg error';m.textContent='تعذر حفظ الطلب حاليًا؛ لم يتم إرساله للمورد';}
+  finally{orderSubmitting=false;if(confirmButton&&!orderSucceeded&&!orderQueued){confirmButton.disabled=false;confirmButton.classList.remove('is-processing');confirmButton.textContent='تأكيد الطلب ✓';}}
 }
 function openDrw(){openModalById('drw');document.getElementById('ovl').classList.add('open');}
 function closeDrw(options){closeModalById('drw',options);document.getElementById('ovl').classList.remove('open');}
@@ -1868,7 +1904,7 @@ body{
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function money(v){return (Number(v)||0).toLocaleString('ar-EG')+' ج.م'}
   function date(v){if(!v)return '—';try{return new Date(v).toLocaleDateString('ar-EG',{day:'numeric',month:'short',year:'numeric'})}catch(e){return esc(v)}}
-  var statusMap={pending:['قيد المراجعة','#fff7d6','#936b00'],preparing:['جارٍ التجهيز','#e4f3ff','#12659b'],shipped:['تم الشحن','#e9eaff','#4545a0'],delivered:['تم التسليم','#dcfce7','#176b3a'],returned:['مرتجع','#fee2e2','#a61b1b'],rejected:['مرفوض','#fee2e2','#a61b1b'],'قيد التأكيد':['قيد التأكيد','#fff7d6','#936b00'],'تم التسليم':['تم التسليم','#dcfce7','#176b3a']};
+  var statusMap={pending:['قيد التجهيز','#fff7d6','#936b00'],processing:['جاري التأكيد','#e4f3ff','#12659b'],retry:['إعادة المحاولة تلقائيًا','#fff7d6','#936b00'],unknown:['جاري التحقق','#fff7d6','#936b00'],accepted:['تم الاستلام من المورد','#e4f3ff','#12659b'],confirmed:['تم التأكيد','#dcfce7','#176b3a'],failed:['تعذر التأكيد','#fee2e2','#a61b1b'],preparing:['جارٍ التجهيز','#e4f3ff','#12659b'],shipped:['تم الشحن','#e9eaff','#4545a0'],delivered:['تم التسليم','#dcfce7','#176b3a'],returned:['مرتجع','#fee2e2','#a61b1b'],rejected:['مرفوض','#fee2e2','#a61b1b'],'قيد المتابعة':['قيد التجهيز','#fff7d6','#936b00'],'قيد التحقق':['جاري التحقق','#fff7d6','#936b00'],'قيد التأكيد':['قيد التأكيد','#fff7d6','#936b00'],'تم التأكيد':['تم التأكيد','#dcfce7','#176b3a'],'تم التسليم':['تم التسليم','#dcfce7','#176b3a']};
   function getStatus(s){return statusMap[s]||[s||'قيد المتابعة','#f1f5f9','#475569']}
   async function loadAffiliate(){
     var r=await fetch('/api/affiliate/me',{credentials:'include',cache:'no-store'});
@@ -1884,7 +1920,7 @@ body{
     document.getElementById('affiliateBalance').textContent=money(s.balance);document.getElementById('affiliateWalletBalance').textContent=money(s.balance);document.getElementById('affiliateTotalCommission').textContent=money(s.totalCommission);document.getElementById('affiliateDelivered').textContent=Number(s.deliveredOrders||0).toLocaleString('ar-EG');document.getElementById('affiliatePending').textContent=Number(s.pendingOrders||0).toLocaleString('ar-EG');document.getElementById('affiliateOrdersCount').textContent=state.orders.length.toLocaleString('ar-EG')+' طلب';document.getElementById('affiliateProfileName').textContent=u.name||'—';document.getElementById('affiliateProfileEmail').textContent=u.email||'—';document.getElementById('affiliateProfileCreated').textContent=date(u.created_at);document.getElementById('affiliateLastSync').textContent='آخر تحديث '+new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
     var orders=document.getElementById('affiliateOrdersList');
     orders.innerHTML=state.orders.length?state.orders.map(function(o){
-      var st=getStatus(o.status), names=(o.products||[]).slice(0,2).join('، ')||'طلب منتجات';
+      var st=getStatus(o.requestStatus||o.status), names=(o.products||[]).slice(0,2).join('، ')||'طلب منتجات';
       return `<article class="affiliate-order"><div class="affiliate-order-top"><span>طلب #${esc(String(o.serial||o.id).slice(-8))}</span><span class="affiliate-status" style="background:${st[1]};color:${st[2]}">${esc(st[0])}</span></div><div style="font-size:12px;color:#71847a;margin-top:8px">${esc(names)}${o.products&&o.products.length>2?' …':''}</div><div class="affiliate-order-bottom"><span>${date(o.date)} · ${Number(o.items||0).toLocaleString('ar-EG')} منتج</span><b>عمولتك: ${money(o.commission)}</b></div></article>`;
     }).join(''):'<div class="affiliate-empty"><div style="font-size:34px">📦</div><b>لم تنشئ أي طلبات بعد</b><small>ابدأ من المنتجات وشارك عروضك مع عملائك.</small></div>';
     var wd=document.getElementById('affiliateWithdrawalsList');

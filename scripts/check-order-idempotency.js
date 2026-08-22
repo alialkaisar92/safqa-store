@@ -4,26 +4,33 @@ const root = path.join(__dirname, '..');
 const server = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
 const client = fs.readFileSync(path.join(root, 'store2.html'), 'utf8');
 const postgres = fs.readFileSync(path.join(root, 'lib', 'postgres.js'), 'utf8');
+const worker = fs.readFileSync(path.join(root, 'safka-sync.js'), 'utf8');
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+const routeStart = server.indexOf("app.post('/api/create-order'");
+const routeEnd = server.indexOf("app.get('/api/affiliate/order-status/:id'", routeStart);
+const orderRoute = server.slice(routeStart, routeEnd);
+
 assert(server.includes("const affiliateUser=await currentAuthUser(req);"), 'orders must use the authenticated affiliate session');
-assert(server.includes('postgres.claimAffiliateOrderRequest(affiliateUser.id, requestKey, requestData)'), 'orders must claim idempotency before supplier submission');
-assert(server.includes("claim.mode === 'duplicate'"), 'retries must return the stored result');
-assert(server.includes("claim.mode === 'in_progress'"), 'concurrent retries must not submit a second supplier order');
-assert(server.includes("res.status(202).json({ok:false,pending:true,retry_after_ms:800})"), 'in-progress retries must return a pending contract, not a misleading error');
-assert(client.includes('r.status===202&&d.pending'), 'checkout must recover a pending request with the same idempotency key');
-assert(server.includes("completeAffiliateOrderRequest(requestKey, 'failed'"), 'supplier failures must release the retry state safely');
-assert(server.includes('requestKey,userId:customer.id'), 'affiliate order records must retain the idempotency key for recovery');
-assert(server.includes('affiliateOrder: savedOrder'), 'idempotency results must retain the affiliate record for recovery');
-assert(client.includes('getOrderIdempotencyKey()'), 'checkout must keep one idempotency key per attempt');
-assert(client.includes("'X-Idempotency-Key':body.idempotency_key"), 'checkout must send the idempotency key as a header');
-assert(postgres.includes('PRIMARY KEY') && postgres.includes('affiliate_order_requests'), 'idempotency table must have a unique primary key');
-assert(postgres.includes('ON CONFLICT (request_key) DO NOTHING'), 'concurrent claims must be deduplicated atomically');
-assert(postgres.includes("data->>'requestKey'=$1"), 'a saved affiliate order must be recovered before any retry to the supplier');
-assert(postgres.includes('repairAcceptedUntrackedAffiliateOrders'), 'accepted-but-untracked orders must have an automatic repair path');
-console.log('order idempotency checks: PASS');
-console.log('supplier duplicate submissions by this test: NO');
-console.log('network/order submitted by this test: NO');
+assert(server.includes('postgres.createQueuedAffiliateOrder(affiliateUser.id,requestKey,requestData,affiliateOrder)'), 'orders must be saved to the database queue before supplier work');
+assert(orderRoute.includes("res.status(202).json({ok:true,queued:true,pending:true"), 'new orders must return an immediate queued response');
+assert(!orderRoute.includes("fetch(BASE_URL+'/orders'"), 'supplier POST must not block the storefront request');
+assert(server.includes("app.get('/api/affiliate/order-status/:id'"), 'orders need a protected status endpoint');
+assert(server.includes('postgres.getAffiliateOrderStatus(user.id'), 'status endpoint must scope reads to the authenticated user');
+assert(postgres.includes('processing_started_at') && postgres.includes('last_attempt_at') && postgres.includes('retry_count'), 'queue retry metadata is missing');
+assert(postgres.includes('lease_expires_at') && postgres.includes('FOR UPDATE') && postgres.includes('SKIP LOCKED'), 'queue jobs need leases and concurrent-safe claiming');
+assert(postgres.includes('affiliate_commissions') && postgres.includes('ON CONFLICT (order_id) DO NOTHING'), 'commission ledger must be idempotent per order');
+assert(worker.includes('processAffiliateOrderQueue') && worker.includes('claimAffiliateOrderJobs'), 'background order worker is missing');
+assert(worker.includes('AbortController') && worker.includes('ETIMEDOUT'), 'supplier timeout must be bounded');
+assert(worker.includes("'unknown'") && worker.includes("'retry'"), 'worker must distinguish UNKNOWN and retryable states');
+assert(worker.includes("'X-Idempotency-Key'"), 'supplier attempts must carry the stable operation key');
+assert(client.includes("sessionStorage.getItem('rab7na_order_idempotency_key')"), 'refresh-safe idempotency key is missing');
+assert(client.includes('rab7na_pending_order_v1') && client.includes('fetchQueuedOrderStatus'), 'checkout must retain and poll queued orders');
+assert(client.includes("r.status===202&&d.ok") || client.includes("d.ok&&d.queued"), 'checkout must accept the immediate queued contract');
+console.log('order reliability checks: PASS');
+console.log('save-first queue contract: YES');
+console.log('concurrent worker deduplication: YES');
+console.log('supplier request submitted by this test: NO');

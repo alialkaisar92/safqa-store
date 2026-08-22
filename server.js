@@ -8,7 +8,7 @@ try{const _f=require('fs');const _ep=require('path').join(__dirname,'.env');if(_
 const API_KEY = process.env.SAFKA_API_KEY || '';
 const BASE_URL='https://api.safka-eg.com/api/v1/public';
 const safkaSync = require('./safka-sync');
-const { availableBalance } = require('./balance');
+const { availableBalance, commissionEligibleStatus } = require('./balance');
 const easyordersDb = require('./services/db');
 const easyordersRoutes = require('./routes/easyorders.routes');
 app.use(express.json({limit:'50mb'}));
@@ -36,7 +36,7 @@ async function initializePostgres() {
   try { await postgres.migrate(); postgresStatus = 'ready'; console.log('[postgres] schema ready'); }
   catch (error) { postgresStatus = 'error'; console.error('[postgres] initialization failed:', error.message); }
 }
-initializePostgres();
+const postgresReady = initializePostgres();
 function authReqToken(req){const h=String(req.headers.authorization||'');return String(req.headers['x-auth-token']||req.headers['x-sq-token']||(h.toLowerCase().indexOf('bearer ')===0?h.slice(7):'')||'').trim();}
 async function currentAuthUser(req){const token=authToken(req);if(!token)return null;try{const user=await authService.currentUser(token);if(user)return user;}catch(e){}try{const jwt=global.verifyJWT&&global.verifyJWT(token);if(jwt)return await firestore.getUser(jwt.uid);}catch(e){}try{const rec=await firestore.getToken(token);return rec?await firestore.getUser(rec.uid):null;}catch(e){return null;}}
 
@@ -502,6 +502,9 @@ function affiliateOrderForUser(order, userId) {
     total: Number(order.total || 0),
     commission: Number(order.commission || 0),
     status: order.status || 'قيد التأكيد',
+    requestStatus: order.requestStatus || null,
+    failureReason: order.requestStatus === 'failed' ? (order.failureReason || '') : '',
+    externalId: order.externalId || order.supplierOrderId || null,
     date: order.date || order.createdAt || null,
     statusSyncedAt: order.statusSyncedAt || null
   };
@@ -530,7 +533,7 @@ app.get(['/api/affiliate/me', '/api/me'], async (req, res) => {
     const delivered = orders.filter(order => deliveredStatuses.includes(String(order.status || '').trim().toLowerCase()));
     const pending = orders.filter(order => !deliveredStatuses.includes(String(order.status || '').trim().toLowerCase()) && !rejectedStatuses.includes(String(order.status || '').trim().toLowerCase()));
     const totalCommission = orders.reduce((sum, order) => sum + Math.max(0, Number(order.commission) || 0), 0);
-    const confirmedCommission = delivered.reduce((sum, order) => sum + Math.max(0, Number(order.commission) || 0), 0);
+    const confirmedCommission = orders.filter(order => commissionEligibleStatus(order.status)).reduce((sum, order) => sum + Math.max(0, Number(order.commission) || 0), 0);
     const pendingWithdrawals = withdrawals.filter(item => !['rejected', 'مرفوض', 'رفض'].includes(String(item.status || '').trim().toLowerCase())).reduce((sum, item) => sum + Math.max(0, Number(item.amount) || 0), 0);
     // availableBalance already subtracts all non-rejected withdrawals; do not subtract them again here.
     const balance = await syncUserBalanceScoped(user, { orders, withdrawals });
@@ -589,7 +592,12 @@ async function refreshProductsCache(){
   try { const result = await safkaSync.syncProducts({ notify: true }); console.log('✅ Safka products synced:', result.products, 'new:', result.newProducts); }
   catch (e) { console.log('Safka cache sync err:', e.message); }
 }
-if (API_KEY.trim()) { refreshProductsCache(); setInterval(refreshProductsCache, 10 * 60 * 1000); }
+if (API_KEY.trim()) {
+  refreshProductsCache();
+  setInterval(refreshProductsCache, 10 * 60 * 1000);
+  setInterval(() => safkaSync.processAffiliateOrderQueue(5).catch(error => console.error('[order-queue] interval failed:', error.message)), 5000);
+  setInterval(() => safkaSync.reconcileAffiliateOrderQueue(50).catch(error => console.error('[order-queue] reconciliation interval failed:', error.message)), 60 * 1000);
+}
 
 app.all('/api/safka/sync', async (req, res) => {
   const secret = String(process.env.SAFKA_SYNC_SECRET || '').trim();
@@ -675,11 +683,37 @@ function supplierResponseAccepted(httpResponse, payload) {
   };
 }
 
+function queueStatusMessage(status) {
+  const messages = {
+    pending: 'تم استلام طلبك، جاري تجهيز الإرسال',
+    processing: 'جاري تأكيد الطلب من المورد',
+    retry: 'المورد مشغول، ستتم إعادة المحاولة تلقائيًا',
+    unknown: 'تم استلام طلبك، وجاري التحقق من حالته. لا تقم بإرسال الطلب مرة أخرى.',
+    accepted: 'تم إرسال الطلب للمورد وجارٍ تأكيده',
+    confirmed: 'تم تأكيد الطلب بنجاح',
+    failed: 'تعذر تأكيد الطلب من المورد؛ راجع البيانات وأنشئ طلبًا جديدًا'
+  };
+  return messages[String(status || '').toLowerCase()] || 'جاري متابعة الطلب';
+}
+function queueStatusPayload(row, order) {
+  const status = String(row && row.status || 'pending').toLowerCase();
+  const safeOrder = order || {};
+  return {
+    id: safeOrder.id || row.order_id,
+    serial: safeOrder.serial || safeOrder.id || row.order_id,
+    status: safeOrder.status || (status === 'confirmed' || status === 'accepted' ? 'قيد التأكيد' : 'قيد المتابعة'),
+    requestStatus: status,
+    total: Number(safeOrder.total || 0),
+    commission: Number(safeOrder.commission || 0),
+    message: queueStatusMessage(status),
+    failureReason: status === 'failed' ? String(row.failure_reason || '') : ''
+  };
+}
+
 app.post('/api/create-order', async (req,res)=>{
   res.set('Cache-Control','no-store');
-  if(!API_KEY.trim())return res.status(503).json({error:'إعدادات الطلب غير مكتملة حاليًا. يرجى المحاولة لاحقًا.'});
-  // لا نعتمد على IP لربط العمولة؛ عنوان IP متغير ولا يثبت هوية المسوّق.
-  // يجب أن يكون الطلب صادرًا من جلسة مسوّق صالحة حتى لا يضيع userId.
+  try { await postgresReady; } catch (error) { console.error('[order] postgres initialization failed:', error.message); return res.status(503).json({error:'خدمة الطلبات تجهز حاليًا، حاول مرة أخرى بعد لحظات'}); }
+  if(!API_KEY.trim()) return res.status(503).json({error:'خدمة الطلبات غير مفعلة حاليًا؛ لم يتم تسجيل أي طلب'});
   const affiliateUser=await currentAuthUser(req);
   if(!affiliateUser)return res.status(401).json({error:'سجّل الدخول بحساب المسوّق قبل إنشاء الطلب حتى تُحتسب العمولة لحسابك'});
   const b=req.body||{};
@@ -693,30 +727,34 @@ app.post('/api/create-order', async (req,res)=>{
   if(!egyptianPhone.test(clientPhone))return res.status(400).json({error:'رقم الهاتف الأول غير صحيح'});
   if(clientPhone2 && !egyptianPhone.test(clientPhone2))return res.status(400).json({error:'رقم الهاتف الثاني غير صحيح'});
   if(!clientAddress)return res.status(400).json({error:'العنوان مطلوب'});
-  const gov=(b.shipping_governorate||'').toString().trim();
+  const gov=clean(b.shipping_governorate);
   let govId=gov;
   try{
-    const pl=JSON.parse(require('fs').readFileSync(require('path').join(__dirname,'price-list-cache.json'),'utf8'));
-    const found=pl.find(x=>x._id===gov||(x.governorateNameAr||x.governorateName)===gov);
-    if(found)govId=found._id;
+    const pl=JSON.parse(fs.readFileSync(path.join(__dirname,'price-list-cache.json'),'utf8'));
+    const found=pl.find(x=>x._id===gov||x.id===gov||(x.governorateNameAr||x.governorateName)===gov);
+    if(found)govId=found._id||found.id;
   }catch(e){}
-  if(!govId||govId.length<10)return res.status(400).json({error:'اختر المحافظة'});
+  if(!govId||govId.length<3)return res.status(400).json({error:'اختر المحافظة'});
   const items=(Array.isArray(b.items)?b.items:[]).map(it=>({
     product: clean(it.product||it.id||it._id),
     property: clean(it.property||it.propId||''),
     qty: Number(it.qty||it.quantity||1),
-    originalPrice: Number(it.originalPrice||it.price||0),
-    finalPrice: Number(it.finalPrice||it.salePrice||it.originalPrice||it.price||0)
+    requestedFinalPrice: Number(it.finalPrice||it.salePrice||it.price||0)
   })).filter(x=>x.product);
   if(!items.length)return res.status(400).json({error:'السلة فارغة'});
-  // لا نثق بالسعر الأصلي أو المخزون القادم من المتصفح؛ نتحقق من المصدر الحي أولًا.
-  let sourceRows=[];
-  try { sourceRows = await getLivePublicProductsCached(false); }
-  catch (e) { console.error('[order] live product verification failed:',e.message); return res.status(502).json({error:'تعذر التحقق من المنتج الأصلي حاليًا، حاول مرة أخرى'}); }
-  const sourceById = new Map();
-  sourceRows.forEach(p => { [p && p.id, p && p._id].filter(Boolean).forEach(id => sourceById.set(String(id), p)); });
   for (const item of items) {
     if (!Number.isInteger(item.qty) || item.qty < 1 || item.qty > 99) return res.status(400).json({error:'الكمية المطلوبة غير صحيحة'});
+  }
+
+  let sourceRows=[];
+  try { sourceRows = await postgres.getProductsByExternalIds(items.map(item=>item.product)); }
+  catch (error) { console.error('[order] local product verification failed:', error.message); return res.status(503).json({error:'تعذر قراءة بيانات المنتج حاليًا، حاول مرة أخرى'}); }
+  const sourceById = new Map();
+  sourceRows.forEach(p => { [p && p.id, p && p._id].filter(Boolean).forEach(id => sourceById.set(String(id), p)); });
+  let priceUp = 0;
+  try { const snapshot = await postgres.getAffiliateCatalogData(); priceUp = Math.max(0, Math.min(200, Number(snapshot && snapshot.priceUp) || 0)); } catch (_) {}
+  const normalizedItems=[];
+  for (const item of items) {
     const source = sourceById.get(String(item.product));
     if (!source) return res.status(409).json({error:'المنتج غير متاح حاليًا من المصدر الأصلي'});
     const sourceProps = Array.isArray(source.properties) ? source.properties : [];
@@ -727,108 +765,64 @@ app.post('/api/create-order', async (req,res)=>{
     const stock = sourceStock(source);
     const base = Number(source.basePrice != null ? source.basePrice : (source.sale_price != null ? source.sale_price : (source.price != null ? source.price : 0)));
     if (!Number.isFinite(base) || base <= 0) return res.status(409).json({error:'سعر المنتج الأصلي غير متاح حاليًا'});
-    const propertyAvailable = sourceProps.length ? sourceProp.is_available === true : true;
-    const productAvailable =
-      source.is_active !== false &&
-      propertyAvailable &&
-      sourceAvailability(source) === true;
-
-    if (!productAvailable) {
-      return res.status(409).json({error:'المنتج غير متاح حاليًا'});
-    }
-
-    // stock=null من سوقلي لا يعني أن المنتج نفد.
-    // إذا كان هناك رقم مخزون فعلي، نتحقق من الكمية.
-    if (typeof stock === 'number' && stock >= 0 && item.qty > stock) {
-      return res.status(409).json({error:'الكمية المطلوبة أكبر من المخزون الأصلي'});
-    }
-    item.originalPrice = base;
-    item.finalPrice = Math.max(base, Number(item.finalPrice) || base);
-    item.property = (matchedProperty && (matchedProperty._id || matchedProperty.id || matchedProperty.key)) || item.property || source.propId || sourceProp._id || sourceProp.id || sourceProp.key || '';
-    if (!item.property) return res.status(409).json({error:'خاصية المنتج غير متاحة حاليًا'});
-    item.commission = extractCommission(source.note || '');
-    const suggestedPrice = extractSuggestedSalePrice(source.note || '', item.originalPrice);
-    if (suggestedPrice > item.finalPrice) item.finalPrice = suggestedPrice;
+    const propertyAvailable = sourceProps.length ? sourceProp.is_available === true : source.is_available !== false;
+    const productAvailable = source.is_active !== false && propertyAvailable && sourceAvailability(source) === true;
+    if (!productAvailable) return res.status(409).json({error:'المنتج غير متاح حاليًا'});
+    if (typeof stock === 'number' && stock >= 0 && item.qty > stock) return res.status(409).json({error:'الكمية المطلوبة أكبر من المخزون الأصلي'});
+    const note=clean(source.note || '');
+    const suggestedPrice=extractSuggestedSalePrice(note,base);
+    const finalPrice=Math.max(base, Number(suggestedPrice || 0) || Math.round(base*(1+priceUp/100)));
+    const commission=Math.max(0, Number(extractCommission(note)) || Math.max(0, finalPrice-base));
+    const property=(matchedProperty && (matchedProperty._id || matchedProperty.id || matchedProperty.key)) || item.property || source.propId || sourceProp._id || sourceProp.id || sourceProp.key || '';
+    if (!property) return res.status(409).json({error:'خاصية المنتج غير متاحة حاليًا'});
+    normalizedItems.push({product:String(item.product),property:String(property),qty:String(item.qty),name:String(source.name || source.title || item.product),originalPrice:base,finalPrice,commission});
   }
   let shippingCost=0;
-  let shippingGovernorate;
   try{
-    const pl=JSON.parse(require('fs').readFileSync(require('path').join(__dirname,'price-list-cache.json'),'utf8'));
-    shippingGovernorate=pl.find(x=>x._id===govId||x.id===govId);
+    const pl=JSON.parse(fs.readFileSync(path.join(__dirname,'price-list-cache.json'),'utf8'));
+    const shippingGovernorate=pl.find(x=>x._id===govId||x.id===govId);
     if(!shippingGovernorate)return res.status(409).json({error:'المحافظة المختارة غير متاحة حاليًا'});
     shippingCost=Math.max(0,Number(shippingGovernorate.price)||0);
-  }catch(e){console.error('[order] shipping price verification failed:',e.message);return res.status(502).json({error:'تعذر التحقق من سعر الشحن، حاول مرة أخرى'});}
-  const merchandiseTotal=items.reduce((sum,x)=>sum+Math.max(0,Number(x.finalPrice)||0)*(Number(x.qty)||1),0);
-  const commission=items.reduce((sum,x)=>sum+Math.max(0,Number(x.commission)||0)*(Number(x.qty)||1),0);
+  }catch(e){console.error('[order] shipping price verification failed:',e.message);return res.status(503).json({error:'تعذر التحقق من سعر الشحن، حاول مرة أخرى'});}
+  const merchandiseTotal=normalizedItems.reduce((sum,x)=>sum+Math.max(0,Number(x.finalPrice)||0)*Number(x.qty),0);
+  const commission=normalizedItems.reduce((sum,x)=>sum+Math.max(0,Number(x.commission)||0)*Number(x.qty),0);
   const total=merchandiseTotal+shippingCost;
-  // Safka Public API documents only product/property/qty inside items.
-  // Keep internal pricing fields out of the supplier payload to avoid strict-schema rejection.
-  const supplierItems=items.map(item=>({product:String(item.product),property:String(item.property),qty:String(item.qty)}));
-  const body={
-    items:supplierItems,
-    client_name:clientName,
-    client_phone1:clientPhone,
-    client_phone2:clientPhone2,
-    client_address:clientAddress,
-    shipping_governorate:govId,
-    city:clean(b.city),
-    note:clean(b.note),
-    commission:Number(commission),
-    total:Number(total)
-  };
-  const requestKey = String(req.headers['x-idempotency-key'] || b.idempotency_key || '').trim();
-  if (requestKey.length < 16 || requestKey.length > 160) return res.status(400).json({error:'تعذر التحقق من مفتاح الطلب، أعد المحاولة من المتجر'});
-  const requestData = { userId: String(affiliateUser.id), client_name: body.client_name, client_phone1: body.client_phone1, client_address: body.client_address, shipping_governorate: body.shipping_governorate, city: body.city, items: supplierItems };
-  let claim;
-  try { claim = await postgres.claimAffiliateOrderRequest(affiliateUser.id, requestKey, requestData); }
-  catch (claimError) {
-    if (claimError.code === 'IDEMPOTENCY_CONFLICT') return res.status(409).json({error:'مفتاح الطلب مستخدم لحساب آخر'});
-    console.error('[order] idempotency claim failed:', claimError.message);
-    return res.status(503).json({error:'تعذر تجهيز الطلب حاليًا، حاول مرة أخرى'});
+  const supplierItems=normalizedItems.map(item=>({product:item.product,property:item.property,qty:item.qty}));
+  const supplierPayload={items:supplierItems,client_name:clientName,client_phone1:clientPhone,client_phone2:clientPhone2,client_address:clientAddress,shipping_governorate:govId,city:clean(b.city),note:clean(b.note),commission:Number(commission),total:Number(total)};
+  const requestKey=clean(req.headers['x-idempotency-key'] || b.idempotency_key);
+  if(requestKey.length<16||requestKey.length>160)return res.status(400).json({error:'تعذر التحقق من مفتاح الطلب، أعد المحاولة من المتجر'});
+  const localOrderId='rb_'+crypto.createHash('sha256').update(String(affiliateUser.id)+':'+requestKey).digest('hex').slice(0,32);
+  const affiliateOrder={id:localOrderId,serial:'R7-'+localOrderId.slice(-8).toUpperCase(),requestKey,userId:affiliateUser.id,products:normalizedItems.map(item=>item.name),items:normalizedItems,client_name:clientName,client_phone1:clientPhone,client_address:clientAddress,status:'قيد المتابعة',requestStatus:'pending',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:shippingCost,originalMerchandiseTotal:normalizedItems.reduce((sum,x)=>sum+Number(x.originalPrice||0)*Number(x.qty),0),finalMerchandiseTotal:merchandiseTotal};
+  const requestData={userId:String(affiliateUser.id),supplierPayload,affiliateOrder};
+  let queued;
+  try { queued=await postgres.createQueuedAffiliateOrder(affiliateUser.id,requestKey,requestData,affiliateOrder); }
+  catch(error){
+    if(error.code==='IDEMPOTENCY_CONFLICT')return res.status(409).json({error:'مفتاح الطلب مستخدم لحساب آخر'});
+    console.error('[order] queue create failed:',error.message);
+    return res.status(503).json({error:'تعذر حفظ الطلب حاليًا، لم يتم إرساله للمورد'});
   }
-  if (claim.mode === 'duplicate') {
-    const saved = claim.row && claim.row.supplier_response ? claim.row.supplier_response : {};
-    return res.status(200).json({ok:true,duplicate:true,message:'تم تسجيل الطلب مسبقًا، لا حاجة لإرساله مرة أخرى',status:saved.status||null,order:saved.order||saved});
-  }
-  // محاولة ثانية بنفس المفتاح أثناء POST الأول ليست خطأ تجاريًا؛ نعيد حالة انتظار
-  // كي تسترجع الواجهة النتيجة بنفس المفتاح دون إنشاء طلب ثانٍ لدى المورد.
-  if (claim.mode === 'in_progress') return res.status(202).json({ok:false,pending:true,retry_after_ms:800});
-  try{
-    const r=await fetch(BASE_URL+'/orders',{method:'POST',headers:{'api-safka-key':API_KEY,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(body)});
-    const d=await r.json().catch(()=>({}));
-    const outcome=supplierResponseAccepted(r,d);
-    const supplierErrors=outcome.errors;
-    const supplierMessage=clean(d.message||d.error||supplierErrors.join('، '));
-    if(!outcome.accepted){
-      const statusLabel=outcome.status ? ' ('+outcome.status+')' : '';
-      const malformed=!supplierErrors.length && !supplierMessage && !outcome.externalId && r.ok ? 'استجابة المورد غير مكتملة' : '';
-      const reason=supplierMessage || supplierErrors.join('، ') || malformed || 'فشل إرسال الطلب إلى المورد';
-      console.warn('[order] supplier rejected or malformed response', { status:r.status, supplierStatus:outcome.status || null, error:reason });
-      const safeMessage=reason.includes('محظور') || reason.includes('سلوكه') ? 'الرقم ده محظور في rab7na - استخدم رقمًا حقيقيًا' : reason+statusLabel;
-      await postgres.completeAffiliateOrderRequest(requestKey, 'failed', { error: safeMessage, supplierStatus: outcome.status || null }, null).catch(error => console.error('[order] failed-request state save failed:', error.message));
-      return res.status(r.status>=400&&r.status<500 ? r.status : 502).json({error:safeMessage});
-    }
-    const customer=affiliateUser;
-    const external=outcome.record;
-    const externalId=outcome.externalId;
-    const savedOrder={id:externalId,serial:external.serial_number||external.serial||externalId,requestKey,userId:customer.id,products:b.productNames||items.map(x=>x.product),items,client_name:body.client_name,client_phone1:body.client_phone1,client_address:body.client_address,status:'قيد التأكيد',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:shippingCost,originalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.originalPrice||0)*(x.qty||1),0),finalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.finalPrice||0)*(x.qty||1),0),external:external};
-    let trackingSaved=true;
-    try {
-      await postgres.saveAffiliateOrder(savedOrder);
-    } catch (trackingError) {
-      trackingSaved=false;
-      console.error('[order] supplier accepted; affiliate tracking save failed:',trackingError.message);
-    }
-    const requestStatus = trackingSaved ? 'accepted' : 'accepted_untracked';
-    await postgres.completeAffiliateOrderRequest(requestKey, requestStatus, { order: external, status: outcome.status || null, affiliateOrder: savedOrder }, externalId).catch(error => { trackingSaved=false; console.error('[order] idempotency result save failed:', error.message); });
-    const confirmationMessage=outcome.status==='pending' ? 'تم إرسال الطلب وجارٍ تأكيده من المورد' : 'تم إرسال الطلب بنجاح';
-    res.status(201).json({ok:true,message:confirmationMessage,status:outcome.status||null,order:external,trackingSaved});
-  }catch(e){
-    await postgres.completeAffiliateOrderRequest(requestKey, 'failed', { error: 'supplier_connection_failed' }, null).catch(error => console.error('[order] connection-failure state save failed:', error.message));
-    console.error('[order] supplier connection failed:',e.message);
-    res.status(502).json({error:'تعذر الاتصال بالمورد حاليًا، حاول مرة أخرى'});
-  }
+  const row=queued.row || {};
+  const savedOrder=queued.mode==='created' ? affiliateOrder : (row.order_id===localOrderId ? affiliateOrder : {});
+  const payload=queueStatusPayload(row,savedOrder);
+  console.log('[order-queue] order_created', {order_id:payload.id,user_id:affiliateUser.id,idempotency_key:requestKey,attempt_number:0});
+  if(queued.mode==='created')return res.status(202).json({ok:true,queued:true,pending:true,order:payload,status:'pending',message:payload.message,retry_after_ms:1500});
+  if(queued.mode==='in_progress')return res.status(202).json({ok:true,queued:true,pending:true,duplicate:true,order:payload,status:String(row.status||'pending'),message:payload.message,retry_after_ms:1500});
+  return res.status(200).json({ok:true,duplicate:true,queued:true,order:payload,status:String(row.status||'pending'),message:payload.message});
 });
+
+app.get('/api/affiliate/order-status/:id', async (req,res)=>{
+  const user=await currentAuthUser(req);
+  try { await postgresReady; } catch (error) { console.error('[order] postgres status initialization failed:', error.message); return res.status(503).json({error:'خدمة متابعة الطلب تجهز حاليًا'}); }
+  if(!user)return res.status(401).json({error:'سجّل الدخول لمتابعة الطلب'});
+  try{
+    const row=await postgres.getAffiliateOrderStatus(user.id,cleanSupplierText(req.params.id));
+    if(!row)return res.status(404).json({error:'الطلب غير موجود'});
+    const order=row.order_data && typeof row.order_data==='object' ? row.order_data : {};
+    res.set('Cache-Control','no-store');
+    res.json({ok:true,order:queueStatusPayload(row,order),updatedAt:row.updated_at});
+  }catch(error){console.error('[order] status read failed:',error.message);res.status(503).json({error:'تعذر قراءة حالة الطلب حاليًا'});}
+});
+
 
 
 if (require.main === module) {

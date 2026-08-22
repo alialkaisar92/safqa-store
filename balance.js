@@ -2,13 +2,17 @@ function deliveredStatus(status) {
   return ['تم التسليم', 'تم التوصيل', 'delivered', 'completed'].includes(String(status || '').trim().toLowerCase());
 }
 
+function commissionEligibleStatus(status) {
+  return ['تم التأكيد', 'تم التاكيد', 'confirmed', 'تم التسليم', 'تم التوصيل', 'delivered', 'completed'].includes(String(status || '').trim().toLowerCase());
+}
+
 function rejectedStatus(status) {
   return ['rejected', 'مرفوض', 'رفض'].includes(String(status || '').trim().toLowerCase());
 }
 
 function availableBalanceFromRecords(user, orders, withdrawals) {
   const deliveredCommission = (Array.isArray(orders) ? orders : [])
-    .filter(o => deliveredStatus(o && o.status))
+    .filter(o => commissionEligibleStatus(o && o.status))
     .reduce((sum, o) => sum + Math.max(0, Number(o && o.commission) || 0), 0);
   const manualCredits = Math.max(0, Number(user && (user.manualCredits != null ? user.manualCredits : user.manual_credits)) || 0);
   const withdrawn = (Array.isArray(withdrawals) ? withdrawals : [])
@@ -24,4 +28,4 @@ function availableBalance(user, affiliate) {
   return availableBalanceFromRecords(user, orders, withdrawals);
 }
 
-module.exports = { deliveredStatus, rejectedStatus, availableBalanceFromRecords, availableBalance };
+module.exports = { deliveredStatus, commissionEligibleStatus, rejectedStatus, availableBalanceFromRecords, availableBalance };
