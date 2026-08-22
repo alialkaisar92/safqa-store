@@ -463,8 +463,19 @@ app.get('/api/price-list', async (req,res)=>{
 
 
 app.post('/api/create-order', async (req,res)=>{
+  res.set('Cache-Control','no-store');
   if(!API_KEY.trim())return res.status(503).json({error:'إعدادات الطلب غير مكتملة حاليًا. يرجى المحاولة لاحقًا.'});
   const b=req.body||{};
+  const clean=(value)=>String(value==null?'':value).trim();
+  const clientName=clean(b.client_name);
+  const clientPhone=clean(b.client_phone1).replace(/[\s()-]/g,'');
+  const clientPhone2=clean(b.client_phone2).replace(/[\s()-]/g,'');
+  const clientAddress=clean(b.client_address);
+  const egyptianPhone=/^(?:01[0125]\d{8}|20(?:10|11|12|15)\d{8})$/;
+  if(!clientName)return res.status(400).json({error:'اسم العميل مطلوب'});
+  if(!egyptianPhone.test(clientPhone))return res.status(400).json({error:'رقم الهاتف الأول غير صحيح'});
+  if(clientPhone2 && !egyptianPhone.test(clientPhone2))return res.status(400).json({error:'رقم الهاتف الثاني غير صحيح'});
+  if(!clientAddress)return res.status(400).json({error:'العنوان مطلوب'});
   const gov=(b.shipping_governorate||'').toString().trim();
   let govId=gov;
   try{
@@ -472,49 +483,52 @@ app.post('/api/create-order', async (req,res)=>{
     const found=pl.find(x=>x._id===gov||(x.governorateNameAr||x.governorateName)===gov);
     if(found)govId=found._id;
   }catch(e){}
-  if(!govId||govId.length<10)return res.json({error:'اختر المحافظة'});
-  const items=(b.items||[]).map(it=>({
-    product: it.product||it.id||it._id,
-    property: it.property||it.propId||'',
+  if(!govId||govId.length<10)return res.status(400).json({error:'اختر المحافظة'});
+  const items=(Array.isArray(b.items)?b.items:[]).map(it=>({
+    product: clean(it.product||it.id||it._id),
+    property: clean(it.property||it.propId||''),
     qty: Number(it.qty||it.quantity||1),
     originalPrice: Number(it.originalPrice||it.price||0),
     finalPrice: Number(it.finalPrice||it.salePrice||it.originalPrice||it.price||0)
   })).filter(x=>x.product);
-  if(!items.length)return res.json({error:'السلة فارغة'});
+  if(!items.length)return res.status(400).json({error:'السلة فارغة'});
   // لا نثق بالسعر الأصلي أو المخزون القادم من المتصفح؛ نتحقق من المصدر الحي أولًا.
   let sourceRows=[];
   try { sourceRows = await fetchLivePublicProducts(); }
-  catch (e) { return res.json({error:'تعذر التحقق من المنتج الأصلي حاليًا، حاول مرة أخرى'}); }
+  catch (e) { console.error('[order] live product verification failed:',e.message); return res.status(502).json({error:'تعذر التحقق من المنتج الأصلي حاليًا، حاول مرة أخرى'}); }
   const sourceById = new Map();
   sourceRows.forEach(p => { [p && p.id, p && p._id].filter(Boolean).forEach(id => sourceById.set(String(id), p)); });
   for (const item of items) {
+    if (!Number.isInteger(item.qty) || item.qty < 1 || item.qty > 99) return res.status(400).json({error:'الكمية المطلوبة غير صحيحة'});
     const source = sourceById.get(String(item.product));
-    if (!source) return res.json({error:'المنتج غير متاح حاليًا من المصدر الأصلي'});
-    const sourceProp = (source.properties && source.properties[0]) || {};
+    if (!source) return res.status(409).json({error:'المنتج غير متاح حاليًا من المصدر الأصلي'});
+    const sourceProps = Array.isArray(source.properties) ? source.properties : [];
+    const requestedProperty = String(item.property || '');
+    const matchedProperty = sourceProps.find(prop => requestedProperty && [prop && prop._id, prop && prop.id, prop && prop.key].filter(Boolean).map(String).includes(requestedProperty));
+    if (sourceProps.length && requestedProperty && !matchedProperty) return res.status(409).json({error:'اختيار المنتج غير صالح حاليًا'});
+    const sourceProp = matchedProperty || sourceProps[0] || {};
     const stock = sourceStock(source);
     const base = Number(source.basePrice != null ? source.basePrice : (source.sale_price != null ? source.sale_price : (source.price != null ? source.price : 0)));
-    if (!Number.isFinite(base) || base <= 0) return res.json({error:'سعر المنتج الأصلي غير متاح حاليًا'});
+    if (!Number.isFinite(base) || base <= 0) return res.status(409).json({error:'سعر المنتج الأصلي غير متاح حاليًا'});
+    const propertyAvailable = sourceProps.length ? sourceProp.is_available === true : true;
     const productAvailable =
       source.is_active !== false &&
-      sourceProp.is_available !== false &&
-      sourceAvailability(source) !== false;
+      propertyAvailable &&
+      sourceAvailability(source) === true;
 
     if (!productAvailable) {
-      return res.json({error:'المنتج غير متاح حاليًا'});
-    }
-
-    if (item.qty < 1) {
-      return res.json({error:'الكمية المطلوبة غير صحيحة'});
+      return res.status(409).json({error:'المنتج غير متاح حاليًا'});
     }
 
     // stock=null من سوقلي لا يعني أن المنتج نفد.
     // إذا كان هناك رقم مخزون فعلي، نتحقق من الكمية.
     if (typeof stock === 'number' && stock >= 0 && item.qty > stock) {
-      return res.json({error:'الكمية المطلوبة أكبر من المخزون الأصلي'});
+      return res.status(409).json({error:'الكمية المطلوبة أكبر من المخزون الأصلي'});
     }
     item.originalPrice = base;
     item.finalPrice = Math.max(base, Number(item.finalPrice) || base);
-    item.property = item.property || source.propId || sourceProp._id || sourceProp.key || '';
+    item.property = (matchedProperty && (matchedProperty._id || matchedProperty.id || matchedProperty.key)) || item.property || source.propId || sourceProp._id || sourceProp.id || sourceProp.key || '';
+    if (!item.property) return res.status(409).json({error:'خاصية المنتج غير متاحة حاليًا'});
     item.commission = extractCommission(source.note || '');
   }
   let shippingCost=0;
@@ -522,18 +536,18 @@ app.post('/api/create-order', async (req,res)=>{
   try{
     const pl=JSON.parse(require('fs').readFileSync(require('path').join(__dirname,'price-list-cache.json'),'utf8'));
     shippingGovernorate=pl.find(x=>x._id===govId||x.id===govId);
-    if(!shippingGovernorate)return res.json({error:'المحافظة المختارة غير متاحة حاليًا'});
+    if(!shippingGovernorate)return res.status(409).json({error:'المحافظة المختارة غير متاحة حاليًا'});
     shippingCost=Math.max(0,Number(shippingGovernorate.price)||0);
-  }catch(e){return res.json({error:'تعذر التحقق من سعر الشحن، حاول مرة أخرى'});}
+  }catch(e){console.error('[order] shipping price verification failed:',e.message);return res.status(502).json({error:'تعذر التحقق من سعر الشحن، حاول مرة أخرى'});}
   const merchandiseTotal=items.reduce((sum,x)=>sum+Math.max(0,Number(x.finalPrice)||0)*(Number(x.qty)||1),0);
   const commission=items.reduce((sum,x)=>sum+Math.max(0,Number(x.commission)||0)*(Number(x.qty)||1),0);
   const total=merchandiseTotal+shippingCost;
   const body={
     items:items,
-    client_name:b.client_name||'',
-    client_phone1:b.client_phone1||'',
-    client_phone2:b.client_phone2||'',
-    client_address:b.client_address||'',
+    client_name:clientName,
+    client_phone1:clientPhone,
+    client_phone2:clientPhone2,
+    client_address:clientAddress,
     shipping_governorate:govId,
     city:b.city||'',
     note:b.note||'',
@@ -541,24 +555,35 @@ app.post('/api/create-order', async (req,res)=>{
     shipping_cost:shippingCost,
     total:total
   };
-  if(!body.client_name)return res.json({error:'اسم العميل مطلوب'});
-  if(!body.client_phone1)return res.json({error:'رقم الهاتف مطلوب'});
-  if(!body.client_address)return res.json({error:'العنوان مطلوب'});
-  console.log('SAFKA request body:',JSON.stringify(body));
   try{
-    const r=await fetch(BASE_URL+'/orders',{method:'POST',headers:{'api-safka-key':API_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const d=await r.json();
-    console.log('SAFKA response status:',r.status);
-    console.log('SAFKA response:',JSON.stringify(d,null,2));
-    if(!r.ok)return res.json({error:d.errors?d.errors.map(e=>e.msg).join(', ').replace('محظور عشان سلوكه وحش في النظام','الرقم ده محظور في rab7na - استخدم رقمًا حقيقيًا'):'فشل الطلب'});
+    const r=await fetch(BASE_URL+'/orders',{method:'POST',headers:{'api-safka-key':API_KEY,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json().catch(()=>({}));
+    const supplierErrors=Array.isArray(d.errors) ? d.errors.map(e=>clean(e && (e.msg||e.message||e))).filter(Boolean) : [];
+    const supplierMessage=clean(d.message||d.error||supplierErrors.join('، '));
+    const supplierAccepted=r.ok && d.success !== false && d.ok !== false;
+    if(!supplierAccepted){
+      console.warn('[order] supplier rejected request', { status:r.status, error:supplierMessage || 'unknown' });
+      const safeMessage=supplierMessage.includes('محظور') || supplierMessage.includes('سلوكه') ? 'الرقم ده محظور في rab7na - استخدم رقمًا حقيقيًا' : (supplierMessage || 'فشل إرسال الطلب إلى المورد');
+      return res.status(r.status>=400&&r.status<500 ? r.status : 502).json({error:safeMessage});
+    }
     const customer=await currentUser(req);
     const external=d.data||d;
-    const savedOrder={id:external.id||external._id||Date.now(),serial:external.id||external._id||Date.now(),userId:customer&&customer.id||null,products:b.productNames||items.map(x=>x.product),items,client_name:body.client_name,client_phone1:body.client_phone1,client_address:body.client_address,status:'قيد التأكيد',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:shippingCost,originalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.originalPrice||0)*(x.qty||1),0),finalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.finalPrice||0)*(x.qty||1),0),external:external};
-    const affiliate=await readAffiliate();affiliate.orders=affiliate.orders||[];affiliate.orders.unshift(savedOrder);await saveAffiliate(affiliate);
-    res.json({ok:true,message:'تم إرسال الطلب بنجاح',order:external});
+    const externalId=external.id||external._id||external.serial_number||external.serial||Date.now();
+    const savedOrder={id:externalId,serial:external.serial_number||external.serial||externalId,userId:customer&&customer.id||null,products:b.productNames||items.map(x=>x.product),items,client_name:body.client_name,client_phone1:body.client_phone1,client_address:body.client_address,status:'قيد التأكيد',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:shippingCost,originalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.originalPrice||0)*(x.qty||1),0),finalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.finalPrice||0)*(x.qty||1),0),external:external};
+    let trackingSaved=true;
+    try {
+      const affiliate=await readAffiliate();
+      affiliate.orders=affiliate.orders||[];
+      if (!affiliate.orders.some(order => String(order.id||order.serial)===String(savedOrder.id))) affiliate.orders.unshift(savedOrder);
+      await saveAffiliate(affiliate);
+    } catch (trackingError) {
+      trackingSaved=false;
+      console.error('[order] supplier accepted; affiliate tracking save failed:',trackingError.message);
+    }
+    res.status(201).json({ok:true,message:'تم إرسال الطلب بنجاح',order:external,trackingSaved});
   }catch(e){
-    console.log('SAFKA error:',e.message);
-    res.json({error:'تعذر الاتصال بالخادم'});
+    console.error('[order] supplier connection failed:',e.message);
+    res.status(502).json({error:'تعذر الاتصال بالمورد حاليًا، حاول مرة أخرى'});
   }
 });
 
