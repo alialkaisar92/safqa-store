@@ -34,6 +34,7 @@ assert(postgres.includes('affiliate_commissions') && postgres.includes('ON CONFL
 assert(postgres.includes('total_earned=COALESCE(total_earned,0)+$2, updated_at=NOW()'), 'confirmed commission must update total_earned');
 assert(postgres.includes('nextDelivered && !previousDelivered') && postgres.includes('sales_count=COALESCE(sales_count,0)+1'), 'sales_count must increment only on first delivery transition');
 assert(worker.includes('processAffiliateOrderQueue') && worker.includes('claimAffiliateOrderJobs'), 'background order worker is missing');
+assert(server.includes('safkaSync.processAffiliateOrderQueue(5)') && server.includes("process.env.VERCEL === '1'") && server.includes('orderQueueWorkerBusy'), 'production queue worker must run outside Vercel and prevent overlapping cycles');
 assert(worker.includes('AbortController') && worker.includes('ETIMEDOUT'), 'supplier timeout must be bounded');
 assert(worker.includes("'unknown'") && worker.includes("'retry'"), 'worker must distinguish UNKNOWN and retryable states');
 assert(worker.includes('retryDelayMs') && worker.includes('[2000, 5000, 15000, 30000]') && worker.includes('attempt < 5'), 'retry backoff contract is missing');

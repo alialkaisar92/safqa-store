@@ -37,6 +37,31 @@ async function initializePostgres() {
   catch (error) { postgresStatus = 'error'; console.error('[postgres] initialization failed:', error.message); }
 }
 const postgresReady = initializePostgres();
+let orderQueueWorkerTimer = null;
+let orderQueueWorkerBusy = false;
+async function runOrderQueueWorkerCycle() {
+  if (orderQueueWorkerBusy || postgresStatus !== 'ready') return;
+  orderQueueWorkerBusy = true;
+  try {
+    const result = await safkaSync.processAffiliateOrderQueue(5);
+    if (result && result.processed) console.log('[order-queue] worker_cycle', { processed: result.processed });
+  } catch (error) {
+    console.error('[order-queue] worker_cycle_failed:', error.message);
+  } finally {
+    orderQueueWorkerBusy = false;
+  }
+}
+function startOrderQueueWorker() {
+  if (orderQueueWorkerTimer || process.env.VERCEL === '1' || String(process.env.ORDER_QUEUE_WORKER_ENABLED || 'true').toLowerCase() === 'false') return;
+  const intervalMs = Math.max(2000, Number(process.env.ORDER_QUEUE_WORKER_INTERVAL_MS) || 5000);
+  void runOrderQueueWorkerCycle();
+  orderQueueWorkerTimer = setInterval(() => { void runOrderQueueWorkerCycle(); }, intervalMs);
+  if (orderQueueWorkerTimer.unref) orderQueueWorkerTimer.unref();
+  console.log('[order-queue] worker_started', { interval_ms: intervalMs });
+}
+function stopOrderQueueWorker() {
+  if (orderQueueWorkerTimer) { clearInterval(orderQueueWorkerTimer); orderQueueWorkerTimer = null; }
+}
 function authReqToken(req){const h=String(req.headers.authorization||'');return String(req.headers['x-auth-token']||req.headers['x-sq-token']||(h.toLowerCase().indexOf('bearer ')===0?h.slice(7):'')||'').trim();}
 async function currentAuthUser(req){const token=authToken(req);if(!token)return null;try{const user=await authService.currentUser(token);if(user)return user;}catch(e){}try{const jwt=global.verifyJWT&&global.verifyJWT(token);if(jwt)return await firestore.getUser(jwt.uid);}catch(e){}try{const rec=await firestore.getToken(token);return rec?await firestore.getUser(rec.uid):null;}catch(e){return null;}}
 
@@ -884,11 +909,12 @@ if (require.main === module) {
   console.log('المتجر: http://localhost:' + PORT);
   getProducts();
   getPriceList();
+  postgresReady.then(() => startOrderQueueWorker()).catch(() => {});
 });
 }
 
 module.exports = app;
 
 
-process.on('SIGTERM', async () => { await postgres.close(); process.exit(0); });
-process.on('SIGINT', async () => { await postgres.close(); process.exit(0); });
+process.on('SIGTERM', async () => { stopOrderQueueWorker(); await postgres.close(); process.exit(0); });
+process.on('SIGINT', async () => { stopOrderQueueWorker(); await postgres.close(); process.exit(0); });
