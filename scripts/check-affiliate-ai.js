@@ -18,7 +18,9 @@ const checks = [
   ['server protects history endpoint', /app\.get\('\/api\/affiliate\/ai\/history'/.test(server) && /app\.delete\('\/api\/affiliate\/ai\/history'/.test(server)],
   ['server applies rate limit', /aiRateLimit\(user\.id\)/.test(server)],
   ['service has tool-backed context', /get_top_commission_products/.test(service) && /get_marketer_stats/.test(service)],
-  ['service has bounded input', /MAX_MESSAGE_CHARS/.test(service) && /text\(message, MAX_MESSAGE_CHARS\)/.test(service)]
+  ['service has bounded input', /MAX_MESSAGE_CHARS/.test(service) && /text\(message, MAX_MESSAGE_CHARS\)/.test(service)],
+  ['service supports Vercel AI Gateway', /AI_GATEWAY_API_KEY/.test(service) && /ai-gateway\.vercel\.sh\/v1/.test(service)],
+  ['gateway GPT-5 uses completion token limit', /gpt-5/i.test(service) && /max_completion_tokens/.test(service)]
 ];
 let failed = 0;
 for (const [label, ok] of checks) { console.log(`${ok ? 'PASS' : 'FAIL'} ${label}`); if (!ok) failed += 1; }

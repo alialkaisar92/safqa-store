@@ -228,10 +228,13 @@ function providerConfig() {
   const customKey = String(process.env.AI_API_KEY || '').trim();
   const openBase = String(process.env.OPENAI_API_BASE || process.env.OPENAI_BASE_URL || '').trim().replace(/\/$/, '');
   const openKey = String(process.env.OPENAI_API_KEY || '').trim();
+  const gatewayKey = String(process.env.AI_GATEWAY_API_KEY || '').trim();
+  const gatewayBase = String(process.env.AI_GATEWAY_BASE_URL || 'https://ai-gateway.vercel.sh/v1').trim().replace(/\/$/, '');
   const ollamaBase = String(process.env.OLLAMA_BASE_URL || '').trim().replace(/\/$/, '');
 
   const choices = {
     builtin: forgeBase && forgeKey ? { name: 'builtin', base: forgeBase + (forgeBase.endsWith('/v1') ? '' : '/v1'), key: forgeKey, defaultModel: 'gpt-5-mini' } : null,
+    gateway: gatewayKey ? { name: 'gateway', base: gatewayBase, key: gatewayKey, defaultModel: 'openai/gpt-5-mini' } : null,
     openai: (customBase && customKey) || (openBase && openKey) ? { name: 'openai', base: customBase || openBase, key: customKey || openKey, defaultModel: 'gpt-5-mini' } : null,
     ollama: ollamaBase ? { name: 'ollama', base: ollamaBase + (ollamaBase.endsWith('/v1') ? '' : '/v1'), key: '', defaultModel: String(process.env.OLLAMA_MODEL || 'llama3.1:8b') } : null
   };
@@ -265,7 +268,7 @@ async function pickModel(provider) {
 }
 
 function tokenOptions(model) {
-  if (/^gpt-5/i.test(model)) return { max_completion_tokens: 1400 };
+  if (/(^|\/)gpt-5/i.test(model)) return { max_completion_tokens: 1400 };
   return { max_tokens: 1400 };
 }
 
