@@ -48,7 +48,11 @@ app.get('/store', (req, res) => {
 
 app.get('/shop', (req, res) => res.redirect(302, '/store'));
 
-app.get('/api/health',function(req,res){res.json({ok:true,status:'healthy',service:'rab7na',database:'postgresql',database_status:postgresStatus,time:new Date().toISOString()});});
+app.get('/api/health',async function(req,res){
+  try { await postgresReady; } catch (_) {}
+  const healthy = postgresStatus === 'ready';
+  res.status(healthy ? 200 : 503).json({ok:healthy,status:healthy?'healthy':'degraded',service:'rab7na',database:'postgresql',database_status:postgresStatus,time:new Date().toISOString()});
+});
 app.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
 
 

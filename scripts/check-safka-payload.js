@@ -4,7 +4,7 @@ const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
 function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
-assert(server.includes('const supplierItems=items.map(item=>({product:String(item.product),property:String(item.property),qty:String(item.qty)}));'), 'supplier items are not sanitized to documented fields');
+assert(server.includes('const supplierItems=normalizedItems.map(item=>({product:item.product,property:item.property,qty:item.qty}));'), 'supplier items are not sanitized to documented fields');
 assert(server.includes('items:supplierItems'), 'sanitized items are not sent');
 assert(server.includes('commission:Number(commission)'), 'commission is not numeric');
 assert(server.includes('total:Number(total)'), 'total is not numeric');

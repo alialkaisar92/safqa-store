@@ -20,6 +20,7 @@ assert(orderRoute.includes("res.status(202).json({ok:true,queued:true,pending:tr
 assert(!orderRoute.includes("fetch(BASE_URL+'/orders'"), 'supplier POST must not block the storefront request');
 assert(server.includes("app.get('/api/affiliate/order-status/:id'"), 'orders need a protected status endpoint');
 assert(server.includes("'Cache-Control': 'no-store, no-cache, max-age=0, must-revalidate'") && server.includes("'CDN-Cache-Control': 'no-store'"), 'store HTML must not be served from a stale cache');
+assert(server.includes("app.get('/api/health',async function(req,res)") && server.includes('await postgresReady') && server.includes("status:healthy?'healthy':'degraded'"), 'health must wait for PostgreSQL initialization');
 assert(server.includes('postgres.getAffiliateOrderStatus(user.id'), 'status endpoint must scope reads to the authenticated user');
 assert(postgres.includes('processing_started_at') && postgres.includes('last_attempt_at') && postgres.includes('retry_count'), 'queue retry metadata is missing');
 assert(postgres.includes('lease_expires_at') && postgres.includes('FOR UPDATE') && postgres.includes('SKIP LOCKED'), 'queue jobs need leases and concurrent-safe claiming');
