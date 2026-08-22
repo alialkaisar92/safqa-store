@@ -18,6 +18,7 @@ assert(html.includes("console.warn('[checkout] status polling retry'"), 'status 
 assert(html.includes("if(!Array.isArray(window.cart)||!window.cart.length)"), 'late checkout compatibility wrapper opens an empty checkout');
 assert(html.includes('affiliateCancelMdl') && html.includes('affiliateCancelReason') && html.includes('submitAffiliateCancellation'), 'affiliate cancellation UI is missing');
 assert(html.includes("/api/affiliate/order-cancel") && html.includes('setInterval(refreshAffiliateLive,5000)'), 'affiliate live refresh or cancellation endpoint is missing');
+assert(html.includes('document.hidden') && html.includes("document.addEventListener('visibilitychange'"), 'affiliate polling must pause while the tab is hidden and refresh when visible');
 assert(html.includes("openModalById('affiliateCancelMdl',{history:false})"), 'cancellation dialog must not corrupt modal history');
 console.log('store2 inline script syntax passed: ' + scripts.length);
 console.log('checkout DOM guards: PASS');

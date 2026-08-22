@@ -77,7 +77,10 @@ async function currentUser(token) {
     FROM auth_sessions s JOIN users u ON u.id=s.user_id
     WHERE s.token_hash=$1 AND s.expires_at>NOW()`, [tokenHash(token)]);
   if (!result.rows[0]) return null;
-  await query('UPDATE auth_sessions SET last_seen_at=NOW() WHERE token_hash=$1', [tokenHash(token)]);
+  // لوحة المسوق قد تستدعي هذا المسار كل 5 ثوانٍ؛ لا نحتاج كتابة last_seen_at في كل polling.
+  // هذا يحافظ على صلاحية الجلسة ويحدّث النشاط مرة واحدة تقريبًا كل دقيقة.
+  await query(`UPDATE auth_sessions SET last_seen_at=NOW()
+    WHERE token_hash=$1 AND last_seen_at < NOW() - INTERVAL '1 minute'`, [tokenHash(token)]);
   return publicUser(result.rows[0]);
 }
 async function logout(token) { if (token) await query('DELETE FROM auth_sessions WHERE token_hash=$1', [tokenHash(token)]); }

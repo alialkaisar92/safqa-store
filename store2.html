@@ -1946,12 +1946,13 @@ body{
   async function refreshAffiliateLive(){
     var panel=document.getElementById('affiliateMdl');
     if(!panel||!panel.classList.contains('open')){stopAffiliateLiveRefresh();return}
-    if(affiliateRefreshBusy||!state.user)return;
+    if(document.hidden||affiliateRefreshBusy||!state.user)return;
     affiliateRefreshBusy=true;
     try{await loadAffiliate();render();}catch(e){console.warn('[affiliate] live refresh skipped',e&&e.message||e)}finally{affiliateRefreshBusy=false}
   }
   function startAffiliateLiveRefresh(){if(affiliateRefreshTimer)return;affiliateRefreshTimer=setInterval(refreshAffiliateLive,5000)}
   function stopAffiliateLiveRefresh(){if(affiliateRefreshTimer){clearInterval(affiliateRefreshTimer);affiliateRefreshTimer=0}}
+  document.addEventListener('visibilitychange',function(){if(!document.hidden&&document.getElementById('affiliateMdl')&&document.getElementById('affiliateMdl').classList.contains('open'))refreshAffiliateLive()});
   function render(){
     var u=state.user||{},s=state.stats||{};
     document.getElementById('affiliateWelcome').textContent='أهلًا '+(u.name||'بك')+'، جاهز تنمّي أرباحك؟';
