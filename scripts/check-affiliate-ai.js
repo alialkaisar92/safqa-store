@@ -3,6 +3,7 @@ const fs = require('fs');
 const html = fs.readFileSync(require('path').join(__dirname, '..', 'dashboard.html'), 'utf8');
 const server = fs.readFileSync(require('path').join(__dirname, '..', 'server.js'), 'utf8');
 const service = fs.readFileSync(require('path').join(__dirname, '..', 'services', 'ai-assistant.js'), 'utf8');
+const postgres = fs.readFileSync(require('path').join(__dirname, '..', 'lib', 'postgres.js'), 'utf8');
 let dashboardScriptOk = false;
 try { const vm = require('vm'); const start = html.indexOf('<script>'); const end = html.lastIndexOf('</script>'); if (start < 0 || end <= start) throw new Error('dashboard script missing'); new vm.Script(html.slice(start + 8, end)); dashboardScriptOk = true; } catch (_) {}
 const checks = [
@@ -18,6 +19,9 @@ const checks = [
   ['server protects history endpoint', /app\.get\('\/api\/affiliate\/ai\/history'/.test(server) && /app\.delete\('\/api\/affiliate\/ai\/history'/.test(server)],
   ['server applies rate limit', /aiRateLimit\(user\.id\)/.test(server)],
   ['service has tool-backed context', /get_top_commission_products/.test(service) && /get_marketer_stats/.test(service)],
+  ['service enriches product facts', /extractSuggestedSalePrice/.test(service) && /productSummary/.test(service)],
+  ['service resolves conversation context', /recentConversationProducts/.test(service) && /editDistance/.test(service) && /context\.history/.test(service)],
+  ['assistant catalog merges live products', /FROM products/.test(postgres) && /affiliateProducts/.test(postgres) && /raw_data/.test(postgres)],
   ['service has bounded input', /MAX_MESSAGE_CHARS/.test(service) && /text\(message, MAX_MESSAGE_CHARS\)/.test(service)],
   ['service has safe local data fallback', /localFallbackAnswer/.test(service) && /local-data-fallback/.test(service)],
   ['service supports Vercel AI Gateway', /AI_GATEWAY_API_KEY/.test(service) && /ai-gateway\.vercel\.sh\/v1/.test(service)],
