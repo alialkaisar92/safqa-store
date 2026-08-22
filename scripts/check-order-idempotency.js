@@ -18,6 +18,8 @@ assert(server.includes("const affiliateUser=await currentAuthUser(req);"), 'orde
 assert(server.includes('postgres.createQueuedAffiliateOrder(affiliateUser.id,requestKey,requestData,affiliateOrder)'), 'orders must be saved to the database queue before supplier work');
 assert(orderRoute.includes("res.status(202).json({ok:true,queued:true,pending:true"), 'new orders must return an immediate queued response');
 assert(!orderRoute.includes("fetch(BASE_URL+'/orders'"), 'supplier POST must not block the storefront request');
+assert(orderRoute.includes("if (!productAvailable) return res.status(409).json({error:'المنتج غير متاح حاليًا'})"), 'order validation must block unavailable products');
+assert(!orderRoute.includes("item.qty > stock") && !orderRoute.includes("الكمية المطلوبة أكبر من المخزون الأصلي"), 'numeric stock must not reject an available product');
 assert(server.includes("app.get('/api/affiliate/order-status/:id'"), 'orders need a protected status endpoint');
 assert(server.includes("'Cache-Control': 'no-store, no-cache, max-age=0, must-revalidate'") && server.includes("'CDN-Cache-Control': 'no-store'"), 'store HTML must not be served from a stale cache');
 assert(server.includes("app.get('/api/health',async function(req,res)") && server.includes('await postgresReady') && server.includes("status:healthy?'healthy':'degraded'"), 'health must wait for PostgreSQL initialization');

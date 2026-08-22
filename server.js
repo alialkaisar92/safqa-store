@@ -769,13 +769,12 @@ app.post('/api/create-order', async (req,res)=>{
     const matchedProperty = sourceProps.find(prop => requestedProperty && [prop && prop._id, prop && prop.id, prop && prop.key].filter(Boolean).map(String).includes(requestedProperty));
     if (sourceProps.length && requestedProperty && !matchedProperty) return res.status(409).json({error:'اختيار المنتج غير صالح حاليًا'});
     const sourceProp = matchedProperty || sourceProps[0] || {};
-    const stock = sourceStock(source);
+    // التوفر هو مصدر القرار الوحيد؛ stock الرقمي قديم/غير موجود في بيانات المورد ولا يُستخدم لمنع الطلب.
     const base = Number(source.basePrice != null ? source.basePrice : (source.sale_price != null ? source.sale_price : (source.price != null ? source.price : 0)));
     if (!Number.isFinite(base) || base <= 0) return res.status(409).json({error:'سعر المنتج الأصلي غير متاح حاليًا'});
     const propertyAvailable = sourceProps.length ? sourceProp.is_available === true : source.is_available !== false;
     const productAvailable = source.is_active !== false && propertyAvailable && sourceAvailability(source) === true;
     if (!productAvailable) return res.status(409).json({error:'المنتج غير متاح حاليًا'});
-    if (typeof stock === 'number' && stock >= 0 && item.qty > stock) return res.status(409).json({error:'الكمية المطلوبة أكبر من المخزون الأصلي'});
     const note=clean(source.note || '');
     const suggestedPrice=extractSuggestedSalePrice(note,base);
     const finalPrice=Math.max(base, Number(suggestedPrice || 0) || Math.round(base*(1+priceUp/100)));
