@@ -23,6 +23,8 @@ assert(server.includes('postgres.getAffiliateOrderStatus(user.id'), 'status endp
 assert(postgres.includes('processing_started_at') && postgres.includes('last_attempt_at') && postgres.includes('retry_count'), 'queue retry metadata is missing');
 assert(postgres.includes('lease_expires_at') && postgres.includes('FOR UPDATE') && postgres.includes('SKIP LOCKED'), 'queue jobs need leases and concurrent-safe claiming');
 assert(postgres.includes('affiliate_commissions') && postgres.includes('ON CONFLICT (order_id) DO NOTHING'), 'commission ledger must be idempotent per order');
+assert(postgres.includes('total_earned=COALESCE(total_earned,0)+$2, updated_at=NOW()'), 'confirmed commission must update total_earned');
+assert(postgres.includes('nextDelivered && !previousDelivered') && postgres.includes('sales_count=COALESCE(sales_count,0)+1'), 'sales_count must increment only on first delivery transition');
 assert(worker.includes('processAffiliateOrderQueue') && worker.includes('claimAffiliateOrderJobs'), 'background order worker is missing');
 assert(worker.includes('AbortController') && worker.includes('ETIMEDOUT'), 'supplier timeout must be bounded');
 assert(worker.includes("'unknown'") && worker.includes("'retry'"), 'worker must distinguish UNKNOWN and retryable states');
