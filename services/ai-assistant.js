@@ -243,7 +243,7 @@ function providerConfig() {
     if (!selected) throw new Error('AI provider غير مضبوط');
     return selected;
   }
-  return choices.builtin || choices.openai || choices.ollama || null;
+  return choices.builtin || choices.gateway || choices.openai || choices.ollama || null;
 }
 
 async function pickModel(provider) {
