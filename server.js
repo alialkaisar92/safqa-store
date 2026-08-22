@@ -378,7 +378,8 @@ app.get(['/api/affiliate/me', '/api/me'], async (req, res) => {
     const totalCommission = orders.reduce((sum, order) => sum + Math.max(0, Number(order.commission) || 0), 0);
     const confirmedCommission = delivered.reduce((sum, order) => sum + Math.max(0, Number(order.commission) || 0), 0);
     const pendingWithdrawals = withdrawals.filter(item => !['rejected', 'مرفوض', 'رفض'].includes(String(item.status || '').trim().toLowerCase())).reduce((sum, item) => sum + Math.max(0, Number(item.amount) || 0), 0);
-    const balance = Math.max(0, Number(user.balance || 0) - pendingWithdrawals);
+    // availableBalance already subtracts all non-rejected withdrawals; do not subtract them again here.
+    const balance = await syncUserBalance(user, affiliate);
     res.set('Cache-Control', 'no-store');
     res.json({ ok: true, user, stats: { totalOrders: orders.length, pendingOrders: pending.length, deliveredOrders: delivered.length, totalCommission, confirmedCommission, pendingWithdrawals, balance }, orders, withdrawals });
   } catch (error) {
@@ -403,12 +404,15 @@ app.post(['/api/affiliate/withdraw','/api/withdraw','/api/my/withdraw'], async (
   try {
     const affiliate = await readAffiliate();
     const withdrawals = affiliate.withdrawals || [];
-    const reserved = withdrawals.filter(item => String(item.userId) === String(user.id) && !['rejected','مرفوض','رفض'].includes(String(item.status || '').trim().toLowerCase())).reduce((sum, item) => sum + Math.max(0, Number(item.amount) || 0), 0);
-    const balance = Math.max(0, Number(user.balance || 0) - reserved);
+    // Compute from the source-of-truth records, not from a stale cached user.balance.
+    const balance = availableBalance(user, affiliate);
     if (amount > balance) return res.status(400).json({ error: 'المبلغ أكبر من الرصيد المتاح' });
     withdrawals.unshift({ id: 'wd_' + Date.now() + '_' + crypto.randomBytes(3).toString('hex'), userId: user.id, method, details, amount, status: 'pending', date: new Date().toISOString() });
     affiliate.withdrawals = withdrawals;
     await saveAffiliate(affiliate);
+    // Persist the post-withdrawal balance immediately so a second request cannot reuse the old balance.
+    user.balance = availableBalance(user, affiliate);
+    await firestore.saveUser(user);
     res.status(201).json({ ok: true, message: 'تم استلام طلب السحب وسيتم مراجعته قريبًا' });
   } catch (error) {
     console.error('[affiliate] withdrawal failed:', error.message);
