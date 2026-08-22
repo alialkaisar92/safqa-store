@@ -1,0 +1,38 @@
+const fs = require('fs');
+
+const html = fs.readFileSync('store2.html', 'utf8');
+const addStart = html.indexOf('function addCart(i){');
+const addEnd = html.indexOf('\nfunction showPriceModal()', addStart);
+const addBlock = addStart >= 0 && addEnd > addStart ? html.slice(addStart, addEnd) : '';
+const submitStart = html.indexOf('async function submitOrder(){');
+const submitEnd = html.indexOf('\nfunction ', submitStart + 10);
+const submitBlock = submitStart >= 0 ? html.slice(submitStart, submitEnd > submitStart ? submitEnd : submitStart + 12000) : '';
+
+function assert(condition, message) {
+  if (!condition) throw new Error(message);
+}
+
+assert(addBlock, 'addCart function is missing');
+assert(addBlock.includes("toast('✅ تم إضافة المنتج للسلة')"), 'addCart must show the add-to-cart confirmation');
+assert(addBlock.includes('closeCart();'), 'addCart must close the cart after adding');
+assert(!addBlock.includes('showPriceModal();'), 'addCart must not force the old price modal');
+assert(html.includes('function openCart()'), 'openCart function is missing');
+assert(html.includes('سعر الجملة'), 'cart must show the wholesale price');
+assert(html.includes('سعر البيع للعميل'), 'cart must show the editable sale price');
+assert(html.includes('سعر الجملة الإجمالي'), 'cart totals must show wholesale total');
+assert(html.includes('ربحك المتوقع'), 'cart must show expected profit');
+assert(html.includes('cart-price-editor'), 'cart price editor is missing');
+assert(html.includes('function saveCartPrice(i)'), 'saveCartPrice function is missing');
+assert(submitBlock.includes("if(r.ok&&d.ok)"), 'success must depend on a successful server response');
+assert(submitBlock.includes('order-success-title'), 'order success message is missing');
+assert(submitBlock.includes('هنتابع مع عميلك لحد ما يستلم'), 'customer follow-up message is missing');
+assert(submitBlock.includes("X-Idempotency-Key"), 'idempotency header is missing');
+assert(html.includes('finalPrice:Number(c.price||0)'), 'edited sale price must be sent as finalPrice');
+assert(html.includes('originalPrice:Number(c.cost||0)'), 'wholesale cost must be preserved separately');
+
+console.log('cart flow checks: PASS');
+console.log('direct add toast and close cart: YES');
+console.log('inline cart price editor: YES');
+console.log('server-gated order success message: YES');
+console.log('idempotency key preserved: YES');
+console.log('network/order submitted by this test: NO');
