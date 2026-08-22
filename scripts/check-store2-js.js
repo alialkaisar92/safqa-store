@@ -16,6 +16,9 @@ assert(html.includes("if(!m||!nameEl||!phoneEl||!addrEl||!govEl||!cityEl)"), 'ch
 assert(html.includes("load().catch(function(error)"), 'store boot promise is unhandled');
 assert(html.includes("console.warn('[checkout] status polling retry'"), 'status polling exceptions are silently swallowed');
 assert(html.includes("if(!Array.isArray(window.cart)||!window.cart.length)"), 'late checkout compatibility wrapper opens an empty checkout');
+assert(html.includes('var orderIdempotencyFingerprint'), 'checkout idempotency fingerprint state is missing');
+assert(html.includes('rab7na_order_idempotency_fingerprint'), 'checkout must persist the idempotency fingerprint');
+assert(html.includes('getOrderIdempotencyKey(orderFingerprint)'), 'checkout must derive idempotency from the current cart');
 assert(html.includes('affiliateCancelMdl') && html.includes('affiliateCancelReason') && html.includes('submitAffiliateCancellation'), 'affiliate cancellation UI is missing');
 assert(html.includes("/api/affiliate/order-cancel") && html.includes('setInterval(refreshAffiliateLive,5000)'), 'affiliate live refresh or cancellation endpoint is missing');
 assert(html.includes('document.hidden') && html.includes("document.addEventListener('visibilitychange'"), 'affiliate polling must pause while the tab is hidden and refresh when visible');

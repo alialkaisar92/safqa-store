@@ -1260,17 +1260,24 @@ function recalc(){
 var orderSubmitting=false;
 var orderQueued=false;
 var orderIdempotencyKey='';
+var orderIdempotencyFingerprint='';
 var submittedCartBackup=[];
 var pendingOrderStorageKey='rab7na_pending_order_v1';
-function getOrderIdempotencyKey(){
-  if(orderIdempotencyKey)return orderIdempotencyKey;
-  try{var saved=sessionStorage.getItem('rab7na_order_idempotency_key');if(saved&&saved.length>=16){orderIdempotencyKey=saved;return orderIdempotencyKey;}}catch(e){}
+function getOrderIdempotencyKey(fingerprint){
+  fingerprint=String(fingerprint||'');
+  if(orderIdempotencyKey&&orderIdempotencyFingerprint===fingerprint)return orderIdempotencyKey;
+  try{
+    var saved=sessionStorage.getItem('rab7na_order_idempotency_key');
+    var savedFingerprint=sessionStorage.getItem('rab7na_order_idempotency_fingerprint');
+    if(saved&&saved.length>=16&&savedFingerprint===fingerprint){orderIdempotencyKey=saved;orderIdempotencyFingerprint=fingerprint;return orderIdempotencyKey;}
+  }catch(e){}
   orderIdempotencyKey=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'ord_'+Date.now()+'_'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);
-  try{sessionStorage.setItem('rab7na_order_idempotency_key',orderIdempotencyKey)}catch(e){}
+  orderIdempotencyFingerprint=fingerprint;
+  try{sessionStorage.setItem('rab7na_order_idempotency_key',orderIdempotencyKey);sessionStorage.setItem('rab7na_order_idempotency_fingerprint',fingerprint)}catch(e){}
   return orderIdempotencyKey;
 }
-function clearOrderIdempotencyKey(){orderIdempotencyKey='';try{sessionStorage.removeItem('rab7na_order_idempotency_key')}catch(e){}}
-function rememberPendingOrder(order,key){try{sessionStorage.setItem(pendingOrderStorageKey,JSON.stringify({id:order&&order.id,serial:order&&order.serial,key:key,createdAt:Date.now()}))}catch(e){}}
+function clearOrderIdempotencyKey(){orderIdempotencyKey='';orderIdempotencyFingerprint='';try{sessionStorage.removeItem('rab7na_order_idempotency_key');sessionStorage.removeItem('rab7na_order_idempotency_fingerprint')}catch(e){}}
+function rememberPendingOrder(order,key,fingerprint){try{sessionStorage.setItem(pendingOrderStorageKey,JSON.stringify({id:order&&order.id,serial:order&&order.serial,key:key,fingerprint:fingerprint||'',createdAt:Date.now()}))}catch(e){}}
 function clearPendingOrder(){try{sessionStorage.removeItem(pendingOrderStorageKey)}catch(e){}}
 function resetOrderMessage(){var m=document.getElementById('comsg');if(m){m.className='co-msg';m.textContent='';}}
 function orderNumber(order){return String(order&&((order.serial||order.id))||'—').slice(-14)}
@@ -1326,7 +1333,9 @@ async function submitOrder(){
     if(auth.status===401){m.className='co-msg error';m.textContent='سجّل الدخول أولًا حتى تُحتسب العمولة لحسابك';setTimeout(function(){location.href='/login.html?return=%2Fstore'},900);return;}
     if(!auth.ok)throw new Error('تعذر التحقق من جلسة المسوّق');
     var t=cart.reduce(function(a,c){return a+Number(c.price||0)*Number(c.qty||0)},0)+Number(ship||0);
-    var body={client_name:nameEl.value.trim(),client_phone1:phoneEl.value.trim(),client_address:addrEl.value.trim(),shipping_governorate:govEl.value,city:cityEl.value,items:cart.map(function(c){return {product:c.id,property:c.prop,qty:c.qty,originalPrice:Number(c.cost||0),finalPrice:Number(c.price||0)}}),total:t,commission:Math.round(t*0.1),idempotency_key:getOrderIdempotencyKey()};
+    var orderItems=cart.map(function(c){return {product:c.id,property:c.prop,qty:c.qty,originalPrice:Number(c.cost||0),finalPrice:Number(c.price||0)}});
+    var orderFingerprint=JSON.stringify(orderItems.map(function(item){return [item.product,item.property,item.qty,item.originalPrice,item.finalPrice]}).sort(function(a,b){return JSON.stringify(a).localeCompare(JSON.stringify(b))}));
+    var body={client_name:nameEl.value.trim(),client_phone1:phoneEl.value.trim(),client_address:addrEl.value.trim(),shipping_governorate:govEl.value,city:cityEl.value,items:orderItems,total:t,commission:Math.round(t*0.1),idempotency_key:getOrderIdempotencyKey(orderFingerprint)};
     var requestOptions={method:'POST',credentials:'include',headers:{'Content-Type':'application/json','X-Idempotency-Key':body.idempotency_key},body:JSON.stringify(body)};
     var r=await fetch('/api/create-order',requestOptions),d=await r.json().catch(function(){return {}});
     if(d.ok&&d.queued&&d.order&&d.order.id){
@@ -1334,7 +1343,7 @@ async function submitOrder(){
       if(existingState==='confirmed'){
         orderSucceeded=true;clearPendingOrder();clearOrderIdempotencyKey();showSuccessfulOrder(d.order,d.message||'تم تأكيد الطلب بنجاح');cart=[];upd();setTimeout(function(){closeCheckout();resetOrderMessage();},3600);
       }else{
-        orderQueued=true;submittedCartBackup=cart.slice();cart=[];upd();rememberPendingOrder(d.order,body.idempotency_key);showQueuedOrder(d.order,existingState==='accepted'?'تم استلام الطلب من المورد':'تم استلام طلبك بنجاح',d.message||'جاري إرساله للمورد…');trackQueuedOrder(d.order.id);
+        orderQueued=true;submittedCartBackup=cart.slice();cart=[];upd();rememberPendingOrder(d.order,body.idempotency_key,orderFingerprint);showQueuedOrder(d.order,existingState==='accepted'?'تم استلام الطلب من المورد':'تم استلام طلبك بنجاح',d.message||'جاري إرساله للمورد…');trackQueuedOrder(d.order.id);
       }
       return;
     }
