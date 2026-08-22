@@ -1081,20 +1081,25 @@ function recalc(){
   +'<div style="color:#16a34a;font-size:17px">💰 الربح المتوقع: <b>'+fmt(profit)+'</b></div>'
   +'</div>';
 }
+var orderSubmitting=false;
 async function submitOrder(){
   var m=document.getElementById('comsg');
+  if(orderSubmitting)return;
   if(!fName.value||!fPhone.value||!fAddr.value||!fGov.value){m.textContent='⚠️ اكمل البيانات';return;}
   var t=cart.reduce(function(a,c){return a+c.price*c.qty},0)+ship;
   var body={client_name:fName.value,client_phone1:fPhone.value,client_address:fAddr.value,
     shipping_governorate:fGov.value,city:fCity.value,
     items:cart.map(function(c){return {product:c.id,property:c.prop,qty:c.qty}}),
     total:t,commission:Math.round(t*0.1)};
+  orderSubmitting=true;
   m.textContent='⏳ جاري الإرسال...';
-  try{var r=await fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    var d=await r.json();
-    if(d.ok||d.order){saveOrder(body);m.textContent='✅ تم استلام طلبك';cart=[];upd();setTimeout(function(){document.getElementById('coMdl').classList.remove('open')},1200);}
-    else m.textContent='⚠️ '+(d.error||'فشل');
-  }catch(e){m.textContent='⚠️ خطأ اتصال';}
+  try{
+    var r=await fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    var d=await r.json().catch(function(){return {};});
+    if(r.ok&&d.ok){saveOrder(body);m.textContent='✅ تم استلام طلبك';cart=[];upd();setTimeout(function(){document.getElementById('coMdl').classList.remove('open')},1200);}
+    else m.textContent='⚠️ '+(d.error||'فشل إرسال الطلب');
+  }catch(e){m.textContent='⚠️ تعذر الاتصال، لم يتم تأكيد الطلب';}
+  finally{orderSubmitting=false;}
 }
 function openDrw(){document.getElementById('drw').classList.add('open');document.getElementById('ovl').classList.add('open');}
 function closeDrw(){document.getElementById('drw').classList.remove('open');document.getElementById('ovl').classList.remove('open');}
