@@ -361,6 +361,77 @@ function assistantText(message) {
   return '';
 }
 
+function money(value) {
+  const amount = number(value);
+  return amount == null ? 'غير متاح' : `${amount.toLocaleString('ar-EG')} ج.م`;
+}
+
+function fallbackProductLine(product) {
+  const availabilityText = product.available ? 'متوفر' : 'غير متوفر';
+  return `- ${product.name || 'منتج بدون اسم'} — سعر البيع: ${money(product.price)} — العمولة: ${money(product.commission)} — ${availabilityText}`;
+}
+
+function fallbackProductFromPrompt(products, query, availableOnly = false) {
+  const eligible = products.filter(item => !availableOnly || item.available);
+  const exact = eligible.find(item => item.name && query.includes(normalize(item.name)));
+  if (exact) return exact;
+  const tokens = query.split(' ').filter(token => token.length >= 3);
+  return eligible.find(item => tokens.some(token => normalize(item.name).includes(token))) || null;
+}
+
+function localFallbackAnswer(prompt, context) {
+  const query = normalize(prompt);
+  const products = Array.isArray(context.products) ? context.products : [];
+  const stats = marketerStats(context.user, context.userData);
+  const formatList = (title, rows) => rows.length ? `${title}:\\n${rows.map(fallbackProductLine).join('\\n')}` : `${title}: لا توجد نتائج مطابقة في بيانات المنصة الحالية.`;
+
+  if (/منتجات.*(عموله|عمولة)|عموله.*(اعلى|اعلى|عاليه|عالية)|اعلى.*عموله|عمولة عالية/.test(query)) {
+    const rows = products.filter(item => item.available).sort((a, b) => b.commission - a.commission || a.price - b.price).slice(0, 5);
+    return formatList('أعلى المنتجات المتاحة في العمولة حسب البيانات الحالية', rows);
+  }
+  if (/منتجات.*(اقتصاديه|اقتصادية|رخيصه|رخيصة)|اقل.*سعر|سعر قليل/.test(query)) {
+    const rows = products.filter(item => item.available).sort((a, b) => a.price - b.price || b.commission - a.commission).slice(0, 5);
+    return formatList('أقل المنتجات المتاحة في سعر البيع حسب البيانات الحالية', rows);
+  }
+  if (/متاح|متوفر|المخزون|المنتجات الموجوده|المنتجات الموجودة/.test(query)) {
+    const requestedProduct = fallbackProductFromPrompt(products, query);
+    if (requestedProduct) return `حالة «${requestedProduct.name}»: ${requestedProduct.available ? 'متوفر' : 'غير متوفر'} حسب بيانات المنصة الحالية.`;
+    const rows = products.filter(item => item.available).slice(0, 8);
+    return formatList('المنتجات التي يعلن المصدر أنها متاحة حاليًا', rows);
+  }
+  if (/رصيد|طلبات|ارباح|أرباح|احصائ|إحصائ|ادائي|أدائي/.test(query)) {
+    return [
+      'ملخص حسابك الحالي من بيانات Rab7na:',
+      `- إجمالي الطلبات: ${stats.totalOrders}`,
+      `- الطلبات قيد التنفيذ: ${stats.pendingOrders}`,
+      `- الطلبات المكتملة: ${stats.completedOrders}`,
+      `- العمولة الإجمالية المسجلة: ${money(stats.totalCommission)}`,
+      `- العمولة المؤكدة: ${money(stats.confirmedCommission)}`,
+      `- الرصيد الحالي: ${money(stats.currentBalance)}`
+    ].join('\\n');
+  }
+  if (/منتجاتي|المنتجات اللي بعتها|المنتجات التي بعتها|اكثر منتج/.test(query)) {
+    const rows = marketingProducts(context.userData);
+    return rows.length ? `المنتجات الموجودة في طلبات حسابك فقط:\\n${rows.map(item => `- ${item.name}: ${item.orderCount} طلب`).join('\\n')}` : 'لا توجد منتجات مرتبطة بطلبات حسابك الحالية.';
+  }
+  if (/رابط|لينك/.test(query)) {
+    const product = fallbackProductFromPrompt(products, query);
+    if (!product) return 'اكتب اسم المنتج المطلوب لأبحث عن رابط تسويق محفوظ له.';
+    return product.marketingLink ? `الرابط المحفوظ لمنتج «${product.name}»:\\n${product.marketingLink}` : `لا يوجد رابط تسويق محفوظ حاليًا لمنتج «${product.name}»، ولن أنشئ رابطًا من عندي.`;
+  }
+  if (/اعلان|إعلان|كابشن|منشور|بوست/.test(query)) {
+    const product = fallbackProductFromPrompt(products, query, true) || products.filter(item => item.available).sort((a, b) => b.commission - a.commission)[0];
+    if (!product) return 'لا توجد منتجات متاحة حاليًا أقدر أكتب لها إعلانًا من البيانات الحالية.';
+    const description = product.description ? `\\n${product.description}` : '';
+    return `اقتراح إعلان مبني على بيانات المنتج الحالية:\\n\\n${product.name}\\n${description}\\n\\nسعر البيع: ${money(product.price)}\\nعمولتك المتوقعة: ${money(product.commission)}\\n\\nاطلب التفاصيل الآن وتابع العرض من خلال Rab7na.\\n\\nملاحظة: راجع تفاصيل المنتج وسياسة الشحن قبل نشر الإعلان.`;
+  }
+  const product = fallbackProductFromPrompt(products, query);
+  if (product) {
+    return `تفاصيل «${product.name}» من بيانات المنصة:\\n- التصنيف: ${product.category || 'غير مسجل'}\\n- سعر البيع: ${money(product.price)}\\n- العمولة: ${money(product.commission)}\\n- الحالة: ${product.available ? 'متوفر' : 'غير متوفر'}${product.description ? `\\n- الوصف: ${product.description}` : ''}`;
+  }
+  return 'أقدر أساعدك في البحث عن المنتجات، مقارنة الأسعار والعمولات، معرفة التوفر، عرض ملخص حسابك، أو كتابة إعلان. اكتب اسم المنتج أو اختر أحد الاختصارات.';
+}
+
 async function loadContext(user) {
   const [snapshot, userData] = await Promise.all([postgres.getAffiliateCatalogData(), postgres.getAffiliateUserData(user.id)]);
   return { products: catalogFromSnapshot(snapshot), userData, user };
@@ -377,8 +448,13 @@ async function chat({ user, message, retry = false }) {
   }
   if (!promptToUse) throw Object.assign(new Error('اكتب سؤالك أولًا'), { code: 'INVALID_INPUT' });
   const provider = providerConfig();
-  if (!provider) throw Object.assign(new Error('مساعد الذكاء الاصطناعي غير مُفعّل حاليًا'), { code: 'PROVIDER_UNAVAILABLE' });
   const context = await loadContext(user);
+  if (!provider) {
+    const answer = localFallbackAnswer(promptToUse, context);
+    const next = normalizeHistory(history.concat([{ role: 'user', content: promptToUse }, { role: 'assistant', content: answer }]));
+    await postgres.saveAiConversation(user.id, next);
+    return { answer, messages: next, provider: 'local-data-fallback', model: 'rules-v1' };
+  }
   const model = await pickModel(provider);
   const messages = [{ role: 'system', content: systemPrompt() }, ...history, { role: 'user', content: promptToUse }];
   let lastAssistant = null;

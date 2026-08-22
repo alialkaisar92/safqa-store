@@ -19,6 +19,7 @@ const checks = [
   ['server applies rate limit', /aiRateLimit\(user\.id\)/.test(server)],
   ['service has tool-backed context', /get_top_commission_products/.test(service) && /get_marketer_stats/.test(service)],
   ['service has bounded input', /MAX_MESSAGE_CHARS/.test(service) && /text\(message, MAX_MESSAGE_CHARS\)/.test(service)],
+  ['service has safe local data fallback', /localFallbackAnswer/.test(service) && /local-data-fallback/.test(service)],
   ['service supports Vercel AI Gateway', /AI_GATEWAY_API_KEY/.test(service) && /ai-gateway\.vercel\.sh\/v1/.test(service)],
   ['auto mode selects AI Gateway', /return choices\.builtin \|\| choices\.gateway \|\| choices\.openai/.test(service)],
   ['gateway GPT-5 uses completion token limit', /gpt-5/i.test(service) && /max_completion_tokens/.test(service)]
