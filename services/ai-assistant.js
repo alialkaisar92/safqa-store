@@ -228,7 +228,7 @@ function providerConfig() {
   const customKey = String(process.env.AI_API_KEY || '').trim();
   const openBase = String(process.env.OPENAI_API_BASE || process.env.OPENAI_BASE_URL || '').trim().replace(/\/$/, '');
   const openKey = String(process.env.OPENAI_API_KEY || '').trim();
-  const gatewayKey = String(process.env.AI_GATEWAY_API_KEY || '').trim();
+  const gatewayKey = String(process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || '').trim();
   const gatewayBase = String(process.env.AI_GATEWAY_BASE_URL || 'https://ai-gateway.vercel.sh/v1').trim().replace(/\/$/, '');
   const ollamaBase = String(process.env.OLLAMA_BASE_URL || '').trim().replace(/\/$/, '');
 
