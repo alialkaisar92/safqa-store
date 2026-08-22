@@ -13,6 +13,8 @@ assert(server.includes("const affiliateUser=await currentAuthUser(req);"), 'orde
 assert(server.includes('postgres.claimAffiliateOrderRequest(affiliateUser.id, requestKey, requestData)'), 'orders must claim idempotency before supplier submission');
 assert(server.includes("claim.mode === 'duplicate'"), 'retries must return the stored result');
 assert(server.includes("claim.mode === 'in_progress'"), 'concurrent retries must not submit a second supplier order');
+assert(server.includes("res.status(202).json({ok:false,pending:true,retry_after_ms:800})"), 'in-progress retries must return a pending contract, not a misleading error');
+assert(client.includes('r.status===202&&d.pending'), 'checkout must recover a pending request with the same idempotency key');
 assert(server.includes("completeAffiliateOrderRequest(requestKey, 'failed'"), 'supplier failures must release the retry state safely');
 assert(server.includes('requestKey,userId:customer.id'), 'affiliate order records must retain the idempotency key for recovery');
 assert(server.includes('affiliateOrder: savedOrder'), 'idempotency results must retain the affiliate record for recovery');

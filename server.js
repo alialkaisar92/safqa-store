@@ -790,7 +790,9 @@ app.post('/api/create-order', async (req,res)=>{
     const saved = claim.row && claim.row.supplier_response ? claim.row.supplier_response : {};
     return res.status(200).json({ok:true,duplicate:true,message:'تم تسجيل الطلب مسبقًا، لا حاجة لإرساله مرة أخرى',status:saved.status||null,order:saved.order||saved});
   }
-  if (claim.mode === 'in_progress') return res.status(409).json({error:'الطلب قيد المعالجة بالفعل، انتظر لحظات ولا تعِد الإرسال'});
+  // محاولة ثانية بنفس المفتاح أثناء POST الأول ليست خطأ تجاريًا؛ نعيد حالة انتظار
+  // كي تسترجع الواجهة النتيجة بنفس المفتاح دون إنشاء طلب ثانٍ لدى المورد.
+  if (claim.mode === 'in_progress') return res.status(202).json({ok:false,pending:true,retry_after_ms:800});
   try{
     const r=await fetch(BASE_URL+'/orders',{method:'POST',headers:{'api-safka-key':API_KEY,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(body)});
     const d=await r.json().catch(()=>({}));

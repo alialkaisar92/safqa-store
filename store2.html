@@ -693,6 +693,14 @@ img{display:block}
   line-height:1.55;
 }
 
+.co-msg.error{
+  color:#9f1239;
+  background:#fff1f2;
+  border:1px solid #fecdd3;
+  border-radius:12px;
+  padding:10px 12px;
+}
+
 .co-msg.success{
   display:flex;
   flex-direction:column;
@@ -707,7 +715,10 @@ img{display:block}
 
 .order-success-title{font-size:.95rem;font-weight:950}
 .order-success-subtitle{font-size:.76rem;color:#3f6659;font-weight:750}
+.co-msg:not(.success):not(.error):empty{display:none}
 .confirm-order:disabled{opacity:.7;cursor:wait;transform:none}
+.confirm-order.is-processing{opacity:.82}
+
 
 .cart-item{
   display:grid;
@@ -1232,14 +1243,19 @@ function getOrderIdempotencyKey(){
 }
 async function submitOrder(){
   var m=document.getElementById('comsg');
+  var confirmButton=document.querySelector('.confirm-order');
   if(orderSubmitting)return;
-  if(!fName.value||!fPhone.value||!fAddr.value||!fGov.value){m.textContent='⚠️ اكمل البيانات';return;}
+  if(!fName.value||!fPhone.value||!fAddr.value||!fGov.value){m.className='co-msg error';m.textContent='أكمل بيانات العميل قبل التأكيد';return;}
   orderSubmitting=true;
-  m.textContent='⏳ جاري التحقق من جلسة المسوّق...';
+  var orderSucceeded=false;
+  if(confirmButton){confirmButton.disabled=true;confirmButton.classList.add('is-processing');confirmButton.textContent='جاري الإرسال…';}
+  m.className='co-msg';
+  m.textContent='';
   try{
     var auth=await fetch('/api/auth/me',{credentials:'include',cache:'no-store'});
     if(auth.status===401){
-      m.textContent='⚠️ سجّل الدخول أولًا حتى تُحتسب العمولة لحسابك';
+      m.className='co-msg error';
+      m.textContent='سجّل الدخول أولًا حتى تُحتسب العمولة لحسابك';
       setTimeout(function(){location.href='/login.html?return=%2Fstore'},900);
       return;
     }
@@ -1249,26 +1265,34 @@ async function submitOrder(){
       shipping_governorate:fGov.value,city:fCity.value,
       items:cart.map(function(c){return {product:c.id,property:c.prop,qty:c.qty,originalPrice:Number(c.cost||0),finalPrice:Number(c.price||0)}}),
       total:t,commission:Math.round(t*0.1),idempotency_key:getOrderIdempotencyKey()};
-    m.textContent='⏳ جاري إرسال الطلب مرة واحدة...';
-    var r=await fetch('/api/create-order',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json','X-Idempotency-Key':body.idempotency_key},body:JSON.stringify(body)});
+    var requestOptions={method:'POST',credentials:'include',headers:{'Content-Type':'application/json','X-Idempotency-Key':body.idempotency_key},body:JSON.stringify(body)};
+    var r=await fetch('/api/create-order',requestOptions);
     var d=await r.json().catch(function(){return {};});
+    // حالة 202 تعني أن محاولة سابقة بنفس المفتاح ما زالت تعمل؛ ننتظر ثم نسترجع نتيجتها بدل عرض خطأ أو إرسال طلب جديد.
+    for(var retry=0;r.status===202&&d.pending&&retry<4;retry++){
+      await new Promise(function(resolve){setTimeout(resolve,Number(d.retry_after_ms)||800);});
+      r=await fetch('/api/create-order',requestOptions);
+      d=await r.json().catch(function(){return {};});
+    }
     if(r.ok&&d.ok){
+      orderSucceeded=true;
       m.className='co-msg success';
-      m.innerHTML='<span class="order-success-title">✅ تم تأكيد الأوردر بنجاح</span><small class="order-success-subtitle">هنتابع مع عميلك لحد ما يستلم</small>';
-      var confirmButton=document.querySelector('.confirm-order');
-      if(confirmButton){confirmButton.disabled=true;confirmButton.textContent='تم التأكيد ✓';}
+      m.innerHTML='<span class="order-success-title">تم تأكيد الأوردر بنجاح</span><small class="order-success-subtitle">هنتابع مع عميلك لحد ما يستلم</small>';
+      if(confirmButton){confirmButton.textContent='تم التأكيد ✓';}
       cart=[];orderIdempotencyKey='';upd();
-      toast('✅ تم تأكيد الأوردر — هنتابع مع عميلك لحد ما يستلم');
       setTimeout(function(){
         closeCheckout();
         m.className='co-msg';
         m.textContent='';
-        if(confirmButton){confirmButton.disabled=false;confirmButton.textContent='تأكيد الطلب ✓';}
+        if(confirmButton){confirmButton.disabled=false;confirmButton.classList.remove('is-processing');confirmButton.textContent='تأكيد الطلب ✓';}
       },3600);
     }
-    else {m.className='co-msg';m.textContent='⚠️ '+(d.error||'فشل إرسال الطلب');}
-  }catch(e){m.textContent='⚠️ '+(e.message||'تعذر الاتصال، لم يتم تأكيد الطلب');}
-  finally{orderSubmitting=false;}
+    else {m.className='co-msg error';m.textContent=d.error||'تعذر إرسال الطلب حاليًا';}
+  }catch(e){m.className='co-msg error';m.textContent=e.message||'تعذر الاتصال، لم يتم تأكيد الطلب';}
+  finally{
+    orderSubmitting=false;
+    if(confirmButton&&!orderSucceeded){confirmButton.disabled=false;confirmButton.classList.remove('is-processing');confirmButton.textContent='تأكيد الطلب ✓';}
+  }
 }
 function openDrw(){openModalById('drw');document.getElementById('ovl').classList.add('open');}
 function closeDrw(options){closeModalById('drw',options);document.getElementById('ovl').classList.remove('open');}
