@@ -26,6 +26,8 @@ assert(server.includes("app.get('/api/health',async function(req,res)") && serve
 assert(server.includes('postgres.getAffiliateOrderStatus(user.id'), 'status endpoint must scope reads to the authenticated user');
 assert(postgres.includes('processing_started_at') && postgres.includes('last_attempt_at') && postgres.includes('retry_count'), 'queue retry metadata is missing');
 assert(postgres.includes('lease_expires_at') && postgres.includes('FOR UPDATE') && postgres.includes('SKIP LOCKED'), 'queue jobs need leases and concurrent-safe claiming');
+assert(postgres.includes("data || jsonb_build_object('status','جاري تجهيز الطلب','requestStatus','processing'"), 'claimed jobs must be visible as processing in the affiliate order document');
+assert(postgres.includes("order_id IS NULL AND retry_count=0 AND lease_expires_at IS NULL") && postgres.includes("status='unknown'"), 'legacy orphan queue rows must not remain stuck or be reposted');
 assert(postgres.includes('affiliate_commissions') && postgres.includes('ON CONFLICT (order_id) DO NOTHING'), 'commission ledger must be idempotent per order');
 assert(postgres.includes('total_earned=COALESCE(total_earned,0)+$2, updated_at=NOW()'), 'confirmed commission must update total_earned');
 assert(postgres.includes('nextDelivered && !previousDelivered') && postgres.includes('sales_count=COALESCE(sales_count,0)+1'), 'sales_count must increment only on first delivery transition');
@@ -34,9 +36,12 @@ assert(worker.includes('AbortController') && worker.includes('ETIMEDOUT'), 'supp
 assert(worker.includes("'unknown'") && worker.includes("'retry'"), 'worker must distinguish UNKNOWN and retryable states');
 assert(worker.includes('retryDelayMs') && worker.includes('[2000, 5000, 15000, 30000]') && worker.includes('attempt < 5'), 'retry backoff contract is missing');
 assert(worker.includes('incomplete_supplier_response'), 'incomplete supplier responses must become UNKNOWN');
+assert(worker.includes("accepted: 'قيد التأكيد'") && worker.includes('terminalFailure'), 'supplier pending/terminal statuses must be normalized safely');
+assert(worker.includes("'accepted', 'pending', 'processing', 'retry', 'قيد التأكيد', 'جاري التجهيز'"), 'reconciliation must revisit accepted and in-flight orders when a status endpoint is configured');
 assert(worker.includes("'X-Idempotency-Key'"), 'supplier attempts must carry the stable operation key');
 assert(client.includes("sessionStorage.getItem('rab7na_order_idempotency_key')"), 'refresh-safe idempotency key is missing');
 assert(client.includes('rab7na_pending_order_v1') && client.includes('fetchQueuedOrderStatus'), 'checkout must retain and poll queued orders');
+assert(server.includes('const queue = order._queue || null') && server.includes('queueStatusMap'), 'affiliate orders must expose queue status rather than stale app data only');
 assert(client.includes("r.status===202&&d.ok") || client.includes("d.ok&&d.queued"), 'checkout must accept the immediate queued contract');
 console.log('order reliability checks: PASS');
 console.log('save-first queue contract: YES');

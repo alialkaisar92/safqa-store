@@ -13,7 +13,7 @@ function headers() { return { 'api-safka-key': apiKey(), 'Content-Type': 'applic
 function mapStatus(value) {
   const s = String(value || '').trim().toLowerCase();
   const map = {
-    pending: 'قيد التأكيد', confirmed: 'تم التأكيد', processing: 'جاري التجهيز', shipped: 'تم الشحن', delivered: 'تم التسليم', completed: 'تم التسليم', cancelled: 'ملغي', canceled: 'ملغي', returned: 'مرتجع', rejected: 'مرفوض', failed: 'فشل'
+    pending: 'قيد التأكيد', accepted: 'قيد التأكيد', processing: 'جاري التجهيز', preparing: 'جاري التجهيز', shipped: 'تم الشحن', confirmed: 'تم التأكيد', delivered: 'تم التسليم', completed: 'تم التسليم', cancelled: 'ملغي', canceled: 'ملغي', returned: 'مرتجع', rejected: 'مرفوض', failed: 'فشل'
   };
   return map[s] || String(value || 'قيد المتابعة');
 }
@@ -145,8 +145,10 @@ function supplierOutcome(response, payload) {
   const rawStatus = supplierStatus(payload, record);
   const errors = supplierErrors(payload);
   const externalId = record && (record._id || record.id || record.serial_number || record.serial);
-  const falseFlag = payload && (payload.success === false || payload.ok === false || String(payload.success).toLowerCase() === 'false' || String(payload.ok).toLowerCase() === 'false');
-  return { accepted: Boolean(response && response.ok) && !falseFlag && !errors.length && Boolean(externalId), indeterminate: Boolean(response && response.ok) && !falseFlag && !errors.length && !externalId, record, rawStatus, externalId: externalId ? String(externalId) : '', errors };
+  const nested = (payload && payload.data && typeof payload.data === 'object' ? payload.data : null) || (payload && payload.order && typeof payload.order === 'object' ? payload.order : null) || {};
+  const falseFlag = [payload && payload.success, payload && payload.ok, nested.success, nested.ok].some(value => value === false || String(value).toLowerCase() === 'false');
+  const terminalFailure = ['failed', 'rejected', 'cancelled', 'canceled', 'مرفوض', 'ملغي', 'ملغى', 'فشل'].includes(String(rawStatus || '').toLowerCase());
+  return { accepted: Boolean(response && response.ok) && !falseFlag && !terminalFailure && !errors.length && Boolean(externalId), indeterminate: Boolean(response && response.ok) && !falseFlag && !terminalFailure && !errors.length && !externalId, record, rawStatus, externalId: externalId ? String(externalId) : '', errors };
 }
 function retryableStatus(status) { return [502, 503, 504].includes(Number(status)); }
 function retryDelayMs(attempt) { return [2000, 5000, 15000, 30000][Math.max(0, Math.min(3, Number(attempt) - 1))]; }
@@ -275,7 +277,8 @@ async function reconcileAffiliateOrderQueue(limit = 50) {
   const rows = await postgres.listAffiliateOrdersForSync();
   let checked = 0;
   for (const order of rows.slice(0, Math.max(1, Number(limit) || 50))) {
-    if (!['قيد التحقق', 'unknown', 'UNKNOWN'].includes(String(order.requestStatus || order.status || ''))) continue;
+    const currentStatus = String(order.requestStatus || order.status || '').trim().toLowerCase();
+    if (!['قيد التحقق', 'unknown', 'accepted', 'pending', 'processing', 'retry', 'قيد التأكيد', 'جاري التجهيز'].includes(currentStatus)) continue;
     const externalId = order.externalId || order.supplierOrderId;
     if (!externalId) continue;
     checked++;
@@ -285,7 +288,10 @@ async function reconcileAffiliateOrderQueue(limit = 50) {
       const raw = body.status || (body.data && (body.data.status || body.data.order_status)) || (body.order && body.order.status);
       if (!raw) continue;
       const next = mapStatus(raw);
-      if (next === 'قيد التأكيد' || next === 'جاري التجهيز') continue;
+      if (next === 'قيد التأكيد' || next === 'جاري التجهيز') {
+        await postgres.updateAffiliateOrderStatus(order.id || order.serial, { status: next, safkaStatus: raw, statusSyncedAt: new Date().toISOString(), requestStatus: 'accepted' });
+        continue;
+      }
       const requestStatus = ['تم التأكيد', 'تم التاكيد', 'تم التسليم', 'تم التوصيل', 'delivered', 'completed'].includes(String(next).toLowerCase()) ? 'confirmed' : (next === 'فشل' || next === 'مرفوض' ? 'failed' : 'accepted');
       await postgres.updateAffiliateOrderStatus(order.id || order.serial, { status: next, safkaStatus: raw, statusSyncedAt: new Date().toISOString(), requestStatus });
       console.log('[order-queue] order_reconciled', { order_id: order.id, user_id: order.userId, supplier_order_id: externalId, status: next });

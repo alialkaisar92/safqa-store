@@ -500,6 +500,21 @@ app.get('/orders', (req, res) => {
 });
 function affiliateOrderForUser(order, userId) {
   if (!order || String(order.userId) !== String(userId)) return null;
+  const queue = order._queue || null;
+  const queueStatus = queue && String(queue.status || '').toLowerCase();
+  const queueStatusMap = {
+    pending: 'قيد المتابعة',
+    processing: 'جاري تجهيز الطلب',
+    retry: 'إعادة المحاولة تلقائيًا',
+    unknown: 'قيد التحقق',
+    accepted: 'قيد التأكيد',
+    confirmed: 'تم التأكيد',
+    failed: 'فشل'
+  };
+  const requestStatus = order.requestStatus || (queueStatusMap[queueStatus] ? queueStatus : null);
+  const status = queueStatus && queueStatusMap[queueStatus] && ['pending','processing','retry','unknown'].includes(queueStatus)
+    ? queueStatusMap[queueStatus]
+    : (order.status || (queueStatus && queueStatusMap[queueStatus]) || 'قيد التأكيد');
   return {
     id: order.id,
     serial: order.serial || order.id,
@@ -508,12 +523,12 @@ function affiliateOrderForUser(order, userId) {
     client_name: order.client_name || order.customer || '',
     total: Number(order.total || 0),
     commission: Number(order.commission || 0),
-    status: order.status || 'قيد التأكيد',
-    requestStatus: order.requestStatus || null,
-    failureReason: order.requestStatus === 'failed' ? (order.failureReason || '') : '',
-    externalId: order.externalId || order.supplierOrderId || null,
+    status,
+    requestStatus,
+    failureReason: requestStatus === 'failed' ? (order.failureReason || queue && queue.failureReason || '') : '',
+    externalId: order.externalId || order.supplierOrderId || queue && queue.supplierOrderId || null,
     date: order.date || order.createdAt || null,
-    statusSyncedAt: order.statusSyncedAt || null
+    statusSyncedAt: order.statusSyncedAt || queue && queue.updatedAt || null
   };
 }
 
