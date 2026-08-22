@@ -23,6 +23,7 @@ assert(html.includes('سعر الجملة الإجمالي'), 'cart totals must 
 assert(html.includes('ربحك المتوقع'), 'cart must show expected profit');
 assert(html.includes('cart-price-editor'), 'cart price editor is missing');
 assert(html.includes('function saveCartPrice(i)'), 'saveCartPrice function is missing');
+assert(html.includes("window.openCheckout=function(){") && html.includes("if(typeof recalc==='function')recalc();"), 'checkout must recalculate totals after modal navigation opens it');
 assert(submitBlock.includes("if(r.ok&&d.ok)"), 'success must depend on a successful server response');
 assert(submitBlock.includes('order-success-title'), 'order success message is missing');
 assert(submitBlock.includes('هنتابع مع عميلك لحد ما يستلم'), 'customer follow-up message is missing');

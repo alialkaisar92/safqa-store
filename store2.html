@@ -2241,6 +2241,7 @@ body{
   window.openCheckout=function(){
     closeModalById('cartMdl',{history:false});
     if(typeof renderCheckout==='function')renderCheckout();
+    if(typeof recalc==='function')recalc();
     window.openModalById('coMdl');
   };
   window.closeCheckout=function(options){window.closeModalById('coMdl',options);};
