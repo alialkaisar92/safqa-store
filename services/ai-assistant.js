@@ -369,6 +369,7 @@ function compactAnswer(value, max = 720) {
     .replace(/[\uFE0E\uFE0F]/g, '')
     .replace(/\p{Extended_Pictographic}/gu, '')
     .replace(/[ \t]+/g, ' ')
+    .replace(/\s+([-•])\s+(?=[^\n]{2,160}?(?:سعر|عمول|ج\.م|متوفر|متاحة|متاح))/gu, '\n$1 ')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
   const lines = source.split('\n').map(line => line.trim()).filter(Boolean);
