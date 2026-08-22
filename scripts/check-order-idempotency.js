@@ -26,6 +26,8 @@ assert(postgres.includes('affiliate_commissions') && postgres.includes('ON CONFL
 assert(worker.includes('processAffiliateOrderQueue') && worker.includes('claimAffiliateOrderJobs'), 'background order worker is missing');
 assert(worker.includes('AbortController') && worker.includes('ETIMEDOUT'), 'supplier timeout must be bounded');
 assert(worker.includes("'unknown'") && worker.includes("'retry'"), 'worker must distinguish UNKNOWN and retryable states');
+assert(worker.includes('retryDelayMs') && worker.includes('[2000, 5000, 15000, 30000]') && worker.includes('attempt < 5'), 'retry backoff contract is missing');
+assert(worker.includes('incomplete_supplier_response'), 'incomplete supplier responses must become UNKNOWN');
 assert(worker.includes("'X-Idempotency-Key'"), 'supplier attempts must carry the stable operation key');
 assert(client.includes("sessionStorage.getItem('rab7na_order_idempotency_key')"), 'refresh-safe idempotency key is missing');
 assert(client.includes('rab7na_pending_order_v1') && client.includes('fetchQueuedOrderStatus'), 'checkout must retain and poll queued orders');

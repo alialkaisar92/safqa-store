@@ -223,11 +223,18 @@ async function processAffiliateOrderJob(job) {
       return { status: 'unknown' };
     }
     const message = safeFailureMessage(result.response.status, result.body && (result.body.message || result.body.error || outcome.errors.join('، ')));
-    if (retryableStatus(result.response.status) && attempt < 4) {
+    if (retryableStatus(result.response.status) && attempt < 5) {
       const nextAttemptAt = new Date(Date.now() + retryDelayMs(attempt)).toISOString();
       await postgres.updateAffiliateOrderQueueState(key, 'retry', { supplierResponse: { httpStatus: result.response.status }, failureReason: 'المورد غير متاح؛ ستتم إعادة المحاولة تلقائيًا', nextAttemptAt });
       console.warn('[order-queue] order_retry', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, attempt_number: attempt, http_status: result.response.status });
       return { status: 'retry' };
+    }
+    if (retryableStatus(result.response.status)) {
+      const unknownMessage = 'تعذر تأكيد رد المورد بعد المحاولات الآمنة؛ جارٍ التحقق من حالة الطلب، لا تعيد إرساله مرة أخرى';
+      await postgres.updateAffiliateOrderQueueState(key, 'unknown', { supplierResponse: { httpStatus: result.response.status }, failureReason: unknownMessage });
+      await postgres.updateAffiliateOrder(job.order_id, { status: 'قيد التحقق', requestStatus: 'unknown', failureReason: unknownMessage, statusSyncedAt: new Date().toISOString() });
+      console.warn('[order-queue] order_unknown', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, attempt_number: attempt, http_status: result.response.status });
+      return { status: 'unknown' };
     }
     await postgres.updateAffiliateOrderQueueState(key, 'failed', { supplierResponse: { httpStatus: result.response.status, errors: outcome.errors }, failureReason: message });
     await postgres.updateAffiliateOrder(job.order_id, { status: 'فشل', requestStatus: 'failed', failureReason: message, statusSyncedAt: new Date().toISOString() });
@@ -241,10 +248,17 @@ async function processAffiliateOrderJob(job) {
       console.warn('[order-queue] order_unknown', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, attempt_number: attempt });
       return { status: 'unknown' };
     }
-    const message = 'تعذر تجهيز الطلب في الخلفية؛ سيعاد فحصه تلقائيًا';
-    await postgres.updateAffiliateOrderQueueState(key, 'retry', { failureReason: message, nextAttemptAt: new Date(Date.now() + retryDelayMs(attempt)).toISOString() });
-    console.error('[order-queue] worker_error', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, attempt_number: attempt, error: error.message });
-    return { status: 'retry' };
+    if (attempt < 5) {
+      const message = 'تعذر تجهيز الطلب مؤقتًا؛ سيعاد فحصه تلقائيًا';
+      await postgres.updateAffiliateOrderQueueState(key, 'retry', { failureReason: message, nextAttemptAt: new Date(Date.now() + retryDelayMs(attempt)).toISOString() });
+      console.error('[order-queue] worker_error', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, attempt_number: attempt, error: error.message });
+      return { status: 'retry' };
+    }
+    const message = 'تعذر تجهيز الطلب تلقائيًا؛ راجع حالة الطلب قبل إعادة المحاولة';
+    await postgres.updateAffiliateOrderQueueState(key, 'unknown', { failureReason: message });
+    await postgres.updateAffiliateOrder(job.order_id, { status: 'قيد التحقق', requestStatus: 'unknown', failureReason: message, statusSyncedAt: new Date().toISOString() });
+    console.error('[order-queue] worker_exhausted', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, attempt_number: attempt, error: error.message });
+    return { status: 'unknown' };
   }
 }
 
