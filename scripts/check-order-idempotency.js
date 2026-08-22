@@ -46,6 +46,7 @@ assert(server.includes("app.post('/api/affiliate/order-cancel'") && server.inclu
 assert(postgres.includes('cancel_reason') && postgres.includes('cancel_requested_at') && postgres.includes('cancelled_at'), 'cancellation audit fields are missing');
 assert(postgres.includes('ORDER_NOT_CANCELLABLE') && postgres.includes("cancel_requested'"), 'cancellation must reject final states and support supplier review');
 assert(postgres.includes("status IN ('cancel_requested','cancelled')") && postgres.includes('cancellationProtected'), 'worker/admin updates must not overwrite a cancellation');
+assert(postgres.includes("SET status=CASE WHEN status IN ('cancel_requested','cancelled') THEN status ELSE $2 END") && postgres.includes('completeAffiliateOrderRequest'), 'late supplier completion must not overwrite a cancellation');
 assert(client.includes('affiliateCancelMdl') && client.includes('affiliateCancelReason') && client.includes('submitAffiliateCancellation'), 'affiliate cancellation reason UI is missing');
 assert(client.includes("/api/affiliate/order-cancel") && client.includes('setInterval(refreshAffiliateLive,5000)'), 'affiliate dashboard must refresh live and post cancellation safely');
 assert(client.includes("r.status===202&&d.ok") || client.includes("d.ok&&d.queued"), 'checkout must accept the immediate queued contract');
