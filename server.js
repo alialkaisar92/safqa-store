@@ -680,7 +680,7 @@ app.post('/api/create-order', async (req,res)=>{
     const customer=affiliateUser;
     const external=outcome.record;
     const externalId=outcome.externalId;
-    const savedOrder={id:externalId,serial:external.serial_number||external.serial||externalId,userId:customer.id,products:b.productNames||items.map(x=>x.product),items,client_name:body.client_name,client_phone1:body.client_phone1,client_address:body.client_address,status:'قيد التأكيد',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:shippingCost,originalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.originalPrice||0)*(x.qty||1),0),finalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.finalPrice||0)*(x.qty||1),0),external:external};
+    const savedOrder={id:externalId,serial:external.serial_number||external.serial||externalId,requestKey,userId:customer.id,products:b.productNames||items.map(x=>x.product),items,client_name:body.client_name,client_phone1:body.client_phone1,client_address:body.client_address,status:'قيد التأكيد',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:shippingCost,originalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.originalPrice||0)*(x.qty||1),0),finalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.finalPrice||0)*(x.qty||1),0),external:external};
     let trackingSaved=true;
     try {
       await postgres.saveAffiliateOrder(savedOrder);
@@ -689,7 +689,7 @@ app.post('/api/create-order', async (req,res)=>{
       console.error('[order] supplier accepted; affiliate tracking save failed:',trackingError.message);
     }
     const requestStatus = trackingSaved ? 'accepted' : 'accepted_untracked';
-    await postgres.completeAffiliateOrderRequest(requestKey, requestStatus, { order: external, status: outcome.status || null }, externalId).catch(error => { trackingSaved=false; console.error('[order] idempotency result save failed:', error.message); });
+    await postgres.completeAffiliateOrderRequest(requestKey, requestStatus, { order: external, status: outcome.status || null, affiliateOrder: savedOrder }, externalId).catch(error => { trackingSaved=false; console.error('[order] idempotency result save failed:', error.message); });
     const confirmationMessage=outcome.status==='pending' ? 'تم إرسال الطلب وجارٍ تأكيده من المورد' : 'تم إرسال الطلب بنجاح';
     res.status(201).json({ok:true,message:confirmationMessage,status:outcome.status||null,order:external,trackingSaved});
   }catch(e){

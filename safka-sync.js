@@ -142,7 +142,12 @@ async function syncOrderStatuses() {
   return { ok: true, checked: orders.length, changed, delivered };
 }
 async function runSync(options) {
-  const result = { products: null, orders: null };
+  const result = { products: null, orders: null, affiliateRepair: null };
+  try {
+    result.affiliateRepair = await postgres.repairAcceptedUntrackedAffiliateOrders(100);
+  } catch (e) {
+    result.affiliateRepair = { ok: false, error: e.message };
+  }
   try { result.products = await syncProducts(options || {}); } catch (e) { result.products = { ok: false, error: e.message }; }
   try { result.orders = await syncOrderStatuses(); } catch (e) { result.orders = { ok: false, error: e.message }; }
   await saveMeta({ lastRunAt: new Date().toISOString(), lastResult: result });
