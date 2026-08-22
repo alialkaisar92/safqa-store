@@ -16,7 +16,20 @@ function tokenHash(token) { return crypto.createHash('sha256').update(token).dig
 function newToken() { return crypto.randomBytes(32).toString('hex'); }
 function publicUser(row) {
   if (!row) return null;
-  return { id: row.id, name: row.name, email: row.email, email_verified: Boolean(row.email_verified), created_at: row.created_at, last_login: row.last_login, balance: Number(row.balance || 0), welcome_bonus_granted: Boolean(row.welcome_bonus_granted) };
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    email_verified: Boolean(row.email_verified),
+    created_at: row.created_at,
+    last_login: row.last_login,
+    balance: Number(row.balance || 0),
+    welcome_bonus_granted: Boolean(row.welcome_bonus_granted),
+    manualCredits: Number(row.manual_credits ?? row.manualCredits ?? 0),
+    totalEarned: Number(row.total_earned ?? row.totalEarned ?? 0),
+    salesCount: Number(row.sales_count ?? row.salesCount ?? 0),
+    sales: Array.isArray(row.sales) ? row.sales : []
+  };
 }
 function allowed(key) {
   const now = Date.now();
@@ -36,7 +49,7 @@ async function register({ name, email, password }) {
   try {
     const result = await query(`INSERT INTO users(name,email,password_hash,email_verified,balance,welcome_bonus_granted)
       VALUES ($1,$2,$3,FALSE,70.00,TRUE)
-      RETURNING id,name,email,email_verified,created_at,last_login,balance,welcome_bonus_granted`, [name, email, passwordHash]);
+      RETURNING id,name,email,email_verified,created_at,last_login,balance,welcome_bonus_granted,manual_credits,total_earned,sales_count,sales`, [name, email, passwordHash]);
     return result.rows[0];
   } catch (error) {
     if (error && error.code === '23505') throw new Error('هذا البريد مستخدم بالفعل');
@@ -48,7 +61,7 @@ async function login({ email, password, ip }) {
   email = normalizeEmail(email);
   if (!allowed(`${ip || 'unknown'}:${email}`)) throw new Error('محاولات كثيرة؛ حاول بعد 15 دقيقة');
   if (!email || typeof password !== 'string') throw new Error('البريد وكلمة المرور مطلوبان');
-  const result = await query('SELECT id,name,email,password_hash,email_verified,created_at,last_login,balance,welcome_bonus_granted FROM users WHERE LOWER(email)=LOWER($1) LIMIT 1', [email]);
+  const result = await query('SELECT id,name,email,password_hash,email_verified,created_at,last_login,balance,welcome_bonus_granted,manual_credits,total_earned,sales_count,sales FROM users WHERE LOWER(email)=LOWER($1) LIMIT 1', [email]);
   const user = result.rows[0];
   const valid = user ? await bcrypt.compare(password, user.password_hash) : false;
   if (!valid) throw new Error('البريد أو كلمة المرور غير صحيحة');
@@ -60,7 +73,7 @@ async function login({ email, password, ip }) {
 
 async function currentUser(token) {
   if (!token) return null;
-  const result = await query(`SELECT u.id,u.name,u.email,u.email_verified,u.created_at,u.last_login,u.balance,u.welcome_bonus_granted
+  const result = await query(`SELECT u.id,u.name,u.email,u.email_verified,u.created_at,u.last_login,u.balance,u.welcome_bonus_granted,u.manual_credits,u.total_earned,u.sales_count,u.sales
     FROM auth_sessions s JOIN users u ON u.id=s.user_id
     WHERE s.token_hash=$1 AND s.expires_at>NOW()`, [tokenHash(token)]);
   if (!result.rows[0]) return null;
