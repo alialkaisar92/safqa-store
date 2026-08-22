@@ -50,8 +50,8 @@ img{display:block}
 .soc{display:flex;justify-content:center;gap:12px;margin-bottom:10px}.soc a{width:38px;height:38px;border-radius:50%;background:#f2f6f3;display:flex;align-items:center;justify-content:center;font-size:15px;text-decoration:none}
 .mdl{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;z-index:120}
 .mdl.open{display:flex}
-.mdl .box{background:#fff;width:100%;max-height:88%;overflow-y:auto;border-radius:24px 24px 0 0;padding:18px}
-.mdl h3{font-size:17px;font-weight:900;margin-bottom:12px}
+.mdl .box{position:relative;background:#fff;width:100%;max-height:88%;overflow-y:auto;border-radius:24px 24px 0 0;padding:58px 18px 18px}
+.mdl h3{font-size:17px;font-weight:900;margin-bottom:12px}.modal-x{position:absolute;top:14px;right:14px;z-index:4;width:42px;height:42px;border:0;border-radius:14px;background:#f1f7f3;color:#0b5d3b;font-size:27px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(11,93,59,.12)}.modal-x:active{transform:scale(.94)}.checkout-head{position:relative}.checkout-close{width:42px;height:42px;border:0;border-radius:14px;background:#f1f7f3;color:#0b5d3b;font-size:27px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}.checkout-close:active{transform:scale(.94)}
 .ci{display:flex;gap:10px;align-items:center;border:1.5px solid var(--line);border-radius:14px;padding:8px;margin-bottom:8px}
 .ci img{width:52px;height:52px;border-radius:10px;object-fit:cover}
 .ci .n{flex:1;font-size:12px;font-weight:700}
@@ -290,6 +290,7 @@ img{display:block}
   </button>
 </nav>
 <div class="mdl" id="cartMdl"><div class="box">
+  <button class="modal-x" type="button" aria-label="إغلاق السلة" onclick="closeModalById('cartMdl')">×</button>
   <h3>🛒 السلة</h3>
   <div id="citems"></div>
   <div class="tot"><span>الإجمالي</span><span id="ctot">0 ج.م</span></div>
@@ -300,7 +301,8 @@ img{display:block}
   <div class="checkout-wrap">
 
     <div class="checkout-head">
-      <button class="back-checkout" onclick="closeCheckout()">←</button>
+      <button class="back-checkout" onclick="closeCheckout()" aria-label="الرجوع من إتمام الطلب">←</button>
+      <button class="checkout-close" type="button" onclick="closeModalById('coMdl')" aria-label="إغلاق إتمام الطلب">×</button>
       <div>
         <h2>إتمام الطلب</h2>
         <p>راجع تفاصيل الطلب والأرباح المتوقعة قبل التأكيد</p>
@@ -903,7 +905,7 @@ function showPriceModal(){
 
  setTimeout(function(){
    var m=document.getElementById('priceModal');
-   if(m)m.classList.add('show');
+   if(m)openModalById('priceModal');
  },20);
 }
 
@@ -957,7 +959,7 @@ function closePriceModal(){
  var m=document.getElementById('priceModal');
 
  if(m){
-   m.classList.remove('show');
+   closeModalById('priceModal');
 
    setTimeout(function(){
      if(m)m.remove();
@@ -1072,7 +1074,7 @@ function openCart(){
  document.getElementById('ctot').innerHTML=
    '<span class="cart-total-label">إجمالي البيع</span> <b>'+fmt(subtotal)+'</b><br><small class="cart-total-cost">سعر الجملة الإجمالي: '+fmt(wholesaleTotal)+'</small><br><small class="cart-total-profit">💰 ربحك المتوقع: '+fmt(profit)+'</small>';
 
- document.getElementById('cartMdl').classList.add('open');
+ openModalById('cartMdl');
 }
 
 function cartQty(i,d){
@@ -1117,8 +1119,8 @@ function cancelCartPriceEdit(){
  openCart();
 }
 
-function closeCart(){
-  document.getElementById('cartMdl').classList.remove('open');
+function closeCart(options){
+  closeModalById('cartMdl',options);
 }
 
 function rm(i){
@@ -1130,13 +1132,13 @@ function rm(i){
 
 function openCheckout(){
   if(!cart.length)return;
-  closeCart();
-  document.getElementById('coMdl').classList.add('open');
+  closeCart({history:false});
+  openModalById('coMdl');
   renderCheckout();
   recalc();
 }
-function closeCheckout(){
-  document.getElementById('coMdl').classList.remove('open');
+function closeCheckout(options){
+  closeModalById('coMdl',options);
 }
 function renderCheckout(){
   var box=document.getElementById('coItems');
@@ -1230,7 +1232,7 @@ async function submitOrder(){
       cart=[];orderIdempotencyKey='';upd();
       toast('✅ تم تأكيد الأوردر — هنتابع مع عميلك لحد ما يستلم');
       setTimeout(function(){
-        document.getElementById('coMdl').classList.remove('open');
+        closeCheckout();
         m.className='co-msg';
         m.textContent='';
         if(confirmButton){confirmButton.disabled=false;confirmButton.textContent='تأكيد الطلب ✓';}
@@ -1240,9 +1242,9 @@ async function submitOrder(){
   }catch(e){m.textContent='⚠️ '+(e.message||'تعذر الاتصال، لم يتم تأكيد الطلب');}
   finally{orderSubmitting=false;}
 }
-function openDrw(){document.getElementById('drw').classList.add('open');document.getElementById('ovl').classList.add('open');}
-function closeDrw(){document.getElementById('drw').classList.remove('open');document.getElementById('ovl').classList.remove('open');}
-function openShip(){var b=document.getElementById('shiplist');b.innerHTML=(PL&&PL.length)?PL.map(function(g){return '<div class="shipline"><span>'+(g.governorateNameAr||g.name)+'</span><b>'+(g.price||0)+' ج.م</b></div>'}).join(''):'<p style="text-align:center;color:var(--mut)">جاري التحميل...</p>';document.getElementById('shipMdl').classList.add('open');}
+function openDrw(){openModalById('drw');document.getElementById('ovl').classList.add('open');}
+function closeDrw(options){closeModalById('drw',options);document.getElementById('ovl').classList.remove('open');}
+function openShip(){var b=document.getElementById('shiplist');b.innerHTML=(PL&&PL.length)?PL.map(function(g){return '<div class="shipline"><span>'+(g.governorateNameAr||g.name)+'</span><b>'+(g.price||0)+' ج.م</b></div>'}).join(''):'<p style="text-align:center;color:var(--mut)">جاري التحميل...</p>';openModalById('shipMdl');}
 load();
 </script>
 <style>
@@ -1252,7 +1254,7 @@ load();
 #toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--gdd);color:#fff;padding:12px 24px;border-radius:999px;font-weight:700;font-size:14px;z-index:300;opacity:0;pointer-events:none;transition:.3s;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 #toast.show{opacity:1}
 </style>
-<div class="mdl" id="shipMdl"><div class="box"><h3>🚚 أسعار الشحن حسب المحافظة</h3><div id="shiplist"></div><button class="go" onclick="document.getElementById('shipMdl').classList.remove('open')">حسناً</button></div></div>
+<div class="mdl" id="shipMdl"><div class="box"><button class="modal-x" type="button" aria-label="إغلاق أسعار الشحن" onclick="closeModalById('shipMdl')">×</button><h3>🚚 أسعار الشحن حسب المحافظة</h3><div id="shiplist"></div><button class="go" onclick="closeModalById('shipMdl')">حسناً</button></div></div>
 <div id="toast"></div>
 <script>
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1800);}
@@ -1269,6 +1271,7 @@ function goOrders(){toast('📦 سجل دخولك لمتابعة طلباتك');
 .pdesc{font-size:13px;color:#8aa094;line-height:1.7;margin:10px 0;max-height:110px;overflow-y:auto}
 </style>
 <div class="mdl" id="pMdl"><div class="box">
+  <button class="modal-x" type="button" aria-label="إغلاق تفاصيل المنتج" onclick="closeModalById('pMdl')">×</button>
   <img id="pImg" class="pimg-big" src="">
   <h3 id="pName" style="margin-top:12px"></h3>
   <div id="pStk" style="margin:6px 0"></div>
@@ -1281,7 +1284,7 @@ function goOrders(){toast('📦 سجل دخولك لمتابعة طلباتك');
     <button class="go" id="pCopy" style="flex:1;background:linear-gradient(135deg,#0284c7,#38bdf8)">📋 نسخ الوصف</button>
   </div>
   <button class="go" id="pAdd">🛒 أضف إلى السلة</button>
-  <button class="go" style="background:#f2f6f3;color:#8aa094;margin-top:8px" onclick="document.getElementById('pMdl').classList.remove('open')">إغلاق</button>
+  <button class="go" style="background:#f2f6f3;color:#8aa094;margin-top:8px" onclick="closeModalById('pMdl')">إغلاق</button>
 </div></div>
 <script>
 function copyText(txt,msg){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast(msg||'✅ تم النسخ')})}else{var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();toast(msg||'✅ تم النسخ')}}
@@ -1301,12 +1304,12 @@ function openP(i){var p=P[i];if(!p)return;
  document.getElementById('pSugg').textContent=sugg+' ج.م';
  document.getElementById('pComm').textContent=comm+' ج.م';
  document.getElementById('pDesc').textContent=(p.description||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').slice(0,300);
- document.getElementById('pAdd').onclick=function(){addCart(i);document.getElementById('pMdl').classList.remove('open');};
+ document.getElementById('pAdd').onclick=function(){addCart(i);closeModalById('pMdl');};
  var media=p.media_url||'';var pm=document.getElementById('pMedia');
  if(media){pm.style.display='flex';pm.href=media;}else{pm.style.display='none';}
  window._pdesc=(p.description||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
  document.getElementById('pCopy').onclick=function(){copyText(window._pdesc,'✅ تم نسخ الوصف — جاهز للمشاركة');};
- document.getElementById('pMdl').classList.add('open');}
+ openModalById('pMdl');}
 </script>
 
 <script id="core-session">
@@ -1325,6 +1328,7 @@ function goOrders(){if(window.openAffiliate)openAffiliate('orders');else locatio
 </script>
 
 <div class="mdl" id="accMdl"><div class="box">
+  <button class="modal-x" type="button" aria-label="إغلاق الحساب" onclick="closeModalById('accMdl')">×</button>
   <div style="text-align:center;padding:4px 0 20px;background:linear-gradient(180deg,#ecfdf5 0%,transparent 100%);margin:-24px -20px 16px;padding:28px 20px;border-radius:20px">
     <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#0b5d3b,#16a34a);color:#fff;font-size:28px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 8px" id="aAv">👤</div>
     <h3 id="aName" style="margin:0"></h3>
@@ -1333,9 +1337,9 @@ function goOrders(){if(window.openAffiliate)openAffiliate('orders');else locatio
   <div class="prow2 g"><span>🛍️ طلباتي</span><b id="aOrders">0</b></div>
   <div class="prow2 s"><span>💵 إجمالي عمولاتي</span><b id="aComm">0 ج.م</b></div>
   <div class="prow2 c"><span>💰 الرصيد المتاح للسحب</span><b id="aAvail">0 ج.م</b></div>
-  <div style="height:1px;background:#e2e8f0;margin:16px 0"></div><button class="go" onclick="document.getElementById('accMdl').classList.remove('open');openWallet()">💳 سحب الأرباح</button>
+  <div style="height:1px;background:#e2e8f0;margin:16px 0"></div><button class="go" onclick="closeModalById('accMdl',{history:false});openWallet()">💳 سحب الأرباح</button>
   <button class="go" style="background:#fee2e2;color:#b91c1c;margin-top:8px" onclick="logout()">🚪 تسجيل الخروج</button>
-  <button class="go" style="background:#f2f6f3;color:#8aa094;margin-top:8px" onclick="document.getElementById('accMdl').classList.remove('open')">إغلاق</button>
+  <button class="go" style="background:#f2f6f3;color:#8aa094;margin-top:8px" onclick="closeModalById('accMdl')">إغلاق</button>
 </div></div>
 <script>
 function openAccount(){var u=getUser()||{};
@@ -1345,14 +1349,15 @@ function openAccount(){var u=getUser()||{};
  document.getElementById('aOrders').textContent=getOrders().length;
  document.getElementById('aComm').textContent=totalComm()+' ج.م';
  document.getElementById('aAvail').textContent=avail()+' ج.م';
- document.getElementById('accMdl').classList.add('open');}
+ openModalById('accMdl');}
 async function logout(){try{await fetch('/api/auth/logout',{method:'POST',credentials:'include'});}catch(e){}location.href='/store';}
 </script>
 
 <div class="mdl" id="ordMdl"><div class="box">
+  <button class="modal-x" type="button" aria-label="إغلاق الطلبات" onclick="closeModalById('ordMdl')">×</button>
   <h3>📦 طلباتي</h3>
   <div id="ordList"></div>
-  <button class="go" style="background:#f2f6f3;color:#8aa094" onclick="document.getElementById('ordMdl').classList.remove('open')">إغلاق</button>
+  <button class="go" style="background:#f2f6f3;color:#8aa094" onclick="closeModalById('ordMdl')">إغلاق</button>
 </div></div>
 <script>
 var ST={'pending':['قيد المراجعة','#fef3c7','#92400e'],'preparing':['جارٍ التجهيز','#e0f2fe','#0369a1'],'shipped':['تم الشحن','#e0e7ff','#4338ca'],'delivered':['تم التسليم ✓','#d1fae5','#065f46'],'returned':['مرتجع','#fee2e2','#991b1b'],'rejected':['مرفوض','#fee2e2','#991b1b']};
@@ -1360,10 +1365,11 @@ function openOrders(){var o=getOrders();var b=document.getElementById('ordList')
  b.innerHTML=o.length?o.map(function(x){var s=ST[x.status]||[x.status_ar||'قيد المراجعة','#fef3c7','#92400e'];
   return '<div style="border:1.5px solid #e6eee9;border-radius:14px;padding:12px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-weight:800"><span>#'+String(x.id).slice(-6)+'</span><span style="background:'+s[1]+';color:'+s[2]+';padding:3px 10px;border-radius:999px;font-size:11px">'+s[0]+'</span></div><div style="font-size:12px;color:#8aa094;margin:6px 0">'+x.date+' • '+x.items+' منتج</div><div style="display:flex;justify-content:space-between;font-weight:800"><span>الإجمالي: '+x.total+' ج.م</span><span style="color:#0b5d3b">عمولتك: '+x.commission+' ج.م</span></div></div>';
  }).join(''):'<p style="text-align:center;color:#8aa094;padding:30px">لا توجد طلبات بعد 🛒</p>';
- document.getElementById('ordMdl').classList.add('open');}
+ openModalById('ordMdl');}
 </script>
 
 <div class="mdl" id="walMdl"><div class="box">
+  <button class="modal-x" type="button" aria-label="إغلاق المحفظة" onclick="closeModalById('walMdl')">×</button>
   <h3>💳 سحب الأرباح</h3>
   <div class="prow2 c"><span>الرصيد المتاح</span><b id="wAvail">0 ج.م</b></div>
   <div class="fld"><label>وسيلة السحب</label><select id="wMethod">
@@ -1376,10 +1382,10 @@ function openOrders(){var o=getOrders();var b=document.getElementById('ordList')
   <button class="go" onclick="submitWd()">📨 إرسال طلب السحب</button>
   <h3 style="margin-top:16px">طلبات السحب السابقة</h3>
   <div id="wdList"></div>
-  <button class="go" style="background:#f2f6f3;color:#8aa094;margin-top:8px" onclick="document.getElementById('walMdl').classList.remove('open')">إغلاق</button>
+  <button class="go" style="background:#f2f6f3;color:#8aa094;margin-top:8px" onclick="closeModalById('walMdl')">إغلاق</button>
 </div></div>
 <script>
-function openWallet(){document.getElementById('wAvail').textContent=avail()+' ج.م';renderWd();document.getElementById('walMdl').classList.add('open');}
+function openWallet(){document.getElementById('wAvail').textContent=avail()+' ج.م';renderWd();openModalById('walMdl');}
 function renderWd(){var w=getWd();document.getElementById('wdList').innerHTML=w.length?w.map(function(x){return '<div style="display:flex;justify-content:space-between;border:1.5px solid #e6eee9;border-radius:12px;padding:10px;margin-bottom:8px;font-size:13px;font-weight:700"><span>'+x.method+'<br><small style="color:#8aa094">'+x.date+'</small></span><span style="color:'+(x.status==='approved'?'#065f46':x.status==='rejected'?'#991b1b':'#92400e')+'">'+x.amount+' ج.م<br><small>'+(x.status==='approved'?'تم الصرف':x.status==='rejected'?'مرفوض':'قيد المعالجة')+'</small></span></div>'}).join(''):'<p style="color:#8aa094;font-size:13px">لا توجد طلبات سحب</p>';}
 function submitWd(){if(window.openAffiliate){openAffiliate('wallet');return;}var m=document.getElementById('wMsg');m.textContent='⚠️ افتح مركز المسوّق لإرسال طلب السحب';}
 </script>
@@ -1838,8 +1844,8 @@ body{
     }).join(''):'<div class="affiliate-empty"><b>لا توجد طلبات سحب</b><small>ستظهر طلباتك هنا بعد إرسالها.</small></div>';
   }
   window.setAffiliateTab=function(tab){state.tab=tab;document.querySelectorAll('.affiliate-tabs button').forEach(function(b){b.classList.toggle('active',b.dataset.tab===tab)});document.querySelectorAll('.affiliate-pane').forEach(function(p){p.classList.remove('active')});var pane=document.getElementById('affiliate'+tab.charAt(0).toUpperCase()+tab.slice(1)+'Pane');if(pane)pane.classList.add('active')};
-  window.openAffiliate=async function(tab){document.getElementById('affiliateMdl').classList.add('open');document.getElementById('affiliateMdl').setAttribute('aria-hidden','false');setAffiliateTab(tab||'overview');try{await loadAffiliate();render();}catch(e){toast(e.message||'تعذر تحميل الحساب');closeAffiliate();}};
-  window.closeAffiliate=function(){document.getElementById('affiliateMdl').classList.remove('open');document.getElementById('affiliateMdl').setAttribute('aria-hidden','true')};
+  window.openAffiliate=async function(tab){openModalById('affiliateMdl');document.getElementById('affiliateMdl').setAttribute('aria-hidden','false');setAffiliateTab(tab||'overview');try{await loadAffiliate();render();}catch(e){toast(e.message||'تعذر تحميل الحساب');closeAffiliate();}};
+  window.closeAffiliate=function(options){closeModalById('affiliateMdl',options);document.getElementById('affiliateMdl').setAttribute('aria-hidden','true')};
   window.goAccount=function(){openAffiliate('overview')};window.goOrders=function(){openAffiliate('orders')};window.openAccount=function(){openAffiliate('overview')};window.openOrders=function(){openAffiliate('orders')};window.openWallet=function(){openAffiliate('wallet')};
   var withdrawalIdempotencyKey='',withdrawalSubmitting=false;
   function getWithdrawalIdempotencyKey(){if(withdrawalIdempotencyKey)return withdrawalIdempotencyKey;withdrawalIdempotencyKey=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'wd_'+Date.now()+'_'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);return withdrawalIdempotencyKey;}
@@ -2060,5 +2066,145 @@ body{
     align-items:flex-start;
   }
   .affiliate-primary{margin-inline-start:auto}
+}
+</style>
+
+<script id="modal-navigation">
+(function(){
+  var MODAL_STATE_KEY='rab7naModal';
+  var modalStack=[];
+  var suppressPop=false;
+  var managedIds=['cartMdl','coMdl','pMdl','priceModal','shipMdl','accMdl','ordMdl','walMdl','drw','affiliateMdl'];
+
+  function byId(id){return document.getElementById(id);}
+  function isShown(el){
+    return !!el && (el.classList.contains('open') || el.classList.contains('show') || el.getAttribute('aria-hidden')==='false');
+  }
+  function setShown(el,shown){
+    if(!el)return;
+    if(el.classList.contains('mdl') || el.id==='coMdl' || el.id==='drw' || el.id==='affiliateMdl'){
+      el.classList.toggle('open',shown);
+    }else{
+      el.classList.toggle('show',shown);
+    }
+    if(el.hasAttribute('aria-hidden'))el.setAttribute('aria-hidden',shown?'false':'true');
+  }
+  function syncBody(){
+    var any=managedIds.some(function(id){return isShown(byId(id));}) || !!document.querySelector('.price-modal.show,[data-modal].show');
+    document.body.classList.toggle('modal-open',any);
+    var overlay=byId('ovl');
+    if(overlay && !isShown(byId('drw')))overlay.classList.remove('open');
+  }
+  function currentId(){return modalStack.length?modalStack[modalStack.length-1]:null;}
+  function remember(id){
+    if(modalStack[modalStack.length-1]!==id)modalStack.push(id);
+  }
+  function forget(id){
+    modalStack=modalStack.filter(function(item){return item!==id;});
+  }
+  function closeVisual(id){
+    var el=byId(id);
+    if(!el)return;
+    setShown(el,false);
+    if(id==='drw'){
+      var overlay=byId('ovl');
+      if(overlay)overlay.classList.remove('open');
+    }
+    syncBody();
+  }
+  function closeFromHistory(id){
+    if(id)closeVisual(id);
+    else{
+      managedIds.forEach(function(item){closeVisual(item);});
+      document.querySelectorAll('.price-modal.show,[data-modal].show').forEach(function(el){setShown(el,false);});
+      modalStack=[];
+      syncBody();
+    }
+  }
+  function pushOrReplace(id){
+    var state={};
+    state[MODAL_STATE_KEY]=id;
+    if(history.state && history.state[MODAL_STATE_KEY])history.replaceState(state,'',location.href);
+    else history.pushState(state,'',location.href);
+  }
+  window.openModalById=function(id,options){
+    options=options||{};
+    var el=byId(id);
+    if(!el)return;
+    setShown(el,true);
+    remember(id);
+    if(id==='drw'){
+      var overlay=byId('ovl');
+      if(overlay)overlay.classList.add('open');
+    }
+    syncBody();
+    if(!options.fromPop && options.history!==false)pushOrReplace(id);
+  };
+  window.closeModalById=function(id,options){
+    options=options||{};
+    var target=id||currentId();
+    if(!target)return;
+    closeVisual(target);
+    forget(target);
+    if(!options.fromPop && options.history!==false && history.state && history.state[MODAL_STATE_KEY]){
+      suppressPop=true;
+      history.back();
+    }else if(!options.fromPop && !history.state?.[MODAL_STATE_KEY]){
+      history.replaceState({},'',location.href);
+    }
+  };
+  window.openCart=function(){
+    if(typeof upd==='function')upd();
+    window.openModalById('cartMdl');
+  };
+  window.closeCart=function(options){window.closeModalById('cartMdl',options);};
+  window.openCheckout=function(){
+    closeModalById('cartMdl',{history:false});
+    if(typeof renderCheckout==='function')renderCheckout();
+    window.openModalById('coMdl');
+  };
+  window.closeCheckout=function(options){window.closeModalById('coMdl',options);};
+  window.openDrw=function(){window.openModalById('drw');};
+  window.closeDrw=function(options){window.closeModalById('drw',options);};
+
+  window.addEventListener('popstate',function(event){
+    if(suppressPop){
+      suppressPop=false;
+      return;
+    }
+    var requested=event.state && event.state[MODAL_STATE_KEY];
+    var active=currentId();
+    if(active){
+      if(requested && requested!==active){closeVisual(active);forget(active);}
+      else if(!requested){closeFromHistory(active);}
+      else if(requested===active){closeFromHistory(active);}
+      return;
+    }
+    if(requested)closeFromHistory(requested);
+  });
+  document.addEventListener('keydown',function(event){
+    if(event.key==='Escape' && currentId())window.closeModalById(currentId());
+  });
+  document.addEventListener('click',function(event){
+    var target=event.target;
+    if(target.classList && target.classList.contains('mdl') && target===target.parentElement?.querySelector('#'+target.id)){
+      window.closeModalById(target.id);
+    }
+  });
+  document.querySelectorAll('.mdl').forEach(function(el){
+    el.addEventListener('click',function(event){
+      if(event.target===el)window.closeModalById(el.id);
+    });
+  });
+  syncBody();
+})();
+</script>
+<style id="modal-navigation-style">
+body.modal-open{overflow:hidden}
+.modal-x,.checkout-close{touch-action:manipulation}.checkout-close{margin-inline-start:auto}
+.mdl .box{padding-top:64px}
+@media(max-width:760px){
+  .modal-x,.checkout-close{width:44px;height:44px;font-size:28px}
+  .mdl .box{max-height:calc(100dvh - 12px);padding-top:64px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
 }
 </style>
