@@ -454,7 +454,9 @@ app.post('/api/auth/logout', async (req, res) => { try { await authService.logou
 app.get('/api/auth/me', async (req, res) => { try { const user = await authService.currentUser(authToken(req)); if (!user) return res.status(401).json({ error: 'غير مسجل الدخول' }); res.json({ ok: true, user }); } catch (_) { res.status(401).json({ error: 'غير مسجل الدخول' }); } });
 app.post('/api/auth/forgot-password', (req, res) => res.status(501).json({ error: 'استعادة كلمة المرور بالبريد غير مفعلة حاليًا؛ لا يتم إرسال رموز أو إنشاء رابط وهمي.' }));
 app.post('/api/auth/reset-password', (req, res) => res.status(501).json({ error: 'استعادة كلمة المرور بالبريد غير مفعلة حاليًا.' }));
-app.use('/api/admin', (req, res) => res.status(410).json({ error: 'لوحة الإدارة غير متاحة.' }));
+// Admin routes use the same HttpOnly session cookie as the rest of the app.
+// The module performs server-side role/allowlist authorization before returning data.
+require('./admin.js')(app);
 
 async function refreshProductsCache(){
   try { const result = await safkaSync.syncProducts({ notify: true }); console.log('✅ Safka products synced:', result.products, 'new:', result.newProducts); }
