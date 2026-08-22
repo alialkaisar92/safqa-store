@@ -374,15 +374,25 @@ function compactAnswer(value, max = 720) {
   const lines = source.split('\n').map(line => line.trim()).filter(Boolean);
   let output = '';
   let usedLines = 0;
+  let productLines = 0;
+  let omittedProduct = false;
   for (const line of lines) {
     if (usedLines >= 6) break;
+    const isProductLine = /^[-•]\s/.test(line) && /(سعر|عمول|ج\.م|متوفر|متاحة|متاح)/.test(line);
+    if (isProductLine) {
+      productLines += 1;
+      if (productLines > 3) {
+        omittedProduct = true;
+        continue;
+      }
+    }
     const next = output ? `${output}\n${line}` : line;
     if (next.length > max) break;
     output = next;
     usedLines += 1;
   }
   if (!output) output = source.slice(0, max).trim();
-  const truncated = output.length < source.length || usedLines < lines.length;
+  const truncated = omittedProduct || output.length < source.length || usedLines < lines.length;
   return output + (truncated ? '…' : '');
 }
 
@@ -475,7 +485,7 @@ async function chat({ user, message, retry = false, compact = false }) {
   const provider = providerConfig();
   const context = await loadContext(user);
   if (!provider) {
-    const answer = compact ? compactAnswer(localFallbackAnswer(promptToUse, context), 560) : localFallbackAnswer(promptToUse, context);
+    const answer = compact ? compactAnswer(localFallbackAnswer(promptToUse, context), 420) : localFallbackAnswer(promptToUse, context);
     const next = normalizeHistory(history.concat([{ role: 'user', content: promptToUse }, { role: 'assistant', content: answer }]));
     await postgres.saveAiConversation(user.id, next);
     return { answer, messages: next, provider: 'local-data-fallback', model: 'rules-v1' };
@@ -498,7 +508,7 @@ async function chat({ user, message, retry = false, compact = false }) {
   }
   const rawAnswer = assistantText(lastAssistant);
   if (!rawAnswer) throw Object.assign(new Error('لم يصل رد صالح من المساعد'), { code: 'EMPTY_RESPONSE' });
-  const answer = compact ? compactAnswer(rawAnswer, 560) : rawAnswer;
+  const answer = compact ? compactAnswer(rawAnswer, 420) : rawAnswer;
   const next = normalizeHistory(history.concat([{ role: 'user', content: promptToUse }, { role: 'assistant', content: answer }]));
   await postgres.saveAiConversation(user.id, next);
   return { answer, messages: next, provider: provider.name, model };
