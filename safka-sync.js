@@ -334,4 +334,4 @@ async function runSync(options) {
   await saveMeta({ lastRunAt: new Date().toISOString(), lastResult: result });
   return result;
 }
-module.exports = { syncProducts, syncOrderStatuses, runSync, fetchAllProducts, processAffiliateOrderQueue, reconcileAffiliateOrderQueue };
+module.exports = { syncProducts, syncOrderStatuses, runSync, fetchAllProducts, processAffiliateOrderQueue, processAffiliateOrderJob, reconcileAffiliateOrderQueue };
