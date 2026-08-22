@@ -333,15 +333,71 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
-app.post('/api/chat', async (req,res)=>{const b=req.body||{};const u=await currentUser(req);const k=u?'u'+u.id:'';if(!k)return res.status(401).json({error:'login'});const all=await firestore.getChats();all[k]=all[k]||[];let d=b.data||'';if(typeof d==='string'&&d.indexOf('data:')===0){try{const _fs=require('fs'),_pt=require('path');const _dir=_pt.join(__dirname,'uploads');if(!_fs.existsSync(_dir))_fs.mkdirSync(_dir);const _mt=(d.match(/^data:([^;]+);/)||[])[1]||'bin';const _ext=((_mt.split('/')[1])||'bin').replace(/[^a-z0-9]/gi,'');const _fn=Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+_ext;_fs.writeFileSync(_pt.join(_dir,_fn),Buffer.from((d.split(',')[1])||'','base64'));d='/uploads/'+_fn;}catch(_e){}}const m={id:Date.now(),from:b.from||'user',type:b.type||'text',text:b.text||'',data:d,time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})};all[k].push(m);await firestore.saveChats(all);if(global.notifyChat)global.notifyChat();res.json({ok:true,m})});
-app.get('/api/chat', async (req,res)=>{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});const all=await firestore.getChats();res.json(all['u'+u.id]||[]);});
+function chatKeyForUser(user) {
+  return user && user.id != null ? 'u' + String(user.id) : '';
+}
 
-app.post('/api/support', async (req, res) => {
-  const { message } = req.body || {};
-  if (!message || !message.trim()) return res.json({ error: 'اكتب رسالتك' });
-  try { const d = await readAffiliate(); d.tickets = d.tickets || []; d.tickets.unshift({ id: Date.now(), message: message.trim(), status: 'جديد', date: new Date().toISOString().slice(0, 10), reply: '' }); await saveAffiliate(d); res.json({ message: 'تم إرسال رسالتك للدعم ✓' }); }
-  catch (e) { res.status(500).json({ error: 'تعذر إرسال الرسالة حالياً' }); }
-});
+function cleanChatText(value) {
+  return String(value == null ? '' : value).replace(/\u0000/g, '').trim().slice(0, 2000);
+}
+
+function createChatMessage(text) {
+  return {
+    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8),
+    from: 'user',
+    type: 'text',
+    text,
+    time: new Date().toISOString()
+  };
+}
+
+async function getCurrentChatUser(req, res) {
+  const user = await currentUser(req);
+  if (!user) {
+    res.status(401).json({ error: 'يجب تسجيل الدخول لبدء محادثة آمنة' });
+    return null;
+  }
+  if (user.banned) {
+    res.status(403).json({ error: 'الحساب موقوف ولا يمكنه استخدام الدعم' });
+    return null;
+  }
+  return user;
+}
+
+async function readCurrentChat(req, res) {
+  const user = await getCurrentChatUser(req, res);
+  if (!user) return;
+  try {
+    const messages = await postgres.getChatMessages(chatKeyForUser(user));
+    res.set('Cache-Control', 'private, no-store');
+    res.json(messages);
+  } catch (error) {
+    console.error('[chat read]:', error.message);
+    res.status(503).json({ error: 'تعذر تحميل المحادثة حاليًا' });
+  }
+}
+
+async function appendCurrentChat(req, res) {
+  const user = await getCurrentChatUser(req, res);
+  if (!user) return;
+  const text = cleanChatText(req.body && req.body.text);
+  if (!text) return res.status(400).json({ error: 'اكتب رسالتك أولًا' });
+  const message = createChatMessage(text);
+  try {
+    await postgres.appendChatMessage(chatKeyForUser(user), message);
+    if (global.notifyChat) global.notifyChat();
+    res.status(201).json({ ok: true, message, m: message });
+  } catch (error) {
+    console.error('[chat append]:', error.message);
+    res.status(503).json({ error: 'تعذر إرسال الرسالة حاليًا' });
+  }
+}
+
+app.get('/api/chat', readCurrentChat);
+app.get('/api/chat/messages', readCurrentChat);
+app.post('/api/chat', appendCurrentChat);
+app.post('/api/chat/send', appendCurrentChat);
+
 app.post('/api/upload',(req,res)=>{const pl=global.verifyJWT?global.verifyJWT(req.headers['x-auth-token']||''):null;if(!pl)return res.status(401).json({error:'login'});const b=req.body||{};if(typeof b.data!=='string'||b.data.indexOf('data:')!==0)return res.json({error:'صورة غير صالحة'});try{const fs=require('fs'),pt=require('path');const dir=pt.join(__dirname,'uploads');if(!fs.existsSync(dir))fs.mkdirSync(dir);const mt=(b.data.match(/^data:([^;]+);/)||[])[1]||'image/png';const ext=((mt.split('/')[1])||'png').replace(/[^a-z0-9]/gi,'')||'png';const fn='t'+Date.now()+'-'+Math.random().toString(36).slice(2,6)+'.'+ext;fs.writeFileSync(pt.join(dir,fn),Buffer.from((b.data.split(',')[1])||'','base64'));res.json({ok:true,url:'/uploads/'+fn});}catch(e){res.json({error:'فشل الرفع'});}});
 app.get('/api/theme/:id',async (req,res)=>{try{const u=await firestore.getUser(req.params.id);res.json({ok:true,theme:(u&&u.theme)||null,name:u?u.name:''});}catch(e){res.json({ok:true,theme:null,name:''});}});
 app.post('/api/my/theme',async (req,res)=>{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});try{u.theme=req.body||{};await firestore.saveUser(u);res.json({ok:true});}catch(e){res.json({error:'فشل الحفظ'});}});
@@ -701,15 +757,6 @@ app.post('/api/create-order', async (req,res)=>{
   }
 });
 
-
-app.get('/api/support/whatsapp', (req, res) => {
-  let raw = String(process.env.WHATSAPP_SUPPORT_NUMBER || process.env.SUPPORT_WHATSAPP || process.env.WHATSAPP_NUMBER || '').replace(/[^0-9]/g, '');
-  // Normalize the Egyptian support number to WhatsApp international format.
-  if (/^01\d{9}$/.test(raw)) raw = '20' + raw.slice(1);
-  if (raw === '20113132636') raw = '201131332636';
-  res.set('Cache-Control', 'no-store');
-  res.json({ number: raw.length >= 10 ? raw : '' });
-});
 
 if (require.main === module) {
   app.listen(PORT, () => {
