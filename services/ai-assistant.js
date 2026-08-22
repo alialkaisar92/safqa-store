@@ -480,7 +480,14 @@ function fallbackProductFromPrompt(products, query, availableOnly = false, histo
   const normalizedQuery = normalize(query);
   const exact = eligible.find(item => item.name && normalizedQuery.includes(normalize(item.name)));
   if (exact) return exact;
-  const tokens = normalizedQuery.split(' ').filter(token => token.length >= 3 && !/^(عايز|عاوزه|رشحلي|رشح|منتج|منتجات|ممكن|عاوز|عاوزة|ازاي|ايه|هو|هي|ده|دي|دا)$/.test(token));
+  const recent = recentConversationProducts(products, history);
+  const reference = /(^|\s)(الاول|الأول|اول|التاني|الثاني|التالت|الثالث|ده|دي|دا|اللي فات|السابق)(\s|$)/.test(normalizedQuery);
+  if (reference && recent.length) {
+    if (/(التاني|الثاني)/.test(normalizedQuery)) return recent[1] || recent[0];
+    if (/(التالت|الثالث)/.test(normalizedQuery)) return recent[2] || recent[0];
+    return recent[0];
+  }
+  const tokens = normalizedQuery.split(' ').filter(token => token.length >= 2 && !/^(عايز|عاوزه|رشحلي|رشح|منتج|منتجات|ممكن|عاوز|عاوزة|ازاي|ايه|ايه|هو|هي|ده|دي|دا|الاول|اول|التاني|الثاني|التالت|الثالث|اللي|فات|السابق|سعر|سعره|سعرها|بكام|كام|وعمولته|وعمولها|عمولته|عمولها|حالتها|حالته|متاح|متوفر)$/.test(token));
   const ranked = eligible.map(item => {
     const nameTokens = normalize(item.name).split(' ').filter(token => token.length >= 2);
     const description = normalize(item.description);
@@ -495,7 +502,6 @@ function fallbackProductFromPrompt(products, query, availableOnly = false, histo
   }).filter(row => row.score > 0).sort((a, b) => b.score - a.score || b.item.commission - a.item.commission);
   if (ranked.length) return ranked[0].item;
 
-  const recent = recentConversationProducts(products, history);
   if (!recent.length) return null;
   if (/(التاني|الثاني|رقم\s*2)/.test(normalizedQuery)) return recent[1] || recent[0];
   if (/(التالت|الثالث|رقم\s*3)/.test(normalizedQuery)) return recent[2] || recent[0];
