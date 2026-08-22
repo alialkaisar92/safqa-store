@@ -197,6 +197,19 @@ function extractCommission(note) {
 
   console.warn("⚠️ فشل استخراج العمولة من note:", JSON.stringify(note)); return 0;
 }
+function extractSuggestedSalePrice(note, base) {
+  if (!note) return 0;
+  const text = String(note).replace(/,/g, '');
+  const match = text.match(/سعر\s*البيع\s*المقترح\s*[:\-]?\s*(\d+(?:\.\d+)?)/i)
+    || text.match(/suggested\s*sale\s*price\s*[:\-]?\s*(\d+(?:\.\d+)?)/i);
+  if (!match) return 0;
+  const value = Number(match[1]);
+  return Number.isFinite(value) && value >= Number(base || 0) ? value : 0;
+}
+function productSalePrice(note, base, priceUp) {
+  const suggested = extractSuggestedSalePrice(note, base);
+  return Math.round(suggested || Number(base || 0) * (1 + priceUp / 100));
+}
 
 function sourceAvailability(p) {
   if (!p || p.is_active === false) return false;
@@ -221,6 +234,7 @@ function normalizePublicProduct(p, local, priceUp) {
   const media = productMedia(raw, local || {});
   const category = cat([raw.name, raw.title, raw.description, raw.desc, raw.note, raw.category].filter(Boolean).join(' '));
   const base = Number(raw.basePrice != null ? raw.basePrice : (raw.sale_price != null ? raw.sale_price : (raw.price != null ? raw.price : 0)));
+  const note = raw.note || merged.note || '';
   return Object.assign(merged, {
     id: raw.id || raw._id || (local && (local.id || local._id)),
     name: raw.name || raw.title || '',
@@ -228,11 +242,12 @@ function normalizePublicProduct(p, local, priceUp) {
     cat: category,
     basePrice: base,
     cost: raw.cost != null ? raw.cost : (raw.sale_price != null ? raw.sale_price : base),
-    price: Math.round(base * (1 + priceUp / 100)),
+    price: productSalePrice(note, base, priceUp),
     image: raw.image || (raw.images && raw.images[0]) || merged.image || '',
     desc: raw.description || raw.desc || '',
     barcode: raw.barcode || merged.barcode || '',
-    note: raw.note || merged.note || '',
+    note,
+    commission: extractCommission(note),
     propId: raw.propId || prop._id || '',
     propKey: raw.propKey || prop.key || '',
     stock,
@@ -530,6 +545,8 @@ app.post('/api/create-order', async (req,res)=>{
     item.property = (matchedProperty && (matchedProperty._id || matchedProperty.id || matchedProperty.key)) || item.property || source.propId || sourceProp._id || sourceProp.id || sourceProp.key || '';
     if (!item.property) return res.status(409).json({error:'خاصية المنتج غير متاحة حاليًا'});
     item.commission = extractCommission(source.note || '');
+    const suggestedPrice = extractSuggestedSalePrice(source.note || '', item.originalPrice);
+    if (suggestedPrice > item.finalPrice) item.finalPrice = suggestedPrice;
   }
   let shippingCost=0;
   let shippingGovernorate;
