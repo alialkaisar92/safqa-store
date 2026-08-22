@@ -7,6 +7,8 @@ const checks = [
   ['store assistant has guest login state', html.includes('المساعد متاح للمسوقين') && html.includes('/login?return=%2Fstore')],
   ['store assistant uses protected history endpoint', html.includes("/api/affiliate/ai/history")],
   ['store assistant uses protected chat endpoint', html.includes("/api/affiliate/ai/chat")],
+  ['store assistant requests compact store replies', html.includes("compact:true") && html.includes("surface:'store'")],
+  ['store assistant has mobile bounded layout', html.includes('height:min(760px,calc(100dvh - 34px))') && html.includes('z-index:10001!important')],
   ['store assistant has retry copy and clear actions', html.includes('retryStoreAiAnswer') && html.includes('copyStoreAiAnswer') && html.includes('clearStoreAiConversation')],
   ['store assistant is managed by modal navigation', html.includes("'storeAiMdl'") && html.includes('openModalById') && html.includes('closeModalById')],
   ['store assistant avoids browser storage', !/<script id="store-ai-script">[\s\S]*localStorage/.test(html)],

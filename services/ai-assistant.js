@@ -205,7 +205,7 @@ function toolDefinitions() {
   ];
 }
 
-function systemPrompt() {
+function systemPrompt(compact = false) {
   return [
     'أنت مساعد تسويق داخلي خاص بمسوقي منصة Rab7na.',
     'تحدث بالعربية المصرية افتراضيًا، وافهم الفصحى والاختصارات والأخطاء الإملائية والإنجليزية داخل الكلام، ورد بأسلوب المستخدم باختصار مفيد.',
@@ -216,7 +216,8 @@ function systemPrompt() {
     'عند كتابة إعلان لمنتج، استخدم فقط الاسم والوصف والخصائص التي أعادتها الأداة، ولا تضف ادعاءات طبية أو مواصفات غير موجودة. يمكنك صياغة Hook وCTA تسويقيين دون ادعاء حقائق جديدة.',
     'افهم الإشارات السياقية مثل المنتج اللي فات أو التاني بالاعتماد على آخر نتائج ظهرت في المحادثة. إذا كان المقصود غير واضح اسأل سؤالًا توضيحيًا.',
     'لا تنفذ طلبات شراء أو سحب أو تغيير بيانات. المساعد للاستشارة وكتابة المحتوى فقط.',
-    'اجعل الإجابة منظمة بعناوين أو نقاط قصيرة عند الحاجة، ولا تطل بلا سبب.'
+    'اجعل الإجابة منظمة بعناوين أو نقاط قصيرة عند الحاجة، ولا تطل بلا سبب.',
+    ...(compact ? ['هذا الرد سيظهر داخل بطاقة صغيرة على الهاتف: اذكر المطلوب مباشرة في 3 إلى 5 أسطر وبحد أقصى 420 حرفًا. اعرض 3 نتائج فقط عند طلب قائمة، ولا تستخدم الإيموجي أو وصفًا إعلانيًا طويلًا إلا إذا طلب المستخدم إعلانًا صراحة.'] : [])
   ].join('\n');
 }
 
@@ -361,6 +362,30 @@ function assistantText(message) {
   return '';
 }
 
+function compactAnswer(value, max = 720) {
+  const source = String(value == null ? '' : value)
+    .replace(/\\n/g, '\n')
+    .replace(/\\r/g, '')
+    .replace(/[\uFE0E\uFE0F]/g, '')
+    .replace(/\p{Extended_Pictographic}/gu, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  const lines = source.split('\n').map(line => line.trim()).filter(Boolean);
+  let output = '';
+  let usedLines = 0;
+  for (const line of lines) {
+    if (usedLines >= 6) break;
+    const next = output ? `${output}\n${line}` : line;
+    if (next.length > max) break;
+    output = next;
+    usedLines += 1;
+  }
+  if (!output) output = source.slice(0, max).trim();
+  const truncated = output.length < source.length || usedLines < lines.length;
+  return output + (truncated ? '…' : '');
+}
+
 function money(value) {
   const amount = number(value);
   return amount == null ? 'غير متاح' : `${amount.toLocaleString('ar-EG')} ج.م`;
@@ -383,20 +408,20 @@ function localFallbackAnswer(prompt, context) {
   const query = normalize(prompt);
   const products = Array.isArray(context.products) ? context.products : [];
   const stats = marketerStats(context.user, context.userData);
-  const formatList = (title, rows) => rows.length ? `${title}:\\n${rows.map(fallbackProductLine).join('\\n')}` : `${title}: لا توجد نتائج مطابقة في بيانات المنصة الحالية.`;
+  const formatList = (title, rows) => rows.length ? `${title}:\n${rows.slice(0, 3).map(fallbackProductLine).join('\n')}` : `${title}: لا توجد نتائج مطابقة في بيانات المنصة الحالية.`;
 
   if (/منتجات.*(عموله|عمولة)|عموله.*(اعلى|اعلى|عاليه|عالية)|اعلى.*عموله|عمولة عالية/.test(query)) {
-    const rows = products.filter(item => item.available).sort((a, b) => b.commission - a.commission || a.price - b.price).slice(0, 5);
+    const rows = products.filter(item => item.available).sort((a, b) => b.commission - a.commission || a.price - b.price).slice(0, 3);
     return formatList('أعلى المنتجات المتاحة في العمولة حسب البيانات الحالية', rows);
   }
   if (/منتجات.*(اقتصاديه|اقتصادية|رخيصه|رخيصة)|اقل.*سعر|سعر قليل/.test(query)) {
-    const rows = products.filter(item => item.available).sort((a, b) => a.price - b.price || b.commission - a.commission).slice(0, 5);
+    const rows = products.filter(item => item.available).sort((a, b) => a.price - b.price || b.commission - a.commission).slice(0, 3);
     return formatList('أقل المنتجات المتاحة في سعر البيع حسب البيانات الحالية', rows);
   }
   if (/متاح|متوفر|المخزون|المنتجات الموجوده|المنتجات الموجودة/.test(query)) {
     const requestedProduct = fallbackProductFromPrompt(products, query);
     if (requestedProduct) return `حالة «${requestedProduct.name}»: ${requestedProduct.available ? 'متوفر' : 'غير متوفر'} حسب بيانات المنصة الحالية.`;
-    const rows = products.filter(item => item.available).slice(0, 8);
+    const rows = products.filter(item => item.available).slice(0, 3);
     return formatList('المنتجات التي يعلن المصدر أنها متاحة حاليًا', rows);
   }
   if (/رصيد|طلبات|ارباح|أرباح|احصائ|إحصائ|ادائي|أدائي/.test(query)) {
@@ -408,7 +433,7 @@ function localFallbackAnswer(prompt, context) {
       `- العمولة الإجمالية المسجلة: ${money(stats.totalCommission)}`,
       `- العمولة المؤكدة: ${money(stats.confirmedCommission)}`,
       `- الرصيد الحالي: ${money(stats.currentBalance)}`
-    ].join('\\n');
+    ].join('\n');
   }
   if (/منتجاتي|المنتجات اللي بعتها|المنتجات التي بعتها|اكثر منتج/.test(query)) {
     const rows = marketingProducts(context.userData);
@@ -422,12 +447,12 @@ function localFallbackAnswer(prompt, context) {
   if (/اعلان|إعلان|كابشن|منشور|بوست/.test(query)) {
     const product = fallbackProductFromPrompt(products, query, true) || products.filter(item => item.available).sort((a, b) => b.commission - a.commission)[0];
     if (!product) return 'لا توجد منتجات متاحة حاليًا أقدر أكتب لها إعلانًا من البيانات الحالية.';
-    const description = product.description ? `\\n${product.description}` : '';
-    return `اقتراح إعلان مبني على بيانات المنتج الحالية:\\n\\n${product.name}\\n${description}\\n\\nسعر البيع: ${money(product.price)}\\nعمولتك المتوقعة: ${money(product.commission)}\\n\\nاطلب التفاصيل الآن وتابع العرض من خلال Rab7na.\\n\\nملاحظة: راجع تفاصيل المنتج وسياسة الشحن قبل نشر الإعلان.`;
+    const description = product.description ? `\n${text(product.description, 140)}` : '';
+    return `اقتراح إعلان مختصر مبني على البيانات الحالية:\n${product.name}${description}\nسعر البيع: ${money(product.price)} — العمولة: ${money(product.commission)}\nنص مقترح: ${product.name} متوفر الآن بسعر مناسب. راجع التفاصيل قبل النشر.`;
   }
   const product = fallbackProductFromPrompt(products, query);
   if (product) {
-    return `تفاصيل «${product.name}» من بيانات المنصة:\\n- التصنيف: ${product.category || 'غير مسجل'}\\n- سعر البيع: ${money(product.price)}\\n- العمولة: ${money(product.commission)}\\n- الحالة: ${product.available ? 'متوفر' : 'غير متوفر'}${product.description ? `\\n- الوصف: ${product.description}` : ''}`;
+    return `تفاصيل «${product.name}»:\n- التصنيف: ${product.category || 'غير مسجل'}\n- سعر البيع: ${money(product.price)}\n- العمولة: ${money(product.commission)}\n- الحالة: ${product.available ? 'متوفر' : 'غير متوفر'}${product.description ? `\n- الوصف: ${text(product.description, 160)}` : ''}`;
   }
   return 'أقدر أساعدك في البحث عن المنتجات، مقارنة الأسعار والعمولات، معرفة التوفر، عرض ملخص حسابك، أو كتابة إعلان. اكتب اسم المنتج أو اختر أحد الاختصارات.';
 }
@@ -437,7 +462,7 @@ async function loadContext(user) {
   return { products: catalogFromSnapshot(snapshot), userData, user };
 }
 
-async function chat({ user, message, retry = false }) {
+async function chat({ user, message, retry = false, compact = false }) {
   const prompt = text(message, MAX_MESSAGE_CHARS);
   const stored = await postgres.getAiConversation(user.id);
   let history = normalizeHistory(stored);
@@ -450,13 +475,13 @@ async function chat({ user, message, retry = false }) {
   const provider = providerConfig();
   const context = await loadContext(user);
   if (!provider) {
-    const answer = localFallbackAnswer(promptToUse, context);
+    const answer = compact ? compactAnswer(localFallbackAnswer(promptToUse, context), 560) : localFallbackAnswer(promptToUse, context);
     const next = normalizeHistory(history.concat([{ role: 'user', content: promptToUse }, { role: 'assistant', content: answer }]));
     await postgres.saveAiConversation(user.id, next);
     return { answer, messages: next, provider: 'local-data-fallback', model: 'rules-v1' };
   }
   const model = await pickModel(provider);
-  const messages = [{ role: 'system', content: systemPrompt() }, ...history, { role: 'user', content: promptToUse }];
+  const messages = [{ role: 'system', content: systemPrompt(compact) }, ...history, { role: 'user', content: promptToUse }];
   let lastAssistant = null;
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     const result = await callModel(provider, model, messages, true);
@@ -471,8 +496,9 @@ async function chat({ user, message, retry = false }) {
       messages.push({ role: 'tool', tool_call_id: call.id, name: String(call.function && call.function.name || ''), content: JSON.stringify(toolResult) });
     }
   }
-  const answer = assistantText(lastAssistant);
-  if (!answer) throw Object.assign(new Error('لم يصل رد صالح من المساعد'), { code: 'EMPTY_RESPONSE' });
+  const rawAnswer = assistantText(lastAssistant);
+  if (!rawAnswer) throw Object.assign(new Error('لم يصل رد صالح من المساعد'), { code: 'EMPTY_RESPONSE' });
+  const answer = compact ? compactAnswer(rawAnswer, 560) : rawAnswer;
   const next = normalizeHistory(history.concat([{ role: 'user', content: promptToUse }, { role: 'assistant', content: answer }]));
   await postgres.saveAiConversation(user.id, next);
   return { answer, messages: next, provider: provider.name, model };

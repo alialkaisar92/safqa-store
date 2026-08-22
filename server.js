@@ -479,7 +479,7 @@ app.post('/api/affiliate/ai/chat', async (req, res) => {
   if (!limit.allowed) return res.status(429).json({ error: 'وصلت للحد المؤقت للمحادثة. جرّب مرة أخرى بعد دقائق.' });
   try {
     const body = req.body || {};
-    const result = await aiAssistant.chat({ user, message: body.message, retry: body.retry === true });
+    const result = await aiAssistant.chat({ user, message: body.message, retry: body.retry === true, compact: body.compact === true || body.surface === 'store' });
     res.set('Cache-Control', 'no-store');
     res.json({ ok: true, answer: result.answer, messages: result.messages });
   } catch (error) {
