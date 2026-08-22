@@ -24,6 +24,7 @@ const crypto = require('crypto');
 const firestore = require('./firestore');
 const postgres = require('./lib/postgres');
 const authService = require('./services/auth-postgres');
+const aiAssistant = require('./services/ai-assistant');
 const SESSION_COOKIE = 'rab7na_session';
 function readCookie(req, name) { const raw = String(req.headers.cookie || ''); const found = raw.split(';').map(x => x.trim()).find(x => x.startsWith(name + '=')); return found ? decodeURIComponent(found.slice(name.length + 1)) : ''; }
 function authToken(req) { return authReqToken(req) || readCookie(req, SESSION_COOKIE); }
@@ -108,6 +109,34 @@ async function getAffiliateSnapshotFast() {
   return affiliateSnapshot || {};
 }
 async function currentUser(req){ try { return await currentAuthUser(req); } catch(e) { return null; } }
+
+const aiRateLimits = new Map();
+function aiRateLimit(userId) {
+  const key = String(userId || '');
+  const now = Date.now();
+  const current = aiRateLimits.get(key) || { startedAt: now, count: 0 };
+  if (now - current.startedAt >= 5 * 60 * 1000) { current.startedAt = now; current.count = 0; }
+  current.count += 1;
+  aiRateLimits.set(key, current);
+  return { allowed: current.count <= 12, remaining: Math.max(0, 12 - current.count), resetAt: current.startedAt + 5 * 60 * 1000 };
+}
+
+function aiErrorStatus(error) {
+  if (!error) return 500;
+  if (error.code === 'INVALID_INPUT') return 400;
+  if (error.code === 'PROVIDER_UNAVAILABLE') return 503;
+  if (error.status === 401 || error.status === 403) return 503;
+  if (error.status === 429) return 429;
+  return 503;
+}
+
+async function requireAffiliateAiUser(req, res) {
+  const user = await currentUser(req);
+  if (!user) { res.status(401).json({ error: 'سجّل الدخول بحساب المسوق أولًا' }); return null; }
+  if (user.banned) { res.status(403).json({ error: 'الحساب غير مسموح له باستخدام المساعد' }); return null; }
+  return user;
+}
+
 async function readAffiliate(){ return firestore.getAffiliateData(); }
 async function saveAffiliate(d){ return firestore.saveAffiliateData(d); }
 async function syncUserBalance(user, affiliate) {
@@ -415,6 +444,48 @@ app.get('/products.js',(req,res)=>{res.type('js').sendFile(require('path').join(
 
 app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
+});
+
+app.get('/api/affiliate/ai/history', async (req, res) => {
+  const user = await requireAffiliateAiUser(req, res);
+  if (!user) return;
+  try {
+    res.set('Cache-Control', 'no-store');
+    res.json({ ok: true, messages: await aiAssistant.history(user.id) });
+  } catch (error) {
+    console.error('[affiliate ai history] failed:', error.message);
+    res.status(503).json({ error: 'تعذر تحميل المحادثة حاليًا' });
+  }
+});
+
+app.delete('/api/affiliate/ai/history', async (req, res) => {
+  const user = await requireAffiliateAiUser(req, res);
+  if (!user) return;
+  try {
+    await aiAssistant.clearConversation(user.id);
+    res.json({ ok: true, messages: [] });
+  } catch (error) {
+    console.error('[affiliate ai clear] failed:', error.message);
+    res.status(503).json({ error: 'تعذر مسح المحادثة حاليًا' });
+  }
+});
+
+app.post('/api/affiliate/ai/chat', async (req, res) => {
+  const user = await requireAffiliateAiUser(req, res);
+  if (!user) return;
+  const limit = aiRateLimit(user.id);
+  res.set('X-AI-RateLimit-Remaining', String(limit.remaining));
+  res.set('X-AI-RateLimit-Reset', String(Math.ceil(limit.resetAt / 1000)));
+  if (!limit.allowed) return res.status(429).json({ error: 'وصلت للحد المؤقت للمحادثة. جرّب مرة أخرى بعد دقائق.' });
+  try {
+    const body = req.body || {};
+    const result = await aiAssistant.chat({ user, message: body.message, retry: body.retry === true });
+    res.set('Cache-Control', 'no-store');
+    res.json({ ok: true, answer: result.answer, messages: result.messages });
+  } catch (error) {
+    console.error('[affiliate ai chat] failed:', error.code || error.message);
+    res.status(aiErrorStatus(error)).json({ error: error.code === 'PROVIDER_UNAVAILABLE' ? 'المساعد غير مفعّل حاليًا على الخادم.' : (error.code === 'INVALID_INPUT' ? error.message : 'حصلت مشكلة مؤقتة في المساعد. جرّب مرة أخرى.') });
+  }
 });
 
 app.get('/orders', (req, res) => {

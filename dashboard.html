@@ -5,85 +5,63 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>لوحة المسوق | Rab7na</title>
 <style>
-:root{--p:#0f766e;--pd:#0b5d56;--soft:#e9f7f3;--bg:#f7faf9;--ink:#172033;--mut:#71817a;--line:#e5eeea;--gold:#c9972b}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,sans-serif;color:var(--ink)}
-header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
-.top{max-width:1100px;margin:auto;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.logo{font-size:1.6rem;font-weight:900;color:var(--pd)}.logo span{color:var(--gold)}
-.back{border:0;background:var(--soft);color:var(--pd);padding:10px 14px;border-radius:12px;font-weight:800}
-main{max-width:1100px;margin:auto;padding:22px 16px 40px}
-.hero{background:linear-gradient(135deg,#0f766e,#0b5d56);color:#fff;border-radius:22px;padding:24px;margin-bottom:16px}
-.hero small{opacity:.8}.balance{font-size:2rem;font-weight:900;margin-top:7px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
-.stat{background:#fff;border:1px solid var(--line);border-radius:17px;padding:16px;box-shadow:0 6px 20px rgba(15,23,42,.04)}
-.stat small{display:block;color:var(--mut);margin-bottom:8px}.stat b{font-size:1.25rem;color:var(--pd)}
-.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
-.title{font-weight:900;font-size:1rem;margin-bottom:12px}
-.order{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
-.order:last-child{border-bottom:0}.oid{font-weight:900}.meta{font-size:.75rem;color:var(--mut);margin-top:4px}
-.status{padding:5px 9px;border-radius:8px;background:var(--soft);color:var(--pd);font-size:.7rem;font-weight:900}
-.profit{color:var(--gold);font-weight:900;font-size:.8rem}
-.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
-.action{border:0;background:var(--pd);color:#fff;padding:11px 15px;border-radius:12px;font-weight:800}
-@media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr)}.order{align-items:flex-start}.balance{font-size:1.6rem}}
+:root{--p:#0f766e;--pd:#0b5d56;--soft:#e9f7f3;--bg:#f5f8f7;--ink:#172033;--mut:#71817a;--line:#e5eeea;--gold:#c9972b;--danger:#a63d40;--shadow:0 16px 45px rgba(15,23,42,.10)}
+*{box-sizing:border-box}html,body{min-height:100%;margin:0}body{background:var(--bg);font-family:Arial,"Tahoma",sans-serif;color:var(--ink)}button{font:inherit;cursor:pointer}button:focus-visible,textarea:focus-visible{outline:3px solid rgba(15,118,110,.28);outline-offset:2px}
+header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}.top{max-width:1100px;margin:auto;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}.logo{font-size:1.55rem;font-weight:900;color:var(--pd)}.logo span{color:var(--gold)}.back{border:0;background:var(--soft);color:var(--pd);padding:10px 14px;border-radius:12px;font-weight:800}
+main{max-width:1100px;margin:auto;padding:22px 16px 40px}.hero{background:linear-gradient(135deg,#0f766e,#0b5d56);color:#fff;border-radius:22px;padding:24px;margin-bottom:16px;box-shadow:0 14px 30px rgba(11,93,86,.12)}.hero small{opacity:.8}.balance{font-size:2rem;font-weight:900;margin-top:7px}.hero-note{margin-top:5px;opacity:.8}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.stat{background:#fff;border:1px solid var(--line);border-radius:17px;padding:16px;box-shadow:0 6px 20px rgba(15,23,42,.04)}.stat small{display:block;color:var(--mut);margin-bottom:8px}.stat b{font-size:1.25rem;color:var(--pd)}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}.title{font-weight:900;font-size:1rem;margin-bottom:12px}.order{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}.order:last-child{border-bottom:0}.oid{font-weight:900}.meta{font-size:.75rem;color:var(--mut);margin-top:4px}.status{padding:5px 9px;border-radius:8px;background:var(--soft);color:var(--pd);font-size:.7rem;font-weight:900}.profit{color:var(--gold);font-weight:900;font-size:.8rem}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}.action{border:0;background:var(--pd);color:#fff;padding:11px 15px;border-radius:12px;font-weight:800;transition:transform .15s,background .15s}.action:hover{background:#084c46;transform:translateY(-1px)}.action.ai-action{background:#1f2937;display:inline-flex;align-items:center;gap:8px}.action.ai-action .ai-mark{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#87f5dc,#f4d07d);color:#0b5d56;display:grid;place-items:center;font-size:.75rem;font-weight:900}
+.ai-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.48);z-index:20;display:none;padding:18px}.ai-backdrop.open{display:flex;align-items:center;justify-content:center}.ai-panel{width:min(820px,100%);height:min(760px,calc(100vh - 36px));background:#fff;border-radius:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}.ai-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line);background:linear-gradient(120deg,#fbfffd,#edf9f5)}.ai-heading{display:flex;align-items:center;gap:10px}.ai-badge{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;color:#0b5d56;font-weight:900;background:linear-gradient(135deg,#87f5dc,#f4d07d)}.ai-title{font-size:1.05rem;font-weight:900}.ai-subtitle{font-size:.74rem;color:var(--mut);margin-top:3px}.ai-head-actions{display:flex;gap:7px}.icon-btn{border:1px solid var(--line);background:#fff;color:var(--mut);width:36px;height:36px;border-radius:10px;font-weight:900}.icon-btn:hover{color:var(--pd);border-color:#b9d7cf}.ai-messages{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:14px;background:#fcfefd}.ai-empty{margin:auto;max-width:480px;text-align:center;color:var(--mut);line-height:1.8}.ai-empty strong{display:block;color:var(--ink);font-size:1.1rem;margin-bottom:5px}.ai-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px}.ai-chip{border:1px solid #cfe5de;background:#fff;color:var(--pd);border-radius:999px;padding:8px 11px;font-size:.76rem}.ai-chip:hover{background:var(--soft)}.ai-message{display:flex;gap:9px;max-width:90%;align-items:flex-start}.ai-message.user{align-self:flex-start;flex-direction:row-reverse}.ai-message.assistant{align-self:flex-end}.ai-avatar{width:30px;height:30px;flex:0 0 30px;border-radius:10px;display:grid;place-items:center;font-size:.72rem;font-weight:900}.assistant .ai-avatar{background:var(--soft);color:var(--pd)}.user .ai-avatar{background:#eef0f4;color:#4b5563}.ai-bubble{padding:11px 13px;border-radius:15px;line-height:1.7;font-size:.9rem;white-space:pre-wrap;word-break:break-word}.assistant .ai-bubble{background:#fff;border:1px solid var(--line);border-top-right-radius:5px}.user .ai-bubble{background:var(--pd);color:#fff;border-top-left-radius:5px}.ai-message-tools{display:flex;gap:5px;margin-top:5px}.message-tool{border:0;background:transparent;color:var(--mut);font-size:.7rem;padding:3px 5px}.message-tool:hover{color:var(--pd)}.ai-typing{align-self:flex-end;color:var(--mut);font-size:.8rem;display:none;align-items:center;gap:7px;padding:5px 42px}.ai-typing.show{display:flex}.typing-dots{display:flex;gap:3px;direction:ltr}.typing-dots i{width:5px;height:5px;border-radius:50%;background:var(--p);animation:typing 1s infinite}.typing-dots i:nth-child(2){animation-delay:.15s}.typing-dots i:nth-child(3){animation-delay:.3s}@keyframes typing{0%,70%,100%{opacity:.25;transform:translateY(0)}35%{opacity:1;transform:translateY(-3px)}}.ai-compose{border-top:1px solid var(--line);padding:12px 16px;background:#fff}.ai-compose-row{display:flex;align-items:flex-end;gap:9px}.ai-input{flex:1;resize:none;min-height:48px;max-height:130px;border:1px solid #cfe0da;border-radius:14px;padding:12px 13px;font:inherit;line-height:1.5;color:var(--ink)}.ai-input::placeholder{color:#94a39d}.send-btn{border:0;background:var(--pd);color:#fff;border-radius:13px;padding:12px 17px;min-height:48px;font-weight:900}.send-btn:disabled{opacity:.55;cursor:not-allowed}.ai-compose-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:7px;color:var(--mut);font-size:.68rem}.text-btn{border:0;background:transparent;color:var(--mut);padding:4px 0}.text-btn:hover{color:var(--pd)}.ai-error{color:var(--danger);font-size:.78rem;margin:7px 2px 0;display:none}.ai-error.show{display:block}
+@media(max-width:700px){.top{padding:13px 14px}.logo{font-size:1.35rem}.back{padding:9px 11px;font-size:.78rem}main{padding:15px 12px 28px}.hero{padding:19px;border-radius:18px}.balance{font-size:1.65rem}.grid{grid-template-columns:repeat(2,1fr);gap:9px}.stat{padding:13px}.stat small{font-size:.74rem}.stat b{font-size:1.08rem}.order{align-items:flex-start}.ai-backdrop{padding:0}.ai-backdrop.open{align-items:stretch}.ai-panel{height:100vh;border-radius:0}.ai-head{padding:13px 14px}.ai-messages{padding:16px 12px}.ai-message{max-width:94%}.ai-bubble{font-size:.86rem}.ai-compose{padding:10px 11px}.ai-compose-footer{font-size:.62rem}.send-btn{padding:11px 13px}}
 </style>
 </head>
 <body>
-<header><div class="top">
-<div class="logo">Rab<span>7na</span></div>
-<button class="back" onclick="location.href='/store'">← العودة للمتجر</button>
-</div></header>
-
+<header><div class="top"><div class="logo">Rab<span>7na</span></div><button class="back" type="button" onclick="location.href='/store'">العودة للمتجر</button></div></header>
 <main>
-<section class="hero">
-<small>لوحة تحكم المسوق</small>
-<div class="balance" id="balance">0 ج.م</div>
-<div style="margin-top:5px;opacity:.8">رصيدك الحالي</div>
-</section>
-
-<section class="grid">
-<div class="stat"><small>إجمالي الطلبات</small><b id="orders">0</b></div>
-<div class="stat"><small>طلبات قيد التنفيذ</small><b id="pending">0</b></div>
-<div class="stat"><small>طلبات مكتملة</small><b id="done">0</b></div>
-<div class="stat"><small>الأرباح المتوقعة</small><b id="profit">0 ج.م</b></div>
-</section>
-
-<div class="card">
-<div class="title">إدارة الطلبات</div>
-<div class="actions">
-<button class="action" onclick="location.href='/orders'">📦 متابعة الطلبات</button>
-<button class="action" onclick="location.href='/store'">🛍️ تصفح المنتجات</button>
-</div>
-</div>
-
-<div class="card">
-<div class="title">آخر الطلبات</div>
-<div id="list">جاري التحميل...</div>
-</div>
+<section class="hero"><small>لوحة تحكم المسوق</small><div class="balance" id="balance">0 ج.م</div><div class="hero-note">رصيدك الحالي</div></section>
+<section class="grid"><div class="stat"><small>إجمالي الطلبات</small><b id="orders">0</b></div><div class="stat"><small>طلبات قيد التنفيذ</small><b id="pending">0</b></div><div class="stat"><small>طلبات مكتملة</small><b id="done">0</b></div><div class="stat"><small>الأرباح المتوقعة</small><b id="profit">0 ج.م</b></div></section>
+<div class="card"><div class="title">أدوات المسوق</div><div class="actions"><button class="action ai-action" type="button" onclick="openAssistant()"><span class="ai-mark">AI</span> اسأل مساعد Rab7na</button><button class="action" type="button" onclick="location.href='/orders'">متابعة الطلبات</button><button class="action" type="button" onclick="location.href='/store'">تصفح المنتجات</button></div></div>
+<div class="card"><div class="title">آخر الطلبات</div><div id="list">جاري التحميل...</div></div>
 </main>
+
+<div id="aiBackdrop" class="ai-backdrop" role="dialog" aria-modal="true" aria-labelledby="aiTitle" onclick="backdropClose(event)">
+  <section class="ai-panel" onclick="event.stopPropagation()">
+    <header class="ai-head"><div class="ai-heading"><div class="ai-badge">AI</div><div><div id="aiTitle" class="ai-title">مساعد Rab7na</div><div class="ai-subtitle">مساعدك لاختيار المنتجات وكتابة الإعلانات من بيانات حسابك</div></div></div><div class="ai-head-actions"><button class="icon-btn" type="button" title="محادثة جديدة" aria-label="محادثة جديدة" onclick="newConversation()">＋</button><button class="icon-btn" type="button" title="إغلاق" aria-label="إغلاق المساعد" onclick="closeAssistant()">×</button></div></header>
+    <div id="aiMessages" class="ai-messages"><div id="aiEmpty" class="ai-empty"><strong>أهلاً بيك في مساعد Rab7na</strong><span>اسأل عن منتج، عمولة، رصيدك، أو اطلب إعلانًا مبنيًا على بيانات حقيقية.</span><div class="ai-chips"><button class="ai-chip" type="button" onclick="usePrompt('رشحلي 3 منتجات متاحة وعمولتها عالية')">منتجات بعمولة عالية</button><button class="ai-chip" type="button" onclick="usePrompt('إيه أرخص منتجات متاحة أقدر أبدأ بيها؟')">منتجات اقتصادية</button><button class="ai-chip" type="button" onclick="usePrompt('اعمللي إعلان قصير لمنتج مناسب للبيع على فيسبوك')">اكتب إعلانًا</button><button class="ai-chip" type="button" onclick="usePrompt('إيه ملخص أداء حسابي وطلباتي؟')">ملخص أدائي</button></div></div></div>
+    <div id="aiTyping" class="ai-typing"><span>المساعد بيجهز الرد</span><span class="typing-dots"><i></i><i></i><i></i></span></div>
+    <div class="ai-compose"><div class="ai-compose-row"><textarea id="aiInput" class="ai-input" rows="1" maxlength="4000" placeholder="اكتب سؤالك هنا..." aria-label="رسالة المساعد"></textarea><button id="aiSend" class="send-btn" type="button" onclick="sendMessage()">إرسال</button></div><div id="aiError" class="ai-error" role="alert"></div><div class="ai-compose-footer"><span>Enter للإرسال · Shift + Enter لسطر جديد</span><button class="text-btn" type="button" onclick="clearConversation()">مسح المحادثة</button></div></div>
+  </section>
+</div>
 
 <script>
 function money(n){return Number(n||0).toLocaleString('ar-EG')+' ج.م'}
+function escapeHtml(value){return String(value==null?'':value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]))}
 async function load(){
  try{
-  const r=await fetch('/api/me',{credentials:'include'});
-  const d=await r.json();
-  document.getElementById('balance').textContent=money(d.balance);
-  const orders=d.orders||[];
-  document.getElementById('orders').textContent=orders.length;
-  document.getElementById('pending').textContent=orders.filter(x=>!['delivered','completed','مكتمل','تم التسليم'].includes(String(x.status||'').toLowerCase())).length;
-  document.getElementById('done').textContent=orders.filter(x=>['delivered','completed','مكتمل','تم التسليم'].includes(String(x.status||'').toLowerCase())).length;
-  document.getElementById('profit').textContent=money(orders.reduce((s,x)=>s+Number(x.commission||x.profit||0),0));
-
-  document.getElementById('list').innerHTML=orders.slice(-8).reverse().map((x,i)=>`
-   <div class="order">
-    <div><div class="oid">طلب #${x.id||x.order_id||i+1}</div>
-    <div class="meta">${x.created_at||x.date||'—'}</div></div>
-    <div style="text-align:left"><div class="status">${x.status||'جديد'}</div>
-    <div class="profit">${money(x.commission||x.profit||0)}</div></div>
-   </div>`).join('')||'<div style="color:#71817a;text-align:center;padding:20px">لا توجد طلبات حتى الآن</div>';
- }catch(e){document.getElementById('list').textContent='تعذر تحميل البيانات';}
+  const r=await fetch('/api/me',{credentials:'include'}); if(r.status===401){location.href='/login';return} const d=await r.json();
+  const user=d.user||d; const stats=d.stats||{}; document.getElementById('balance').textContent=money(stats.balance!=null?stats.balance:(d.balance||user.balance));
+  const orders=d.orders||[]; const delivered=['delivered','completed','مكتمل','تم التسليم','تم التوصيل'];
+  document.getElementById('orders').textContent=orders.length; document.getElementById('pending').textContent=orders.filter(x=>!delivered.includes(String(x.status||'').toLowerCase())).length; document.getElementById('done').textContent=orders.filter(x=>delivered.includes(String(x.status||'').toLowerCase())).length; document.getElementById('profit').textContent=money(orders.reduce((s,x)=>s+Number(x.commission||x.profit||0),0));
+  document.getElementById('list').innerHTML=orders.slice(-8).reverse().map((x,i)=>`<div class="order"><div><div class="oid">طلب #${escapeHtml(x.id||x.order_id||i+1)}</div><div class="meta">${escapeHtml(x.created_at||x.date||'—')}</div></div><div style="text-align:left"><div class="status">${escapeHtml(x.status||'جديد')}</div><div class="profit">${money(x.commission||x.profit||0)}</div></div></div>`).join('')||'<div style="color:#71817a;text-align:center;padding:20px">لا توجد طلبات حتى الآن</div>';
+ }catch(e){document.getElementById('list').textContent='تعذر تحميل البيانات'}
 }
+const aiState={messages:[],loading:false,loaded:false}; const aiBackdrop=document.getElementById('aiBackdrop'); const aiMessages=document.getElementById('aiMessages'); const aiInput=document.getElementById('aiInput'); const aiSend=document.getElementById('aiSend'); const aiTyping=document.getElementById('aiTyping'); const aiEmpty=document.getElementById('aiEmpty'); const aiError=document.getElementById('aiError');
+function showError(message){aiError.textContent=message||'';aiError.classList.toggle('show',Boolean(message))}
+function scrollAi(){aiMessages.scrollTop=aiMessages.scrollHeight}
+function renderMessages(){
+ aiMessages.querySelectorAll('.ai-message').forEach(n=>n.remove()); aiEmpty.style.display=aiState.messages.length?'none':'';
+ aiState.messages.forEach((item,index)=>{const role=item.role==='assistant'?'assistant':'user';const row=document.createElement('div');row.className='ai-message '+role;row.innerHTML=`<div class="ai-avatar">${role==='assistant'?'AI':'أنت'}</div><div><div class="ai-bubble">${escapeHtml(item.content)}</div>${role==='assistant'?`<div class="ai-message-tools"><button class="message-tool" type="button" onclick="copyAnswer(${index})">نسخ</button><button class="message-tool" type="button" onclick="retryAnswer()">إعادة المحاولة</button></div>`:''}</div>`;aiMessages.appendChild(row)});scrollAi()
+}
+async function loadHistory(){if(aiState.loaded)return;try{const r=await fetch('/api/affiliate/ai/history',{credentials:'include'});if(r.status===401){location.href='/login';return}const d=await r.json();if(!r.ok)throw new Error(d.error||'تعذر تحميل المحادثة');aiState.messages=Array.isArray(d.messages)?d.messages:[];aiState.loaded=true;renderMessages()}catch(e){showError(e.message)}}
+function openAssistant(){aiBackdrop.classList.add('open');document.body.style.overflow='hidden';loadHistory().finally(()=>setTimeout(()=>aiInput.focus(),80))}
+function closeAssistant(){aiBackdrop.classList.remove('open');document.body.style.overflow='';showError('')}
+function backdropClose(event){if(event.target===aiBackdrop)closeAssistant()}
+function setLoading(value){aiState.loading=value;aiTyping.classList.toggle('show',value);aiSend.disabled=value;aiInput.disabled=value;if(value)scrollAi()}
+function usePrompt(value){aiInput.value=value;aiInput.focus();sendMessage()}
+async function sendMessage(retry){if(aiState.loading)return;const value=retry||aiInput.value.trim();if(!value)return;showError('');if(!retry){aiState.messages.push({role:'user',content:value});renderMessages();aiInput.value=''}setLoading(true);try{const r=await fetch('/api/affiliate/ai/chat',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:value,retry:Boolean(retry)})});const d=await r.json().catch(()=>({}));if(r.status===401){location.href='/login';return}if(!r.ok)throw new Error(d.error||'تعذر الحصول على رد');aiState.messages=Array.isArray(d.messages)?d.messages:aiState.messages.concat([{role:'assistant',content:d.answer||''}]);renderMessages()}catch(e){showError(e.message);if(!retry){aiState.messages=aiState.messages.filter((item,index)=>!(item.role==='user'&&index===aiState.messages.length-1));renderMessages()}}finally{setLoading(false);aiInput.focus()}}
+function retryAnswer(){const previous=aiState.messages.filter(x=>x.role==='user').slice(-1)[0];if(previous)sendMessage(previous.content)}
+async function copyAnswer(index){const item=aiState.messages[index];if(!item)return;try{await navigator.clipboard.writeText(item.content);showError('تم نسخ الرد');setTimeout(()=>showError(''),1600)}catch(e){showError('تعذر النسخ من المتصفح')}}
+async function clearConversation(){if(aiState.loading)return;try{const r=await fetch('/api/affiliate/ai/history',{method:'DELETE',credentials:'include'});if(!r.ok)throw new Error('تعذر مسح المحادثة');aiState.messages=[];renderMessages();showError('تم مسح المحادثة');setTimeout(()=>showError(''),1600)}catch(e){showError(e.message)}}
+async function newConversation(){await clearConversation();aiInput.focus()}
+aiInput.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}});aiInput.addEventListener('input',()=>{aiInput.style.height='auto';aiInput.style.height=Math.min(aiInput.scrollHeight,130)+'px'});document.addEventListener('keydown',event=>{if(event.key==='Escape'&&aiBackdrop.classList.contains('open'))closeAssistant()});
 load();
 </script>
 </body>
