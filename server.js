@@ -477,6 +477,50 @@ app.get('/api/price-list', async (req,res)=>{
 });
 
 
+function supplierText(value) {
+  if (value == null) return '';
+  if (typeof value === 'string' || typeof value === 'number') return cleanSupplierText(value);
+  if (typeof value === 'object') return cleanSupplierText(value.msg || value.message || value.error || value.detail || '');
+  return '';
+}
+function cleanSupplierText(value) { return String(value == null ? '' : value).replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim(); }
+function supplierErrorMessages(payload) {
+  const messages = [];
+  const collect = (value) => {
+    if (!Array.isArray(value)) return;
+    value.forEach(item => { const text = supplierText(item); if (text && !messages.includes(text)) messages.push(text); });
+  };
+  collect(payload && payload.errors);
+  collect(payload && payload.data && payload.data.errors);
+  collect(payload && payload.order && payload.order.errors);
+  return messages;
+}
+function supplierOrderRecord(payload) {
+  const candidates = [payload && payload.data, payload && payload.order, payload];
+  return candidates.find(value => value && typeof value === 'object' && !Array.isArray(value) && (
+    value._id || value.id || value.serial_number || value.serial || value.status || value.order_status
+  )) || null;
+}
+function supplierResponseStatus(payload, record) {
+  return cleanSupplierText((record && (record.status || record.order_status)) || (payload && payload.status) || (payload && payload.order_status));
+}
+function supplierResponseAccepted(httpResponse, payload) {
+  const record = supplierOrderRecord(payload);
+  const status = supplierResponseStatus(payload, record).toLowerCase();
+  const errors = supplierErrorMessages(payload);
+  const successFalse = payload && (payload.success === false || String(payload.success).toLowerCase() === 'false');
+  const okFalse = payload && (payload.ok === false || String(payload.ok).toLowerCase() === 'false');
+  const failureStatuses = new Set(['failed', 'failure', 'rejected', 'reject', 'cancelled', 'canceled', 'error', 'invalid']);
+  const externalId = record && (record._id || record.id || record.serial_number || record.serial);
+  return {
+    accepted: Boolean(httpResponse && httpResponse.ok) && !successFalse && !okFalse && !errors.length && Boolean(externalId) && !failureStatuses.has(status),
+    record,
+    status,
+    errors,
+    externalId: externalId ? String(externalId) : ''
+  };
+}
+
 app.post('/api/create-order', async (req,res)=>{
   res.set('Cache-Control','no-store');
   if(!API_KEY.trim())return res.status(503).json({error:'إعدادات الطلب غير مكتملة حاليًا. يرجى المحاولة لاحقًا.'});
@@ -575,17 +619,20 @@ app.post('/api/create-order', async (req,res)=>{
   try{
     const r=await fetch(BASE_URL+'/orders',{method:'POST',headers:{'api-safka-key':API_KEY,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(body)});
     const d=await r.json().catch(()=>({}));
-    const supplierErrors=Array.isArray(d.errors) ? d.errors.map(e=>clean(e && (e.msg||e.message||e))).filter(Boolean) : [];
+    const outcome=supplierResponseAccepted(r,d);
+    const supplierErrors=outcome.errors;
     const supplierMessage=clean(d.message||d.error||supplierErrors.join('، '));
-    const supplierAccepted=r.ok && d.success !== false && d.ok !== false;
-    if(!supplierAccepted){
-      console.warn('[order] supplier rejected request', { status:r.status, error:supplierMessage || 'unknown' });
-      const safeMessage=supplierMessage.includes('محظور') || supplierMessage.includes('سلوكه') ? 'الرقم ده محظور في rab7na - استخدم رقمًا حقيقيًا' : (supplierMessage || 'فشل إرسال الطلب إلى المورد');
+    if(!outcome.accepted){
+      const statusLabel=outcome.status ? ' ('+outcome.status+')' : '';
+      const malformed=!supplierErrors.length && !supplierMessage && !outcome.externalId && r.ok ? 'استجابة المورد غير مكتملة' : '';
+      const reason=supplierMessage || supplierErrors.join('، ') || malformed || 'فشل إرسال الطلب إلى المورد';
+      console.warn('[order] supplier rejected or malformed response', { status:r.status, supplierStatus:outcome.status || null, error:reason });
+      const safeMessage=reason.includes('محظور') || reason.includes('سلوكه') ? 'الرقم ده محظور في rab7na - استخدم رقمًا حقيقيًا' : reason+statusLabel;
       return res.status(r.status>=400&&r.status<500 ? r.status : 502).json({error:safeMessage});
     }
     const customer=await currentUser(req);
-    const external=d.data||d;
-    const externalId=external.id||external._id||external.serial_number||external.serial||Date.now();
+    const external=outcome.record;
+    const externalId=outcome.externalId;
     const savedOrder={id:externalId,serial:external.serial_number||external.serial||externalId,userId:customer&&customer.id||null,products:b.productNames||items.map(x=>x.product),items,client_name:body.client_name,client_phone1:body.client_phone1,client_address:body.client_address,status:'قيد التأكيد',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:shippingCost,originalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.originalPrice||0)*(x.qty||1),0),finalMerchandiseTotal:items.reduce((sum,x)=>sum+(x.finalPrice||0)*(x.qty||1),0),external:external};
     let trackingSaved=true;
     try {
@@ -597,7 +644,8 @@ app.post('/api/create-order', async (req,res)=>{
       trackingSaved=false;
       console.error('[order] supplier accepted; affiliate tracking save failed:',trackingError.message);
     }
-    res.status(201).json({ok:true,message:'تم إرسال الطلب بنجاح',order:external,trackingSaved});
+    const confirmationMessage=outcome.status==='pending' ? 'تم إرسال الطلب وجارٍ تأكيده من المورد' : 'تم إرسال الطلب بنجاح';
+    res.status(201).json({ok:true,message:confirmationMessage,status:outcome.status||null,order:external,trackingSaved});
   }catch(e){
     console.error('[order] supplier connection failed:',e.message);
     res.status(502).json({error:'تعذر الاتصال بالمورد حاليًا، حاول مرة أخرى'});

@@ -1096,7 +1096,7 @@ async function submitOrder(){
   try{
     var r=await fetch('/api/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     var d=await r.json().catch(function(){return {};});
-    if(r.ok&&d.ok){saveOrder(body);m.textContent='✅ تم استلام طلبك';cart=[];upd();setTimeout(function(){document.getElementById('coMdl').classList.remove('open')},1200);}
+    if(r.ok&&d.ok){saveOrder(body);m.textContent='✅ '+(d.message||'تم إرسال الطلب');cart=[];upd();setTimeout(function(){document.getElementById('coMdl').classList.remove('open')},1800);}
     else m.textContent='⚠️ '+(d.error||'فشل إرسال الطلب');
   }catch(e){m.textContent='⚠️ تعذر الاتصال، لم يتم تأكيد الطلب';}
   finally{orderSubmitting=false;}
