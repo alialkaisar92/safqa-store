@@ -10,7 +10,8 @@ const state = {
   queueUpdates: [],
   orderUpdates: [],
   savedOrders: [],
-  statusUpdates: []
+  statusUpdates: [],
+  attemptLogs: []
 };
 let fetchScenario = null;
 
@@ -19,6 +20,7 @@ const postgresMock = {
   async updateAffiliateOrder(orderId, patch) { state.orderUpdates.push({ orderId, patch }); },
   async saveAffiliateOrder(order) { state.savedOrders.push(order); },
   async updateAffiliateOrderStatus(orderId, patch) { state.statusUpdates.push({ orderId, patch }); return { id: orderId, ...patch }; },
+  async recordAffiliateOrderAttempt(input) { state.attemptLogs.push(input); return input; },
   async claimAffiliateOrderJobs() { return []; },
   async listAffiliateOrdersForSync() { return []; },
   async repairAcceptedUntrackedAffiliateOrders() { return { repaired: 0 }; },
@@ -38,6 +40,7 @@ Module._load = function(request, parent, isMain) {
         throw error;
       }
       if (fetchScenario === '502') return { ok: false, status: 502, json: async () => ({}) };
+      if (fetchScenario === 'incomplete') return { ok: true, status: 201, json: async () => ({ data: { status: 'pending' } }) };
       if (fetchScenario === '400') return { ok: false, status: 400, json: async () => ({ errors: [{ msg: 'invalid customer' }] }) };
       return { ok: true, status: 201, json: async () => ({ data: { id: 'SUP-ORDER-1', status: 'confirmed' } }) };
     };
@@ -55,6 +58,7 @@ function reset() {
   state.orderUpdates.length = 0;
   state.savedOrders.length = 0;
   state.statusUpdates.length = 0;
+  state.attemptLogs.length = 0;
 }
 function job(retryCount = 1) {
   return {
@@ -83,6 +87,8 @@ function job(retryCount = 1) {
   assert.equal(state.fetchCalls, 1);
   assert.equal(state.queueUpdates.at(-1).status, 'retry');
   assert.equal(state.queueUpdates.at(-1).patch.nextAttemptAt != null, true);
+  assert.equal(state.attemptLogs.at(-1).requestStatus, 'retry');
+  assert.equal(new Date(state.attemptLogs.at(-1).nextAttemptAt).getTime() - Date.now() >= 59000, true, 'first retry must be delayed by about one minute');
   assert.equal(state.orderUpdates.length, 0, 'transient failure must not award commission or fail the order');
 
   reset(); fetchScenario = '502';
@@ -91,6 +97,7 @@ function job(retryCount = 1) {
   assert.equal(state.fetchCalls, 1);
   assert.equal(state.queueUpdates.at(-1).status, 'unknown');
   assert.equal(state.orderUpdates.at(-1).patch.requestStatus, 'unknown');
+  assert.equal(state.attemptLogs.at(-1).requestStatus, 'unknown');
 
   reset(); fetchScenario = 'timeout';
   result = await worker.processAffiliateOrderJob(job(1));
@@ -98,6 +105,13 @@ function job(retryCount = 1) {
   assert.equal(state.fetchCalls, 1);
   assert.equal(state.queueUpdates.at(-1).status, 'unknown');
   assert.equal(state.orderUpdates.at(-1).patch.requestStatus, 'unknown');
+  assert.equal(state.attemptLogs.at(-1).requestStatus, 'unknown');
+
+  reset(); fetchScenario = 'incomplete';
+  result = await worker.processAffiliateOrderJob(job(1));
+  assert.equal(result.status, 'unknown');
+  assert.equal(state.queueUpdates.at(-1).status, 'unknown');
+  assert.equal(state.attemptLogs.at(-1).errorMessage.includes('غير مكتمل'), true);
 
   reset(); fetchScenario = '400';
   result = await worker.processAffiliateOrderJob(job(1));
@@ -105,6 +119,7 @@ function job(retryCount = 1) {
   assert.equal(state.fetchCalls, 1);
   assert.equal(state.queueUpdates.at(-1).status, 'failed');
   assert.equal(state.statusUpdates.length, 0, 'failed supplier response must not award commission');
+  assert.equal(state.attemptLogs.at(-1).requestStatus, 'failed');
 
   console.log('dynamic order queue checks: PASS');
   console.log('supplier requests used by this test: mock only');

@@ -751,12 +751,67 @@ async function refreshProductsCache(){
   try { const result = await safkaSync.syncProducts({ notify: true }); console.log('✅ Safka products synced:', result.products, 'new:', result.newProducts); }
   catch (e) { console.log('Safka cache sync err:', e.message); }
 }
-if (API_KEY.trim()) {
+if (require.main === module && API_KEY.trim()) {
   refreshProductsCache();
   setInterval(refreshProductsCache, 10 * 60 * 1000);
-  setInterval(() => safkaSync.processAffiliateOrderQueue(5).catch(error => console.error('[order-queue] interval failed:', error.message)), 5000);
-  setInterval(() => safkaSync.reconcileAffiliateOrderQueue(50).catch(error => console.error('[order-queue] reconciliation interval failed:', error.message)), 60 * 1000);
 }
+
+let githubOidcKeys = null;
+let githubOidcKeysFetchedAt = 0;
+async function loadGitHubOidcKeys() {
+  if (githubOidcKeys && Date.now() - githubOidcKeysFetchedAt < 60 * 60 * 1000) return githubOidcKeys;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+  try {
+    const response = await fetch('https://token.actions.githubusercontent.com/.well-known/jwks', { headers: { Accept: 'application/json' }, signal: controller.signal });
+    if (!response.ok) throw new Error('GitHub OIDC key endpoint returned ' + response.status);
+    const body = await response.json();
+    if (!body || !Array.isArray(body.keys)) throw new Error('GitHub OIDC keys unavailable');
+    githubOidcKeys = body.keys;
+    githubOidcKeysFetchedAt = Date.now();
+    return githubOidcKeys;
+  } finally { clearTimeout(timer); }
+}
+async function verifyGitHubWorkerToken(token) {
+  try {
+    const decoded = require('jsonwebtoken').decode(String(token || ''), { complete: true });
+    if (!decoded || !decoded.header || decoded.header.alg !== 'RS256' || !decoded.header.kid) return false;
+    const keys = await loadGitHubOidcKeys();
+    const jwk = keys.find(item => item && item.kid === decoded.header.kid);
+    if (!jwk) return false;
+    const publicKey = crypto.createPublicKey({ key: jwk, format: 'jwk' });
+    const claims = require('jsonwebtoken').verify(String(token), publicKey, { algorithms: ['RS256'], issuer: 'https://token.actions.githubusercontent.com', audience: 'rab7na-store' });
+    return claims && claims.repository === 'alialkaisar92/safqa-store' && claims.ref === 'refs/heads/main';
+  } catch (_) { return false; }
+}
+async function authorizeOrderWorker(req) {
+  const expected = String(process.env.ORDER_WORKER_TOKEN || '').trim();
+  const supplied = String(req.headers['x-order-worker-token'] || '').trim();
+  if (expected && supplied && supplied === expected) return true;
+  const authorization = String(req.headers.authorization || '');
+  const bearer = authorization.toLowerCase().startsWith('bearer ') ? authorization.slice(7).trim() : '';
+  return bearer ? verifyGitHubWorkerToken(bearer) : false;
+}
+app.post('/api/internal/order-queue', async (req, res) => {
+  if (!await authorizeOrderWorker(req)) return res.status(401).json({ error: 'غير مصرح' });
+  if (String(process.env.ORDER_QUEUE_RUNNER_ENABLED || '').toLowerCase() !== 'true') return res.status(503).json({ error: 'تشغيل queue متوقف مؤقتًا للمراجعة الآمنة' });
+  try { await postgresReady; }
+  catch (error) { console.error('[order-queue] internal endpoint database unavailable:', error.message); return res.status(503).json({ error: 'queue unavailable' }); }
+  const limit = Math.max(1, Math.min(10, Number(req.body && req.body.limit) || Number(process.env.ORDER_QUEUE_BATCH_SIZE) || 5));
+  const startedAt = Date.now();
+  try {
+    const queue = await safkaSync.processAffiliateOrderQueue(limit);
+    let reconciliation = { skipped: true, checked: 0 };
+    if (String(process.env.ORDER_QUEUE_RECONCILE || 'true').toLowerCase() !== 'false') {
+      reconciliation = await safkaSync.reconcileAffiliateOrderQueue(Math.max(1, Math.min(25, Number(process.env.ORDER_QUEUE_RECONCILE_LIMIT) || 10)));
+    }
+    res.set('Cache-Control', 'no-store');
+    res.json({ ok: true, queue, reconciliation, duration_ms: Date.now() - startedAt });
+  } catch (error) {
+    console.error('[order-queue] internal cycle failed:', error.message);
+    res.status(500).json({ error: 'تعذر تشغيل دورة queue حاليًا' });
+  }
+});
 
 app.all('/api/safka/sync', async (req, res) => {
   const secret = String(process.env.SAFKA_SYNC_SECRET || '').trim();

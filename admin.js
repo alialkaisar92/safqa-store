@@ -153,7 +153,7 @@ function allowedWithdrawalStatus(status) { return WITHDRAWAL_STATUSES.includes(S
 
 function permissionForPath(requestPath) {
   const p = String(requestPath || '');
-  if (/^\/(orders|order-status)/.test(p)) return 'orders';
+  if (/^\/(orders|order-status|order-attempts|order-retry)/.test(p)) return 'orders';
   if (/^\/(products|product|product-delete|price|price-up)/.test(p)) return 'products';
   if (/^\/(users|user-ban)/.test(p)) return 'users';
   if (/^\/(withdrawals|withdrawal-status)/.test(p)) return 'withdrawals';
@@ -232,6 +232,37 @@ module.exports = function mountAdmin(app) {
       if (global.notifyUser && result.statusChanged && result.order.userId != null) await Promise.resolve(global.notifyUser(result.order.userId, 'تحديث حالة طلب', 'حالة طلبك الآن: ' + status, '/store', 'order-status', 'order-status:' + id + ':' + status)).catch(() => null);
       res.json({ ok: true, order: result.order });
     } catch (error) { console.error('[admin order-status]:', error.message); res.status(503).json({ error: 'تعذر تحديث الطلب حاليًا' }); }
+  });
+
+  app.get('/api/admin/order-attempts/:id', async (req, res) => {
+    try {
+      const orderId = String(req.params.id || '').trim();
+      if (!orderId) return res.status(400).json({ error: 'رقم الطلب مطلوب' });
+      const attempts = await postgres.listAffiliateOrderAttemptsForAdmin(orderId, req.query.limit);
+      res.set('Cache-Control', 'no-store');
+      res.json({ orderId, attempts });
+    } catch (error) { console.error('[admin order-attempts]:', error.message); res.status(503).json({ error: 'تعذر تحميل سجل محاولات الطلب' }); }
+  });
+
+  app.post('/api/admin/order-retry', async (req, res) => {
+    try {
+      const orderId = String(req.body && req.body.id || '').trim();
+      const reason = String(req.body && req.body.reason || '').trim();
+      if (!orderId) return res.status(400).json({ error: 'رقم الطلب مطلوب' });
+      if (reason.length < 3) return res.status(400).json({ error: 'سبب إعادة المحاولة مطلوب' });
+      const result = await postgres.retryAffiliateOrderRequest(orderId, req.adminUser && req.adminUser.id, reason);
+      if (!result) return res.status(404).json({ error: 'الطلب غير موجود في قائمة الإرسال' });
+      if (global.notifyUser) {
+        const db = await affiliateData();
+        const order = (db.orders || []).find(item => String(item.id || item.serial) === orderId);
+        if (order && order.userId != null) await Promise.resolve(global.notifyUser(order.userId, 'إعادة تجهيز الطلب', 'تمت إعادة الطلب إلى قائمة التجهيز بعد مراجعة الإدارة.', '/store', 'order-status', 'order-retry:' + orderId + ':' + String(result.last_manual_retry_at || ''))).catch(() => null);
+      }
+      res.json({ ok: true, queue: result });
+    } catch (error) {
+      const status = error.code === 'ORDER_NOT_FOUND' ? 404 : ['INVALID_RETRY_REASON', 'ORDER_NOT_RETRYABLE', 'ORDER_RETRY_UNSAFE'].includes(error.code) ? 409 : 503;
+      console.error('[admin order-retry]:', error.code || error.message);
+      res.status(status).json({ error: ['INVALID_RETRY_REASON', 'ORDER_NOT_RETRYABLE', 'ORDER_RETRY_UNSAFE'].includes(error.code) || error.code === 'ORDER_NOT_FOUND' ? error.message : 'تعذر إعادة تجهيز الطلب حاليًا' });
+    }
   });
 
   app.get('/api/admin/products', async (req, res) => {

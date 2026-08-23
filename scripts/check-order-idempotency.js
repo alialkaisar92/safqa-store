@@ -42,7 +42,7 @@ assert(worker.includes('processAffiliateOrderQueue') && worker.includes('claimAf
 assert(server.includes('safkaSync.processAffiliateOrderQueue(5)') && server.includes("process.env.VERCEL === '1'") && server.includes('orderQueueWorkerBusy'), 'production queue worker must run outside Vercel and prevent overlapping cycles');
 assert(worker.includes('AbortController') && worker.includes('ETIMEDOUT'), 'supplier timeout must be bounded');
 assert(worker.includes("'unknown'") && worker.includes("'retry'"), 'worker must distinguish UNKNOWN and retryable states');
-assert(worker.includes('retryDelayMs') && worker.includes('[2000, 5000, 15000, 30000]') && worker.includes('attempt < 5'), 'retry backoff contract is missing');
+assert(worker.includes('retryDelayMs') && worker.includes('[60000, 120000, 300000, 600000, 1800000]') && worker.includes('maxAttempts()'), 'retry backoff contract is missing');
 assert(worker.includes('incomplete_supplier_response'), 'incomplete supplier responses must become UNKNOWN');
 assert(worker.includes("accepted: 'قيد التأكيد'") && worker.includes('terminalFailure'), 'supplier pending/terminal statuses must be normalized safely');
 assert(worker.includes("'accepted', 'pending', 'processing', 'retry', 'قيد التأكيد', 'جاري التجهيز'"), 'reconciliation must revisit accepted and in-flight orders when a status endpoint is configured');

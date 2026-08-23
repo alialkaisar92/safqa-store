@@ -1,0 +1,38 @@
+const fs = require('fs');
+const path = require('path');
+const assert = require('assert');
+
+const root = path.join(__dirname, '..');
+const server = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
+const postgres = fs.readFileSync(path.join(root, 'lib', 'postgres.js'), 'utf8');
+const worker = fs.readFileSync(path.join(root, 'safka-sync.js'), 'utf8');
+const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'order-queue.yml'), 'utf8');
+
+assert(server.includes("app.post('/api/internal/order-queue'"), 'internal queue endpoint is missing');
+assert(server.includes('verifyGitHubWorkerToken'), 'GitHub OIDC verification is missing');
+assert(server.includes("issuer: 'https://token.actions.githubusercontent.com'"), 'OIDC issuer validation is missing');
+assert(server.includes("audience: 'rab7na-store'"), 'OIDC audience validation is missing');
+assert(server.includes("claims.repository === 'alialkaisar92/safqa-store'"), 'repository claim is not restricted');
+assert(server.includes("claims.ref === 'refs/heads/main'"), 'branch claim is not restricted');
+assert(!server.includes("setInterval(() => safkaSync.processAffiliateOrderQueue"), 'legacy serverless queue interval must not remain');
+assert(postgres.includes('CREATE TABLE IF NOT EXISTS affiliate_order_attempts'), 'attempt audit table migration is missing');
+assert(postgres.includes('UNIQUE(request_key, attempt_number)'), 'attempt dedupe constraint is missing');
+assert(postgres.includes('async function recordAffiliateOrderAttempt'), 'attempt recorder is missing');
+assert(postgres.includes('last_manual_retry_at') && postgres.includes('manual_retry_reason'), 'manual retry audit fields are missing');
+assert(postgres.includes('async function listAffiliateOrderAttemptsForAdmin'), 'admin attempt reader is missing');
+assert(postgres.includes("String(row.status || '') !== 'failed'") && postgres.includes('ORDER_RETRY_UNSAFE'), 'manual retry must reject non-failed or supplier-acknowledged orders');
+assert(server.includes("ORDER_QUEUE_RUNNER_ENABLED") && server.includes("app.post('/api/internal/order-queue'"), 'queue runner safety switch is missing');
+assert(worker.includes('function maxAttempts()'), 'configurable max attempts are missing');
+assert(worker.includes('[60000, 120000, 300000, 600000, 1800000]'), 'retry backoff is not minute-scale');
+assert(worker.includes('retryableStatus(status) { return [500, 502, 503, 504]'), 'transient HTTP statuses are incomplete');
+assert(workflow.includes("cron: '*/5 * * * *'"), 'five-minute schedule is missing');
+assert(workflow.includes('id-token: write'), 'workflow OIDC permission is missing');
+assert(workflow.includes('ACTIONS_ID_TOKEN_REQUEST_URL'), 'workflow does not request an OIDC token');
+assert(workflow.includes('audience=rab7na-store'), 'workflow audience is missing');
+assert(workflow.includes('/api/internal/order-queue'), 'workflow endpoint is missing');
+const admin = fs.readFileSync(path.join(root, 'admin.js'), 'utf8');
+const adminHtml = fs.readFileSync(path.join(root, 'admin.html'), 'utf8');
+assert(admin.includes("app.get('/api/admin/order-attempts/:id'") && admin.includes("app.post('/api/admin/order-retry'"), 'admin queue endpoints are missing');
+assert(admin.includes('order-attempts|order-retry'), 'admin queue endpoints are not permission-gated');
+assert(adminHtml.includes('data-order-attempts') && adminHtml.includes('data-order-retry') && adminHtml.includes('محاولات الإرسال'), 'admin queue dashboard controls are missing');
+console.log('free-order-runner checks passed');

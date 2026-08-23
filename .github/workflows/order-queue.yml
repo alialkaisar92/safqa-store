@@ -1,0 +1,38 @@
+name: Process durable order queue
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
+
+concurrency:
+  group: rab7na-order-queue
+  cancel-in-progress: false
+
+jobs:
+  process-orders:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Process a bounded queue batch
+        env:
+          OIDC_REQUEST_URL: ${{ env.ACTIONS_ID_TOKEN_REQUEST_URL }}
+          OIDC_REQUEST_TOKEN: ${{ env.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$OIDC_REQUEST_URL"
+          test -n "$OIDC_REQUEST_TOKEN"
+          oidc_token="$(curl --fail-with-body --silent --show-error --max-time 15 \
+            -H "Authorization: bearer ${OIDC_REQUEST_TOKEN}" \
+            "${OIDC_REQUEST_URL}&audience=rab7na-store" | jq -r '.value')"
+          test -n "$oidc_token"
+          test "$oidc_token" != "null"
+          curl --fail-with-body --silent --show-error --max-time 240 \
+            -X POST \
+            -H 'Content-Type: application/json' \
+            -H "Authorization: Bearer ${oidc_token}" \
+            --data '{"limit":5}' \
+            https://rab7na-store.vercel.app/api/internal/order-queue
