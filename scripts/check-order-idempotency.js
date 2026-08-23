@@ -21,6 +21,11 @@ assert(postgres.includes('canonicalOrderId') && postgres.includes('ON CONFLICT (
 assert(orderRoute.includes("res.status(202).json({ok:true,queued:true,pending:true"), 'new orders must return an immediate queued response');
 assert(!orderRoute.includes("fetch(BASE_URL+'/orders'"), 'supplier POST must not block the storefront request');
 assert(orderRoute.includes("if (!productAvailable) return res.status(409).json({error:'المنتج غير متاح حاليًا'})"), 'order validation must block unavailable products');
+assert(orderRoute.includes('const selectedPrice=Number(item.requestedFinalPrice);') && orderRoute.includes("selectedPrice > 0 ? selectedPrice : suggestedPrice"), 'server must use the marketer selected final price before the suggestion');
+assert(orderRoute.includes('finalPrice-base') && orderRoute.includes("سعر البيع يجب ألا يقل عن سعر الجملة"), 'commission must reflect the selected sale price and protect wholesale floor');
+assert(client.includes('selectedCommission=cart.reduce') && client.includes('commission:Math.round(selectedCommission*100)/100'), 'checkout must send the selected margin, not a fixed commission rate');
+assert(!client.includes('commission:Math.round(t*0.1)'), 'fixed ten percent commission must not be sent');
+assert(orderRoute.includes("notifyUser(affiliateUser.id, 'تم تسجيل طلبك'") && orderRoute.includes("queued.mode==='created'"), 'new orders must notify after local save');
 assert(!orderRoute.includes("item.qty > stock") && !orderRoute.includes("الكمية المطلوبة أكبر من المخزون الأصلي"), 'numeric stock must not reject an available product');
 assert(server.includes("app.get('/api/affiliate/order-status/:id'"), 'orders need a protected status endpoint');
 assert(server.includes("'Cache-Control': 'no-store, no-cache, max-age=0, must-revalidate'") && server.includes("'CDN-Cache-Control': 'no-store'"), 'store HTML must not be served from a stale cache');
@@ -43,7 +48,7 @@ assert(worker.includes("accepted: 'قيد التأكيد'") && worker.includes('
 assert(worker.includes("'accepted', 'pending', 'processing', 'retry', 'قيد التأكيد', 'جاري التجهيز'"), 'reconciliation must revisit accepted and in-flight orders when a status endpoint is configured');
 assert(worker.includes("'X-Idempotency-Key'"), 'supplier attempts must carry the stable operation key');
 assert(client.includes("sessionStorage.getItem('rab7na_order_idempotency_key')"), 'refresh-safe idempotency key is missing');
-assert(client.includes('rab7na_pending_order_v1') && client.includes('fetchQueuedOrderStatus'), 'checkout must retain and poll queued orders');
+assert(client.includes('rab7na_pending_orders_v2') && client.includes('readPendingOrders') && client.includes('fetchQueuedOrderStatus'), 'checkout must retain and poll queued orders');
 assert(server.includes('const queue = order._queue || null') && server.includes('queueStatusMap'), 'affiliate orders must expose queue status rather than stale app data only');
 assert(postgres.includes('const orphanOrders = []') && postgres.includes("request_data ? 'affiliateOrder'") && postgres.includes('orphanOrders.forEach'), 'affiliate dashboard must surface queue orders even when a legacy document is missing');
 assert(server.includes("app.post('/api/affiliate/order-cancel'") && server.includes('postgres.cancelAffiliateOrder(user.id,orderId,reason)'), 'affiliate cancellation must be authenticated and persisted server-side');
@@ -55,6 +60,9 @@ assert(client.includes('affiliateCancelMdl') && client.includes('affiliateCancel
 assert(client.includes("/api/affiliate/order-cancel") && client.includes('setInterval(refreshAffiliateLive,5000)'), 'affiliate dashboard must refresh live and post cancellation safely');
 assert(authPostgres.includes("last_seen_at < NOW() - INTERVAL '1 minute'"), 'session activity writes must be throttled below the 5-second dashboard polling rate');
 assert(client.includes("r.status===202&&d.ok") || client.includes("d.ok&&d.queued"), 'checkout must accept the immediate queued contract');
+assert(client.includes('oninput="updateCartPriceFromInput(') && client.includes('syncCartPricesFromInputs'), 'sale price must update immediately without a separate save action');
+assert(!client.includes('saveAllCartPrices') && !client.includes('cartPriceBulkActions'), 'separate price save action must remain removed');
+assert(worker.includes('notifyOrderChange') && worker.includes("'order-status'"), 'worker status changes must notify the affiliate');
 console.log('order reliability checks: PASS');
 console.log('save-first queue contract: YES');
 console.log('concurrent worker deduplication: YES');

@@ -60,6 +60,12 @@ async function notifyAll(title, body, type, eventKey) {
   const users = await store.getUsers();
   await Promise.all(users.filter(u => u && u.id).map(u => global.notifyUser(u.id, title, body, '/store', type, eventKey || type + ':' + body).catch(() => null)));
 }
+async function notifyOrderChange(job, status, message) {
+  if (!global.notifyUser || !job || job.user_id == null) return;
+  const orderId = String(job.order_id || job.request_key || '').trim();
+  if (!orderId) return;
+  await Promise.resolve(global.notifyUser(job.user_id, 'تحديث طلبك', message, '/store', 'order-status', 'order-status:' + orderId + ':' + String(status || 'updated'))).catch(error => console.warn('[notifications] order status skipped:', error.message));
+}
 function productStock(product) {
   const prop = (product && product.properties && product.properties[0]) || {};
   const inventory = product && product.inventory;
@@ -215,6 +221,7 @@ async function processAffiliateOrderJob(job) {
       const supplierResponse = { order: outcome.record, affiliateOrder: savedOrder, status: outcome.rawStatus || null, httpStatus: result.response.status };
       const queueState = ['تم التأكيد', 'تم التاكيد', 'confirmed', 'تم التسليم', 'تم التوصيل', 'delivered', 'completed'].includes(String(displayStatus).toLowerCase()) ? 'confirmed' : (trackingSaved ? 'accepted' : 'accepted_untracked');
       await postgres.updateAffiliateOrderQueueState(key, queueState, { supplierResponse, supplierOrderId: outcome.externalId, failureReason: trackingSaved ? null : 'تعذر حفظ سجل المتابعة بعد قبول المورد' });
+      await notifyOrderChange(job, queueState, queueState === 'confirmed' ? 'تم تأكيد الطلب بنجاح.' : 'تم قبول الطلب وبدأت متابعته مع المورد.');
       console.log('[order-queue] order_accepted', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, supplier_order_id: outcome.externalId, attempt_number: attempt });
       return { status: 'accepted', supplierOrderId: outcome.externalId };
     }
@@ -222,6 +229,7 @@ async function processAffiliateOrderJob(job) {
       const message = 'تم استلام رد غير مكتمل من المورد، وجارٍ التحقق من حالة الطلب؛ لا تعيد إرساله مرة أخرى';
       await postgres.updateAffiliateOrderQueueState(key, 'unknown', { supplierResponse: { httpStatus: result.response.status }, failureReason: message });
       await postgres.updateAffiliateOrder(job.order_id, { status: 'قيد التحقق', requestStatus: 'unknown', failureReason: message, statusSyncedAt: new Date().toISOString() });
+      await notifyOrderChange(job, 'unknown', message);
       console.warn('[order-queue] order_unknown', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, attempt_number: attempt, reason: 'incomplete_supplier_response' });
       return { status: 'unknown' };
     }
@@ -229,6 +237,7 @@ async function processAffiliateOrderJob(job) {
     if (retryableStatus(result.response.status) && attempt < 5) {
       const nextAttemptAt = new Date(Date.now() + retryDelayMs(attempt)).toISOString();
       await postgres.updateAffiliateOrderQueueState(key, 'retry', { supplierResponse: { httpStatus: result.response.status }, failureReason: 'المورد غير متاح؛ ستتم إعادة المحاولة تلقائيًا', nextAttemptAt });
+      await notifyOrderChange(job, 'retry', 'المورد غير متاح مؤقتًا؛ سيُعاد فحص الطلب تلقائيًا.');
       console.warn('[order-queue] order_retry', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, attempt_number: attempt, http_status: result.response.status });
       return { status: 'retry' };
     }
@@ -236,11 +245,13 @@ async function processAffiliateOrderJob(job) {
       const unknownMessage = 'تعذر تأكيد رد المورد بعد المحاولات الآمنة؛ جارٍ التحقق من حالة الطلب، لا تعيد إرساله مرة أخرى';
       await postgres.updateAffiliateOrderQueueState(key, 'unknown', { supplierResponse: { httpStatus: result.response.status }, failureReason: unknownMessage });
       await postgres.updateAffiliateOrder(job.order_id, { status: 'قيد التحقق', requestStatus: 'unknown', failureReason: unknownMessage, statusSyncedAt: new Date().toISOString() });
+      await notifyOrderChange(job, 'unknown', unknownMessage);
       console.warn('[order-queue] order_unknown', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, attempt_number: attempt, http_status: result.response.status });
       return { status: 'unknown' };
     }
     await postgres.updateAffiliateOrderQueueState(key, 'failed', { supplierResponse: { httpStatus: result.response.status, errors: outcome.errors }, failureReason: message });
     await postgres.updateAffiliateOrder(job.order_id, { status: 'فشل', requestStatus: 'failed', failureReason: message, statusSyncedAt: new Date().toISOString() });
+    await notifyOrderChange(job, 'failed', message);
     console.warn('[order-queue] order_failed', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, attempt_number: attempt, http_status: result.response.status });
     return { status: 'failed' };
   } catch (error) {
@@ -248,18 +259,21 @@ async function processAffiliateOrderJob(job) {
       const message = 'تم استلام الطلب، وجارٍ التحقق من حالة المورد؛ لا تعيد إرساله مرة أخرى';
       await postgres.updateAffiliateOrderQueueState(key, 'unknown', { failureReason: message });
       await postgres.updateAffiliateOrder(job.order_id, { status: 'قيد التحقق', requestStatus: 'unknown', failureReason: message, statusSyncedAt: new Date().toISOString() });
+      await notifyOrderChange(job, 'unknown', message);
       console.warn('[order-queue] order_unknown', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, attempt_number: attempt });
       return { status: 'unknown' };
     }
     if (attempt < 5) {
       const message = 'تعذر تجهيز الطلب مؤقتًا؛ سيعاد فحصه تلقائيًا';
       await postgres.updateAffiliateOrderQueueState(key, 'retry', { failureReason: message, nextAttemptAt: new Date(Date.now() + retryDelayMs(attempt)).toISOString() });
+      await notifyOrderChange(job, 'retry', message);
       console.error('[order-queue] worker_error', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, attempt_number: attempt, error: error.message });
       return { status: 'retry' };
     }
     const message = 'تعذر تجهيز الطلب تلقائيًا؛ راجع حالة الطلب قبل إعادة المحاولة';
     await postgres.updateAffiliateOrderQueueState(key, 'unknown', { failureReason: message });
     await postgres.updateAffiliateOrder(job.order_id, { status: 'قيد التحقق', requestStatus: 'unknown', failureReason: message, statusSyncedAt: new Date().toISOString() });
+    await notifyOrderChange(job, 'unknown', message);
     console.error('[order-queue] worker_exhausted', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, attempt_number: attempt, error: error.message });
     return { status: 'unknown' };
   }
@@ -290,11 +304,13 @@ async function reconcileAffiliateOrderQueue(limit = 50) {
       if (!raw) continue;
       const next = mapStatus(raw);
       if (next === 'قيد التأكيد' || next === 'جاري التجهيز') {
-        await postgres.updateAffiliateOrderStatus(order.id || order.serial, { status: next, safkaStatus: raw, statusSyncedAt: new Date().toISOString(), requestStatus: 'accepted' });
+        const updated = await postgres.updateAffiliateOrderStatus(order.id || order.serial, { status: next, safkaStatus: raw, statusSyncedAt: new Date().toISOString(), requestStatus: 'accepted' });
+        if (updated && updated.statusChanged) await notifyOrderChange({ order_id: order.id || order.serial, user_id: order.userId }, 'accepted', 'تم تحديث حالة طلبك: ' + next);
         continue;
       }
       const requestStatus = ['تم التأكيد', 'تم التاكيد', 'تم التسليم', 'تم التوصيل', 'delivered', 'completed'].includes(String(next).toLowerCase()) ? 'confirmed' : (next === 'فشل' || next === 'مرفوض' ? 'failed' : 'accepted');
-      await postgres.updateAffiliateOrderStatus(order.id || order.serial, { status: next, safkaStatus: raw, statusSyncedAt: new Date().toISOString(), requestStatus });
+      const updated = await postgres.updateAffiliateOrderStatus(order.id || order.serial, { status: next, safkaStatus: raw, statusSyncedAt: new Date().toISOString(), requestStatus });
+      if (updated && updated.statusChanged) await notifyOrderChange({ order_id: order.id || order.serial, user_id: order.userId }, requestStatus, 'تم تحديث حالة طلبك: ' + next);
       console.log('[order-queue] order_reconciled', { order_id: order.id, user_id: order.userId, supplier_order_id: externalId, status: next });
     } catch (error) { console.warn('[order-queue] reconciliation skipped', { order_id: order.id, error: error.message }); }
   }
@@ -320,7 +336,7 @@ async function syncOrderStatuses() {
         if (!updated) continue;
         changed++;
         if (updated.delivered) delivered++;
-        if (global.notifyUser && order.userId != null) await global.notifyUser(order.userId, 'تحديث حالة طلب', 'حالة طلبك الآن: ' + next, '/', 'order-status').catch(() => null);
+        if (global.notifyUser && updated.statusChanged && order.userId != null) await global.notifyUser(order.userId, 'تحديث حالة طلب', 'حالة طلبك الآن: ' + next, '/store', 'order-status', 'order-status:' + String(updated.order.id || order.id || order.serial) + ':' + next).catch(() => null);
       } catch (e) { console.warn('Safka status sync skipped order', order.id, e.message); }
     }
   };

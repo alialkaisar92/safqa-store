@@ -15,7 +15,7 @@ const checks = [
   ['price editor is included in modal stack', html.includes("'priceModal'")],
   ['account orders wallet ids match actual markup', ['accMdl','ordMdl','walMdl'].every(id => html.includes(`id="${id}"`) && html.includes(`'${id}'`)),],
   ['order success still follows server response', html.includes('if(r.ok&&d.ok)') && html.includes('showSuccessfulOrder')],
-  ['checkout hides normal progress messages', html.includes("m.textContent='';") && html.includes("confirmButton.textContent='جاري حفظ الطلب…'")],
+  ['checkout uses silent button busy state', html.includes("m.textContent='';") && html.includes("confirmButton.setAttribute('aria-busy','true')") && !html.includes("confirmButton.textContent='جاري حفظ الطلب…'")],
   ['checkout accepts queued response and polls safely', html.includes('showQueuedOrder') && html.includes('trackQueuedOrder') && html.includes('fetchQueuedOrderStatus')],
 ];
 

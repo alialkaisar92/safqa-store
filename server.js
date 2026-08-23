@@ -899,12 +899,16 @@ app.post('/api/create-order', async (req,res)=>{
     if(found)govId=found._id||found.id;
   }catch(e){}
   if(!govId||govId.length<3)return res.status(400).json({error:'اختر المحافظة'});
-  const items=(Array.isArray(b.items)?b.items:[]).map(it=>({
-    product: clean(it.product||it.id||it._id),
-    property: clean(it.property||it.propId||''),
-    qty: Number(it.qty||it.quantity||1),
-    requestedFinalPrice: Number(it.finalPrice||it.salePrice||it.price||0)
-  })).filter(x=>x.product);
+  const items=(Array.isArray(b.items)?b.items:[]).map(it=>{
+    const rawPrice=it && (it.finalPrice ?? it.salePrice ?? it.price);
+    const requestedFinalPrice=rawPrice === '' || rawPrice == null ? 0 : Number(rawPrice);
+    return {
+      product: clean(it && (it.product||it.id||it._id)),
+      property: clean(it && (it.property||it.propId||'')),
+      qty: Number(it && (it.qty ?? it.quantity ?? 1)),
+      requestedFinalPrice: Number.isFinite(requestedFinalPrice) ? requestedFinalPrice : 0
+    };
+  }).filter(x=>x.product);
   if(!items.length)return res.status(400).json({error:'السلة فارغة'});
   for (const item of items) {
     if (!Number.isInteger(item.qty) || item.qty < 1 || item.qty > 99) return res.status(400).json({error:'الكمية المطلوبة غير صحيحة'});
@@ -933,9 +937,12 @@ app.post('/api/create-order', async (req,res)=>{
     const productAvailable = source.is_active !== false && propertyAvailable && sourceAvailability(source) === true;
     if (!productAvailable) return res.status(409).json({error:'المنتج غير متاح حاليًا'});
     const note=clean(source.note || '');
-    const suggestedPrice=extractSuggestedSalePrice(note,base);
-    const finalPrice=Math.max(base, Number(suggestedPrice || 0) || Math.round(base*(1+priceUp/100)));
-    const commission=Math.max(0, Number(extractCommission(note)) || Math.max(0, finalPrice-base));
+    const suggestedPrice=extractSuggestedSalePrice(note,base) || Math.round(base*(1+priceUp/100));
+    const selectedPrice=Number(item.requestedFinalPrice);
+    const finalPrice=Math.round((selectedPrice > 0 ? selectedPrice : suggestedPrice)*100)/100;
+    if (!Number.isFinite(finalPrice) || finalPrice < base) return res.status(400).json({error:'سعر البيع يجب ألا يقل عن سعر الجملة'});
+    // العمولة هنا هي الفرق الحقيقي بين السعر الذي اختاره المسوق وسعر الجملة، وليست رقمًا مأخوذًا من الاقتراح.
+    const commission=Math.max(0, Math.round((finalPrice-base)*100)/100);
     const property=(matchedProperty && (matchedProperty._id || matchedProperty.id || matchedProperty.key)) || item.property || source.propId || sourceProp._id || sourceProp.id || sourceProp.key || '';
     if (!property) return res.status(409).json({error:'خاصية المنتج غير متاحة حاليًا'});
     normalizedItems.push({product:String(item.product),property:String(property),qty:String(item.qty),name:String(source.name || source.title || item.product),originalPrice:base,finalPrice,commission});
@@ -968,7 +975,10 @@ app.post('/api/create-order', async (req,res)=>{
   const savedOrder=queued.mode==='created' ? affiliateOrder : (row.order_id===localOrderId ? affiliateOrder : {});
   const payload=queueStatusPayload(row,savedOrder);
   console.log('[order-queue] order_created', {order_id:payload.id,user_id:affiliateUser.id,idempotency_key:requestKey,attempt_number:0});
-  if(queued.mode==='created')return res.status(202).json({ok:true,queued:true,pending:true,order:payload,status:'pending',message:payload.message,retry_after_ms:1500});
+  if(queued.mode==='created') {
+    Promise.resolve(notifyUser(affiliateUser.id, 'تم تسجيل طلبك', 'تم حفظ الطلب بنجاح وبدأت متابعته. رقم الطلب: #' + String(payload.serial || payload.id).slice(-14), '/store', 'order-created', 'order-created:' + localOrderId)).catch(error => console.warn('[notifications] order-created skipped:', error.message));
+    return res.status(202).json({ok:true,queued:true,pending:true,order:payload,status:'pending',message:'تم تسجيل الطلب بنجاح وبدأت متابعته',retry_after_ms:1500});
+  }
   if(queued.mode==='in_progress')return res.status(202).json({ok:true,queued:true,pending:true,duplicate:true,order:payload,status:String(row.status||'pending'),message:payload.message,retry_after_ms:1500});
   return res.status(200).json({ok:true,duplicate:true,queued:true,order:payload,status:String(row.status||'pending'),message:payload.message});
 });
