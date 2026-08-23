@@ -54,10 +54,11 @@ async function fetchAllProducts() {
   }
   return all;
 }
-async function notifyAll(title, body, type) {
+async function notifyAll(title, body, type, eventKey) {
+  if (global.notifyBroadcast) { await global.notifyBroadcast({ title, body, url: '/store', type, eventKey: eventKey || type + ':' + body }); return; }
   if (!global.notifyUser) return;
   const users = await store.getUsers();
-  await Promise.all(users.filter(u => u && u.id).map(u => global.notifyUser(u.id, title, body, '/store', type).catch(() => null)));
+  await Promise.all(users.filter(u => u && u.id).map(u => global.notifyUser(u.id, title, body, '/store', type, eventKey || type + ':' + body).catch(() => null)));
 }
 function productStock(product) {
   const prop = (product && product.properties && product.properties[0]) || {};
@@ -117,7 +118,7 @@ async function syncProducts(options) {
   try { fs.writeFileSync(CACHE_FILE, JSON.stringify(prepared)); } catch (e) { console.warn('Safka cache write skipped:', e.message); }
   await saveMeta({ productIds: products.map(p => String(p._id || p.id)).filter(Boolean), productCount: products.length, productsSyncedAt: new Date().toISOString(), stockImportedAt: new Date().toISOString(), stockImported: database || { inserted: 0, updated: 0 } });
   if (newProducts.length && options && options.notify !== false) {
-    await notifyAll('منتجات جديدة على rab7na', 'تمت إضافة ' + newProducts.length + ' منتج جديد متاح للتسويق.', 'new-product');
+    await notifyAll('منتجات جديدة على rab7na', 'تمت إضافة ' + newProducts.length + ' منتج جديد متاح للتسويق.', 'new-product', 'new-products:' + products.map(p => String(p && (p._id || p.id) || '')).filter(Boolean).sort().join(',').slice(-1800));
   }
   return { ok: true, products: products.length, newProducts: newProducts.length, stockImported: database || { inserted: 0, updated: 0 } };
 }

@@ -65,6 +65,109 @@ function stopOrderQueueWorker() {
 function authReqToken(req){const h=String(req.headers.authorization||'');return String(req.headers['x-auth-token']||req.headers['x-sq-token']||(h.toLowerCase().indexOf('bearer ')===0?h.slice(7):'')||'').trim();}
 async function currentAuthUser(req){const token=authToken(req);if(!token)return null;try{const user=await authService.currentUser(token);if(user)return user;}catch(e){}try{const jwt=global.verifyJWT&&global.verifyJWT(token);if(jwt)return await firestore.getUser(jwt.uid);}catch(e){}try{const rec=await firestore.getToken(token);return rec?await firestore.getUser(rec.uid):null;}catch(e){return null;}}
 
+let webpush = null;
+try { webpush = require('web-push'); } catch (_) {}
+const vapidPublicKey = String(process.env.VAPID_PUBLIC_KEY || '').trim();
+const vapidPrivateKey = String(process.env.VAPID_PRIVATE_KEY || '').trim();
+const vapidSubject = String(process.env.VAPID_SUBJECT || '').trim();
+const nativePushReady = Boolean(webpush && vapidPublicKey && vapidPrivateKey && vapidSubject);
+if (nativePushReady) {
+  try { webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey); }
+  catch (error) { console.error('[push] VAPID configuration rejected:', error.message); }
+}
+const notificationStreams = new Map();
+function streamNotification(userId, notification) {
+  const set = notificationStreams.get(String(userId));
+  if (!set) return;
+  const packet = 'data: ' + JSON.stringify(notification) + '\n\n';
+  for (const write of set) { try { write(packet); } catch (_) {} }
+}
+async function sendNativePushToUsers(userIds, data) {
+  if (!nativePushReady) return { configured: false, delivered: 0, removed: 0 };
+  const ids = [...new Set((Array.isArray(userIds) ? userIds : [userIds]).map(value => String(value || '').trim()).filter(Boolean))];
+  const subscriptions = await postgres.listPushSubscriptionsForUsers(ids);
+  if (!subscriptions.length) return { configured: true, delivered: 0, removed: 0 };
+  const payload = JSON.stringify({ title: String(data.title || 'إشعار جديد'), body: String(data.body || ''), url: String(data.url || '/store'), icon: '/icons/icon-192.png', badge: '/icons/icon-192.png', tag: String(data.tag || 'rab7na-notification'), data: { url: String(data.url || '/store') } });
+  let delivered = 0;
+  let removed = 0;
+  await Promise.all(subscriptions.map(async item => {
+    const subscription = { endpoint: item.endpoint, expirationTime: item.expiration_time == null ? null : Number(item.expiration_time), keys: { p256dh: item.p256dh, auth: item.auth } };
+    try { await webpush.sendNotification(subscription, payload); delivered++; await postgres.markPushSuccess(item.endpoint); }
+    catch (error) {
+      const code = Number(error && error.statusCode || 0);
+      if (code === 404 || code === 410) { removed++; await postgres.markPushFailure(item.endpoint, true).catch(() => null); }
+      else await postgres.markPushFailure(item.endpoint, false).catch(() => null);
+    }
+  }));
+  return { configured: true, delivered, removed };
+}
+async function notifyUser(userId, title, body, url, type, eventKey) {
+  const result = await postgres.createNotification({ userId, title, body, url: url || '/store', type: type || 'info', eventKey: eventKey || null });
+  if (!result.created || !result.notification) return Object.assign({ push: { configured: nativePushReady, delivered: 0 } }, result);
+  streamNotification(userId, result.notification);
+  const push = await sendNativePushToUsers([userId], { title, body, url: url || '/store', tag: eventKey || type || 'rab7na-notification' }).catch(() => ({ configured: nativePushReady, delivered: 0 }));
+  return Object.assign({ push }, result);
+}
+async function notifyBroadcast(input) {
+  const value = input && typeof input === 'object' ? input : {};
+  const idsResult = await postgres.query('SELECT id FROM users WHERE banned IS NOT TRUE ORDER BY id');
+  const userIds = idsResult.rows.map(row => String(row.id));
+  let created = { created: 0, notifications: [], eventKey: value.eventKey || null };
+  if (Array.isArray(value.userIds) && value.userIds.length) {
+    const allowed = new Set(userIds);
+    const selected = [...new Set(value.userIds.map(String))].filter(id => allowed.has(id));
+    const outputs = [];
+    for (const id of selected) outputs.push(await notifyUser(id, value.title, value.body, value.url, value.type, value.eventKey ? value.eventKey + ':' + id : null));
+    return { created: outputs.filter(item => item.created).length, notifications: outputs.map(item => item.notification).filter(Boolean), push: await sendNativePushToUsers(selected, value) };
+  }
+  created = await postgres.createBroadcastNotifications(value);
+  for (const notification of created.notifications) { streamNotification(notification.userId, notification); }
+  const push = await sendNativePushToUsers(userIds, { title: value.title, body: value.body, url: value.url, tag: value.eventKey || 'rab7na-broadcast' });
+  return Object.assign(created, { push });
+}
+global.notifyUser = notifyUser;
+global.notifyBroadcast = notifyBroadcast;
+global.sendNativePushToUsers = sendNativePushToUsers;
+
+app.get('/api/notifications', async (req, res) => {
+  const user = await currentAuthUser(req);
+  if (!user) return res.status(401).json({ error: 'يجب تسجيل الدخول أولًا' });
+  try { const notifications = await postgres.listNotifications(user.id, { limit: req.query.limit, beforeId: req.query.beforeId }); const unread = await postgres.countUnreadNotifications(user.id); res.set('Cache-Control', 'no-store'); res.json({ notifications, unread, push: { configured: nativePushReady, permissionRequired: true } }); }
+  catch (error) { console.error('[notifications] list failed:', error.message); res.status(503).json({ error: 'تعذر تحميل الإشعارات حاليًا' }); }
+});
+app.post('/api/notifications/read', async (req, res) => {
+  const user = await currentAuthUser(req);
+  if (!user) return res.status(401).json({ error: 'يجب تسجيل الدخول أولًا' });
+  try { const id = String(req.body && req.body.id || '').trim(); if (id) { const notification = await postgres.markNotificationRead(user.id, id); if (!notification) return res.status(404).json({ error: 'الإشعار غير موجود' }); } else await postgres.markAllNotificationsRead(user.id); res.json({ ok: true, unread: await postgres.countUnreadNotifications(user.id) }); }
+  catch (error) { console.error('[notifications] read failed:', error.message); res.status(503).json({ error: 'تعذر تحديث الإشعار حاليًا' }); }
+});
+app.get('/api/notifications/stream', async (req, res) => {
+  const user = await currentAuthUser(req);
+  if (!user) return res.status(401).end();
+  res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache, no-store', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
+  res.flushHeaders();
+  res.write('event: ready\ndata: {}\n\n');
+  const key = String(user.id);
+  const set = notificationStreams.get(key) || new Set();
+  const write = packet => res.write(packet);
+  set.add(write); notificationStreams.set(key, set);
+  const heartbeat = setInterval(() => { try { res.write(': heartbeat\n\n'); } catch (_) {} }, 25000);
+  req.on('close', () => { clearInterval(heartbeat); set.delete(write); if (!set.size) notificationStreams.delete(key); });
+});
+app.get('/api/push/vapid-public-key', (req, res) => { res.set('Cache-Control', 'no-store'); res.json({ publicKey: nativePushReady ? vapidPublicKey : '', configured: nativePushReady }); });
+app.post('/api/notifications/register', async (req, res) => {
+  const user = await currentAuthUser(req);
+  if (!user) return res.status(401).json({ error: 'يجب تسجيل الدخول أولًا' });
+  try { const saved = await postgres.upsertPushSubscription(user.id, req.body && req.body.subscription); res.status(201).json({ ok: true, configured: nativePushReady, subscriptionId: String(saved.id) }); }
+  catch (error) { res.status(400).json({ error: error.message === 'اشتراك الإشعارات غير مكتمل' ? error.message : 'تعذر تسجيل جهاز الإشعارات' }); }
+});
+app.post('/api/notifications/unlink', async (req, res) => {
+  const user = await currentAuthUser(req);
+  if (!user) return res.status(401).json({ error: 'يجب تسجيل الدخول أولًا' });
+  try { const rows = await postgres.listPushSubscriptions(user.id); for (const row of rows) await postgres.deletePushSubscription(user.id, row.endpoint); res.json({ ok: true }); }
+  catch (error) { res.status(503).json({ error: 'تعذر إلغاء اشتراك الإشعارات' }); }
+});
+
 // ===== MAIN STORE ROUTES =====
 app.get('/store', (req, res) => {
   res.set({ 'Cache-Control': 'no-store, no-cache, max-age=0, must-revalidate', 'CDN-Cache-Control': 'no-store', Pragma: 'no-cache' });
@@ -301,6 +404,10 @@ function normalizePublicProduct(p, local, priceUp) {
   const category = cat([raw.name, raw.title, raw.description, raw.desc, raw.note, raw.category].filter(Boolean).join(' '));
   const base = Number(raw.basePrice != null ? raw.basePrice : (raw.sale_price != null ? raw.sale_price : (raw.price != null ? raw.price : 0)));
   const note = raw.note || merged.note || '';
+  const adminLocked = merged.adminPriceLocked === true || merged.admin_price_locked === true;
+  const adminSale = Number(merged.adminSalePrice != null ? merged.adminSalePrice : merged.admin_sale_price);
+  const lockedSale = adminLocked && Number.isFinite(adminSale) && adminSale >= base ? Math.round(adminSale) : null;
+  const adminCommission = Number(merged.adminCommission != null ? merged.adminCommission : merged.admin_commission);
   return Object.assign(merged, {
     id: raw.id || raw._id || (local && (local.id || local._id)),
     name: raw.name || raw.title || '',
@@ -308,12 +415,12 @@ function normalizePublicProduct(p, local, priceUp) {
     cat: category,
     basePrice: base,
     cost: raw.cost != null ? raw.cost : (raw.sale_price != null ? raw.sale_price : base),
-    price: productSalePrice(note, base, priceUp),
+    price: lockedSale != null ? lockedSale : productSalePrice(note, base, priceUp),
     image: raw.image || (raw.images && raw.images[0]) || merged.image || '',
     desc: raw.description || raw.desc || '',
     barcode: raw.barcode || merged.barcode || '',
     note,
-    commission: extractCommission(note),
+    commission: adminLocked && Number.isFinite(adminCommission) && adminCommission >= 0 ? adminCommission : extractCommission(note),
     propId: raw.propId || prop._id || '',
     propKey: raw.propKey || prop.key || '',
     stock,

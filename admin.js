@@ -6,11 +6,11 @@ const postgres = require('./lib/postgres');
 const authService = require('./services/auth-postgres');
 
 const SESSION_COOKIE = 'rab7na_session';
-const ADMIN_PERMISSIONS = ['dashboard', 'orders', 'products', 'users', 'withdrawals', 'chats', 'settings', 'admins'];
+const ADMIN_PERMISSIONS = ['dashboard', 'orders', 'products', 'users', 'withdrawals', 'chats', 'settings', 'admins', 'notifications'];
 const ROLE_PERMISSIONS = {
   owner: ADMIN_PERMISSIONS,
   admin: ADMIN_PERMISSIONS,
-  manager: ['dashboard', 'orders', 'products', 'users', 'withdrawals', 'chats', 'settings'],
+  manager: ['dashboard', 'orders', 'products', 'users', 'withdrawals', 'chats', 'settings', 'notifications'],
   support: ['dashboard', 'orders', 'chats'],
   finance: ['dashboard', 'orders', 'withdrawals'],
   products: ['dashboard', 'products']
@@ -140,8 +140,12 @@ async function affiliateData() {
 }
 
 function productWithPrice(product, priceUp) {
-  const base = Number(product && (product.basePrice != null ? product.basePrice : product.price)) || 0;
-  return Object.assign({}, product, { basePrice: base, price: Math.round(base * (1 + Number(priceUp || 0) / 100)) });
+  const value = product || {};
+  const base = Number(value.basePrice != null ? value.basePrice : value.price) || 0;
+  const locked = value.adminPriceLocked === true || value.admin_price_locked === true;
+  const adminSale = Number(value.adminSalePrice != null ? value.adminSalePrice : value.admin_sale_price);
+  const price = locked && Number.isFinite(adminSale) && adminSale >= base ? Math.round(adminSale) : Math.round(base * (1 + Number(priceUp || 0) / 100));
+  return Object.assign({}, value, { basePrice: base, price, adminPriceLocked: locked, adminSalePrice: locked && Number.isFinite(adminSale) ? adminSale : null });
 }
 
 function allowedStatus(status) { return ORDER_STATUSES.includes(String(status || '')); }
@@ -156,6 +160,7 @@ function permissionForPath(requestPath) {
   if (/^\/(chats|chat-reply|chat-stream)/.test(p)) return 'chats';
   if (/^\/(settings)/.test(p)) return 'settings';
   if (/^\/(admins)/.test(p)) return 'admins';
+  if (/^\/(notifications)/.test(p)) return 'notifications';
   return 'dashboard';
 }
 
@@ -172,6 +177,34 @@ module.exports = function mountAdmin(app) {
     const user = req.adminUser || {};
     res.set('Cache-Control', 'no-store');
     res.json({ id: user.id, name: user.name || '', email: user.email || '', role: user.__envAdmin ? 'owner' : (user.role || 'user'), isAdmin: true, permissions: user.__envAdmin ? ADMIN_PERMISSIONS : (Array.isArray(user.permissions) && user.permissions.length ? user.permissions : rolePermissions(user.role)) });
+  });
+
+  app.get('/api/admin/notifications', async (req, res) => {
+    try { res.set('Cache-Control', 'no-store'); res.json({ notifications: await postgres.listRecentNotifications(req.query.limit) }); }
+    catch (error) { console.error('[admin notifications]:', error.message); res.status(503).json({ error: 'تعذر تحميل سجل الإشعارات' }); }
+  });
+
+  app.post('/api/admin/notifications/send', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const title = String(body.title || '').trim();
+      const message = String(body.body || '').trim();
+      if (!title || !message) return res.status(400).json({ error: 'عنوان الإشعار ونصه مطلوبان' });
+      const url = String(body.url || '/store').trim() || '/store';
+      const type = String(body.type || 'admin').trim() || 'admin';
+      const audience = String(body.audience || 'all').trim();
+      let result;
+      if (audience === 'one') {
+        const userId = String(body.userId || '').trim();
+        if (!userId) return res.status(400).json({ error: 'اختر مسوقًا واحدًا أو استخدم الإرسال للجميع' });
+        result = await Promise.resolve(global.notifyUser(userId, title, message, url, type, 'admin-manual:' + Date.now()));
+      } else if (audience === 'group' && Array.isArray(body.userIds) && body.userIds.length) {
+        result = await Promise.resolve(global.notifyBroadcast({ title, body: message, url, type, userIds: body.userIds.slice(0, 5000), eventKey: 'admin-group:' + Date.now() }));
+      } else {
+        result = await Promise.resolve(global.notifyBroadcast({ title, body: message, url, type, eventKey: 'admin-broadcast:' + Date.now() }));
+      }
+      res.status(201).json({ ok: true, created: Number(result && result.created || 0), push: result && result.push ? result.push : { configured: false, delivered: 0 } });
+    } catch (error) { console.error('[admin notifications send]:', error.message); res.status(503).json({ error: 'تعذر إرسال الإشعار حاليًا' }); }
   });
 
   app.get('/api/admin/stats', async (req, res) => {
@@ -196,7 +229,7 @@ module.exports = function mountAdmin(app) {
       if (!allowedStatus(status)) return res.status(400).json({ error: 'حالة الطلب غير صحيحة' });
       const result = await postgres.updateAffiliateOrderStatus(id, { status, adminUpdatedAt: new Date().toISOString() });
       if (!result) return res.status(404).json({ error: 'الطلب غير موجود' });
-      if (global.notifyUser && result.order.userId != null) await Promise.resolve(global.notifyUser(result.order.userId, 'تحديث حالة طلب', 'حالة طلبك الآن: ' + status, '/', 'order-status')).catch(() => null);
+      if (global.notifyUser && result.statusChanged && result.order.userId != null) await Promise.resolve(global.notifyUser(result.order.userId, 'تحديث حالة طلب', 'حالة طلبك الآن: ' + status, '/store', 'order-status', 'order-status:' + id + ':' + status)).catch(() => null);
       res.json({ ok: true, order: result.order });
     } catch (error) { console.error('[admin order-status]:', error.message); res.status(503).json({ error: 'تعذر تحديث الطلب حاليًا' }); }
   });
@@ -225,11 +258,25 @@ module.exports = function mountAdmin(app) {
     try {
       const body = Object.assign({}, req.body || {});
       const id = String(body.id || '').trim() || 'manual-' + Date.now();
+      const locked = body.adminPriceLocked === true || body.lockPrice === true;
+      const salePrice = Number(body.adminSalePrice != null ? body.adminSalePrice : body.price);
+      const commission = Number(body.adminCommission != null ? body.adminCommission : body.commission);
       delete body.password;
       delete body.apiKey;
+      delete body.lockPrice;
+      body.adminPriceLocked = locked;
+      body.adminSalePrice = locked && Number.isFinite(salePrice) ? salePrice : null;
+      body.adminCommission = locked && Number.isFinite(commission) ? commission : null;
+      const basePrice = Number(body.basePrice != null ? body.basePrice : body.cost);
+      if (locked && Number.isFinite(salePrice) && Number.isFinite(basePrice) && salePrice < basePrice) return res.status(400).json({ error: 'سعر البيع لا يمكن أن يقل عن سعر التكلفة' });
+      const before = (await affiliateData()).products.find(item => String(item.id || item.sourceId || '') === id) || {};
       const saved = await postgres.saveAffiliateProduct(Object.assign({}, body, { id, updatedAt: new Date().toISOString() }));
-      res.json({ ok: true, product: saved });
-    } catch (error) { console.error('[admin product]:', error.message); res.status(503).json({ error: 'تعذر حفظ المنتج' }); }
+      const sqlPricing = await postgres.setAdminProductPricing(id, { locked, salePrice: body.adminSalePrice, commission: body.adminCommission }, req.adminUser && req.adminUser.id);
+      if (locked && Number.isFinite(salePrice) && Number(before.adminSalePrice) !== salePrice && global.notifyBroadcast) {
+        await Promise.resolve(global.notifyBroadcast({ title: 'تحديث سعر منتج', body: 'تم تحديث سعر منتج في الكتالوج؛ راجع مركز الإشعارات لمعرفة التفاصيل.', url: '/store', type: 'price', eventKey: 'product-price:' + id + ':' + salePrice })).catch(() => null);
+      }
+      res.json({ ok: true, product: Object.assign({}, saved, sqlPricing || {}, { adminPriceLocked: locked, adminSalePrice: body.adminSalePrice, adminCommission: body.adminCommission }) });
+    } catch (error) { console.error('[admin product]:', error.message); res.status(error.message === 'سعر البيع لا يمكن أن يقل عن سعر التكلفة' ? 400 : 503).json({ error: error.message === 'سعر البيع لا يمكن أن يقل عن سعر التكلفة' ? error.message : 'تعذر حفظ المنتج' }); }
   });
 
   app.post('/api/admin/product-delete', async (req, res) => {
@@ -259,7 +306,9 @@ module.exports = function mountAdmin(app) {
       let up = Number(req.body && req.body.up);
       if (!Number.isFinite(up)) up = 0;
       up = Math.max(0, Math.min(200, up));
+      const previous = Number((await affiliateData()).priceUp || 0);
       await postgres.updateAffiliateMeta({ priceUp: up });
+      if (previous !== up && global.notifyBroadcast) await Promise.resolve(global.notifyBroadcast({ title: 'تحديث أسعار المنتجات', body: 'تم تحديث طريقة حساب أسعار البيع المقترحة من إدارة المنصة.', url: '/store', type: 'price', eventKey: 'global-price-up:' + up })).catch(() => null);
       res.json({ ok: true, up });
     } catch (error) { res.status(503).json({ error: 'تعذر حفظ إعداد الأسعار' }); }
   });
@@ -269,8 +318,10 @@ module.exports = function mountAdmin(app) {
     try {
       const id = String(req.body && req.body.id || '').trim();
       if (!id) return res.status(400).json({ error: 'معرّف المستخدم مطلوب' });
-      const user = await postgres.updateUserBanned(id, Boolean(req.body && req.body.banned));
+      const banned = Boolean(req.body && req.body.banned);
+      const user = await postgres.updateUserBanned(id, banned);
       if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
+      if (global.notifyUser) await Promise.resolve(global.notifyUser(user.id, banned ? 'تم تعليق الحساب' : 'تمت إعادة تفعيل الحساب', banned ? 'تم تعليق الوصول إلى حسابك بواسطة إدارة المنصة.' : 'تمت إعادة تفعيل الوصول إلى حسابك.', '/store', 'account', 'account-ban:' + user.id + ':' + banned)).catch(() => null);
       res.json({ ok: true, user: safeUser(user) });
     } catch (error) { res.status(503).json({ error: 'تعذر تحديث حالة الحساب' }); }
   });
@@ -291,6 +342,7 @@ module.exports = function mountAdmin(app) {
       if (role === 'owner' && !req.adminUser.__envAdmin && req.adminUser.role !== 'owner') return res.status(403).json({ error: 'تعيين المالك متاح لمالك المنصة فقط' });
       const permissions = Array.isArray(body.permissions) ? body.permissions.filter(item => ADMIN_PERMISSIONS.includes(item)) : rolePermissions(role);
       const updated = await postgres.updateUserAdminFields(target.id, { role, permissions, banned: target.banned });
+      if (updated && global.notifyUser) await Promise.resolve(global.notifyUser(updated.id, 'تحديث صلاحيات الحساب', 'تم تحديث دورك الإداري إلى: ' + role, '/admin', 'admin-role', 'admin-role:' + updated.id + ':' + role)).catch(() => null);
       res.json({ ok: true, admin: safeUser(updated) });
     } catch (error) { console.error('[admin add]:', error.message); res.status(503).json({ error: 'تعذر إضافة المدير' }); }
   });
@@ -304,6 +356,7 @@ module.exports = function mountAdmin(app) {
       if (role === 'owner' && !req.adminUser.__envAdmin && req.adminUser.role !== 'owner') return res.status(403).json({ error: 'تعيين المالك متاح لمالك المنصة فقط' });
       const permissions = Array.isArray(body.permissions) ? body.permissions.filter(item => ADMIN_PERMISSIONS.includes(item)) : (role === 'user' ? [] : rolePermissions(role));
       const updated = await postgres.updateUserAdminFields(target.id, { role, permissions, banned: typeof body.banned === 'boolean' ? body.banned : target.banned });
+      if (updated && global.notifyUser) await Promise.resolve(global.notifyUser(updated.id, 'تحديث صلاحيات الحساب', role === 'user' ? 'تمت إزالة الدور الإداري من حسابك.' : 'تم تحديث دورك الإداري إلى: ' + role, role === 'user' ? '/store' : '/admin', 'admin-role', 'admin-role:' + updated.id + ':' + role)).catch(() => null);
       res.json({ ok: true, admin: safeUser(updated) });
     } catch (error) { res.status(503).json({ error: 'تعذر تحديث صلاحيات المدير' }); }
   });
@@ -317,7 +370,7 @@ module.exports = function mountAdmin(app) {
       if (!allowedWithdrawalStatus(status)) return res.status(400).json({ error: 'حالة السحب غير صحيحة' });
       const result = await postgres.updateAffiliateWithdrawalStatus(id, status);
       if (!result) return res.status(404).json({ error: 'طلب السحب غير موجود' });
-      if (global.notifyUser && result.withdrawal.userId != null) await Promise.resolve(global.notifyUser(result.withdrawal.userId, 'تحديث طلب السحب', 'حالة طلب السحب الآن: ' + status, '/', 'withdrawal-status')).catch(() => null);
+      if (global.notifyUser && result.changed && result.withdrawal.userId != null) await Promise.resolve(global.notifyUser(result.withdrawal.userId, 'تحديث طلب السحب', 'حالة طلب السحب الآن: ' + status, '/store', 'withdrawal-status', 'withdrawal-status:' + id + ':' + status)).catch(() => null);
       res.json({ ok: true, withdrawal: result.withdrawal, balance: result.balance });
     } catch (error) { console.error('[admin withdrawal-status]:', error.message); res.status(503).json({ error: 'تعذر تحديث طلب السحب حاليًا' }); }
   });
@@ -331,7 +384,7 @@ module.exports = function mountAdmin(app) {
       const message = { id: Date.now(), from: 'support', type: 'text', text, time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) };
       await postgres.appendChatMessage(key, message);
       if (global.notifyChat) global.notifyChat();
-      if (global.notifyUser && key.startsWith('u')) await Promise.resolve(global.notifyUser(key.slice(1), 'رد من الدعم', text, '/', 'support')).catch(() => null);
+      if (global.notifyUser && key.startsWith('u')) await Promise.resolve(global.notifyUser(key.slice(1), 'رد من الدعم', text, '/store', 'support', 'support:' + key + ':' + message.id)).catch(() => null);
       res.json({ ok: true, message });
     } catch (error) { console.error('[admin chat-reply]:', error.message); res.status(503).json({ error: 'تعذر إرسال الرد حاليًا' }); }
   });
