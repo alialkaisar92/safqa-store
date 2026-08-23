@@ -230,19 +230,6 @@ img{display:block}
 .affiliate-field{margin:12px 0}.affiliate-field label{display:block;font-size:12px;color:#315449;font-weight:900;margin-bottom:6px}.affiliate-field input,.affiliate-field select{width:100%;border:1px solid #dce9e1;border-radius:13px;padding:13px;background:#fbfdfc;outline:0;font:inherit}.affiliate-field input:focus,.affiliate-field select:focus{border-color:#16a34a;box-shadow:0 0 0 4px #dcfce7}.affiliate-submit{width:100%;border:0;border-radius:14px;padding:14px;background:#0b5d3b;color:#fff;font-weight:900;font-size:14px}.affiliate-message{min-height:20px;font-size:12px;font-weight:800;margin:8px 0}.affiliate-profile-row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #edf3ef;font-size:13px}.affiliate-profile-row span{color:#82928a}.affiliate-logout{width:100%;border:1px solid #fecaca;border-radius:13px;background:#fff5f5;color:#b91c1c;padding:13px;font-weight:900;margin-top:14px}
 @media(max-width:760px){.affiliate-wrap{padding:18px 14px 110px}.affiliate-stats{grid-template-columns:repeat(2,1fr);gap:9px}.affiliate-stat{min-height:100px;padding:13px}.affiliate-stat b{font-size:20px;margin-top:10px}.affiliate-welcome{padding:20px;border-radius:21px}.affiliate-welcome h1{font-size:20px}.affiliate-avatar{width:56px;height:56px;border-radius:18px}.affiliate-actions{grid-template-columns:1fr}.affiliate-top{padding:12px 14px}}
 </style>
-  <style id="store-ai-css">
-  .store-ai-launch{position:fixed;right:16px;bottom:24px;z-index:205;display:inline-flex;align-items:center;gap:9px;padding:11px 14px;border:1px solid rgba(255,255,255,.9);border-radius:16px;background:#0b5d3b;color:#fff;font:900 12px Cairo,Tajawal,sans-serif;box-shadow:0 14px 30px rgba(8,54,44,.25);cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
-  .store-ai-launch:hover{transform:translateY(-2px);box-shadow:0 18px 34px rgba(8,54,44,.32)}
-  .store-ai-launch:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.store-ai-mark{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:#d1fae5;color:#0b5d56;font-size:10px}
-  .store-ai-modal{align-items:center!important;justify-content:center;padding:14px;z-index:10001!important;background:rgba(7,23,18,.62)}
-  .store-ai-box{position:relative;width:min(760px,100%);height:auto;max-height: min(720px,calc(100dvh - 28px));display:flex;flex-direction:column;overflow:hidden;border-radius:24px;background:#fff;box-shadow:0 24px 80px rgba(0,0,0,.28);direction:rtl}
-  .store-ai-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 17px;border-bottom:1px solid #e4eee9;background:#f7fbf8}
-  .store-ai-heading{display:flex;align-items:center;gap:10px;min-width:0}.store-ai-badge{display:grid;place-items:center;width:42px;height:42px;flex:none;border-radius:14px;background:#d1fae5;color:#0b5d56;font-weight:900;font-size:11px}.store-ai-title{font-size:1rem;font-weight:900;color:#17281f}.store-ai-subtitle{margin-top:3px;color:#71817a;font-size:.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.store-ai-actions{display:flex;gap:7px;flex:none}.store-ai-icon{width:38px;height:38px;border:1px solid #e3eee8;border-radius:11px;background:#fff;color:#71817a;font-size:21px;line-height:1;cursor:pointer}.store-ai-icon:hover{color:#0b5d3b;border-color:#b9d7cf}
-  .store-ai-messages{display:flex;flex:0 1 auto;min-height:170px;max-height:440px;flex-direction:column;gap:13px;overflow:auto;padding:18px;background:#fcfefd}.store-ai-empty{max-width:480px;margin:auto;text-align:center;color:#71817a;line-height:1.8}.store-ai-empty strong{display:block;margin-bottom:5px;color:#16281f;font-size:1.05rem}.store-ai-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:15px}.store-ai-chip{padding:8px 11px;border:1px solid #cfe5de;border-radius:999px;background:#fff;color:#0b5d3b;font:800 11px Cairo,Tajawal,sans-serif;cursor:pointer}.store-ai-chip:hover{background:#e9f7f3}
-  .store-ai-message{display:flex;align-items:flex-start;gap:8px;max-width:90%}.store-ai-message.user{align-self:flex-start;flex-direction:row-reverse}.store-ai-message.assistant{align-self:flex-end}.store-ai-avatar{display:grid;place-items:center;width:30px;height:30px;flex:none;border-radius:10px;font-size:10px;font-weight:900}.store-ai-message.assistant .store-ai-avatar{background:#e9f7f3;color:#0b5d3b}.store-ai-message.user .store-ai-avatar{background:#eef0f4;color:#4b5563}.store-ai-bubble{padding:10px 12px;border-radius:15px;font-size:.86rem;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}.store-ai-message.assistant .store-ai-bubble{border:1px solid #e4eee9;border-top-right-radius:5px;background:#fff;color:#243a2f}.store-ai-message.user .store-ai-bubble{border-top-left-radius:5px;background:#0b5d3b;color:#fff}.store-ai-tools{display:flex;gap:5px;margin-top:4px}.store-ai-tool{padding:2px 5px;border:0;background:transparent;color:#71817a;font:700 10px Cairo,Tajawal,sans-serif;cursor:pointer}.store-ai-tool:hover{color:#0b5d3b}.store-ai-typing{display:none;align-items:center;align-self:flex-end;gap:7px;padding:5px 42px;color:#71817a;font-size:.75rem}.store-ai-typing.show{display:flex}.store-ai-dots{display:flex;gap:3px;direction:ltr}.store-ai-dots i{width:5px;height:5px;border-radius:50%;background:#16a34a;animation:storeAiDot 1s infinite}.store-ai-dots i:nth-child(2){animation-delay:.15s}.store-ai-dots i:nth-child(3){animation-delay:.3s}@keyframes storeAiDot{0%,70%,100%{opacity:.25;transform:translateY(0)}35%{opacity:1;transform:translateY(-3px)}}
-  .store-ai-compose{padding:11px 14px;border-top:1px solid #e4eee9;background:#fff}.store-ai-compose-row{display:flex;align-items:flex-end;gap:8px}.store-ai-input{flex:1;min-height:47px;max-height:120px;resize:none;padding:11px 12px;border:1px solid #cfe0da;border-radius:13px;background:#fff;color:#16281f;font:13px/1.55 Cairo,Tajawal,sans-serif;outline:none}.store-ai-input:focus{border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.1)}.store-ai-send{min-height:47px;padding:11px 16px;border:0;border-radius:13px;background:#0b5d3b;color:#fff;font:900 12px Cairo,Tajawal,sans-serif;cursor:pointer}.store-ai-send:disabled,.store-ai-input:disabled{opacity:.55;cursor:not-allowed}.store-ai-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;color:#8aa094;font-size:9px}.store-ai-clear{padding:3px 0;border:0;background:transparent;color:#71817a;font:700 10px Cairo,Tajawal,sans-serif;cursor:pointer}.store-ai-error{display:none;margin:6px 2px 0;color:#a63d40;font-size:11px}.store-ai-error.show{display:block}.store-ai-login{display:flex;align-items:center;justify-content:center;flex:1;flex-direction:column;padding:28px;text-align:center;color:#71817a}.store-ai-login strong{margin:12px 0 5px;color:#16281f;font-size:16px}.store-ai-login p{max-width:330px;font-size:12px;line-height:1.8}.store-ai-login a{margin-top:15px;padding:11px 18px;border-radius:12px;background:#0b5d3b;color:#fff;font-size:12px;font-weight:900;text-decoration:none}
-  @media(max-width:540px){.store-ai-launch{right:13px;bottom:calc(18px + env(safe-area-inset-bottom));width:52px;height:52px;padding:0;border-radius:17px;justify-content:center}.store-ai-launch span:last-child{display:none}.store-ai-mark{width:42px;height:42px;border-radius:13px}.store-ai-modal{padding:10px!important;align-items:flex-end!important}.store-ai-box{width:100%;height:auto;max-height:min(640px,76dvh);border-radius:22px}.store-ai-head{padding:13px 14px}.store-ai-messages{min-height:150px;max-height:42dvh;padding:15px 11px;overscroll-behavior:contain}.store-ai-message{max-width:95%}.store-ai-bubble{font-size:.83rem;line-height:1.6}.store-ai-compose{padding:10px 11px}.store-ai-foot{font-size:8px}.store-ai-send{padding:11px 13px}}
-  @media(prefers-reduced-motion:reduce){.store-ai-launch,.store-ai-dots i{animation:none;transition:none}}
   </style>
   <link rel="stylesheet" href="/support-chat.css?v=1">
 </head><body>
@@ -266,6 +253,12 @@ img{display:block}
   <div class="dlog"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.6-3.3 3.1-5 7-5s6.4 1.7 7 5"/></svg>تسجيل الدخول / إنشاء حساب<br><small style="font-weight:400">للاستفادة من جميع الميزات</small></div>
   <div class="dft"><div class="soc"><a aria-label="فيسبوك">f</a><a aria-label="إنستجرام">ig</a><a aria-label="الدعم">?</a><a aria-label="تليجرام">↗</a></div>جميع الحقوق محفوظة © Rab7na 2025</div>
 </aside>
+<nav class="affiliate-bottom-nav" id="affiliateBottomNav" aria-label="تنقل المسوّق">
+  <button type="button" data-bottom-tab="orders" onclick="openAffiliate('orders')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>لوحة المسوّق</span></button>
+  <button type="button" data-bottom-tab="wallet" onclick="openAffiliate('wallet')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v12H4zM4 7V5h13v2m3 5h-4a2 2 0 0 0 0 4h4"/></svg><span>سحب الأرباح</span></button>
+  <button type="button" data-bottom-tab="support" onclick="Rab7naSupport.open()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v11H8l-3 3V5Z"/><path d="M8 9h8M8 12h5"/></svg><span>شات الدعم</span></button>
+  <button type="button" data-bottom-tab="profile" onclick="openAffiliate('profile')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.6-3.3 3.1-5 7-5s6.4 1.7 7 5"/></svg><span>الملف الشخصي</span></button>
+</nav>
 <div class="notif-panel" id="notifPanel" role="dialog" aria-label="مركز الإشعارات" aria-hidden="true"><div class="notif-head"><h3>مركز الإشعارات</h3><button type="button" onclick="closeNotifications()" aria-label="إغلاق">إغلاق</button></div><div class="notif-tools"><button type="button" id="pushEnableBtn" onclick="enableRab7naPush()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>تفعيل الإشعارات خارج الموقع</button><button type="button" class="secondary" id="soundEnableBtn" onclick="enableRab7naSound()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6l-5 4H4Zm12-1a4 4 0 0 1 0 6m2-9a8 8 0 0 1 0 12"/></svg>تفعيل صوت الإشعار</button><button type="button" class="secondary" onclick="markAllNotificationsRead()">تعليم الكل كمقروء</button></div><p class="notif-note" id="notifNote">بعد السماح من المتصفح، يمكن استقبال إشعارات النظام خارج الموقع حسب دعم المتصفح وإعدادات الجهاز. الصوت داخل الصفحة يحتاج تفعيلًا منك.</p><div class="notif-list" id="notifList"><div class="notif-empty">سجّل الدخول لعرض إشعاراتك.</div></div></div><div class="notif-toast" id="notifToast" role="status" aria-live="polite"></div>
 <section class="hero" aria-labelledby="heroTitle">
   <div class="hero-copy"><span class="eyebrow">Rab7na للأعمال</span><h2 id="heroTitle">بيع أذكى. ربح أوضح.</h2><p>اختار منتجاتك، حدّد سعر البيع، وتابع عمولتك من مكان واحد.</p><button type="button" onclick="openShip()">اعرف أسعار الشحن <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13m-5-5 5 5-5 5"/></svg></button></div>
@@ -275,20 +268,6 @@ img{display:block}
 <div class="sec"><h3 id="ptitle">كل المنتجات</h3><button class="filter-trigger" type="button" onclick="toggleSort()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span>ترتيب العرض</span></button></div>
 <div class="grid" id="grid"></div>
 <!-- التنقل الأساسي موجود داخل القائمة الجانبية اليمنى؛ لا يوجد شريط سفلي يحجب محتوى المتجر. -->
-<button id="storeAiLaunch" class="store-ai-launch" type="button" aria-label="فتح مساعد Rab7na" aria-haspopup="dialog" onclick="openStoreAssistant()"><span class="store-ai-mark">AI</span><span>اسأل مساعد Rab7na</span></button>
-<div class="mdl store-ai-modal" id="storeAiMdl" aria-hidden="true">
-  <section class="store-ai-box" role="dialog" aria-modal="true" aria-labelledby="storeAiTitle" onclick="event.stopPropagation()">
-    <header class="store-ai-head">
-      <div class="store-ai-heading"><div class="store-ai-badge">AI</div><div><div id="storeAiTitle" class="store-ai-title">مساعد Rab7na</div><div class="store-ai-subtitle">اختيار منتجات وكتابة إعلانات من بيانات حسابك</div></div></div>
-      <div class="store-ai-actions"><button class="store-ai-icon" type="button" title="محادثة جديدة" aria-label="محادثة جديدة" onclick="newStoreAiConversation()">＋</button><button class="store-ai-icon" type="button" title="إغلاق المساعد" aria-label="إغلاق المساعد" onclick="closeStoreAssistant()">×</button></div>
-    </header>
-    <div id="storeAiMessages" class="store-ai-messages">
-      <div id="storeAiEmpty" class="store-ai-empty"><strong>أهلاً بيك في مساعد Rab7na</strong><span>اسأل عن منتج، عمولة، رصيدك، أو اطلب إعلانًا مبنيًا على بيانات حقيقية.</span><div class="store-ai-chips"><button class="store-ai-chip" type="button" onclick="useStoreAiPrompt('رشحلي 3 منتجات متاحة وعمولتها عالية')">منتجات بعمولة عالية</button><button class="store-ai-chip" type="button" onclick="useStoreAiPrompt('إيه أرخص منتجات متاحة أقدر أبدأ بيها؟')">منتجات اقتصادية</button><button class="store-ai-chip" type="button" onclick="useStoreAiPrompt('اعمللي إعلان قصير لمنتج مناسب للبيع على فيسبوك')">اكتب إعلانًا</button><button class="store-ai-chip" type="button" onclick="useStoreAiPrompt('إيه ملخص أداء حسابي وطلباتي؟')">ملخص أدائي</button></div></div>
-    </div>
-    <div id="storeAiTyping" class="store-ai-typing"><span>المساعد بيجهز الرد</span><span class="store-ai-dots"><i></i><i></i><i></i></span></div>
-    <div class="store-ai-compose"><div class="store-ai-compose-row"><textarea id="storeAiInput" class="store-ai-input" rows="1" maxlength="4000" placeholder="اكتب سؤالك هنا..." aria-label="رسالة المساعد"></textarea><button id="storeAiSend" class="store-ai-send" type="button" onclick="sendStoreAiMessage()">إرسال</button></div><div id="storeAiError" class="store-ai-error" role="alert"></div><div class="store-ai-foot"><span>Enter للإرسال · Shift + Enter لسطر جديد</span><button class="store-ai-clear" type="button" onclick="clearStoreAiConversation()">مسح المحادثة</button></div></div>
-  </section>
-</div>
 <div class="mdl" id="cartMdl"><div class="box">
   <button class="modal-x" type="button" aria-label="إغلاق السلة" onclick="closeModalById('cartMdl')">×</button>
   <h3 class="sheet-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l1.7 10.2A3 3 0 0 0 9.7 17H18a3 3 0 0 0 2.9-2.2L22 7H7.2l-.5-3H3Zm6 16a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm9 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>السلة</h3>
@@ -1729,7 +1708,11 @@ setInterval(updHeader,2000);updHeader();
     <section class="affiliate-welcome"><div><h1 id="affiliateWelcome">أهلًا بك في مركز المسوّق</h1><p>الحالات والعمولات تتحدث تلقائيًا من الخادم.</p></div><div class="affiliate-avatar" id="affiliateAvatar">م</div></section>
     <nav class="affiliate-tabs"><button data-tab="overview" onclick="setAffiliateTab('overview')">نظرة عامة</button><button data-tab="orders" onclick="setAffiliateTab('orders')">الطلبات</button><button data-tab="wallet" onclick="setAffiliateTab('wallet')">المحفظة</button><button data-tab="profile" onclick="setAffiliateTab('profile')">الحساب</button></nav>
     <section class="affiliate-pane" id="affiliateOverviewPane"><div class="affiliate-stats"><div class="affiliate-stat green"><span class="label">الرصيد المتاح</span><b id="affiliateBalance">0 ج.م</b></div><div class="affiliate-stat"><span class="label">إجمالي العمولات</span><b id="affiliateTotalCommission">0 ج.م</b></div><div class="affiliate-stat"><span class="label">الطلبات المكتملة</span><b id="affiliateDelivered">0</b></div><div class="affiliate-stat"><span class="label">طلبات قيد المتابعة</span><b id="affiliatePending">0</b></div></div><div class="affiliate-card"><div class="affiliate-card-head"><h3>اختصارات سريعة</h3><span id="affiliateLastSync" class="affiliate-live"><i></i> متصل — تحديث تلقائي</span></div><div class="affiliate-actions"><button class="affiliate-action" onclick="setAffiliateTab('orders')"><b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>راجع طلباتك</b><small>تابع الحالة والعمولة لكل طلب</small></button><button class="affiliate-action" onclick="setAffiliateTab('wallet')"><b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v12H4zM4 7V5h13v2m3 5h-4a2 2 0 0 0 0 4h4"/></svg>اطلب سحب الأرباح</b><small>الحد الأدنى للسحب 50 ج.م</small></button></div></div></section>
-    <section class="affiliate-pane" id="affiliateOrdersPane"><div class="affiliate-card"><div class="affiliate-card-head"><h3>سجل الطلبات</h3><span id="affiliateOrdersCount">0 طلب</span></div><div id="affiliateOrdersList"></div></div></section>
+    <section class="affiliate-pane" id="affiliateOrdersPane">
+      <div class="affiliate-dashboard-head"><div><span class="affiliate-kicker">مركز المتابعة</span><h2>طلباتك</h2><p>كل حالة وعمولة بتتحدث تلقائيًا من الخادم.</p></div><span class="affiliate-live-pill"><i></i> مباشر</span></div>
+      <div class="affiliate-order-stats"><div class="affiliate-order-stat"><span>إجمالي الطلبات</span><b id="affiliateOrdersTotal">0</b><small>كل الطلبات</small></div><div class="affiliate-order-stat"><span>قيد المتابعة</span><b id="affiliateOrdersPendingCount">0</b><small>تحديث تلقائي</small></div><div class="affiliate-order-stat"><span>تم التسليم</span><b id="affiliateOrdersDeliveredCount">0</b><small>طلب مكتمل</small></div><div class="affiliate-order-stat accent"><span>صافي الربح</span><b id="affiliateOrdersProfit">0 ج.م</b><small>عمولات الطلبات</small></div></div>
+      <div class="affiliate-card affiliate-orders-card"><div class="affiliate-card-head"><div><h3>آخر الطلبات</h3><span id="affiliateOrdersCount">0 طلب</span></div><span id="affiliateLastSync" class="affiliate-live"><i></i> متصل</span></div><div class="affiliate-order-filters" role="tablist" aria-label="فلترة الطلبات"><button type="button" class="active" data-order-filter="all" onclick="setAffiliateOrderFilter('all')">الكل</button><button type="button" data-order-filter="active" onclick="setAffiliateOrderFilter('active')">قيد المتابعة</button><button type="button" data-order-filter="confirmed" onclick="setAffiliateOrderFilter('confirmed')">تم التأكيد</button><button type="button" data-order-filter="shipped" onclick="setAffiliateOrderFilter('shipped')">تم الشحن</button><button type="button" data-order-filter="delivered" onclick="setAffiliateOrderFilter('delivered')">تم التسليم</button><button type="button" data-order-filter="returned" onclick="setAffiliateOrderFilter('returned')">مرتجع / ملغي</button></div><div id="affiliateOrdersList"></div></div>
+    </section>
     <section class="affiliate-pane" id="affiliateWalletPane"><div class="affiliate-balance"><div><small>الرصيد المتاح للسحب</small><strong id="affiliateWalletBalance">0 ج.م</strong></div><button class="affiliate-primary" onclick="document.getElementById('affiliateWithdrawalForm').scrollIntoView({behavior:'smooth'})">طلب سحب</button></div><div class="affiliate-card" id="affiliateWithdrawalForm"><div class="affiliate-card-head"><h3>طلب سحب جديد</h3><span>مراجعة آمنة من الإدارة</span></div><div class="affiliate-field"><label for="affiliateMethod">وسيلة السحب</label><select id="affiliateMethod"><option>فودافون كاش</option><option>اتصالات كاش</option><option>أورنج كاش</option><option>وي باي</option><option>إنستا باي</option><option>حساب بنكي</option></select></div><div class="affiliate-field"><label for="affiliateDetails">رقم المحفظة أو بيانات الحساب</label><input id="affiliateDetails" placeholder="أدخل البيانات المطلوبة" autocomplete="off"></div><div class="affiliate-field"><label for="affiliateAmount">المبلغ بالجنيه</label><input id="affiliateAmount" type="number" min="50" placeholder="الحد الأدنى 50"></div><div class="affiliate-message" id="affiliateWithdrawalMessage"></div><button class="affiliate-submit" onclick="submitAffiliateWithdrawal()">إرسال طلب السحب</button></div><div class="affiliate-card"><div class="affiliate-card-head"><h3>طلبات السحب السابقة</h3></div><div id="affiliateWithdrawalsList"></div></div></section>
     <section class="affiliate-pane" id="affiliateProfilePane"><div class="affiliate-card"><div class="affiliate-card-head"><h3>بيانات الحساب</h3><span>محمية بجلسة الخادم</span></div><div class="affiliate-profile-row"><span>الاسم</span><b id="affiliateProfileName">—</b></div><div class="affiliate-profile-row"><span>البريد الإلكتروني</span><b id="affiliateProfileEmail">—</b></div><div class="affiliate-profile-row"><span>تاريخ الانضمام</span><b id="affiliateProfileCreated">—</b></div><button class="affiliate-logout" onclick="affiliateLogout()">تسجيل الخروج الآمن</button></div></section>
   </main>
@@ -1775,7 +1758,7 @@ setInterval(updHeader,2000);updHeader();
 </script>
 <script id="affiliate-pro-runtime">
 (function(){
-  var state={user:null,stats:null,orders:[],withdrawals:[],tab:'overview',loaded:false};
+  var state={user:null,stats:null,orders:[],withdrawals:[],tab:'overview',orderFilter:'all',loaded:false,cursor:new Date(0).toISOString(),lastFullSync:0};
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function money(v){return (Number(v)||0).toLocaleString('ar-EG')+' ج.م'}
   function date(v){if(!v)return '—';try{return new Date(v).toLocaleDateString('ar-EG',{day:'numeric',month:'short',year:'numeric'})}catch(e){return esc(v)}}
@@ -1786,11 +1769,44 @@ setInterval(updHeader,2000);updHeader();
     var d=await r.json().catch(function(){return{}});
     if(r.status===401){location.href='/login.html?return=/store';return false}
     if(!r.ok||!d.ok)throw new Error(d.error||'تعذر تحميل بيانات الأفليت');
-    state=Object.assign(state,d,{loaded:true});return true;
+    state=Object.assign(state,d,{loaded:true,cursor:d.cursor||state.cursor,lastFullSync:Date.now()});return true;
+  }
+  async function loadAffiliateUpdates(){
+    if(!state.user)return false;
+    var since=state.cursor||new Date(0).toISOString();
+    var r=await fetch('/api/affiliate/orders/updates?since='+encodeURIComponent(since)+'&limit=60',{credentials:'include',cache:'no-store'});
+    var d=await r.json().catch(function(){return{}});
+    if(r.status===401){location.href='/login.html?return=/store';return false}
+    if(!r.ok||!d.ok)throw new Error(d.error||'تعذر تحديث الطلبات');
+    var changed=Array.isArray(d.orders)&&d.orders.length>0;
+    if(changed){
+      var byId=new Map(state.orders.map(function(order){return [String(order.id),order]}));
+      d.orders.forEach(function(order){if(order&&order.id)byId.set(String(order.id),order)});
+      state.orders=Array.from(byId.values()).sort(function(a,b){return new Date(b.updatedAt||b.statusSyncedAt||b.date||0)-new Date(a.updatedAt||a.statusSyncedAt||a.date||0)});
+    }
+    state.cursor=d.cursor||state.cursor;
+    if(Date.now()-Number(state.lastFullSync||0)>30000){await loadAffiliate();changed=true}
+    if(changed)render();
+    return changed;
   }
   function cancelableOrder(o){
     var key=String(o&&o.requestStatus||o&&o.status||'').trim().toLowerCase();
     return !['confirmed','delivered','completed','shipped','returned','rejected','failed','cancel_requested','cancelled','تم التأكيد','تم التسليم','تم التوصيل','تم الشحن','مرتجع','مرفوض','فشل','طلب الإلغاء قيد المراجعة','تم إلغاء الطلب'].includes(key);
+  }
+  function isActiveOrder(o){
+    var key=String(o&&o.requestStatus||o&&o.status||'').trim().toLowerCase();
+    return !['delivered','completed','shipped','returned','rejected','failed','cancelled','تم التسليم','تم التوصيل','تم الشحن','مرتجع','مرفوض','فشل','تم إلغاء الطلب'].includes(key);
+  }
+  function orderFilterMatch(o){
+    var filter=state.orderFilter||'all';
+    if(filter==='all')return true;
+    var key=String(o&&o.requestStatus||o&&o.status||'').trim().toLowerCase();
+    if(filter==='active')return isActiveOrder(o);
+    if(filter==='confirmed')return ['confirmed','accepted','تم التأكيد','قيد التأكيد','تم الاستلام من المورد'].includes(key);
+    if(filter==='shipped')return ['shipped','تم الشحن'].includes(key);
+    if(filter==='delivered')return ['delivered','completed','تم التسليم','تم التوصيل'].includes(key);
+    if(filter==='returned')return ['returned','rejected','cancelled','مرتجع','مرفوض','تم إلغاء الطلب'].includes(key);
+    return true;
   }
   var affiliateRefreshTimer=0,affiliateRefreshBusy=false;
   async function refreshAffiliateLive(){
@@ -1798,7 +1814,7 @@ setInterval(updHeader,2000);updHeader();
     if(!panel||!panel.classList.contains('open')){stopAffiliateLiveRefresh();return}
     if(document.hidden||affiliateRefreshBusy||!state.user)return;
     affiliateRefreshBusy=true;
-    try{await loadAffiliate();render();}catch(e){console.warn('[affiliate] live refresh skipped',e&&e.message||e)}finally{affiliateRefreshBusy=false}
+    try{await loadAffiliateUpdates();}catch(e){console.warn('[affiliate] incremental refresh skipped',e&&e.message||e)}finally{affiliateRefreshBusy=false}
   }
   function startAffiliateLiveRefresh(){if(affiliateRefreshTimer)return;affiliateRefreshTimer=setInterval(refreshAffiliateLive,5000)}
   function stopAffiliateLiveRefresh(){if(affiliateRefreshTimer){clearInterval(affiliateRefreshTimer);affiliateRefreshTimer=0}}
@@ -1808,12 +1824,15 @@ setInterval(updHeader,2000);updHeader();
     document.getElementById('affiliateWelcome').textContent='أهلًا '+(u.name||'بك')+'، جاهز تنمّي أرباحك؟';
     document.getElementById('affiliateAvatar').textContent=(u.name||'م').trim().charAt(0)||'م';
     document.getElementById('affiliateBalance').textContent=money(s.balance);document.getElementById('affiliateWalletBalance').textContent=money(s.balance);document.getElementById('affiliateTotalCommission').textContent=money(s.totalCommission);document.getElementById('affiliateDelivered').textContent=Number(s.deliveredOrders||0).toLocaleString('ar-EG');document.getElementById('affiliatePending').textContent=Number(s.pendingOrders||0).toLocaleString('ar-EG');document.getElementById('affiliateOrdersCount').textContent=state.orders.length.toLocaleString('ar-EG')+' طلب';document.getElementById('affiliateProfileName').textContent=u.name||'—';document.getElementById('affiliateProfileEmail').textContent=u.email||'—';document.getElementById('affiliateProfileCreated').textContent=date(u.created_at);document.getElementById('affiliateLastSync').innerHTML='<i></i> متصل — آخر تحديث '+new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+    var allOrders=state.orders.slice(),visibleOrders=allOrders.filter(orderFilterMatch),activeOrders=allOrders.filter(isActiveOrder),deliveredOrders=allOrders.filter(function(o){return ['delivered','completed','تم التسليم','تم التوصيل'].includes(String(o.requestStatus||o.status||'').trim().toLowerCase())}),profit=allOrders.reduce(function(sum,o){return sum+Math.max(0,Number(o.commission)||0)},0);
+    var setText=function(id,value){var node=document.getElementById(id);if(node)node.textContent=value};
+    setText('affiliateOrdersTotal',allOrders.length.toLocaleString('ar-EG'));setText('affiliateOrdersPendingCount',Number(s.pendingOrders||activeOrders.length).toLocaleString('ar-EG'));setText('affiliateOrdersDeliveredCount',Number(s.deliveredOrders||deliveredOrders.length).toLocaleString('ar-EG'));setText('affiliateOrdersProfit',money(profit||s.totalCommission));
     var orders=document.getElementById('affiliateOrdersList');
-    orders.innerHTML=state.orders.length?state.orders.map(function(o){
+    orders.innerHTML=visibleOrders.length?visibleOrders.map(function(o){
       var st=getStatus(o.requestStatus||o.status), names=(o.products||[]).slice(0,2).map(uiText).join('، ')||'طلب منتجات', cancelButton=cancelableOrder(o)?`<button class="affiliate-cancel-order" type="button" onclick="openAffiliateCancellation('${esc(String(o.id||''))}')">إلغاء الطلب</button>`:'';
       var cancelNote=o.cancelReason?`<div class="affiliate-cancel-note">سبب الإلغاء: ${esc(o.cancelReason)}</div>`:'';
       return `<article class="affiliate-order"><div class="affiliate-order-top"><span>طلب #${esc(String(o.serial||o.id).slice(-8))}</span><span class="affiliate-status" style="background:${st[1]};color:${st[2]}">${esc(st[0])}</span></div><div style="font-size:12px;color:#71847a;margin-top:8px">${esc(names)}${o.products&&o.products.length>2?' …':''}</div><div class="affiliate-order-bottom"><span>${date(o.date)} · ${Number(o.items||0).toLocaleString('ar-EG')} منتج</span><b>عمولتك: ${money(o.commission)}</b></div>${cancelNote}${cancelButton}</article>`;
-    }).join(''):'<div class="affiliate-empty"><div class="affiliate-empty-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><b>لم تنشئ أي طلبات بعد</b><small>ابدأ من المنتجات وشارك عروضك مع عملائك.</small></div>';
+    }).join(''):'<div class="affiliate-empty"><div class="affiliate-empty-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><b>لا توجد طلبات في هذا التصنيف</b><small>سيظهر أي تحديث جديد تلقائيًا هنا.</small></div>';
     var wd=document.getElementById('affiliateWithdrawalsList');
     wd.innerHTML=state.withdrawals.length?state.withdrawals.map(function(w){
       var pending=String(w.status).toLowerCase()==='pending'||w.status==='قيد المعالجة';
@@ -1822,7 +1841,8 @@ setInterval(updHeader,2000);updHeader();
       return `<div class="affiliate-order"><div class="affiliate-order-top"><span>${esc(w.method)} · ${money(w.amount)}</span><span style="color:${color};font-size:11px;font-weight:900">${label}</span></div><div style="font-size:11px;color:#82928a;margin-top:6px">${date(w.date)}</div></div>`;
     }).join(''):'<div class="affiliate-empty"><b>لا توجد طلبات سحب</b><small>ستظهر طلباتك هنا بعد إرسالها.</small></div>';
   }
-  window.setAffiliateTab=function(tab){state.tab=tab;document.querySelectorAll('.affiliate-tabs button').forEach(function(b){b.classList.toggle('active',b.dataset.tab===tab)});document.querySelectorAll('.affiliate-pane').forEach(function(p){p.classList.remove('active')});var pane=document.getElementById('affiliate'+tab.charAt(0).toUpperCase()+tab.slice(1)+'Pane');if(pane)pane.classList.add('active')};
+  window.setAffiliateTab=function(tab){state.tab=tab;document.querySelectorAll('.affiliate-tabs button').forEach(function(b){b.classList.toggle('active',b.dataset.tab===tab)});document.querySelectorAll('[data-bottom-tab]').forEach(function(b){b.classList.toggle('active',b.dataset.bottomTab===tab)});document.querySelectorAll('.affiliate-pane').forEach(function(p){p.classList.remove('active')});var pane=document.getElementById('affiliate'+tab.charAt(0).toUpperCase()+tab.slice(1)+'Pane');if(pane)pane.classList.add('active')};
+  window.setAffiliateOrderFilter=function(filter){state.orderFilter=filter||'all';document.querySelectorAll('[data-order-filter]').forEach(function(b){b.classList.toggle('active',b.dataset.orderFilter===state.orderFilter)});render();};
   var cancelOrderId='',cancelSubmitting=false;
   window.openAffiliateCancellation=function(orderId){if(!orderId)return;cancelOrderId=String(orderId);var reason=document.getElementById('affiliateCancelReason'),message=document.getElementById('affiliateCancelMessage');if(reason)reason.value='';if(message){message.textContent='';message.style.color=''}openModalById('affiliateCancelMdl',{history:false});setTimeout(function(){if(reason)reason.focus()},30)};
   window.closeAffiliateCancellation=function(){if(cancelSubmitting)return;cancelOrderId='';closeModalById('affiliateCancelMdl',{history:false})};
@@ -1874,7 +1894,7 @@ html{background:var(--bg);scroll-behavior:smooth}body{background:var(--bg);color
 </style>
 <style id="solid-surface-policy">
 /* Solid surfaces keep the interface calm and consistent. */
-.hero,.affiliate-welcome{background:#064e3b!important}.summary-profit{background:#ecfdf5!important}.go,.confirm-order,.pem-save,.affiliate-submit,.affiliate-primary{background:#0b5d3b!important}#pCopy{background:#0e7490!important}.store-ai-launch{background:#0b5d3b!important}.store-ai-mark,.store-ai-badge{background:#d1fae5!important}.store-ai-head{background:#f7fbf8!important}.affiliate-balance{background:#0b5d3b!important}.affiliate-stat.green{background:#ecfdf5!important}
+.hero,.affiliate-welcome{background:#064e3b!important}.summary-profit{background:#ecfdf5!important}.go,.confirm-order,.pem-save,.affiliate-submit,.affiliate-primary{background:#0b5d3b!important}#pCopy{background:#0e7490!important}.affiliate-balance{background:#0b5d3b!important}.affiliate-stat.green{background:#ecfdf5!important}
 </style>
 
 <style id="affiliate-live-indicator">
@@ -2082,39 +2102,12 @@ body{
 }
 </style>
 
-<script id="store-ai-script">
-(function(){
-  var state={messages:[],loading:false,loaded:false,guest:false};
-  function id(name){return document.getElementById(name)}
-  function esc(value){return String(value==null?'':value).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
-  function compactStoreText(value){var text=String(value==null?'':value).replace(/\\n/g,'\n').replace(/\\r/g,'').replace(/[\uFE0E\uFE0F]/g,'').replace(/\p{Extended_Pictographic}/gu,'').replace(/[ \t]+/g,' ').replace(/\s+([-•])\s+(?=[^\n]{2,160}?(?:سعر|عمول|ج\.م|متوفر|متاحة|متاح))/gu,'\n$1 ').replace(/\n{3,}/g,'\n\n').trim();var lines=text.split('\n').map(function(line){return line.trim()}).filter(Boolean),out=[],size=0,productLines=0,omittedProduct=false;for(var i=0;i<lines.length&&i<6;i++){var isProductLine=/^[-•]\s/.test(lines[i])&&/(سعر|عمول|ج\.م|متوفر|متاحة|متاح)/.test(lines[i]);if(isProductLine){productLines++;if(productLines>3){omittedProduct=true;continue}}var next=out.length?out.join('\n')+'\n'+lines[i]:lines[i];if(next.length>420)break;out.push(lines[i]);size=next.length}if(!out.length)out=[text.slice(0,420).trim()];return out.join('\n')+(omittedProduct||size<text.length||out.length<lines.length?'…':'')}
-  function showError(message){var node=id('storeAiError');if(node){node.textContent=message||'';node.classList.toggle('show',Boolean(message))}}
-  function scroll(){var node=id('storeAiMessages');if(node)node.scrollTop=node.scrollHeight}
-  function setAccess(enabled){var input=id('storeAiInput'),send=id('storeAiSend'),clear=document.querySelector('.store-ai-clear');[input,send,clear].forEach(function(node){if(node)node.disabled=!enabled});if(input)input.placeholder=enabled?'اكتب سؤالك هنا...':'سجّل دخولك لاستخدام المساعد'}
-  function renderLogin(){state.guest=true;setAccess(false);id('storeAiMessages').innerHTML='<div class="store-ai-login"><div class="store-ai-badge">AI</div><strong>المساعد متاح للمسوقين</strong><p>سجّل دخولك حتى نربط الترشيحات والعمولات والطلبات بحسابك بشكل آمن.</p><a href="/login?return=%2Fstore">تسجيل الدخول وبدء المحادثة</a></div>';showError('')}
-  function render(){var box=id('storeAiMessages');if(!box)return;state.guest=false;setAccess(true);var empty='<div id="storeAiEmpty" class="store-ai-empty"><strong>أهلاً بيك في مساعد Rab7na</strong><span>اسأل عن منتج، عمولة، رصيدك، أو اطلب إعلانًا مبنيًا على بيانات حقيقية.</span><div class="store-ai-chips"><button class="store-ai-chip" type="button" onclick="useStoreAiPrompt(\'رشحلي 3 منتجات متاحة وعمولتها عالية\')">منتجات بعمولة عالية</button><button class="store-ai-chip" type="button" onclick="useStoreAiPrompt(\'إيه أرخص منتجات متاحة أقدر أبدأ بيها؟\')">منتجات اقتصادية</button><button class="store-ai-chip" type="button" onclick="useStoreAiPrompt(\'اعمللي إعلان قصير لمنتج مناسب للبيع على فيسبوك\')">اكتب إعلانًا</button><button class="store-ai-chip" type="button" onclick="useStoreAiPrompt(\'إيه ملخص أداء حسابي وطلباتي؟\')">ملخص أدائي</button></div></div>';
-    box.innerHTML=state.messages.length?'':empty;
-    state.messages.forEach(function(item,index){var role=item.role==='assistant'?'assistant':'user';var row=document.createElement('div');row.className='store-ai-message '+role;var tools=role==='assistant'?'<div class="store-ai-tools"><button class="store-ai-tool" type="button" onclick="copyStoreAiAnswer('+index+')">نسخ</button><button class="store-ai-tool" type="button" onclick="retryStoreAiAnswer()">إعادة المحاولة</button></div>':'';row.innerHTML='<div class="store-ai-avatar">'+(role==='assistant'?'AI':'أنت')+'</div><div><div class="store-ai-bubble">'+esc(compactStoreText(item.content))+'</div>'+tools+'</div>';box.appendChild(row)});scroll()}
-  async function loadHistory(){if(state.loaded||state.guest)return;try{var response=await fetch('/api/affiliate/ai/history',{credentials:'include',cache:'no-store'});if(response.status===401||response.status===403){renderLogin();return}var data=await response.json().catch(function(){return{}});if(!response.ok)throw new Error(data.error||'تعذر تحميل المحادثة');state.messages=Array.isArray(data.messages)?data.messages:[];state.loaded=true;render()}catch(error){showError(error.message||'تعذر تحميل المحادثة')}}
-  window.openStoreAssistant=function(){if(typeof openModalById==='function')openModalById('storeAiMdl');loadHistory();setTimeout(function(){var input=id('storeAiInput');if(input&&!state.guest)input.focus()},100)};
-  window.closeStoreAssistant=function(){if(typeof closeModalById==='function')closeModalById('storeAiMdl');else{var modal=id('storeAiMdl');if(modal)modal.classList.remove('open')}};
-  window.newStoreAiConversation=function(){if(typeof window.clearStoreAiConversation==='function')window.clearStoreAiConversation()};
-  function setLoading(value){state.loading=value;var typing=id('storeAiTyping'),send=id('storeAiSend'),input=id('storeAiInput');if(typing)typing.classList.toggle('show',value);if(send)send.disabled=value||state.guest;if(input)input.disabled=value||state.guest;if(value)scroll()}
-  window.useStoreAiPrompt=function(value){if(state.guest)return;var input=id('storeAiInput');if(input){input.value=value;input.focus();window.sendStoreAiMessage()}};
-  window.sendStoreAiMessage=async function(retry){if(state.loading||state.guest)return;var input=id('storeAiInput');var value=String(retry||((input&&input.value)||'')).trim();if(!value)return;showError('');if(!retry){state.messages.push({role:'user',content:value});render();if(input)input.value=''}setLoading(true);try{var response=await fetch('/api/affiliate/ai/chat',{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:value,retry:Boolean(retry),compact:true,surface:'store'})});var data=await response.json().catch(function(){return{}});if(response.status===401||response.status===403){renderLogin();return}if(!response.ok)throw new Error(data.error||'تعذر الحصول على رد');state.messages=Array.isArray(data.messages)?data.messages:state.messages.concat([{role:'assistant',content:data.answer||''}]);render()}catch(error){showError(error.message||'تعذر الحصول على رد');if(!retry){state.messages.pop();render()}}finally{setLoading(false);if(input&&!state.guest)input.focus()}};
-  window.retryStoreAiAnswer=function(){var previous=state.messages.filter(function(item){return item.role==='user'}).slice(-1)[0];if(previous)window.sendStoreAiMessage(previous.content)};
-  window.copyStoreAiAnswer=async function(index){var item=state.messages[index];if(!item)return;try{await navigator.clipboard.writeText(item.content);showError('تم نسخ الرد');setTimeout(function(){showError('')},1600)}catch(error){showError('تعذر النسخ من المتصفح')}};
-  window.clearStoreAiConversation=async function(){if(state.loading||state.guest)return;try{var response=await fetch('/api/affiliate/ai/history',{method:'DELETE',credentials:'include',cache:'no-store'});if(response.status===401||response.status===403){renderLogin();return}if(!response.ok)throw new Error('تعذر مسح المحادثة');state.messages=[];render();showError('تم مسح المحادثة');setTimeout(function(){showError('')},1600)}catch(error){showError(error.message||'تعذر مسح المحادثة')}};
-  function boot(){var input=id('storeAiInput');if(input)input.addEventListener('keydown',function(event){if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();window.sendStoreAiMessage()}});if(input)input.addEventListener('input',function(){input.style.height='auto';input.style.height=Math.min(input.scrollHeight,120)+'px'});}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-})();
-</script>
 <script id="modal-navigation">
 (function(){
   var MODAL_STATE_KEY='rab7naModal';
   var modalStack=[];
   var suppressPop=false;
-  var managedIds=['cartMdl','coMdl','pMdl','priceModal','shipMdl','accMdl','ordMdl','walMdl','drw','affiliateMdl','affiliateCancelMdl','storeAiMdl'];
+  var managedIds=['cartMdl','coMdl','pMdl','priceModal','shipMdl','accMdl','ordMdl','walMdl','drw','affiliateMdl','affiliateCancelMdl'];
 
   function byId(id){return document.getElementById(id);}
   function isShown(el){
@@ -2132,7 +2125,6 @@ body{
   function syncBody(){
     var any=managedIds.some(function(id){return isShown(byId(id));}) || !!document.querySelector('.price-modal.show,[data-modal].show');
     document.body.classList.toggle('modal-open',any);
-    document.body.classList.toggle('store-ai-open',isShown(byId('storeAiMdl')));
     var overlay=byId('ovl');
     if(overlay && !isShown(byId('drw')))overlay.classList.remove('open');
   }
@@ -2245,7 +2237,7 @@ body{
 </script>
 <style id="modal-navigation-style">
 body.modal-open{overflow:hidden}
-body.store-ai-open .bnav,body.store-ai-open #storeAiLaunch,body.modal-open #storeAiLaunch,body.modal-open #rab7naSupportRoot{display:none!important}
+body.modal-open #rab7naSupportRoot{display:none!important}
 .modal-x,.checkout-close{touch-action:manipulation}.checkout-close{margin-inline-start:auto}
 .mdl .box{padding-top:64px}
 @media(max-width:760px){
@@ -2274,5 +2266,12 @@ body.store-ai-open .bnav,body.store-ai-open #storeAiLaunch,body.modal-open #stor
 @media(max-width:520px){.affiliate-cancel-box{padding:23px 18px;border-radius:20px}.affiliate-cancel-actions{position:sticky;bottom:0;background:#fff;padding-top:8px}}
 </style>
 
+<style id="affiliate-dashboard-nav-style">
+.affiliate-bottom-nav{display:none}
+.affiliate-dashboard-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}.affiliate-kicker{display:block;margin-bottom:5px;color:#0f9f72;font-size:11px;font-weight:900}.affiliate-dashboard-head h2{margin:0;color:#10261d;font-size:26px;font-weight:900}.affiliate-dashboard-head p{margin-top:5px;color:#789087;font-size:12px}.affiliate-live-pill{display:inline-flex;align-items:center;gap:6px;padding:8px 11px;border-radius:999px;background:#eaf8f0;color:#0b6a45;font-size:11px;font-weight:900}.affiliate-live-pill i,.affiliate-live i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.11)}.affiliate-order-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.affiliate-order-stat{min-width:0;padding:14px;border:1px solid #e3eee7;border-radius:17px;background:#fff;box-shadow:0 7px 20px rgba(30,60,45,.04)}.affiliate-order-stat span,.affiliate-order-stat small{display:block;color:#84958c;font-size:10px;font-weight:800}.affiliate-order-stat b{display:block;margin:9px 0 3px;color:#14362a;font-size:23px;font-weight:900;overflow-wrap:anywhere}.affiliate-order-stat.accent{background:#eaf8f0;border-color:#ccebd7}.affiliate-order-stat.accent b{color:#0b6a45}.affiliate-orders-card{padding:16px}.affiliate-order-filters{display:flex;gap:7px;overflow-x:auto;padding:2px 0 13px;scrollbar-width:none}.affiliate-order-filters::-webkit-scrollbar{display:none}.affiliate-order-filters button{flex:0 0 auto;padding:8px 12px;border:1px solid #dfece4;border-radius:999px;background:#f8fbf9;color:#6d8278;font:800 11px Cairo,Tajawal,sans-serif;cursor:pointer}.affiliate-order-filters button.active{border-color:#0b8f65;background:#0b8f65;color:#fff}.affiliate-order{transition:box-shadow .16s ease,transform .16s ease}.affiliate-order:hover{box-shadow:0 8px 20px rgba(30,60,45,.08);transform:translateY(-1px)}
+@media(max-width:760px){body{padding-bottom:82px}.affiliate-bottom-nav{position:fixed;right:10px;bottom:max(10px,env(safe-area-inset-bottom));left:10px;z-index:240;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:7px;border:1px solid rgba(218,233,225,.95);border-radius:21px;background:rgba(255,255,255,.97);box-shadow:0 16px 36px rgba(18,63,45,.18);direction:rtl}.affiliate-bottom-nav button{display:flex;min-width:0;min-height:57px;align-items:center;justify-content:center;gap:4px;flex-direction:column;border:0;border-radius:15px;background:transparent;color:#647a70;font:800 9px Cairo,Tajawal,sans-serif;cursor:pointer;touch-action:manipulation}.affiliate-bottom-nav button:active{transform:scale(.97)}.affiliate-bottom-nav button:hover,.affiliate-bottom-nav button:focus-visible,.affiliate-bottom-nav button.active{background:#0b8f65;color:#fff;outline:none}.affiliate-bottom-nav svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.affiliate-dashboard-head h2{font-size:22px}.affiliate-dashboard-head p{font-size:10px}.affiliate-order-stats{grid-template-columns:repeat(2,1fr);gap:8px}.affiliate-order-stat{padding:12px;border-radius:15px}.affiliate-order-stat b{font-size:19px}.affiliate-order-stat span,.affiliate-order-stat small{font-size:9px}.affiliate-orders-card{padding:13px}.affiliate-wrap{padding:18px 12px 32px}.affiliate-order-top,.affiliate-order-bottom{align-items:flex-start;flex-direction:column;gap:6px}.affiliate-order-bottom b{align-self:flex-start}.affiliate-status{align-self:flex-start}}
+@media(min-width:761px){.affiliate-dashboard-head{max-width:760px}.affiliate-order-stats{max-width:900px}}
+body.modal-open .affiliate-bottom-nav{display:none!important}
+</style>
 </body>
 </html>

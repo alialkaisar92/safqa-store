@@ -665,7 +665,8 @@ function affiliateOrderForUser(order, userId) {
     cancelledAt: order.cancelledAt || queue && queue.cancelledAt || null,
     externalId: order.externalId || order.supplierOrderId || queue && queue.supplierOrderId || null,
     date: order.date || order.createdAt || null,
-    statusSyncedAt: order.statusSyncedAt || queue && queue.updatedAt || null
+    statusSyncedAt: order.statusSyncedAt || queue && queue.updatedAt || null,
+    updatedAt: queue && queue.updatedAt || order._documentUpdatedAt || order.date || order.createdAt || null
   };
 }
 
@@ -696,11 +697,33 @@ app.get(['/api/affiliate/me', '/api/me'], async (req, res) => {
     const pendingWithdrawals = withdrawals.filter(item => !['rejected', 'مرفوض', 'رفض'].includes(String(item.status || '').trim().toLowerCase())).reduce((sum, item) => sum + Math.max(0, Number(item.amount) || 0), 0);
     // availableBalance already subtracts all non-rejected withdrawals; do not subtract them again here.
     const balance = await syncUserBalanceScoped(user, { orders, withdrawals });
+    const cursor = orders.reduce((latest, order) => {
+      const value = order && order.updatedAt ? order.updatedAt : order && (order.statusSyncedAt || order.date);
+      if (!value) return latest;
+      const candidate = new Date(value);
+      return !Number.isNaN(candidate.getTime()) && candidate.getTime() > new Date(latest).getTime() ? candidate.toISOString() : latest;
+    }, new Date(0).toISOString());
     res.set('Cache-Control', 'no-store');
-    res.json({ ok: true, user, stats: { totalOrders: orders.length, pendingOrders: pending.length, deliveredOrders: delivered.length, totalCommission, confirmedCommission, pendingWithdrawals, balance }, orders, withdrawals });
+    res.json({ ok: true, user, stats: { totalOrders: orders.length, pendingOrders: pending.length, deliveredOrders: delivered.length, totalCommission, confirmedCommission, pendingWithdrawals, balance }, orders, withdrawals, cursor });
   } catch (error) {
     console.error('[affiliate] dashboard read failed:', error.message);
     res.status(503).json({ error: 'تعذر تحميل بيانات الأفليت حاليًا' });
+  }
+});
+
+app.get('/api/affiliate/orders/updates', async (req, res) => {
+  const user = await currentAuthUser(req);
+  if (!user) return res.status(401).json({ error: 'يجب تسجيل الدخول لمتابعة الطلبات' });
+  const since = String(req.query && req.query.since || '').trim();
+  const limit = Math.max(1, Math.min(100, Number(req.query && req.query.limit) || 60));
+  try {
+    const result = await postgres.getAffiliateOrderUpdates(user.id, since, limit);
+    const orders = (result.orders || []).map(order => affiliateOrderForUser(order, user.id)).filter(Boolean);
+    res.set('Cache-Control', 'no-store');
+    res.json({ ok: true, orders, cursor: result.cursor || since || new Date(0).toISOString(), hasMore: orders.length >= limit });
+  } catch (error) {
+    console.error('[affiliate] incremental orders read failed:', error.message);
+    res.status(503).json({ error: 'تعذر تحديث الطلبات حاليًا' });
   }
 });
 
