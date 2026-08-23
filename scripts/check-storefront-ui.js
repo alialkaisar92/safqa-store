@@ -23,6 +23,7 @@ assert(html.includes('onclick="openWallet()"') && !html.includes('class="cart-na
 assert(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(html), 'raw Unicode emoji remains in storefront source');
 assert(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(supportJs + supportCss), 'raw Unicode emoji remains in support chat source');
 assert(supportCss.includes('#rab7naSupportRoot .support-launch{left:auto;right:20px') && supportCss.includes('#rab7naSupportRoot .support-panel{left:auto;right:20px'), 'support chat is not placed on the right');
+assert(html.includes('body.modal-open #storeAiLaunch') && html.includes('body.modal-open #rab7naSupportRoot'), 'floating controls must hide while a drawer/modal is open');
 
 const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
 assert(scripts.length >= 10, 'expected storefront inline scripts were not found');
