@@ -82,6 +82,10 @@ function streamNotification(userId, notification) {
   const packet = 'data: ' + JSON.stringify(notification) + '\n\n';
   for (const write of set) { try { write(packet); } catch (_) {} }
 }
+function publishNotification(notification) {
+  if (!notification || notification.userId == null) return;
+  streamNotification(notification.userId, notification);
+}
 async function sendNativePushToUsers(userIds, data) {
   if (!nativePushReady) return { configured: false, delivered: 0, removed: 0 };
   const ids = [...new Set((Array.isArray(userIds) ? userIds : [userIds]).map(value => String(value || '').trim()).filter(Boolean))];
@@ -127,6 +131,7 @@ async function notifyBroadcast(input) {
 }
 global.notifyUser = notifyUser;
 global.notifyBroadcast = notifyBroadcast;
+global.publishNotification = publishNotification;
 global.sendNativePushToUsers = sendNativePushToUsers;
 
 app.get('/api/notifications', async (req, res) => {

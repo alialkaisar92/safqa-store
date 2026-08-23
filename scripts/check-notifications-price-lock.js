@@ -27,9 +27,16 @@ assert(postgres.includes('CREATE UNIQUE INDEX IF NOT EXISTS idx_notifications_us
 assert(postgres.includes('admin_price_locked') && postgres.includes('admin_sale_price'), 'product lock columns missing');
 assert(postgres.includes('CASE WHEN products.admin_price_locked'), 'supplier sync does not protect locked prices');
 assert(admin.includes("'notifications'"), 'admin notifications permission missing');
+assert(admin.includes("'rewards'"), 'admin rewards permission missing');
 assert(admin.includes("/api/admin/notifications/send"), 'admin send route missing');
+assert(admin.includes("/api/admin/notifications/delete") && admin.includes("/api/admin/notifications/clear"), 'admin notification delete routes missing');
+assert(admin.includes("/api/admin/rewards/grant") && admin.includes("postgres.grantAffiliateReward"), 'admin reward grant route missing');
+assert(postgres.includes('CREATE TABLE IF NOT EXISTS affiliate_rewards') && postgres.includes('CREATE TABLE IF NOT EXISTS affiliate_reward_grants'), 'reward ledger migration missing');
+assert(postgres.includes('UNIQUE(reward_id, user_id)') && postgres.includes('ON CONFLICT (reward_key) DO NOTHING'), 'reward idempotency guard missing');
+assert(server.includes('global.publishNotification = publishNotification'), 'existing notification publish bridge missing');
 assert(store.includes('notifBtn') && store.includes('enableRab7naPush') && store.includes('enableRab7naSound'), 'store notification center missing');
 assert(adminHtml.includes('view-notifications') && adminHtml.includes('adminPriceLocked'), 'admin notification/price-lock UI missing');
+assert(adminHtml.includes('view-rewards') && adminHtml.includes('rewardAmount') && adminHtml.includes('grant-reward'), 'admin rewards UI missing');
 assert(!server.match(/adminPriceLocked[^\n]+\?[^\n]+true[^\n]+fallback/i), 'unsafe true fallback suspected in server');
 console.log('notifications-price-lock static checks: PASS');
 console.log(JSON.stringify({ storeScripts: [...store.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].length, adminScripts: [...adminHtml.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].length }, null, 2));

@@ -6,7 +6,7 @@ const postgres = require('./lib/postgres');
 const authService = require('./services/auth-postgres');
 
 const SESSION_COOKIE = 'rab7na_session';
-const ADMIN_PERMISSIONS = ['dashboard', 'orders', 'products', 'users', 'withdrawals', 'chats', 'settings', 'admins', 'notifications'];
+const ADMIN_PERMISSIONS = ['dashboard', 'orders', 'products', 'users', 'withdrawals', 'chats', 'settings', 'admins', 'notifications', 'rewards'];
 const ROLE_PERMISSIONS = {
   owner: ADMIN_PERMISSIONS,
   admin: ADMIN_PERMISSIONS,
@@ -162,6 +162,7 @@ function permissionForPath(requestPath) {
   if (/^\/(settings)/.test(p)) return 'settings';
   if (/^\/(admins)/.test(p)) return 'admins';
   if (/^\/(notifications)/.test(p)) return 'notifications';
+  if (/^\/(rewards)/.test(p)) return 'rewards';
   return 'dashboard';
 }
 
@@ -206,6 +207,41 @@ module.exports = function mountAdmin(app) {
       }
       res.status(201).json({ ok: true, created: Number(result && result.created || 0), push: result && result.push ? result.push : { configured: false, delivered: 0 } });
     } catch (error) { console.error('[admin notifications send]:', error.message); res.status(503).json({ error: 'تعذر إرسال الإشعار حاليًا' }); }
+  });
+
+  app.post('/api/admin/notifications/delete', async (req, res) => {
+    try {
+      const id = String(req.body && req.body.id || '').trim();
+      if (!/^\\d+$/.test(id)) return res.status(400).json({ error: 'معرّف الإشعار غير صحيح' });
+      const deleted = await postgres.deleteNotificationById(id);
+      if (!deleted) return res.status(404).json({ error: 'الإشعار غير موجود' });
+      res.json({ ok: true, id });
+    } catch (error) { console.error('[admin notifications delete]:', error.message); res.status(503).json({ error: 'تعذر حذف الإشعار حاليًا' }); }
+  });
+
+  app.post('/api/admin/notifications/clear', async (req, res) => {
+    try { const deleted = await postgres.deleteAllNotifications(); res.json({ ok: true, deleted }); }
+    catch (error) { console.error('[admin notifications clear]:', error.message); res.status(503).json({ error: 'تعذر تنظيف سجل الإشعارات حاليًا' }); }
+  });
+
+  app.get('/api/admin/rewards', async (req, res) => {
+    try { res.set('Cache-Control', 'no-store'); res.json({ rewards: await postgres.listAffiliateRewards(req.query.limit) }); }
+    catch (error) { console.error('[admin rewards list]:', error.message); res.status(503).json({ error: 'تعذر تحميل سجل المكافآت' }); }
+  });
+
+  app.post('/api/admin/rewards/grant', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const reward = await postgres.grantAffiliateReward(Object.assign({}, body, { rewardKey: body.rewardKey || 'admin-' + Date.now() }), req.adminUser && req.adminUser.id);
+      if (reward.duplicate) return res.status(409).json({ ok: false, duplicate: true, error: 'هذه المكافأة تم تنفيذها بالفعل بنفس المفتاح' });
+      for (const notification of reward.notifications || []) { if (global.publishNotification) global.publishNotification(notification); }
+      const push = global.sendNativePushToUsers && reward.userIds && reward.userIds.length ? await Promise.resolve(global.sendNativePushToUsers(reward.userIds, { title: reward.notificationTitle, body: reward.notificationBody, url: '/store', tag: 'reward:' + reward.reward.reward_key })).catch(() => ({ configured: false, delivered: 0 })) : { configured: false, delivered: 0 };
+      res.status(201).json({ ok: true, granted: reward.granted, amount: reward.reward.amount, total: reward.reward.total_granted, push });
+    } catch (error) {
+      const status = ['مفتاح المكافأة مطلوب', 'عنوان المكافأة مطلوب', 'قيمة المكافأة غير صحيحة', 'اختر مستخدمًا واحدًا للمكافأة', 'اختر مستخدمين للمكافأة الجماعية', 'لا يوجد مستخدم مؤهل لهذه المكافأة'].includes(error.message) ? 400 : 503;
+      console.error('[admin rewards grant]:', error.code || error.message);
+      res.status(status).json({ error: status === 400 ? error.message : 'تعذر إضافة المكافأة حاليًا' });
+    }
   });
 
   app.get('/api/admin/stats', async (req, res) => {
