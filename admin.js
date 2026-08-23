@@ -153,7 +153,7 @@ function allowedWithdrawalStatus(status) { return WITHDRAWAL_STATUSES.includes(S
 
 function permissionForPath(requestPath) {
   const p = String(requestPath || '');
-  if (/^\/(orders|order-status|order-attempts|order-retry)/.test(p)) return 'orders';
+  if (/^\/(orders|order-status|order-attempts|order-retry|order-review|order-hook-reviews)/.test(p)) return 'orders';
   if (/^\/(products|product|product-delete|price|price-up)/.test(p)) return 'products';
   if (/^\/(users|user-ban)/.test(p)) return 'users';
   if (/^\/(withdrawals|withdrawal-status)/.test(p)) return 'withdrawals';
@@ -242,6 +242,33 @@ module.exports = function mountAdmin(app) {
       res.set('Cache-Control', 'no-store');
       res.json({ orderId, attempts });
     } catch (error) { console.error('[admin order-attempts]:', error.message); res.status(503).json({ error: 'تعذر تحميل سجل محاولات الطلب' }); }
+  });
+
+  app.get('/api/admin/order-hook-reviews', async (req, res) => {
+    try { res.set('Cache-Control', 'no-store'); res.json({ reviews: await postgres.listSafkaOrderWebhookReviews(req.query.limit) }); }
+    catch (error) { console.error('[admin order-hook-reviews]:', error.message); res.status(503).json({ error: 'تعذر تحميل تحديثات المورد غير المرتبطة' }); }
+  });
+
+  app.post('/api/admin/order-review', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const orderId = String(body.id || body.orderId || '').trim();
+      const decision = String(body.decision || '').trim().toLowerCase();
+      const supplierOrderId = String(body.supplierOrderId || '').trim();
+      const reason = String(body.reason || '').trim();
+      const result = await postgres.reviewAffiliateOrderRequest(orderId, req.adminUser && req.adminUser.id, decision, supplierOrderId, reason);
+      if (!result) return res.status(404).json({ error: 'الطلب غير موجود في قائمة المراجعة' });
+      if (global.notifyUser) {
+        const db = await affiliateData();
+        const order = (db.orders || []).find(item => String(item.id || item.serial) === orderId);
+        if (order && order.userId != null) await Promise.resolve(global.notifyUser(order.userId, 'تحديث مراجعة الطلب', decision === 'supplier_received' ? 'تم ربط الطلب بحالة المورد ومتابعته.' : 'تمت مراجعة حالة الطلب ويحتاج إجراء تجهيز منفصل.', '/store', 'order-status', 'order-review:' + orderId + ':' + String(result.manual_review_at || ''))).catch(() => null);
+      }
+      res.json({ ok: true, queue: result });
+    } catch (error) {
+      const status = error.code === 'ORDER_NOT_FOUND' ? 404 : ['INVALID_REVIEW_DECISION', 'SUPPLIER_ORDER_ID_REQUIRED', 'INVALID_REVIEW_REASON', 'ORDER_NOT_REVIEWABLE'].includes(error.code) ? 409 : 503;
+      console.error('[admin order-review]:', error.code || error.message);
+      res.status(status).json({ error: ['INVALID_REVIEW_DECISION', 'SUPPLIER_ORDER_ID_REQUIRED', 'INVALID_REVIEW_REASON', 'ORDER_NOT_REVIEWABLE', 'ORDER_NOT_FOUND'].includes(error.code) ? error.message : 'تعذر حفظ قرار المراجعة حاليًا' });
+    }
   });
 
   app.post('/api/admin/order-retry', async (req, res) => {

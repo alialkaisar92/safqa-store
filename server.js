@@ -792,6 +792,35 @@ async function authorizeOrderWorker(req) {
   const bearer = authorization.toLowerCase().startsWith('bearer ') ? authorization.slice(7).trim() : '';
   return bearer ? verifyGitHubWorkerToken(bearer) : false;
 }
+function constantTimeSecretMatch(supplied, expected) {
+  const left = Buffer.from(String(supplied || ''), 'utf8');
+  const right = Buffer.from(String(expected || ''), 'utf8');
+  return left.length > 0 && left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+function supplierWebhookToken(req) {
+  const authorization = String(req.headers.authorization || '');
+  const bearer = authorization.toLowerCase().startsWith('bearer ') ? authorization.slice(7).trim() : '';
+  return String(req.headers['x-safka-webhook-token'] || req.query.token || bearer || '').trim();
+}
+app.post('/api/webhooks/safka/order-status', async (req, res) => {
+  const expected = String(process.env.SAFKA_ORDER_HOOK_TOKEN || '').trim();
+  if (!expected) return res.status(503).json({ error: 'استقبال تحديثات المورد غير مفعّل حاليًا' });
+  if (!constantTimeSecretMatch(supplierWebhookToken(req), expected)) return res.status(401).json({ error: 'غير مصرح' });
+  try { await postgresReady; }
+  catch (error) { console.error('[safka-order-hook] database unavailable:', error.message); return res.status(503).json({ error: 'تعذر حفظ تحديث المورد حاليًا' }); }
+  try {
+    const result = await postgres.applySafkaOrderWebhook(req.body || {});
+    if (result.matched && result.userId != null && global.notifyUser) {
+      await Promise.resolve(global.notifyUser(result.userId, 'تحديث من المورد', 'تم تحديث حالة طلبك: ' + String(result.displayStatus || result.status || 'قيد المتابعة'), '/store', 'order-status', 'safka-webhook:' + result.orderId + ':' + result.status)).catch(() => null);
+    }
+    res.set('Cache-Control', 'no-store');
+    res.status(200).json({ ok: true, duplicate: Boolean(result.duplicate), matched: Boolean(result.matched), reviewRequired: Boolean(result.reviewRequired), eventKey: result.eventKey, status: result.status });
+  } catch (error) {
+    if (error.code === 'INVALID_SUPPLIER_WEBHOOK') return res.status(400).json({ error: 'بيانات تحديث المورد غير مكتملة' });
+    console.error('[safka-order-hook] processing failed:', error.message);
+    res.status(503).json({ error: 'تعذر معالجة تحديث المورد حاليًا' });
+  }
+});
 app.post('/api/internal/order-queue', async (req, res) => {
   if (!await authorizeOrderWorker(req)) return res.status(401).json({ error: 'غير مصرح' });
   if (String(process.env.ORDER_QUEUE_RUNNER_ENABLED || '').toLowerCase() !== 'true') return res.status(503).json({ error: 'تشغيل queue متوقف مؤقتًا للمراجعة الآمنة' });
@@ -925,7 +954,15 @@ function queueStatusPayload(row, order) {
     cancelReason: row.cancel_reason || safeOrder.cancelReason || '',
     cancelRequestedAt: row.cancel_requested_at || safeOrder.cancelRequestedAt || null,
     cancelledAt: row.cancelled_at || safeOrder.cancelledAt || null,
-    failureReason: status === 'failed' ? String(row.failure_reason || '') : ''
+    supplierOrderId: row.supplier_order_id || safeOrder.supplierOrderId || safeOrder.externalId || null,
+    reviewRequired: status === 'unknown',
+    manualReviewStatus: status === 'unknown' ? 'manual_review' : null,
+    reviewLabel: status === 'unknown' ? 'مراجعة يدوية مطلوبة' : '',
+    manualReviewDecision: row.manual_review_decision || safeOrder.manualReviewDecision || null,
+    manualReviewAt: row.manual_review_at || safeOrder.manualReviewAt || null,
+    manualReviewBy: row.manual_review_by || safeOrder.manualReviewBy || null,
+    manualReviewReason: row.manual_review_reason || safeOrder.manualReviewReason || null,
+    failureReason: ['failed', 'unknown'].includes(status) ? String(row.failure_reason || safeOrder.failureReason || '') : ''
   };
 }
 
