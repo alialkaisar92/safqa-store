@@ -153,6 +153,14 @@ function job(retryCount = 1) {
   assert.equal(state.attemptLogs.at(-1).requestStatus, 'failed');
   assert.equal(state.attemptLogs.at(-1).supplierContacted, true);
 
+  reset(); fetchScenario = '502';
+  const firstUnknownCycle = await worker.processAffiliateOrderQueue(1);
+  const secondUnknownCycle = await worker.processAffiliateOrderQueue(1);
+  assert.equal(firstUnknownCycle.processed, 1);
+  assert.equal(firstUnknownCycle.results[0], 'unknown');
+  assert.equal(secondUnknownCycle.scanned, 0, 'an unknown order must not be claimed again automatically');
+  assert.equal(state.fetchCalls, 1, 'unknown order must have exactly one automatic supplier call');
+
   reset(); fetchScenario = 'success';
   const [firstCycle, secondCycle] = await Promise.all([
     worker.processAffiliateOrderQueue(1),

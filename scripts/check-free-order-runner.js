@@ -21,7 +21,7 @@ assert(postgres.includes('async function recordAffiliateOrderAttempt'), 'attempt
 assert(postgres.includes('last_manual_retry_at') && postgres.includes('manual_retry_reason') && postgres.includes('manual_review_decision') && postgres.includes('manual_review_reason'), 'manual review audit fields are missing');
 assert(postgres.includes('async function listAffiliateOrderAttemptsForAdmin'), 'admin attempt reader is missing');
 assert(postgres.includes("String(row.status || '') !== 'failed'") && postgres.includes('ORDER_RETRY_UNSAFE'), 'manual retry must reject non-failed or supplier-acknowledged orders');
-assert(postgres.includes("status='unknown' AND $2 IN ('pending','retry','processing')") && postgres.includes('reviewAffiliateOrderRequest'), 'unknown state must be blocked from automatic retry and support explicit review only');
+assert(postgres.includes("status='unknown' AND $2 IN ('pending','retry','processing')") && postgres.includes("WHERE status IN ('pending','retry')") && postgres.includes('reviewAffiliateOrderRequest'), 'unknown state must be blocked from automatic retry and support explicit review only');
 assert(postgres.includes('CREATE TABLE IF NOT EXISTS affiliate_order_webhook_events') && postgres.includes('applySafkaOrderWebhook'), 'supplier webhook dedupe and handler are missing');
 assert(server.includes("ORDER_QUEUE_RUNNER_ENABLED") && server.includes("app.post('/api/internal/order-queue'"), 'queue runner safety switch is missing');
 assert(server.includes("app.post('/api/webhooks/safka/order-status'") && server.includes('SAFKA_ORDER_HOOK_TOKEN') && server.includes('constantTimeSecretMatch'), 'protected Safka orderHook receiver is missing');
@@ -41,5 +41,5 @@ const adminHtml = fs.readFileSync(path.join(root, 'admin.html'), 'utf8');
 assert(admin.includes("app.get('/api/admin/order-attempts/:id'") && admin.includes("app.post('/api/admin/order-retry'"), 'admin queue endpoints are missing');
 assert(admin.includes('order-attempts|order-retry|order-review|order-hook-reviews'), 'admin queue endpoints are not permission-gated');
 assert(admin.includes("app.post('/api/admin/order-review'") && admin.includes("app.get('/api/admin/order-hook-reviews'"), 'manual review admin endpoints are missing');
-assert(adminHtml.includes('data-order-attempts') && adminHtml.includes('data-order-retry') && adminHtml.includes('data-order-review') && adminHtml.includes('محاولات الإرسال') && adminHtml.includes('مراجعة يدوية مطلوبة') && adminHtml.includes('orderHookReviews'), 'admin manual review dashboard controls are missing');
+assert(adminHtml.includes('data-order-attempts') && adminHtml.includes('data-order-retry') && adminHtml.includes('data-order-review') && adminHtml.includes('محاولات الإرسال') && adminHtml.includes('مراجعة يدوية مطلوبة') && adminHtml.includes('manual_review') && adminHtml.includes('orderHookReviews'), 'admin manual review dashboard controls are missing');
 console.log('free-order-runner checks passed');
