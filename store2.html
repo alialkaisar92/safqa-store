@@ -755,7 +755,7 @@ img{display:block}
 <script>
 var P=[],cart=[],curCat='الكل',curQ='',PL=[],ship=50,pricePolicyUpdatedAt=null,pricingPollTimer=0,pricingRefreshBusy=false;
 function fmt(n){return Number(n||0).toLocaleString('ar-EG')+' ج.م'}
-function uiText(value){return String(value==null?'':value).replace(/[\uFE0E\uFE0F\u200D]/g,'').replace(/\p{Extended_Pictographic}/gu,'').replace(/\s{2,}/g,' ').trim();}
+function uiText(value){return String(value==null?'':value).replace(/\uFFFD/g,'').replace(/[\uFE0E\uFE0F\u200D]/g,'').replace(/\p{Extended_Pictographic}/gu,'').replace(/\s{2,}/g,' ').trim();}
 function escUi(value){return uiText(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
 function icon(name){var paths={search:'<circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/>',heart:'<path d="M20.8 8.8c0 5.3-8.8 10-8.8 10s-8.8-4.7-8.8-10A4.8 4.8 0 0 1 12 6.6a4.8 4.8 0 0 1 8.8 2.2Z"/>',bag:'<path d="M3 4h2l1.7 10.2A3 3 0 0 0 9.7 17H18a3 3 0 0 0 2.9-2.2L22 7H7.2l-.5-3H3Z"/><circle cx="9" cy="20" r="1.5"/><circle cx="19" cy="20" r="1.5"/>',tag:'<path d="M4 5v6l9 9 7-7-9-9H4Z"/><circle cx="8" cy="9" r="1"/>'};return '<svg viewBox="0 0 24 24" aria-hidden="true">'+(paths[name]||paths.tag)+'</svg>';}
 function clearSearch(){var input=document.getElementById('q');if(input)input.value='';doSearch('');}

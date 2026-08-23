@@ -37,6 +37,8 @@ assert(server.includes('global.publishNotification = publishNotification'), 'exi
 assert(store.includes('notifBtn') && store.includes('enableRab7naPush') && store.includes('enableRab7naSound'), 'store notification center missing');
 assert(adminHtml.includes('view-notifications') && adminHtml.includes('adminPriceLocked'), 'admin notification/price-lock UI missing');
 assert(adminHtml.includes('view-rewards') && adminHtml.includes('rewardAmount') && adminHtml.includes('grant-reward'), 'admin rewards UI missing');
+assert(adminHtml.includes('سعر الجملة ×') && adminHtml.includes('price-formula'), 'percentage pricing formula UI missing');
+assert(store.includes("replace(/\\uFFFD/g,''"), 'product text replacement cleanup missing');
 assert(!server.match(/adminPriceLocked[^\n]+\?[^\n]+true[^\n]+fallback/i), 'unsafe true fallback suspected in server');
 console.log('notifications-price-lock static checks: PASS');
 console.log(JSON.stringify({ storeScripts: [...store.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].length, adminScripts: [...adminHtml.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].length }, null, 2));
