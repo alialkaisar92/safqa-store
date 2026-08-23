@@ -753,14 +753,14 @@ img{display:block}
 </style>
 
 <script>
-var P=[],cart=[],curCat='الكل',curQ='',PL=[],ship=50;
+var P=[],cart=[],curCat='الكل',curQ='',PL=[],ship=50,pricePolicyUpdatedAt=null,pricingPollTimer=0,pricingRefreshBusy=false;
 function fmt(n){return Number(n||0).toLocaleString('ar-EG')+' ج.م'}
 function uiText(value){return String(value==null?'':value).replace(/[\uFE0E\uFE0F\u200D]/g,'').replace(/\p{Extended_Pictographic}/gu,'').replace(/\s{2,}/g,' ').trim();}
 function escUi(value){return uiText(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
 function icon(name){var paths={search:'<circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/>',heart:'<path d="M20.8 8.8c0 5.3-8.8 10-8.8 10s-8.8-4.7-8.8-10A4.8 4.8 0 0 1 12 6.6a4.8 4.8 0 0 1 8.8 2.2Z"/>',bag:'<path d="M3 4h2l1.7 10.2A3 3 0 0 0 9.7 17H18a3 3 0 0 0 2.9-2.2L22 7H7.2l-.5-3H3Z"/><circle cx="9" cy="20" r="1.5"/><circle cx="19" cy="20" r="1.5"/>',tag:'<path d="M4 5v6l9 9 7-7-9-9H4Z"/><circle cx="8" cy="9" r="1"/>'};return '<svg viewBox="0 0 24 24" aria-hidden="true">'+(paths[name]||paths.tag)+'</svg>';}
 function clearSearch(){var input=document.getElementById('q');if(input)input.value='';doSearch('');}
 async function load(){
-  try{var r=await fetch('/api/products?all=1');var d=await r.json();var products=d.data||d||[];P=Array.isArray(products)?products.filter(function(item){return item&&typeof item==='object'}):[];}catch(e){P=[];console.warn('[store] products load failed',e&&e.message||e);}
+  try{var r=await fetch('/api/products?all=1',{cache:'no-store'});var d=await r.json();var products=d.data||d||[];P=Array.isArray(products)?products.filter(function(item){return item&&typeof item==='object'}):[];pricePolicyUpdatedAt=d.pricePolicyUpdatedAt||pricePolicyUpdatedAt;}catch(e){P=[];console.warn('[store] products load failed',e&&e.message||e);}
   try{renderCats();renderGrid();}catch(e){console.warn('[store] product rendering failed',e&&e.message||e);var fallback=document.getElementById('grid');if(fallback)fallback.innerHTML='<p style="grid-column:1/-1;text-align:center;padding:30px;color:var(--mut)">تعذر تحميل المنتجات حاليًا</p>';}
   var g=document.getElementById('fGov');
   try{var rp=await fetch('/api/price-list');var dp=await rp.json();PL=dp.data||dp||[];
@@ -769,6 +769,25 @@ async function load(){
     PL=[];
     if(g){g.disabled=true;g.innerHTML='<option value="">تعذر تحميل المحافظ حاليًا</option>';}
   }
+}
+async function refreshPricingPolicy(){
+  if(pricingRefreshBusy||document.visibilityState==='hidden')return;
+  pricingRefreshBusy=true;
+  try{
+    var r=await fetch('/api/pricing-policy',{cache:'no-store'}),d=await r.json().catch(function(){return{}});
+    if(!r.ok||!d.ok)return;
+    if(pricePolicyUpdatedAt&&d.updatedAt&&String(d.updatedAt)!==String(pricePolicyUpdatedAt)){
+      pricePolicyUpdatedAt=d.updatedAt;
+      await load();
+      if(typeof toast==='function')toast('تم تحديث الأسعار بواسطة الإدارة');
+    }else if(!pricePolicyUpdatedAt&&d.updatedAt){pricePolicyUpdatedAt=d.updatedAt;}
+  }catch(e){console.warn('[store] pricing policy refresh skipped',e&&e.message||e)}
+  finally{pricingRefreshBusy=false;}
+}
+function startPricingPolicyPolling(){
+  if(pricingPollTimer)return;
+  pricingPollTimer=setInterval(refreshPricingPolicy,5000);
+  window.addEventListener('beforeunload',function(){if(pricingPollTimer)clearInterval(pricingPollTimer)});
 }
 function checkoutField(id){return document.getElementById(id);}
 function setCheckoutMessage(text,kind){var m=checkoutField('comsg');if(!m)return;m.className='co-msg '+(kind||'');m.textContent=text||'';}
@@ -880,9 +899,9 @@ function showPriceModal(){
      '</div>'+
 
      '<div class="price-section">'+
-       '<label>سعر البيع للعميل <small style="font-weight:600;color:#71817a">(اقتراح قابل للتعديل)</small></label>'+
+       '<label>سعر البيع المعتمد من الإدارة <small style="font-weight:600;color:#0f766e">(لا يمكن تغييره من حساب المسوّق)</small></label>'+
        '<div class="price-input-wrap">'+
-         '<input id="salePriceInput" type="number" value="'+selectedSale+'" min="'+selectedBase+'" oninput="updatePricePreview()">'+
+         '<input id="salePriceInput" type="number" value="'+selectedSale+'" min="'+selectedBase+'" readonly aria-readonly="true" aria-label="سعر البيع المعتمد من الإدارة">'+
          '<span>ج.م</span>'+
        '</div>'+
        '<div id="priceError" class="price-error"></div>'+
@@ -984,8 +1003,7 @@ function closePriceModal(){
 
 function confirmAddCart(){
 
- var input=document.getElementById('salePriceInput');
- var price=Number(input&&input.value)||0;
+ var price=salePriceOf(selectedProduct);
 
  if(price<selectedBase){
 
@@ -1048,14 +1066,7 @@ function openCart(){
    var unitPrice=Number(c.price||0);
    var unitCost=Number(c.cost||0);
    var unitProfit=Math.max(0,unitPrice-unitCost);
-   var edit='<div class="cart-price-editor" onclick="event.stopPropagation()">'
-       +'<label for="cartPriceInput'+i+'">سعر البيع للعميل — يتحدث فورًا</label>'
-       +'<div class="cart-price-editor-row">'
-       +'<input id="cartPriceInput'+i+'" type="number" inputmode="decimal" min="'+unitCost+'" step="0.01" value="'+unitPrice+'" oninput="updateCartPriceFromInput('+i+',this.value)" aria-label="سعر البيع للعميل للمنتج '+(i+1)+'">'
-       +'<span>ج.م</span>'
-       +'</div>'
-       +'<div id="cartPriceError'+i+'" class="cart-price-error" role="alert"></div>'
-       +'</div>';
+   var edit='<div class="cart-price-locked" role="note">سعر البيع المعتمد من الإدارة — لا يمكن تغييره إلا من لوحة الأدمن</div>';
    return '<article class="ci cart-item">'
     +'<img class="cart-item-image" src="'+(c.image||'')+'" alt="">'
     +'<div class="cart-item-main">'
@@ -1106,18 +1117,11 @@ function refreshCartPriceSummary(i){
  if(totalEl){var subtotal=cart.reduce(function(a,x){return a+Number(x.price||0)*Number(x.qty||0)},0),wholesale=cart.reduce(function(a,x){return a+Number(x.cost||0)*Number(x.qty||0)},0),gain=cart.reduce(function(a,x){return a+Math.max(0,Number(x.price||0)-Number(x.cost||0))*Number(x.qty||0)},0);totalEl.innerHTML='<span class="cart-total-label">إجمالي البيع</span> <b>'+fmt(subtotal)+'</b><br><small class="cart-total-cost">سعر الجملة الإجمالي: '+fmt(wholesale)+'</small><br><small class="cart-total-profit">ربحك المتوقع: '+fmt(gain)+'</small>';}
 }
 function updateCartPriceFromInput(i,value){
- var c=cart[i],input=document.getElementById('cartPriceInput'+i),error=document.getElementById('cartPriceError'+i);
- if(!c)return false;
- var price=Number(value),minimum=Number(c.cost||0);
- if(!Number.isFinite(price)||price<minimum){if(error)error.textContent='اكتب سعرًا صحيحًا لا يقل عن '+fmt(minimum);return false;}
- if(error)error.textContent='';c.price=Math.round(price*100)/100;c.profit=c.price-minimum;refreshCartPriceSummary(i);upd();return true;
+ var error=document.getElementById('cartPriceError'+i);
+ if(error)error.textContent='سعر البيع محدد من الإدارة ولا يمكن تغييره من حساب المسوّق';
+ return false;
 }
-function syncCartPricesFromInputs(){
- var valid=true;
- cart.forEach(function(c,i){var input=document.getElementById('cartPriceInput'+i);if(input&&!updateCartPriceFromInput(i,input.value))valid=false;});
- if(!valid){var first=document.querySelector('.cart-price-error:not(:empty)');if(first){var parent=first.parentElement,field=parent&&parent.querySelector('input');if(field)field.focus();}return false;}
- return true;
-}
+function syncCartPricesFromInputs(){return true;}
 
 function closeCart(options){
   closeModalById('cartMdl',options);
@@ -1297,7 +1301,7 @@ async function submitOrder(){
 function openDrw(){openModalById('drw');document.getElementById('ovl').classList.add('open');}
 function closeDrw(options){closeModalById('drw',options);document.getElementById('ovl').classList.remove('open');}
 function openShip(){var b=document.getElementById('shiplist');b.innerHTML=(PL&&PL.length)?PL.map(function(g){return '<div class="shipline"><span>'+(g.governorateNameAr||g.name)+'</span><b>'+(g.price||0)+' ج.م</b></div>'}).join(''):'<p style="text-align:center;color:var(--mut)">جاري التحميل...</p>';openModalById('shipMdl');}
-load().catch(function(error){console.warn('[store] boot failed',error&&error.message||error);});
+load().then(function(){startPricingPolicyPolling();}).catch(function(error){startPricingPolicyPolling();console.warn('[store] boot failed',error&&error.message||error);});
 </script>
 <style>
 .bi svg{width:20px;height:20px;fill:currentColor}
@@ -2272,6 +2276,7 @@ body.modal-open #rab7naSupportRoot{display:none!important}
 @media(max-width:760px){body{padding-bottom:82px}.affiliate-bottom-nav{position:fixed;right:10px;bottom:max(10px,env(safe-area-inset-bottom));left:10px;z-index:240;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:7px;border:1px solid rgba(218,233,225,.95);border-radius:21px;background:rgba(255,255,255,.97);box-shadow:0 16px 36px rgba(18,63,45,.18);direction:rtl}.affiliate-bottom-nav button{display:flex;min-width:0;min-height:57px;align-items:center;justify-content:center;gap:4px;flex-direction:column;border:0;border-radius:15px;background:transparent;color:#647a70;font:800 9px Cairo,Tajawal,sans-serif;cursor:pointer;touch-action:manipulation}.affiliate-bottom-nav button:active{transform:scale(.97)}.affiliate-bottom-nav button:hover,.affiliate-bottom-nav button:focus-visible,.affiliate-bottom-nav button.active{background:#0b8f65;color:#fff;outline:none}.affiliate-bottom-nav svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.affiliate-dashboard-head h2{font-size:22px}.affiliate-dashboard-head p{font-size:10px}.affiliate-order-stats{grid-template-columns:repeat(2,1fr);gap:8px}.affiliate-order-stat{padding:12px;border-radius:15px}.affiliate-order-stat b{font-size:19px}.affiliate-order-stat span,.affiliate-order-stat small{font-size:9px}.affiliate-orders-card{padding:13px}.affiliate-wrap{padding:18px 12px 32px}.affiliate-order-top,.affiliate-order-bottom{align-items:flex-start;flex-direction:column;gap:6px}.affiliate-order-bottom b{align-self:flex-start}.affiliate-status{align-self:flex-start}}
 @media(min-width:761px){.affiliate-dashboard-head{max-width:760px}.affiliate-order-stats{max-width:900px}}
 body.modal-open .affiliate-bottom-nav{display:none!important}
+.cart-price-locked{margin-top:10px;padding:10px 11px;border:1px solid #cfe9dc;border-radius:11px;background:#effaf4;color:#2d6b52;font-size:11px;font-weight:800;line-height:1.6}
 </style>
 </body>
 </html>

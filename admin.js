@@ -144,7 +144,8 @@ function productWithPrice(product, priceUp) {
   const base = Number(value.basePrice != null ? value.basePrice : value.price) || 0;
   const locked = value.adminPriceLocked === true || value.admin_price_locked === true;
   const adminSale = Number(value.adminSalePrice != null ? value.adminSalePrice : value.admin_sale_price);
-  const price = locked && Number.isFinite(adminSale) && adminSale >= base ? Math.round(adminSale) : Math.round(base * (1 + Number(priceUp || 0) / 100));
+  const safeUp = Math.max(0, Math.min(200, Number(priceUp) || 0));
+  const price = locked && Number.isFinite(adminSale) && adminSale >= base ? Math.round(adminSale) : Math.round(base * (1 + safeUp / 100));
   return Object.assign({}, value, { basePrice: base, price, adminPriceLocked: locked, adminSalePrice: locked && Number.isFinite(adminSale) ? adminSale : null });
 }
 
@@ -358,16 +359,26 @@ module.exports = function mountAdmin(app) {
     }
   });
 
-  app.get('/api/admin/price', async (req, res) => { try { res.json({ up: Number((await affiliateData()).priceUp || 0) }); } catch (error) { res.status(503).json({ error: 'تعذر تحميل إعداد الأسعار' }); } });
+  app.get('/api/admin/price', async (req, res) => {
+    try {
+      const data = await affiliateData();
+      res.set('Cache-Control', 'no-store');
+      res.json({ up: Math.max(0, Math.min(200, Number(data.priceUp) || 0)), updatedAt: data.pricePolicyUpdatedAt || null });
+    } catch (error) { res.status(503).json({ error: 'تعذر تحميل إعداد الأسعار' }); }
+  });
   app.post('/api/admin/price-up', async (req, res) => {
     try {
       let up = Number(req.body && req.body.up);
       if (!Number.isFinite(up)) up = 0;
       up = Math.max(0, Math.min(200, up));
-      const previous = Number((await affiliateData()).priceUp || 0);
+      const before = await affiliateData();
+      const previous = Number(before.priceUp || 0);
+      if (previous === up) return res.json({ ok: true, up, updatedAt: before.pricePolicyUpdatedAt || null, changed: false });
       await postgres.updateAffiliateMeta({ priceUp: up });
-      if (previous !== up && global.notifyBroadcast) await Promise.resolve(global.notifyBroadcast({ title: 'تحديث أسعار المنتجات', body: 'تم تحديث طريقة حساب أسعار البيع المقترحة من إدارة المنصة.', url: '/store', type: 'price', eventKey: 'global-price-up:' + up })).catch(() => null);
-      res.json({ ok: true, up });
+      const after = await affiliateData();
+      if (global.notifyBroadcast) await Promise.resolve(global.notifyBroadcast({ title: 'تحديث أسعار المنتجات', body: 'تم تحديث أسعار البيع بواسطة إدارة المنصة.', url: '/store', type: 'price', eventKey: 'global-price-up:' + up })).catch(() => null);
+      res.set('Cache-Control', 'no-store');
+      res.json({ ok: true, up, updatedAt: after.pricePolicyUpdatedAt || new Date().toISOString(), changed: true });
     } catch (error) { res.status(503).json({ error: 'تعذر حفظ إعداد الأسعار' }); }
   });
 

@@ -124,10 +124,10 @@ async function purgeAuthCollections() {
 async function getAffiliateData() {
   const [orders, products, withdrawals, tickets, meta] = await Promise.all([
     all('orders'), all('affiliateProducts'), all('withdrawals'), all('tickets'),
-    query("SELECT data FROM app_documents WHERE collection='affiliateMeta' AND doc_id='main'")
+    query("SELECT data, updated_at FROM app_documents WHERE collection='affiliateMeta' AND doc_id='main'")
   ]);
   const m = meta.rows[0] ? meta.rows[0].data : {};
-  return { orders, withdrawals, products, tickets, priceUp: m.priceUp || 0, settings: m.settings || {} };
+  return { orders, withdrawals, products, tickets, priceUp: m.priceUp || 0, pricePolicyUpdatedAt: meta.rows[0] && meta.rows[0].updated_at ? new Date(meta.rows[0].updated_at).toISOString() : null, settings: m.settings || {} };
 }
 async function saveAffiliateData(data) {
   await Promise.all([

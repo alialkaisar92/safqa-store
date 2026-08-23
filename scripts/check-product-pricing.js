@@ -9,19 +9,21 @@ function assert(condition, message) {
 }
 
 assert(server.includes('basePrice: base'), 'server must expose the wholesale/base price');
-assert(server.includes('price: productSalePrice(note, base, priceUp)'), 'server must expose the suggested sale price');
-assert(server.includes('commission: extractCommission(note)'), 'server must expose the estimated commission');
+assert(server.includes('price: effectiveSale'), 'server must expose the admin-controlled sale price');
+assert(server.includes('const effectiveCommission'), 'server must expose the admin-controlled commission');
+assert(server.includes('function productSalePrice(note, base, priceUp)') && server.includes('const safeUp'), 'server must calculate the global admin percentage from the base price');
 assert(client.includes('function wholePriceOf(p)'), 'client must read the wholesale price from normalized data');
 assert(client.includes('function salePriceOf(p)'), 'client must read the suggested sale price from normalized data');
 assert(client.includes('function commissionOf(p)'), 'client must read the commission from normalized data');
-assert(client.includes('الجملة: <b>'), 'product cards must show wholesale price');
-assert(client.includes('المقترح: <b>'), 'product cards must show suggested sale price');
-assert(client.includes('عمولتك: <b>'), 'product cards must show estimated commission');
+assert(client.includes('سعر الجملة <b>'), 'product cards must show wholesale price');
+assert(client.includes('سعر البيع المقترح <b>'), 'product cards must show admin-controlled sale price');
+assert(client.includes('عمولتك المتوقعة <b>'), 'product cards must show estimated commission');
 assert(client.includes('سعر الجملة من المصنع'), 'checkout modal must label the wholesale price');
-assert(client.includes('سعر البيع المقترح للعميل'), 'checkout modal must label the suggested sale price');
+assert(client.includes('سعر البيع المعتمد من الإدارة'), 'checkout modal must label the admin-controlled sale price');
+assert(client.includes('readonly aria-readonly="true"'), 'checkout sale price must be readonly for marketers');
 assert(client.includes('عمولتك التقديرية'), 'checkout modal must label estimated commission');
 assert(!client.includes('<span class="disc">-15%</span>'), 'product cards must not show a fabricated discount');
 assert(!client.includes('4.8 (126)'), 'product cards must not show fabricated ratings');
 console.log('product pricing checks: PASS');
-console.log('wholesale/suggested/commission fields: PRESENT');
+console.log('wholesale/admin-sale/commission fields: PRESENT');
 console.log('fabricated discount/rating: NO');

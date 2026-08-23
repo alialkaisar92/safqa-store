@@ -235,8 +235,8 @@ function productAvailability(p){return p.available===false || p.is_active===fals
 let productsCache = [], priceListCache = [], lastFetch = 0;
 let stockProbeLoggedAt = 0;
 let affiliateSnapshot = null, affiliateSnapshotAt = 0;
-async function getAffiliateSnapshotFast() {
-  if (affiliateSnapshot && Date.now() - affiliateSnapshotAt < 15000) return affiliateSnapshot;
+async function getAffiliateSnapshotFast(force) {
+  if (!force && affiliateSnapshot && Date.now() - affiliateSnapshotAt < 15000) return affiliateSnapshot;
   try {
     affiliateSnapshot = await postgres.getAffiliateCatalogData();
     affiliateSnapshotAt = Date.now();
@@ -376,8 +376,10 @@ function extractSuggestedSalePrice(note, base) {
   return Number.isFinite(value) && value >= Number(base || 0) ? value : 0;
 }
 function productSalePrice(note, base, priceUp) {
-  const suggested = extractSuggestedSalePrice(note, base);
-  return Math.round(suggested || Number(base || 0) * (1 + priceUp / 100));
+  // السعر العام مصدره سياسة الأدمن فقط؛ لا نسمح لسعر مقترح قديم من ملاحظة المورد بتجاوزها.
+  const safeBase = Math.max(0, Number(base || 0));
+  const safeUp = Math.max(0, Math.min(200, Number(priceUp) || 0));
+  return Math.round(safeBase * (1 + safeUp / 100));
 }
 
 function sourceAvailability(p) {
@@ -408,6 +410,8 @@ function normalizePublicProduct(p, local, priceUp) {
   const adminSale = Number(merged.adminSalePrice != null ? merged.adminSalePrice : merged.admin_sale_price);
   const lockedSale = adminLocked && Number.isFinite(adminSale) && adminSale >= base ? Math.round(adminSale) : null;
   const adminCommission = Number(merged.adminCommission != null ? merged.adminCommission : merged.admin_commission);
+  const effectiveSale = lockedSale != null ? lockedSale : productSalePrice(note, base, priceUp);
+  const effectiveCommission = adminLocked && Number.isFinite(adminCommission) && adminCommission >= 0 ? adminCommission : Math.max(0, effectiveSale - base);
   return Object.assign(merged, {
     id: raw.id || raw._id || (local && (local.id || local._id)),
     name: raw.name || raw.title || '',
@@ -415,12 +419,12 @@ function normalizePublicProduct(p, local, priceUp) {
     cat: category,
     basePrice: base,
     cost: raw.cost != null ? raw.cost : (raw.sale_price != null ? raw.sale_price : base),
-    price: lockedSale != null ? lockedSale : productSalePrice(note, base, priceUp),
+    price: effectiveSale,
     image: raw.image || (raw.images && raw.images[0]) || merged.image || '',
     desc: raw.description || raw.desc || '',
     barcode: raw.barcode || merged.barcode || '',
     note,
-    commission: adminLocked && Number.isFinite(adminCommission) && adminCommission >= 0 ? adminCommission : extractCommission(note),
+    commission: effectiveCommission,
     propId: raw.propId || prop._id || '',
     propKey: raw.propKey || prop.key || '',
     stock,
@@ -481,8 +485,19 @@ function readProductCache() {
   return Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
 }
 
+app.get('/api/pricing-policy', async (req, res) => {
+  try {
+    const policy = await postgres.getAffiliatePricingPolicy();
+    res.set('Cache-Control', 'no-store');
+    res.json({ ok: true, priceUp: policy.priceUp, updatedAt: policy.pricePolicyUpdatedAt || null });
+  } catch (error) {
+    console.error('[pricing policy] read failed:', error.message);
+    res.status(503).json({ error: 'تعذر قراءة سياسة الأسعار حاليًا' });
+  }
+});
+
 app.get('/api/products', async (req, res) => {
-  const affiliate = await getAffiliateSnapshotFast();
+  const affiliate = await getAffiliateSnapshotFast(true);
   const priceUp = Math.max(0, Math.min(200, Number(affiliate.priceUp) || 0));
   const saved = Array.isArray(affiliate.products) ? affiliate.products : [];
   const savedById = new Map();
@@ -493,8 +508,8 @@ app.get('/api/products', async (req, res) => {
     const live = await getLivePublicProductsCached(false);
     const stockUpdatedAt = new Date().toISOString();
     const normalized = live.map(raw => Object.assign(normalizePublicProduct(raw, savedById.get(String(raw.id || raw._id)) || {}, priceUp), { stockUpdatedAt }));
-    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
-    res.json(normalized);
+    res.set('Cache-Control', 'no-store');
+    res.json(Object.assign({ data: normalized }, { priceUp, pricePolicyUpdatedAt: affiliate.pricePolicyUpdatedAt || null }));
   } catch (error) {
     console.error('Live products unavailable:', error.message);
     res.status(503).json({ ok: false, error: 'تعذر جلب المنتجات الأصلية حاليًا' });
@@ -1052,11 +1067,14 @@ app.post('/api/create-order', async (req,res)=>{
     const productAvailable = source.is_active !== false && propertyAvailable && sourceAvailability(source) === true;
     if (!productAvailable) return res.status(409).json({error:'المنتج غير متاح حاليًا'});
     const note=clean(source.note || '');
-    const suggestedPrice=extractSuggestedSalePrice(note,base) || Math.round(base*(1+priceUp/100));
-    const selectedPrice=Number(item.requestedFinalPrice);
-    const finalPrice=Math.round((selectedPrice > 0 ? selectedPrice : suggestedPrice)*100)/100;
-    if (!Number.isFinite(finalPrice) || finalPrice < base) return res.status(400).json({error:'سعر البيع يجب ألا يقل عن سعر الجملة'});
-    // العمولة هنا هي الفرق الحقيقي بين السعر الذي اختاره المسوق وسعر الجملة، وليست رقمًا مأخوذًا من الاقتراح.
+    const adminLocked = source.adminPriceLocked === true || source.admin_price_locked === true;
+    const adminSale = Number(source.adminSalePrice != null ? source.adminSalePrice : source.admin_sale_price);
+    const configuredPrice = adminLocked && Number.isFinite(adminSale) && adminSale >= base
+      ? Math.round(adminSale)
+      : productSalePrice(note, base, priceUp);
+    const finalPrice=Math.round(configuredPrice*100)/100;
+    if (!Number.isFinite(finalPrice) || finalPrice < base) return res.status(409).json({error:'سعر المنتج الإداري غير متاح حاليًا'});
+    // السعر والعمولة مصدرهما سياسة الأدمن المحفوظة على الخادم؛ لا نعتمد على سعر أرسله المتصفح.
     const commission=Math.max(0, Math.round((finalPrice-base)*100)/100);
     const property=(matchedProperty && (matchedProperty._id || matchedProperty.id || matchedProperty.key)) || item.property || source.propId || sourceProp._id || sourceProp.id || sourceProp.key || '';
     if (!property) return res.status(409).json({error:'خاصية المنتج غير متاحة حاليًا'});
