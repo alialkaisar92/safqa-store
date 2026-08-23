@@ -19,7 +19,7 @@ assert(html.includes('function clearSearch()'), 'search clear interaction is mis
 assert(html.includes('function uiText(') && html.includes('Extended_Pictographic'), 'emoji-safe UI text handling is missing');
 assert(html.includes('categoryIcon(') && html.includes('<svg viewBox="0 0 24 24"'), 'SVG category/icon system is missing');
 assert(html.includes('سعر الجملة') && html.includes('سعر البيع المقترح') && html.includes('عمولتك المتوقعة'), 'product financial hierarchy is missing');
-assert(html.includes('onclick="openWallet()"') && !html.includes('class="cart-nav"'), 'bottom navigation must reserve one slot for wallet, not duplicate cart');
+assert(!html.includes('<nav class="bnav">') && html.includes('التنقل الأساسي موجود داخل القائمة الجانبية') && html.includes('window.openWallet=function()'), 'bottom navigation must be removed while wallet navigation remains available');
 assert(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(html), 'raw Unicode emoji remains in storefront source');
 assert(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(supportJs + supportCss), 'raw Unicode emoji remains in support chat source');
 assert(supportCss.includes('#rab7naSupportRoot .support-launch{left:auto;right:20px') && supportCss.includes('#rab7naSupportRoot .support-panel{left:auto;right:20px'), 'support chat is not placed on the right');
