@@ -322,6 +322,7 @@ img{display:block}
   <h3>🛒 السلة</h3>
   <div id="citems"></div>
   <div class="tot"><span>الإجمالي</span><span id="ctot">0 ج.م</span></div>
+  <div id="cartPriceBulkActions" class="cart-price-bulk-actions" aria-live="polite"></div>
   <button class="go" onclick="openCheckout()">إتمام الطلب ←</button>
   <button class="go" style="background:#f2f6f3;color:var(--mut);margin-top:8px" onclick="closeCart()">متابعة التسوق</button>
 </div></div>
@@ -758,6 +759,9 @@ img{display:block}
 .cart-remove{border:0;border-radius:9px;padding:7px 9px;background:#fee2e2;color:#b91c1c;font-size:.7rem;font-weight:850;cursor:pointer}
 .cart-price-editor{margin-top:10px;padding:11px;border:1px solid #d9ebe3;border-radius:13px;background:#f8fcfa}
 .cart-price-editor label{display:block;margin-bottom:6px;color:#436256;font-size:.7rem;font-weight:850}
+.cart-price-bulk-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0 2px}
+.cart-price-bulk-actions button{border:0;border-radius:11px;padding:10px 14px;background:#0f766e;color:#fff;font:850 .76rem Cairo,sans-serif;cursor:pointer;touch-action:manipulation}
+.cart-price-bulk-actions small{color:#71847a;font-size:.7rem;font-weight:750;line-height:1.5}
 .cart-price-editor-row{display:flex;align-items:center;gap:7px;border:1px solid #cfe1d9;border-radius:10px;background:#fff;padding:0 10px}
 .cart-price-editor-row:focus-within{border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.1)}
 .cart-price-editor-row input{width:100%;min-width:0;border:0;outline:0;padding:10px 0;background:transparent;color:#14261f;font:inherit;font-weight:850}
@@ -773,7 +777,8 @@ img{display:block}
   .cart-item{grid-template-columns:52px minmax(0,1fr) auto;gap:8px}
   .cart-item-image{width:52px;height:52px}
   .cart-item-actions{gap:6px}
-  .cart-edit-price{padding-inline:8px}
+  .cart-price-bulk-actions{align-items:stretch;flex-direction:column}
+  .cart-price-bulk-actions button{width:100%}
   .cart-remove{padding-inline:7px}
 }
 
@@ -1090,19 +1095,14 @@ function openCart(){
    var unitPrice=Number(c.price||0);
    var unitCost=Number(c.cost||0);
    var unitProfit=Math.max(0,unitPrice-unitCost);
-   var edit=(editingCartIndex===i)
-     ? '<div class="cart-price-editor" onclick="event.stopPropagation()">'
-       +'<label for="cartPriceInput'+i+'">سعر البيع للعميل</label>'
+   var edit='<div class="cart-price-editor" onclick="event.stopPropagation()">'
+       +'<label for="cartPriceInput'+i+'">سعر البيع للعميل — عدّل أي عدد من المنتجات</label>'
        +'<div class="cart-price-editor-row">'
-       +'<input id="cartPriceInput'+i+'" type="number" inputmode="decimal" min="'+unitCost+'" step="0.01" value="'+unitPrice+'" aria-label="سعر البيع للعميل">'
+       +'<input id="cartPriceInput'+i+'" type="number" inputmode="decimal" min="'+unitCost+'" step="0.01" value="'+unitPrice+'" aria-label="سعر البيع للعميل للمنتج '+(i+1)+'">'
        +'<span>ج.م</span>'
        +'</div>'
        +'<div id="cartPriceError'+i+'" class="cart-price-error" role="alert"></div>'
-       +'<div class="cart-price-actions">'
-       +'<button class="cart-price-save" onclick="saveCartPrice('+i+')">حفظ السعر</button>'
-       +'<button class="cart-price-cancel" onclick="cancelCartPriceEdit()">إلغاء</button>'
-       +'</div></div>'
-     : '';
+       +'</div>';
    return '<article class="ci cart-item">'
     +'<img class="cart-item-image" src="'+(c.image||'')+'" alt="">'
     +'<div class="cart-item-main">'
@@ -1116,7 +1116,6 @@ function openCart(){
     +'<b>'+c.qty+'</b>'
     +'<button onclick="cartQty('+i+',1)" aria-label="زيادة الكمية">+</button>'
     +'</div>'
-    +'<button class="cart-edit-price" onclick="editCartPrice('+i+')">تعديل السعر</button>'
     +'</div>'
     +edit
     +'</div>'
@@ -1131,15 +1130,48 @@ function openCart(){
  var totalEl=document.getElementById('ctot');
  if(totalEl)totalEl.innerHTML=
    '<span class="cart-total-label">إجمالي البيع</span> <b>'+fmt(subtotal)+'</b><br><small class="cart-total-cost">سعر الجملة الإجمالي: '+fmt(wholesaleTotal)+'</small><br><small class="cart-total-profit">💰 ربحك المتوقع: '+fmt(profit)+'</small>';
+ var bulk=document.getElementById('cartPriceBulkActions');
+ if(bulk)bulk.innerHTML=cart.length
+   ? '<button type="button" onclick="saveAllCartPrices()">حفظ أسعار المنتجات</button><small>تقدر تعدّل منتج واحد أو أكثر، ثم تحفظهم مرة واحدة.</small>'
+   : '';
 
  openModalById('cartMdl');
 }
+window.renderCartForModal=openCart;
 
 function cartQty(i,d){
  if(!cart[i])return;
  cart[i].qty=Math.max(1,Number(cart[i].qty)+d);
  upd();
  openCart();
+}
+
+function saveAllCartPrices(options){
+ options=options||{};
+ var invalid=-1;
+ var values=cart.map(function(c,i){
+   var input=document.getElementById('cartPriceInput'+i);
+   var price=Number(input&&input.value);
+   var minimum=Number(c.cost||0);
+   var error=document.getElementById('cartPriceError'+i);
+   if(!Number.isFinite(price)||price<minimum){
+     if(error)error.textContent='اكتب سعرًا صحيحًا لا يقل عن '+fmt(minimum);
+     if(invalid<0)invalid=i;
+     return null;
+   }
+   if(error)error.textContent='';
+   return Math.round(price*100)/100;
+ });
+ if(invalid>=0){
+   var bad=document.getElementById('cartPriceInput'+invalid);
+   if(bad){bad.focus();bad.select();}
+   return false;
+ }
+ cart.forEach(function(c,i){c.price=values[i];c.profit=values[i]-Number(c.cost||0);});
+ editingCartIndex=-1;
+ upd();
+ if(!options.silent){openCart();toast('✅ تم حفظ أسعار المنتجات والعمولة المتوقعة');}
+ return true;
 }
 
 function editCartPrice(i){
@@ -1190,6 +1222,7 @@ function rm(i){
 
 function openCheckout(){
   if(!cart.length)return;
+  if(!saveAllCartPrices({silent:true}))return;
   closeCart({history:false});
   openModalById('coMdl');
   renderCheckout();
@@ -2330,12 +2363,13 @@ body{
     }
   };
   window.openCart=function(){
-    if(typeof upd==='function')upd();
-    window.openModalById('cartMdl');
+    if(typeof window.renderCartForModal==='function')window.renderCartForModal();
+    else{if(typeof upd==='function')upd();window.openModalById('cartMdl');}
   };
   window.closeCart=function(options){window.closeModalById('cartMdl',options);};
   window.openCheckout=function(){
     if(!Array.isArray(window.cart)||!window.cart.length){if(typeof toast==='function')toast('السلة فارغة');return;}
+    if(typeof window.saveAllCartPrices==='function'&&!window.saveAllCartPrices({silent:true}))return;
     window.closeModalById('cartMdl',{history:false});
     if(typeof renderCheckout==='function')renderCheckout();
     if(typeof recalc==='function')recalc();
