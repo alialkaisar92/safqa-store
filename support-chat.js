@@ -42,13 +42,13 @@
     root.id = 'rab7naSupportRoot';
     root.innerHTML = '' +
       '<button class="support-launch" type="button" aria-label="فتح شات الدعم" aria-expanded="false">' +
-        '<span class="support-launch-icon" aria-hidden="true">✦</span>' +
+        '<span class="support-launch-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14v11H8l-3 3V5Z"/><path d="M8 9h8M8 12h5"/></svg></span>' +
         '<span class="support-launch-copy"><b>محتاج مساعدة؟</b><small>فريق الدعم هنا لمساعدتك</small></span>' +
         '<span class="support-launch-badge" hidden>!</span>' +
       '</button>' +
       '<section class="support-panel" role="dialog" aria-modal="false" aria-label="شات دعم Rab7na" aria-hidden="true">' +
         '<header class="support-panel-header">' +
-          '<span class="support-panel-mark" aria-hidden="true">✦</span>' +
+          '<span class="support-panel-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14v11H8l-3 3V5Z"/><path d="M8 9h8M8 12h5"/></svg></span>' +
           '<span class="support-panel-headcopy"><b>مركز دعم Rab7na</b><small>محادثة آمنة من داخل حسابك</small></span>' +
           '<button class="support-panel-close" type="button" aria-label="إغلاق شات الدعم">×</button>' +
         '</header>' +
@@ -102,7 +102,7 @@
     stopPolling();
     root.querySelector('#supportPanelBody').innerHTML = '' +
       '<div class="support-login">' +
-        '<div class="support-login-icon" aria-hidden="true">🔐</div>' +
+        '<div class="support-login-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>' +
         '<h3>الدعم متاح من داخل حسابك</h3>' +
         '<p>سجّل دخولك حتى نربط رسالتك بطلباتك وحسابك، ونقدر نتابع معك بشكل أسرع وأكثر أمانًا.</p>' +
         '<a href="/login.html?return=' + currentReturnUrl() + '">تسجيل الدخول وبدء المحادثة</a>' +
@@ -123,7 +123,7 @@
       '<div class="support-messages" id="supportMessages" aria-live="polite"></div>' +
       '<form class="support-composer" id="supportComposer">' +
         '<textarea id="supportInput" rows="1" maxlength="2000" placeholder="اكتب رسالتك هنا..." aria-label="رسالة الدعم"></textarea>' +
-        '<button class="support-send" id="supportSend" type="submit" aria-label="إرسال الرسالة">➤</button>' +
+        '<button class="support-send" id="supportSend" type="submit" aria-label="إرسال الرسالة"><svg viewBox="0 0 24 24"><path d="m4 4 16 8-16 8 3-8-3-8Z"/><path d="M7 12h13"/></svg></button>' +
       '</form>' +
       '<div class="support-note">محادثتك خاصة ومربوطة بحسابك فقط</div>';
     root.querySelectorAll('[data-support-text]').forEach(function (button) {
@@ -147,7 +147,7 @@
     if (!messages) return;
     var shouldStick = forceBottom || (messages.scrollHeight - messages.scrollTop - messages.clientHeight < 70);
     if (!state.messages.length) {
-      messages.innerHTML = '<div class="support-empty"><div class="support-empty-icon">✦</div><b>ابدأ محادثتك الآن</b><span>فريق الدعم جاهز لمساعدتك</span></div>';
+      messages.innerHTML = '<div class="support-empty"><div class="support-empty-icon"><svg viewBox="0 0 24 24"><path d="M5 5h14v11H8l-3 3V5Z"/><path d="M8 9h8M8 12h5"/></svg></div><b>ابدأ محادثتك الآن</b><span>فريق الدعم جاهز لمساعدتك</span></div>';
       return;
     }
     messages.innerHTML = state.messages.map(function (message) {

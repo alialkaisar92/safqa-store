@@ -22,3 +22,12 @@
 @keyframes supportDot{0%,60%,100%{opacity:.35;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}@keyframes supportFloatIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @media(max-width:540px){.support-launch{left:13px;bottom:calc(78px + env(safe-area-inset-bottom));width:52px;height:52px;padding:0;border-radius:17px;justify-content:center}.support-launch-icon{width:42px;height:42px;flex-basis:42px}.support-launch-copy,.support-launch-badge{display:none}.support-panel{left:8px;right:8px;bottom:calc(72px + env(safe-area-inset-bottom));width:auto;height:min(650px,calc(100dvh - 94px));border-radius:23px}.support-panel-body{padding:11px}.support-welcome{padding:11px 12px}}
 @media(prefers-reduced-motion:reduce){.support-launch,.support-panel{animation:none;transition:none}.support-messages{scroll-behavior:auto}.support-typing i{animation:none}}
+
+/* Premium storefront placement: support lives on the right and never collides with the bottom navigation or AI assistant. */
+#rab7naSupportRoot .support-launch{left:auto;right:20px;bottom:150px;border-radius:16px}
+#rab7naSupportRoot .support-panel{left:auto;right:20px;bottom:214px}
+#rab7naSupportRoot .support-launch-icon svg,#rab7naSupportRoot .support-panel-mark svg,#rab7naSupportRoot .support-login-icon svg,#rab7naSupportRoot .support-send svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:540px){
+  #rab7naSupportRoot .support-launch{left:auto;right:13px;bottom:calc(144px + env(safe-area-inset-bottom));}
+  #rab7naSupportRoot .support-panel{left:8px;right:8px;bottom:calc(198px + env(safe-area-inset-bottom));height:min(650px,calc(100dvh - 220px));}
+}

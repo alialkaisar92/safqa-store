@@ -13,7 +13,7 @@ function assert(condition, message) {
 }
 
 assert(addBlock, 'addCart function is missing');
-assert(addBlock.includes("toast('✅ تم إضافة المنتج للسلة')"), 'addCart must show the add-to-cart confirmation');
+assert(addBlock.includes("toast('تم إضافة المنتج للسلة')"), 'addCart must show the add-to-cart confirmation');
 assert(addBlock.includes('closeCart();'), 'addCart must close the cart after adding');
 assert(!addBlock.includes('showPriceModal();'), 'addCart must not force the old price modal');
 assert(html.includes('function openCart()'), 'openCart function is missing');

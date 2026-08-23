@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="ar" dir="rtl"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Rab7na | تسوق المنتجات واربح عمولة</title>
+<title>Rab7na | مركز المسوّق والمنتجات</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--g:#16a34a;--gd:#0b5d3b;--gdd:#0a3d2a;--bg:#f4f7f5;--card:#fff;--ink:#16281f;--mut:#8aa094;--line:#e6eee9;--rad:16px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;font-family:Cairo,Tajawal,system-ui,sans-serif}
@@ -247,32 +247,32 @@ img{display:block}
   <link rel="stylesheet" href="/support-chat.css?v=1">
 </head><body>
 <header class="hdr">
-  <button class="ic" onclick="openDrw()">☰</button>
-  <div class="logo">Rab<b>7na</b></div>
-  <div class="search"><input id="q" placeholder="ابحث عن منتج..." oninput="doSearch(this.value)"></div>
-  <button class="ic" id="notifBtn" type="button" onclick="toggleNotifications()" aria-label="فتح الإشعارات" aria-expanded="false">🔔<span class="cbadge notif-badge" id="notifBadge" hidden>0</span></button>
-  <button class="ic" onclick="openCart()">🛒<span class="cbadge" id="cc">0</span></button>
+  <button class="ic menu-trigger" type="button" onclick="openDrw()" aria-label="فتح القائمة"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <a class="logo" href="/store" aria-label="Rab7na الرئيسية">Rab<b>7na</b></a>
+  <div class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg><input id="q" placeholder="ابحث عن منتج..." oninput="doSearch(this.value)" aria-label="البحث عن منتج"><button type="button" class="search-clear" onclick="clearSearch()" aria-label="مسح البحث">×</button></div>
+  <button class="ic" id="notifBtn" type="button" onclick="toggleNotifications()" aria-label="فتح الإشعارات" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="cbadge notif-badge" id="notifBadge" hidden>0</span></button>
+  <button class="ic" type="button" onclick="openCart()" aria-label="فتح السلة"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l1.7 10.2A3 3 0 0 0 9.7 17H18a3 3 0 0 0 2.9-2.2L22 7H7.2l-.5-3H3Zm6 16a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm9 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg><span class="cbadge" id="cc">0</span></button>
 </header>
 <div class="ovl" id="ovl" onclick="closeDrw()"></div>
 <aside class="drw" id="drw">
-  <button class="x" onclick="closeDrw()">✕</button>
+  <button class="x" onclick="closeDrw()" aria-label="إغلاق القائمة">×</button>
   <div class="hd"><div class="logo">Rab<b>7na</b></div><p>تصفح المنتجات وأرسل طلبك</p></div>
-  <div class="di on">🏠 الرئيسية</div>
-  <div class="di" onclick="closeDrw();scrollTo({top:document.getElementById('grid').offsetTop,behavior:'smooth'})">🛍️ المنتجات</div>
-  <div class="di" onclick="closeDrw();openCart()">🛒 السلة</div>
+  <div class="di on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 11 8-7 8 7v8H5v-8Z"/><path d="M9 19v-5h6v5"/></svg>الرئيسية</div>
+  <div class="di" onclick="closeDrw();scrollTo({top:document.getElementById('grid').offsetTop,behavior:'smooth'})"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z"/></svg>المنتجات</div>
+  <div class="di" onclick="closeDrw();openCart()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l1.7 10.2A3 3 0 0 0 9.7 17H18a3 3 0 0 0 2.9-2.2L22 7H7.2l-.5-3H3Z"/><circle cx="9" cy="20" r="1.5"/><circle cx="19" cy="20" r="1.5"/></svg>السلة</div>
   <div class="dsec">خدمات المتجر</div>
-  <div class="di" onclick="closeDrw();openShip()">🚚 أسعار الشحن حسب المحافظة</div>
-  <div class="di" onclick="Rab7naSupport.open()">💬 شات الدعم</div>
-  <div class="dlog">👤 تسجيل الدخول / إنشاء حساب<br><small style="font-weight:400">للاستفادة من جميع الميزات</small></div>
-  <div class="dft"><div class="soc"><a>📘</a><a>📸</a><a>💬</a><a>✈️</a></div>جميع الحقوق محفوظة © Rab7na 2025</div>
+  <div class="di" onclick="closeDrw();openShip()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>أسعار الشحن حسب المحافظة</div>
+  <div class="di" onclick="Rab7naSupport.open()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v11H8l-3 3V5Z"/><path d="M8 9h8M8 12h5"/></svg>شات الدعم</div>
+  <div class="dlog"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.6-3.3 3.1-5 7-5s6.4 1.7 7 5"/></svg>تسجيل الدخول / إنشاء حساب<br><small style="font-weight:400">للاستفادة من جميع الميزات</small></div>
+  <div class="dft"><div class="soc"><a aria-label="فيسبوك">f</a><a aria-label="إنستجرام">ig</a><a aria-label="الدعم">?</a><a aria-label="تليجرام">↗</a></div>جميع الحقوق محفوظة © Rab7na 2025</div>
 </aside>
-<div class="notif-panel" id="notifPanel" role="dialog" aria-label="مركز الإشعارات" aria-hidden="true"><div class="notif-head"><h3>مركز الإشعارات</h3><button type="button" onclick="closeNotifications()" aria-label="إغلاق">إغلاق</button></div><div class="notif-tools"><button type="button" id="pushEnableBtn" onclick="enableRab7naPush()">🔔 تفعيل الإشعارات خارج الموقع</button><button type="button" class="secondary" id="soundEnableBtn" onclick="enableRab7naSound()">♫ تفعيل صوت الإشعار</button><button type="button" class="secondary" onclick="markAllNotificationsRead()">تعليم الكل كمقروء</button></div><p class="notif-note" id="notifNote">بعد السماح من المتصفح، يمكن استقبال إشعارات النظام خارج الموقع حسب دعم المتصفح وإعدادات الجهاز. الصوت داخل الصفحة يحتاج تفعيلًا منك.</p><div class="notif-list" id="notifList"><div class="notif-empty">سجّل الدخول لعرض إشعاراتك.</div></div></div><div class="notif-toast" id="notifToast" role="status" aria-live="polite"></div>
-<div class="hero">
-  <div><h2>عرض أسعار الشحن</h2><p>حسب المحافظة</p><button onclick="openShip()">اعرف الآن</button></div>
-  <div class="art">🚚</div>
-</div>
+<div class="notif-panel" id="notifPanel" role="dialog" aria-label="مركز الإشعارات" aria-hidden="true"><div class="notif-head"><h3>مركز الإشعارات</h3><button type="button" onclick="closeNotifications()" aria-label="إغلاق">إغلاق</button></div><div class="notif-tools"><button type="button" id="pushEnableBtn" onclick="enableRab7naPush()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>تفعيل الإشعارات خارج الموقع</button><button type="button" class="secondary" id="soundEnableBtn" onclick="enableRab7naSound()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6l-5 4H4Zm12-1a4 4 0 0 1 0 6m2-9a8 8 0 0 1 0 12"/></svg>تفعيل صوت الإشعار</button><button type="button" class="secondary" onclick="markAllNotificationsRead()">تعليم الكل كمقروء</button></div><p class="notif-note" id="notifNote">بعد السماح من المتصفح، يمكن استقبال إشعارات النظام خارج الموقع حسب دعم المتصفح وإعدادات الجهاز. الصوت داخل الصفحة يحتاج تفعيلًا منك.</p><div class="notif-list" id="notifList"><div class="notif-empty">سجّل الدخول لعرض إشعاراتك.</div></div></div><div class="notif-toast" id="notifToast" role="status" aria-live="polite"></div>
+<section class="hero" aria-labelledby="heroTitle">
+  <div class="hero-copy"><span class="eyebrow">Rab7na للأعمال</span><h2 id="heroTitle">بيع أذكى. ربح أوضح.</h2><p>اختار منتجاتك، حدّد سعر البيع، وتابع عمولتك من مكان واحد.</p><button type="button" onclick="openShip()">اعرف أسعار الشحن <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13m-5-5 5 5-5 5"/></svg></button></div>
+  <div class="hero-art" aria-hidden="true"><span>R7</span><svg viewBox="0 0 120 80"><path d="M12 48h68l12-24h16v24h8v13H12z"/><path d="M80 48V20h12l10 18v10"/><circle cx="32" cy="63" r="9"/><circle cx="94" cy="63" r="9"/></svg></div>
+</section>
 <div class="cats" id="cats"></div>
-<div class="sec"><h3 id="ptitle">كل المنتجات</h3><button onclick="toggleSort()">⇅ تصفية</button></div>
+<div class="sec"><h3 id="ptitle">كل المنتجات</h3><button class="filter-trigger" type="button" onclick="toggleSort()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span>ترتيب العرض</span></button></div>
 <div class="grid" id="grid"></div>
 <nav class="bnav">
   <button onclick="goAccount()">
@@ -297,12 +297,9 @@ img{display:block}
     <span>الأقسام</span>
   </button>
 
-  <button class="cart-nav" onclick="openCart()">
-    <span class="bi cart-icon">
-      <svg viewBox="0 0 24 24"><path d="M3 4h2l1.7 10.2A3 3 0 0 0 9.7 17H18a3 3 0 0 0 2.9-2.2L22 7H7.2l-.5-3H3Zm6 16a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm9 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>
-      <span class="cbadge" id="cc">0</span>
-    </span>
-    <span>السلة</span>
+  <button onclick="openWallet()">
+    <span class="bi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v12H4zM4 7V5h13v2m3 5h-4a2 2 0 0 0 0 4h4"/></svg></span>
+    <span>المحفظة</span>
   </button>
 </nav>
 <button id="storeAiLaunch" class="store-ai-launch" type="button" aria-label="فتح مساعد Rab7na" aria-haspopup="dialog" onclick="openStoreAssistant()"><span class="store-ai-mark">AI</span><span>اسأل مساعد Rab7na</span></button>
@@ -321,7 +318,7 @@ img{display:block}
 </div>
 <div class="mdl" id="cartMdl"><div class="box">
   <button class="modal-x" type="button" aria-label="إغلاق السلة" onclick="closeModalById('cartMdl')">×</button>
-  <h3>🛒 السلة</h3>
+  <h3 class="sheet-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l1.7 10.2A3 3 0 0 0 9.7 17H18a3 3 0 0 0 2.9-2.2L22 7H7.2l-.5-3H3Zm6 16a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm9 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>السلة</h3>
   <div id="citems"></div>
   <div class="tot"><span>الإجمالي</span><span id="ctot">0 ج.م</span></div>
   <button class="go" onclick="openCheckout()">إتمام الطلب ←</button>
@@ -343,7 +340,7 @@ img{display:block}
 
       <section class="checkout-card">
         <div class="checkout-title">
-          <span>🛍️</span>
+          <span class="checkout-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Zm3 0a4 4 0 0 1 8 0"/></svg></span>
           <div>
             <b>منتجات الطلب</b>
             <small id="coCount">0 منتج</small>
@@ -354,7 +351,7 @@ img{display:block}
 
       <section class="checkout-card">
         <div class="checkout-title">
-          <span>👤</span>
+          <span class="checkout-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.6-3.3 3.1-5 7-5s6.4 1.7 7 5"/></svg></span>
           <div>
             <b>بيانات العميل</b>
             <small>أدخل بيانات الشحن بدقة</small>
@@ -393,7 +390,7 @@ img{display:block}
 
       <section class="checkout-card checkout-summary-card">
         <div class="checkout-title">
-          <span>📈</span>
+          <span class="checkout-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h16M7 15l3-4 3 2 5-6"/></svg></span>
           <div>
             <b>ملخص الأرباح</b>
             <small>الأرباح المتوقعة من الطلب</small>
@@ -415,8 +412,8 @@ img{display:block}
           <b id="coShip">0 ج.م</b>
         </div>
 
-        <div class="summary-row"><span>💎 العمولة المتوقعة</span><b id="coCommission">0 ج.م</b></div><div class="summary-profit">
-          <span>💰 الربح المتوقع</span>
+        <div class="summary-row"><span>العمولة المتوقعة</span><b id="coCommission">0 ج.م</b></div><div class="summary-profit">
+          <span>صافي ربحك المتوقع</span>
           <b id="coProfit">0 ج.م</b>
         </div>
 
@@ -428,7 +425,7 @@ img{display:block}
         <div id="comsg" class="co-msg"></div>
 
         <button class="confirm-order" onclick="submitOrder()">
-          تأكيد الطلب ✓
+          تأكيد الطلب
         </button>
       </section>
 
@@ -805,7 +802,10 @@ img{display:block}
 
 <script>
 var P=[],cart=[],curCat='الكل',curQ='',PL=[],ship=50;
-function fmt(n){return n+' ج.م'}
+function fmt(n){return Number(n||0).toLocaleString('ar-EG')+' ج.م'}
+function uiText(value){return String(value==null?'':value).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,'').replace(/\s{2,}/g,' ').trim();}
+function icon(name){var paths={search:'<circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/>',heart:'<path d="M20.8 8.8c0 5.3-8.8 10-8.8 10s-8.8-4.7-8.8-10A4.8 4.8 0 0 1 12 6.6a4.8 4.8 0 0 1 8.8 2.2Z"/>',bag:'<path d="M3 4h2l1.7 10.2A3 3 0 0 0 9.7 17H18a3 3 0 0 0 2.9-2.2L22 7H7.2l-.5-3H3Z"/><circle cx="9" cy="20" r="1.5"/><circle cx="19" cy="20" r="1.5"/>',tag:'<path d="M4 5v6l9 9 7-7-9-9H4Z"/><circle cx="8" cy="9" r="1"/>'};return '<svg viewBox="0 0 24 24" aria-hidden="true">'+(paths[name]||paths.tag)+'</svg>';}
+function clearSearch(){var input=document.getElementById('q');if(input)input.value='';doSearch('');}
 async function load(){
   try{var r=await fetch('/api/products?all=1');var d=await r.json();var products=d.data||d||[];P=Array.isArray(products)?products.filter(function(item){return item&&typeof item==='object'}):[];}catch(e){P=[];console.warn('[store] products load failed',e&&e.message||e);}
   try{renderCats();renderGrid();}catch(e){console.warn('[store] product rendering failed',e&&e.message||e);var fallback=document.getElementById('grid');if(fallback)fallback.innerHTML='<p style="grid-column:1/-1;text-align:center;padding:30px;color:var(--mut)">تعذر تحميل المنتجات حاليًا</p>';}
@@ -819,11 +819,12 @@ async function load(){
 }
 function checkoutField(id){return document.getElementById(id);}
 function setCheckoutMessage(text,kind){var m=checkoutField('comsg');if(!m)return;m.className='co-msg '+(kind||'');m.textContent=text||'';}
-function getCats(){var s={};P.forEach(function(p){s[p.category||p.cat||'عام']=1});return ['الكل'].concat(Object.keys(s));}
-function renderCats(){var el=document.getElementById('cats');if(!el)return;el.innerHTML=getCats().map(function(c){return '<button class="'+(c===curCat?'on':'')+'" onclick="setCat(\''+c+'\')">'+c+'</button>'}).join('');}
+function getCats(){var s={};P.forEach(function(p){s[uiText(p.category||p.cat||'عام')||'عام']=1});return ['الكل'].concat(Object.keys(s));}
+function categoryIcon(c){var key=uiText(c);var map={'الكل':'grid','مطبخ':'home','أطفال':'user','صحة ولياقة':'heart','سيارات':'truck','أدوات':'tool','أحذية وحقائب':'tag','ملابس':'tag','إلكترونيات':'bolt','منزل':'home'};var paths={grid:'<path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z"/>',home:'<path d="m4 11 8-7 8 7v8H4v-8Z"/><path d="M9 19v-5h6v5"/>',user:'<circle cx="12" cy="8" r="3"/><path d="M5 20c.7-3.3 3-5 7-5s6.3 1.7 7 5"/>',heart:'<path d="M20.8 8.8c0 5.3-8.8 10-8.8 10s-8.8-4.7-8.8-10A4.8 4.8 0 0 1 12 6.6a4.8 4.8 0 0 1 8.8 2.2Z"/>',truck:'<path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',tool:'<path d="m14 6 4-2 2 2-2 4-3-3-7 7-2-2 7-7Z"/><path d="m5 17-2 2 2 2 2-2"/>',tag:'<path d="M4 5v6l9 9 7-7-9-9H4Z"/><circle cx="8" cy="9" r="1"/>',bolt:'<path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"/>'};return '<svg viewBox="0 0 24 24" aria-hidden="true">'+(paths[map[key]]||paths.tag)+'</svg>';}
+function renderCats(){var el=document.getElementById('cats');if(!el)return;el.innerHTML=getCats().map(function(c){var safe=uiText(c).replace(/'/g,'\\\'');return '<button class="'+(c===curCat?'on':'')+'" onclick="setCat(\''+safe+'\')">'+categoryIcon(c)+'<span>'+uiText(c)+'</span></button>';}).join('');}
 function setCat(c){curCat=c;renderCats();renderGrid();}
-function doSearch(q){curQ=String(q||'').trim();try{renderGrid();}catch(e){console.warn('[store] search render failed',e&&e.message||e);}}
-function vis(){return P.filter(function(p){return (curCat==='الكل'||(p.category||p.cat||'عام')===curCat)&&(!curQ||(p.name||'').indexOf(curQ)>-1);});}
+function doSearch(q){curQ=uiText(q);try{renderGrid();}catch(e){console.warn('[store] search render failed',e&&e.message||e);}}
+function vis(){var needle=curQ.toLowerCase();return P.filter(function(p){var category=uiText(p.category||p.cat||'عام')||'عام';return (curCat==='الكل'||category===curCat)&&(!needle||uiText(p.name).toLowerCase().indexOf(needle)>-1);});}
 function wholePriceOf(p){
   var value=p&&p.basePrice!=null?p.basePrice:(p&&p.cost!=null?p.cost:(p&&p.sale_price!=null?p.sale_price:(p&&p.price||0)));
   return Math.max(0,Number(value)||0);
@@ -843,11 +844,10 @@ function renderGrid(){
     var i=P.indexOf(p);var whole=wholePriceOf(p);var sale=salePriceOf(p);var commission=commissionOf(p);
     var img=p.image||((p.images&&p.images[0])||'');
     var st=stockOf(p);
-    return '<div class="card'+(st.out?' out':'')+'" onclick="openP('+i+')"><div class="img"><img loading="lazy" src="'+img+'"><span class="stk '+st.cls+'">'+st.label+'</span><button class="fav">♡</button></div>'
-      +'<div class="bd"><div class="nm">'+(p.name||'')+'</div>'
-      +'<div class="price-meta"><span>الجملة: <b>'+fmt(whole)+'</b></span><span>المقترح: <b>'+fmt(sale)+'</b></span><span>عمولتك: <b>'+fmt(commission)+'</b></span></div>'
-      +'<div class="pr"><b>'+fmt(sale)+'</b><small> سعر البيع المقترح</small></div>'
-      +'<button class="add" '+(st.out?'disabled':'onclick="event.stopPropagation();addCart('+i+')"')+'>🛒 أضف إلى السلة</button></div></div>';
+    return '<article class="card'+(st.out?' out':'')+'" onclick="openP('+i+')"><div class="img"><img loading="lazy" src="'+img+'" alt="'+uiText(p.name)+'"><span class="stk '+st.cls+'">'+st.label+'</span><button class="fav" type="button" onclick="event.stopPropagation()" aria-label="إضافة للمفضلة">'+icon('heart')+'</button></div>'
+      +'<div class="bd"><div class="nm">'+uiText(p.name)+'</div>'
+      +'<div class="price-meta"><span>سعر الجملة <b>'+fmt(whole)+'</b></span><span>سعر البيع المقترح <b>'+fmt(sale)+'</b></span><span class="profit-line">عمولتك المتوقعة <b>'+fmt(commission)+'</b></span></div>'
+      +'<button class="add" '+(st.out?'disabled':'onclick="event.stopPropagation();addCart('+i+')"')+'>'+icon('bag')+'<span>إضافة للطلب</span></button></div></article>';
   }).join('')||'<p style="grid-column:1/-1;text-align:center;padding:30px;color:var(--mut)">لا توجد منتجات</p>';
 }
 function toggleSort(){P.reverse();renderGrid();}
@@ -892,7 +892,7 @@ function addCart(i){
 
  upd();
  closeCart();
- toast('✅ تم إضافة المنتج للسلة');
+ toast('تم إضافة المنتج للسلة');
 }
 
 function showPriceModal(){
@@ -958,7 +958,7 @@ function showPriceModal(){
      '</div>'+
 
      '<button class="add-confirm" onclick="confirmAddCart()">'+
-       '🛒 إضافة إلى السلة'+
+       'إضافة إلى السلة'+
      '</button>'+
 
    '</div>'+
@@ -985,8 +985,7 @@ function updatePricePreview(){
 
  if(price<selectedBase){
 
-   error.textContent=
-     '⚠️ أقل سعر مسموح '+selectedBase.toLocaleString('ar-EG')+' ج.م';
+   error.textContent='أقل سعر مسموح '+selectedBase.toLocaleString('ar-EG')+' ج.م';
 
    profit.textContent='0 ج.م';
    total.textContent='—';
@@ -1040,7 +1039,7 @@ function confirmAddCart(){
    var e=document.getElementById('priceError');
 
    if(e)e.textContent=
-     '⚠️ لا يمكن البيع بأقل من تكلفة المنتج';
+     'لا يمكن البيع بأقل من تكلفة المنتج';
 
    return;
  }
@@ -1075,7 +1074,7 @@ function confirmAddCart(){
 
  closePriceModal();
  closeCart();
- toast('✅ تم إضافة المنتج للسلة');
+ toast('تم إضافة المنتج للسلة');
 }
 
 function upd(){
@@ -1122,7 +1121,7 @@ function openCart(){
     +'</div>'
     +'<button class="cart-remove" onclick="rm('+i+')" aria-label="حذف المنتج">حذف</button>'
     +'</article>';
- }).join('') : '<p class="cart-empty">🛒 السلة فارغة</p>';
+ }).join('') : '<p class="cart-empty">السلة فارغة</p>';
 
  var subtotal=cart.reduce(function(a,c){return a+Number(c.price||0)*Number(c.qty||0)},0);
  var wholesaleTotal=cart.reduce(function(a,c){return a+Number(c.cost||0)*Number(c.qty||0)},0);
@@ -1130,7 +1129,7 @@ function openCart(){
 
  var totalEl=document.getElementById('ctot');
  if(totalEl)totalEl.innerHTML=
-   '<span class="cart-total-label">إجمالي البيع</span> <b>'+fmt(subtotal)+'</b><br><small class="cart-total-cost">سعر الجملة الإجمالي: '+fmt(wholesaleTotal)+'</small><br><small class="cart-total-profit">💰 ربحك المتوقع: '+fmt(profit)+'</small>';
+   '<span class="cart-total-label">إجمالي البيع</span> <b>'+fmt(subtotal)+'</b><br><small class="cart-total-cost">سعر الجملة الإجمالي: '+fmt(wholesaleTotal)+'</small><br><small class="cart-total-profit">ربحك المتوقع: '+fmt(profit)+'</small>';
 
  openModalById('cartMdl');
 }
@@ -1151,7 +1150,7 @@ function refreshCartPriceSummary(i){
  if(sale)sale.textContent=fmt(price);
  if(profitEl)profitEl.textContent='ربحك المتوقع: '+fmt(profit)+' للقطعة';
  var totalEl=document.getElementById('ctot');
- if(totalEl){var subtotal=cart.reduce(function(a,x){return a+Number(x.price||0)*Number(x.qty||0)},0),wholesale=cart.reduce(function(a,x){return a+Number(x.cost||0)*Number(x.qty||0)},0),gain=cart.reduce(function(a,x){return a+Math.max(0,Number(x.price||0)-Number(x.cost||0))*Number(x.qty||0)},0);totalEl.innerHTML='<span class="cart-total-label">إجمالي البيع</span> <b>'+fmt(subtotal)+'</b><br><small class="cart-total-cost">سعر الجملة الإجمالي: '+fmt(wholesale)+'</small><br><small class="cart-total-profit">💰 ربحك المتوقع: '+fmt(gain)+'</small>';}
+ if(totalEl){var subtotal=cart.reduce(function(a,x){return a+Number(x.price||0)*Number(x.qty||0)},0),wholesale=cart.reduce(function(a,x){return a+Number(x.cost||0)*Number(x.qty||0)},0),gain=cart.reduce(function(a,x){return a+Math.max(0,Number(x.price||0)-Number(x.cost||0))*Number(x.qty||0)},0);totalEl.innerHTML='<span class="cart-total-label">إجمالي البيع</span> <b>'+fmt(subtotal)+'</b><br><small class="cart-total-cost">سعر الجملة الإجمالي: '+fmt(wholesale)+'</small><br><small class="cart-total-profit">ربحك المتوقع: '+fmt(gain)+'</small>';}
 }
 function updateCartPriceFromInput(i,value){
  var c=cart[i],input=document.getElementById('cartPriceInput'+i),error=document.getElementById('cartPriceError'+i);
@@ -1288,16 +1287,16 @@ async function trackQueuedOrder(id){
       var order=d.order||{},state=String(order.requestStatus||'pending').toLowerCase();
       if(state!==last){last=state;if(isCurrent())showQueuedOrder(order,state==='accepted'?'تم استلام الطلب من المورد':'تم استلام طلبك بنجاح',state==='accepted'?'جاري تأكيد الطلب من المورد…':(order.message||'جاري تجهيز الإرسال…'));}
       if(state==='confirmed'){
-        clearPendingOrder(id);if(isCurrent()){showSuccessfulOrder(order,'تم تأكيد الطلب بنجاح');clearOrderIdempotencyKey();var button=document.querySelector('.confirm-order');if(button){button.disabled=false;button.classList.remove('is-processing');button.removeAttribute('aria-busy');button.textContent='تأكيد الطلب ✓';}setTimeout(function(){closeCheckout();resetOrderMessage();},3600);}
+        clearPendingOrder(id);if(isCurrent()){showSuccessfulOrder(order,'تم تأكيد الطلب بنجاح');clearOrderIdempotencyKey();var button=document.querySelector('.confirm-order');if(button){button.disabled=false;button.classList.remove('is-processing');button.removeAttribute('aria-busy');button.textContent='تأكيد الطلب';}setTimeout(function(){closeCheckout();resetOrderMessage();},3600);}
         return;
       }
       if(state==='failed'){
-        clearPendingOrder(id);if(isCurrent()){clearOrderIdempotencyKey();var failed=document.getElementById('comsg');if(failed){failed.className='co-msg error';failed.textContent=order.failureReason||'تعذر تأكيد الطلب من المورد؛ راجع البيانات وأنشئ طلبًا جديدًا';}var retryButton=document.querySelector('.confirm-order');if(retryButton){retryButton.disabled=false;retryButton.classList.remove('is-processing');retryButton.removeAttribute('aria-busy');retryButton.textContent='تأكيد الطلب ✓';}}
+        clearPendingOrder(id);if(isCurrent()){clearOrderIdempotencyKey();var failed=document.getElementById('comsg');if(failed){failed.className='co-msg error';failed.textContent=order.failureReason||'تعذر تأكيد الطلب من المورد؛ راجع البيانات وأنشئ طلبًا جديدًا';}var retryButton=document.querySelector('.confirm-order');if(retryButton){retryButton.disabled=false;retryButton.classList.remove('is-processing');retryButton.removeAttribute('aria-busy');retryButton.textContent='تأكيد الطلب';}}
         return;
       }
     }catch(e){console.warn('[checkout] status polling retry',e&&e.message||e);}
   }
-  if(isCurrent()){var timeoutButton=document.querySelector('.confirm-order');if(timeoutButton){timeoutButton.disabled=false;timeoutButton.classList.remove('is-processing');timeoutButton.removeAttribute('aria-busy');timeoutButton.textContent='تأكيد الطلب ✓';}var pending=document.getElementById('comsg');if(pending){pending.className='co-msg pending';pending.innerHTML='<span class="order-success-title">تم استلام طلبك</span><span class="order-queue-number">رقم الطلب: #'+orderNumber({id:id})+'</span><span class="order-queue-note">جاري التحقق من حالته في الخلفية. لا تقم بإرسال الطلب نفسه مرة أخرى.</span>';}}
+  if(isCurrent()){var timeoutButton=document.querySelector('.confirm-order');if(timeoutButton){timeoutButton.disabled=false;timeoutButton.classList.remove('is-processing');timeoutButton.removeAttribute('aria-busy');timeoutButton.textContent='تأكيد الطلب';}var pending=document.getElementById('comsg');if(pending){pending.className='co-msg pending';pending.innerHTML='<span class="order-success-title">تم استلام طلبك</span><span class="order-queue-number">رقم الطلب: #'+orderNumber({id:id})+'</span><span class="order-queue-note">جاري التحقق من حالته في الخلفية. لا تقم بإرسال الطلب نفسه مرة أخرى.</span>';}}
 }
 async function resumePendingOrder(){
   var saved=readPendingOrders();if(!saved.length)return;
@@ -1340,7 +1339,7 @@ async function submitOrder(){
     if(r.ok&&d.ok){orderSucceeded=true;clearPendingOrder(d.order&&d.order.id);clearOrderIdempotencyKey();showSuccessfulOrder(d.order||{},d.message||'تم تأكيد الطلب بنجاح');cart=[];upd();setTimeout(function(){closeCheckout();resetOrderMessage();},3600);}
     else {setCheckoutMessage(d.error||'تعذر حفظ الطلب حاليًا؛ لم يتم إرساله للمورد','error');}
   }catch(e){setCheckoutMessage('تعذر حفظ الطلب حاليًا؛ لم يتم إرساله للمورد','error');}
-  finally{orderSubmitting=false;if(confirmButton&&!orderSucceeded&&!orderQueued){confirmButton.disabled=false;confirmButton.classList.remove('is-processing');confirmButton.removeAttribute('aria-busy');confirmButton.textContent='تأكيد الطلب ✓';}}
+  finally{orderSubmitting=false;if(confirmButton&&!orderSucceeded&&!orderQueued){confirmButton.disabled=false;confirmButton.classList.remove('is-processing');confirmButton.removeAttribute('aria-busy');confirmButton.textContent='تأكيد الطلب';}}
 }
 function openDrw(){openModalById('drw');document.getElementById('ovl').classList.add('open');}
 function closeDrw(options){closeModalById('drw',options);document.getElementById('ovl').classList.remove('open');}
@@ -1354,12 +1353,12 @@ load().catch(function(error){console.warn('[store] boot failed',error&&error.mes
 #toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--gdd);color:#fff;padding:12px 24px;border-radius:999px;font-weight:700;font-size:14px;z-index:300;opacity:0;pointer-events:none;transition:.3s;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 #toast.show{opacity:1}
 </style>
-<div class="mdl" id="shipMdl"><div class="box"><button class="modal-x" type="button" aria-label="إغلاق أسعار الشحن" onclick="closeModalById('shipMdl')">×</button><h3>🚚 أسعار الشحن حسب المحافظة</h3><div id="shiplist"></div><button class="go" onclick="closeModalById('shipMdl')">حسناً</button></div></div>
+<div class="mdl" id="shipMdl"><div class="box"><button class="modal-x" type="button" aria-label="إغلاق أسعار الشحن" onclick="closeModalById('shipMdl')">×</button><h3 class="sheet-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>أسعار الشحن حسب المحافظة</h3><div id="shiplist"></div><button class="go" onclick="closeModalById('shipMdl')">حسناً</button></div></div>
 <div id="toast"></div>
 <script>
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1800);}
-function goAccount(){toast('👤 سجل دخولك أولاً');setTimeout(function(){location.href='/login.html'},900);}
-function goOrders(){toast('📦 سجل دخولك لمتابعة طلباتك');setTimeout(function(){location.href='/login.html'},900);}
+function goAccount(){toast('سجل دخولك أولاً');setTimeout(function(){location.href='/login.html'},900);}
+function goOrders(){toast('سجل دخولك لمتابعة طلباتك');setTimeout(function(){location.href='/login.html'},900);}
 </script>
 
 <style>
@@ -1375,19 +1374,19 @@ function goOrders(){toast('📦 سجل دخولك لمتابعة طلباتك');
   <img id="pImg" class="pimg-big" src="">
   <h3 id="pName" style="margin-top:12px"></h3>
   <div id="pStk" style="margin:6px 0"></div>
-  <div class="prow2 g"><span>💰 سعر الجملة</span><b id="pWhole"></b></div>
-  <div class="prow2 s"><span>🏷️ سعر البيع المقترح</span><b id="pSugg"></b></div>
-  <div class="prow2 c"><span>💵 عمولتك المتوقعة</span><b id="pComm"></b></div>
+  <div class="prow2 g"><span>سعر الجملة</span><b id="pWhole"></b></div>
+  <div class="prow2 s"><span>سعر البيع المقترح</span><b id="pSugg"></b></div>
+  <div class="prow2 c"><span>عمولتك المتوقعة</span><b id="pComm"></b></div>
   <div class="pdesc" id="pDesc"></div>
   <div style="display:flex;gap:8px;margin:10px 0">
-    <a class="go" id="pMedia" target="_blank" rel="noopener" style="flex:1;text-decoration:none;display:flex;align-items:center;justify-content:center">📸 صور وفيديو على الطبيعة</a>
-    <button class="go" id="pCopy" style="flex:1;background:linear-gradient(135deg,#0284c7,#38bdf8)">📋 نسخ الوصف</button>
+    <a class="go" id="pMedia" target="_blank" rel="noopener" style="flex:1;text-decoration:none;display:flex;align-items:center;justify-content:center">صور وفيديو على الطبيعة</a>
+    <button class="go" id="pCopy" style="flex:1;background:linear-gradient(135deg,#0284c7,#38bdf8)">نسخ الوصف</button>
   </div>
-  <button class="go" id="pAdd">🛒 أضف إلى السلة</button>
+  <button class="go" id="pAdd">أضف إلى السلة</button>
   <button class="go" style="background:#f2f6f3;color:#8aa094;margin-top:8px" onclick="closeModalById('pMdl')">إغلاق</button>
 </div></div>
 <script>
-function copyText(txt,msg){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast(msg||'✅ تم النسخ')})}else{var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();toast(msg||'✅ تم النسخ')}}
+function copyText(txt,msg){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast(msg||'تم النسخ')})}else{var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();toast(msg||'تم النسخ')}}
 function parseNote(p){var n=String(p&&p.note||'').replace(/,/g,'');
  var s=n.match(/سعر\s*البيع\s*المقترح[^\d]{0,6}(\d+(?:\.\d+)?)/i)||n.match(/سعر\s*بيع\s*مقترح[^\d]{0,6}(\d+(?:\.\d+)?)/i);
  var cm=n.match(/عمولتك[^\d]{0,6}(\d+(?:\.\d+)?)/i);
@@ -1398,17 +1397,17 @@ function openP(i){var p=P[i];if(!p)return;
  var comm=commissionOf(p)>0?commissionOf(p):Math.max(0,sugg-price);
  var st=stockOf(p);
  document.getElementById('pImg').src=p.image||((p.images&&p.images[0])||'');
- document.getElementById('pName').textContent=p.name||'';
+ document.getElementById('pName').textContent=uiText(p.name||'');
  document.getElementById('pStk').innerHTML='<span class="stk '+st.cls+'" style="position:static">'+st.label+'</span>';
  document.getElementById('pWhole').textContent=price+' ج.م';
  document.getElementById('pSugg').textContent=sugg+' ج.م';
  document.getElementById('pComm').textContent=comm+' ج.م';
- document.getElementById('pDesc').textContent=(p.description||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').slice(0,300);
+ document.getElementById('pDesc').textContent=uiText((p.description||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').slice(0,300));
  document.getElementById('pAdd').onclick=function(){addCart(i);closeModalById('pMdl');};
  var media=p.media_url||'';var pm=document.getElementById('pMedia');
  if(media){pm.style.display='flex';pm.href=media;}else{pm.style.display='none';}
- window._pdesc=(p.description||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
- document.getElementById('pCopy').onclick=function(){copyText(window._pdesc,'✅ تم نسخ الوصف — جاهز للمشاركة');};
+ window._pdesc=uiText((p.description||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim());
+ document.getElementById('pCopy').onclick=function(){copyText(window._pdesc,'تم نسخ الوصف — جاهز للمشاركة');};
  openModalById('pMdl');}
 </script>
 
@@ -1430,20 +1429,20 @@ function goOrders(){if(window.openAffiliate)openAffiliate('orders');else locatio
 <div class="mdl" id="accMdl"><div class="box">
   <button class="modal-x" type="button" aria-label="إغلاق الحساب" onclick="closeModalById('accMdl')">×</button>
   <div style="text-align:center;padding:4px 0 20px;background:linear-gradient(180deg,#ecfdf5 0%,transparent 100%);margin:-24px -20px 16px;padding:28px 20px;border-radius:20px">
-    <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#0b5d3b,#16a34a);color:#fff;font-size:28px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 8px" id="aAv">👤</div>
+    <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#0b5d3b,#16a34a);color:#fff;font-size:28px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 8px" id="aAv">م</div>
     <h3 id="aName" style="margin:0"></h3>
     <p id="aPhone" style="color:#8aa094;font-size:13px"></p>
   </div>
-  <div class="prow2 g"><span>🛍️ طلباتي</span><b id="aOrders">0</b></div>
-  <div class="prow2 s"><span>💵 إجمالي عمولاتي</span><b id="aComm">0 ج.م</b></div>
-  <div class="prow2 c"><span>💰 الرصيد المتاح للسحب</span><b id="aAvail">0 ج.م</b></div>
-  <div style="height:1px;background:#e2e8f0;margin:16px 0"></div><button class="go" onclick="closeModalById('accMdl',{history:false});openWallet()">💳 سحب الأرباح</button>
-  <button class="go" style="background:#fee2e2;color:#b91c1c;margin-top:8px" onclick="logout()">🚪 تسجيل الخروج</button>
+  <div class="prow2 g"><span>طلباتي</span><b id="aOrders">0</b></div>
+  <div class="prow2 s"><span>إجمالي عمولاتي</span><b id="aComm">0 ج.م</b></div>
+  <div class="prow2 c"><span>الرصيد المتاح للسحب</span><b id="aAvail">0 ج.م</b></div>
+  <div style="height:1px;background:#e2e8f0;margin:16px 0"></div><button class="go" onclick="closeModalById('accMdl',{history:false});openWallet()">سحب الأرباح</button>
+  <button class="go" style="background:#fee2e2;color:#b91c1c;margin-top:8px" onclick="logout()">تسجيل الخروج</button>
   <button class="go" style="background:#f2f6f3;color:#8aa094;margin-top:8px" onclick="closeModalById('accMdl')">إغلاق</button>
 </div></div>
 <script>
 function openAccount(){var u=getUser()||{};
- document.getElementById('aAv').textContent=(u.name||'👤').charAt(0);
+ document.getElementById('aAv').textContent=(u.name||'م').charAt(0);
  document.getElementById('aName').textContent=u.name||'مسوق Rab7na';
  document.getElementById('aPhone').textContent=u.phone||myPhone();
  document.getElementById('aOrders').textContent=getOrders().length;
@@ -1455,22 +1454,22 @@ async function logout(){try{await fetch('/api/auth/logout',{method:'POST',creden
 
 <div class="mdl" id="ordMdl"><div class="box">
   <button class="modal-x" type="button" aria-label="إغلاق الطلبات" onclick="closeModalById('ordMdl')">×</button>
-  <h3>📦 طلباتي</h3>
+  <h3 class="sheet-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>طلباتي</h3>
   <div id="ordList"></div>
   <button class="go" style="background:#f2f6f3;color:#8aa094" onclick="closeModalById('ordMdl')">إغلاق</button>
 </div></div>
 <script>
-var ST={'pending':['قيد المراجعة','#fef3c7','#92400e'],'preparing':['جارٍ التجهيز','#e0f2fe','#0369a1'],'shipped':['تم الشحن','#e0e7ff','#4338ca'],'delivered':['تم التسليم ✓','#d1fae5','#065f46'],'returned':['مرتجع','#fee2e2','#991b1b'],'rejected':['مرفوض','#fee2e2','#991b1b']};
+var ST={'pending':['قيد المراجعة','#fef3c7','#92400e'],'preparing':['جارٍ التجهيز','#e0f2fe','#0369a1'],'shipped':['تم الشحن','#e0e7ff','#4338ca'],'delivered':['تم التسليم','#d1fae5','#065f46'],'returned':['مرتجع','#fee2e2','#991b1b'],'rejected':['مرفوض','#fee2e2','#991b1b']};
 function openOrders(){var o=getOrders();var b=document.getElementById('ordList');
  b.innerHTML=o.length?o.map(function(x){var s=ST[x.status]||[x.status_ar||'قيد المراجعة','#fef3c7','#92400e'];
   return '<div style="border:1.5px solid #e6eee9;border-radius:14px;padding:12px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-weight:800"><span>#'+String(x.id).slice(-6)+'</span><span style="background:'+s[1]+';color:'+s[2]+';padding:3px 10px;border-radius:999px;font-size:11px">'+s[0]+'</span></div><div style="font-size:12px;color:#8aa094;margin:6px 0">'+x.date+' • '+x.items+' منتج</div><div style="display:flex;justify-content:space-between;font-weight:800"><span>الإجمالي: '+x.total+' ج.م</span><span style="color:#0b5d3b">عمولتك: '+x.commission+' ج.م</span></div></div>';
- }).join(''):'<p style="text-align:center;color:#8aa094;padding:30px">لا توجد طلبات بعد 🛒</p>';
+ }).join(''):'<p style="text-align:center;color:#8aa094;padding:30px">لا توجد طلبات بعد</p>';
  openModalById('ordMdl');}
 </script>
 
 <div class="mdl" id="walMdl"><div class="box">
   <button class="modal-x" type="button" aria-label="إغلاق المحفظة" onclick="closeModalById('walMdl')">×</button>
-  <h3>💳 سحب الأرباح</h3>
+  <h3 class="sheet-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v12H4zM4 7V5h13v2m3 5h-4a2 2 0 0 0 0 4h4"/></svg>سحب الأرباح</h3>
   <div class="prow2 c"><span>الرصيد المتاح</span><b id="wAvail">0 ج.م</b></div>
   <div class="fld"><label>وسيلة السحب</label><select id="wMethod">
     <option>فودافون كاش</option><option>اتصالات كاش</option><option>أورنج كاش</option>
@@ -1479,7 +1478,7 @@ function openOrders(){var o=getOrders();var b=document.getElementById('ordList')
   <div class="fld"><label>رقم المحفظة / الحساب</label><input id="wNum" type="tel" placeholder="01xxxxxxxxx"></div>
   <div class="fld"><label>المبلغ (ج.م)</label><input id="wAmt" type="number" min="50" placeholder="الحد الأدنى 50"></div>
   <div class="msg" id="wMsg" style="font-size:13px;margin-bottom:8px"></div>
-  <button class="go" onclick="submitWd()">📨 إرسال طلب السحب</button>
+  <button class="go" onclick="submitWd()">إرسال طلب السحب</button>
   <h3 style="margin-top:16px">طلبات السحب السابقة</h3>
   <div id="wdList"></div>
   <button class="go" style="background:#f2f6f3;color:#8aa094;margin-top:8px" onclick="closeModalById('walMdl')">إغلاق</button>
@@ -1487,7 +1486,7 @@ function openOrders(){var o=getOrders();var b=document.getElementById('ordList')
 <script>
 function openWallet(){document.getElementById('wAvail').textContent=avail()+' ج.م';renderWd();openModalById('walMdl');}
 function renderWd(){var w=getWd();document.getElementById('wdList').innerHTML=w.length?w.map(function(x){return '<div style="display:flex;justify-content:space-between;border:1.5px solid #e6eee9;border-radius:12px;padding:10px;margin-bottom:8px;font-size:13px;font-weight:700"><span>'+x.method+'<br><small style="color:#8aa094">'+x.date+'</small></span><span style="color:'+(x.status==='approved'?'#065f46':x.status==='rejected'?'#991b1b':'#92400e')+'">'+x.amount+' ج.م<br><small>'+(x.status==='approved'?'تم الصرف':x.status==='rejected'?'مرفوض':'قيد المعالجة')+'</small></span></div>'}).join(''):'<p style="color:#8aa094;font-size:13px">لا توجد طلبات سحب</p>';}
-function submitWd(){if(window.openAffiliate){openAffiliate('wallet');return;}var m=document.getElementById('wMsg');m.textContent='⚠️ افتح مركز المسوّق لإرسال طلب السحب';}
+function submitWd(){if(window.openAffiliate){openAffiliate('wallet');return;}var m=document.getElementById('wMsg');m.textContent='افتح مركز المسوّق لإرسال طلب السحب';}
 </script>
 
 <script>
@@ -1499,14 +1498,8 @@ function updHeader(){var h=document.querySelector('.hdr');if(!h)return;var b=doc
 setInterval(updHeader,2000);updHeader();
 </script>
 
-<script id="catEmoji">
-(function(){
-  var M={'الكل':'🗂️','مطبخ':'🍲','أطفال':'👶','صحة ولياقة':'💪','سيارات':'🚗','أدوات':'🛠️','أحذية':'👟','ملابس':'👕','إلكترونيات':'🎧','منزل':'🛋️','أخرى':'📦','عام':'📦'};
-  function emo(){document.querySelectorAll('.cats button').forEach(function(b){
-    if(b.dataset.emo)return;b.dataset.emo=1;var t=(b.textContent||'').trim();
-    var e=M[t]||'🏷️';var s=document.createElement('span');s.textContent=e;b.insertBefore(s,b.firstChild);});}
-  setInterval(emo,1200);emo();
-})();
+<script id="catIcons">
+// Category icons are rendered by renderCats() with inline SVG paths.
 </script>
 
 <style id="premium-bottom-nav">
@@ -1899,11 +1892,11 @@ body{
 </style>
 
 <div class="affiliate-sheet" id="affiliateMdl" aria-hidden="true">
-  <div class="affiliate-top"><div class="affiliate-brand"><div class="affiliate-brand-mark">R7</div><div><h2>مركز المسوّق</h2><p>تابع أداءك وطلباتك من مكان واحد</p></div></div><button class="affiliate-close" onclick="closeAffiliate()" aria-label="إغلاق">✕</button></div>
+  <div class="affiliate-top"><div class="affiliate-brand"><div class="affiliate-brand-mark">R7</div><div><h2>مركز المسوّق</h2><p>تابع أداءك وطلباتك من مكان واحد</p></div></div><button class="affiliate-close" onclick="closeAffiliate()" aria-label="إغلاق">×</button></div>
   <main class="affiliate-wrap">
     <section class="affiliate-welcome"><div><h1 id="affiliateWelcome">أهلًا بك في مركز المسوّق</h1><p>الحالات والعمولات تتحدث تلقائيًا من الخادم.</p></div><div class="affiliate-avatar" id="affiliateAvatar">م</div></section>
     <nav class="affiliate-tabs"><button data-tab="overview" onclick="setAffiliateTab('overview')">نظرة عامة</button><button data-tab="orders" onclick="setAffiliateTab('orders')">الطلبات</button><button data-tab="wallet" onclick="setAffiliateTab('wallet')">المحفظة</button><button data-tab="profile" onclick="setAffiliateTab('profile')">الحساب</button></nav>
-    <section class="affiliate-pane" id="affiliateOverviewPane"><div class="affiliate-stats"><div class="affiliate-stat green"><span class="label">الرصيد المتاح</span><b id="affiliateBalance">0 ج.م</b></div><div class="affiliate-stat"><span class="label">إجمالي العمولات</span><b id="affiliateTotalCommission">0 ج.م</b></div><div class="affiliate-stat"><span class="label">الطلبات المكتملة</span><b id="affiliateDelivered">0</b></div><div class="affiliate-stat"><span class="label">طلبات قيد المتابعة</span><b id="affiliatePending">0</b></div></div><div class="affiliate-card"><div class="affiliate-card-head"><h3>اختصارات سريعة</h3><span id="affiliateLastSync" class="affiliate-live"><i></i> متصل — تحديث تلقائي</span></div><div class="affiliate-actions"><button class="affiliate-action" onclick="setAffiliateTab('orders')"><b>📦 راجع طلباتك</b><small>تابع الحالة والعمولة لكل طلب</small></button><button class="affiliate-action" onclick="setAffiliateTab('wallet')"><b>💳 اطلب سحب الأرباح</b><small>الحد الأدنى للسحب 50 ج.م</small></button></div></div></section>
+    <section class="affiliate-pane" id="affiliateOverviewPane"><div class="affiliate-stats"><div class="affiliate-stat green"><span class="label">الرصيد المتاح</span><b id="affiliateBalance">0 ج.م</b></div><div class="affiliate-stat"><span class="label">إجمالي العمولات</span><b id="affiliateTotalCommission">0 ج.م</b></div><div class="affiliate-stat"><span class="label">الطلبات المكتملة</span><b id="affiliateDelivered">0</b></div><div class="affiliate-stat"><span class="label">طلبات قيد المتابعة</span><b id="affiliatePending">0</b></div></div><div class="affiliate-card"><div class="affiliate-card-head"><h3>اختصارات سريعة</h3><span id="affiliateLastSync" class="affiliate-live"><i></i> متصل — تحديث تلقائي</span></div><div class="affiliate-actions"><button class="affiliate-action" onclick="setAffiliateTab('orders')"><b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>راجع طلباتك</b><small>تابع الحالة والعمولة لكل طلب</small></button><button class="affiliate-action" onclick="setAffiliateTab('wallet')"><b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v12H4zM4 7V5h13v2m3 5h-4a2 2 0 0 0 0 4h4"/></svg>اطلب سحب الأرباح</b><small>الحد الأدنى للسحب 50 ج.م</small></button></div></div></section>
     <section class="affiliate-pane" id="affiliateOrdersPane"><div class="affiliate-card"><div class="affiliate-card-head"><h3>سجل الطلبات</h3><span id="affiliateOrdersCount">0 طلب</span></div><div id="affiliateOrdersList"></div></div></section>
     <section class="affiliate-pane" id="affiliateWalletPane"><div class="affiliate-balance"><div><small>الرصيد المتاح للسحب</small><strong id="affiliateWalletBalance">0 ج.م</strong></div><button class="affiliate-primary" onclick="document.getElementById('affiliateWithdrawalForm').scrollIntoView({behavior:'smooth'})">طلب سحب</button></div><div class="affiliate-card" id="affiliateWithdrawalForm"><div class="affiliate-card-head"><h3>طلب سحب جديد</h3><span>مراجعة آمنة من الإدارة</span></div><div class="affiliate-field"><label for="affiliateMethod">وسيلة السحب</label><select id="affiliateMethod"><option>فودافون كاش</option><option>اتصالات كاش</option><option>أورنج كاش</option><option>وي باي</option><option>إنستا باي</option><option>حساب بنكي</option></select></div><div class="affiliate-field"><label for="affiliateDetails">رقم المحفظة أو بيانات الحساب</label><input id="affiliateDetails" placeholder="أدخل البيانات المطلوبة" autocomplete="off"></div><div class="affiliate-field"><label for="affiliateAmount">المبلغ بالجنيه</label><input id="affiliateAmount" type="number" min="50" placeholder="الحد الأدنى 50"></div><div class="affiliate-message" id="affiliateWithdrawalMessage"></div><button class="affiliate-submit" onclick="submitAffiliateWithdrawal()">إرسال طلب السحب</button></div><div class="affiliate-card"><div class="affiliate-card-head"><h3>طلبات السحب السابقة</h3></div><div id="affiliateWithdrawalsList"></div></div></section>
     <section class="affiliate-pane" id="affiliateProfilePane"><div class="affiliate-card"><div class="affiliate-card-head"><h3>بيانات الحساب</h3><span>محمية بجلسة الخادم</span></div><div class="affiliate-profile-row"><span>الاسم</span><b id="affiliateProfileName">—</b></div><div class="affiliate-profile-row"><span>البريد الإلكتروني</span><b id="affiliateProfileEmail">—</b></div><div class="affiliate-profile-row"><span>تاريخ الانضمام</span><b id="affiliateProfileCreated">—</b></div><button class="affiliate-logout" onclick="affiliateLogout()">تسجيل الخروج الآمن</button></div></section>
@@ -1912,7 +1905,7 @@ body{
 
 <div class="affiliate-cancel-modal mdl" id="affiliateCancelMdl" aria-hidden="true">
   <div class="affiliate-cancel-box" role="dialog" aria-modal="true" aria-labelledby="affiliateCancelTitle">
-    <button class="affiliate-close" type="button" onclick="closeAffiliateCancellation()" aria-label="إغلاق">✕</button>
+    <button class="affiliate-close" type="button" onclick="closeAffiliateCancellation()" aria-label="إغلاق">×</button>
     <h3 id="affiliateCancelTitle">إلغاء الطلب</h3>
     <p>اكتب سبب إلغاء العميل حتى يتم حفظه ومراجعته مع الطلب.</p>
     <label for="affiliateCancelReason">سبب الإلغاء</label>
@@ -1934,18 +1927,18 @@ body{
   function render(){var list=id('notifList');if(!list)return;if(!state.loaded){list.innerHTML='<div class="notif-empty">جارٍ تحميل الإشعارات...</div>';return}if(!state.items.length){list.innerHTML='<div class="notif-empty">لا توجد إشعارات جديدة.</div>';setBadge();return}list.innerHTML=state.items.map(function(n){return '<button type="button" class="notif-item '+(n.readAt?'':'unread')+'" data-notification-id="'+esc(n.id)+'"><strong>'+esc(n.title)+'</strong><p>'+esc(n.body)+'</p><small>'+esc(date(n.createdAt))+'</small></button>'}).join('');setBadge()}
   async function load(silent){try{var r=await fetch('/api/notifications?limit=30',{credentials:'include',cache:'no-store'});if(r.status===401){state.loaded=true;render();return false}var d=await r.json().catch(function(){return{}});if(!r.ok)throw Error(d.error||'تعذر تحميل الإشعارات');var incoming=Array.isArray(d.notifications)?d.notifications:[],oldIds=new Set(state.items.map(function(n){return String(n.id)}));if(silent&&state.loaded)incoming.filter(function(n){return !oldIds.has(String(n.id))}).reverse().forEach(pushIncoming);state.items=incoming;state.unread=Number(d.unread)||0;state.loaded=true;render();return true}catch(e){state.loaded=true;var l=id('notifList');if(l&&!silent)l.innerHTML='<div class="notif-empty">تعذر تحميل الإشعارات حاليًا.</div>';return false}}
   function play(){if(!state.sound)return;try{var C=window.AudioContext||window.webkitAudioContext;if(!C)return;var c=window.__rab7naAudioContext||(window.__rab7naAudioContext=new C());if(c.state==='suspended')c.resume();var now=c.currentTime;[0,0.12,0.24].forEach(function(delay,i){var o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=[659,784,988][i];g.gain.setValueAtTime(.0001,now+delay);g.gain.exponentialRampToValueAtTime(.16,now+delay+.02);g.gain.exponentialRampToValueAtTime(.0001,now+delay+.22);o.connect(g);g.connect(c.destination);o.start(now+delay);o.stop(now+delay+.24)})}catch(e){}}
-  window.enableRab7naSound=function(){var C=window.AudioContext||window.webkitAudioContext;if(!C){toast('المتصفح لا يدعم صوت الإشعار');return}try{var c=window.__rab7naAudioContext||(window.__rab7naAudioContext=new C());c.resume();state.sound=true;localStorage.setItem('rab7naSoundEnabled','1');play();var b=id('soundEnableBtn');if(b)b.textContent='✅ صوت الإشعار مفعّل';toast('تم تفعيل صوت الإشعار داخل الصفحة')}catch(e){toast('تعذر تفعيل الصوت؛ جرّب مرة أخرى')}};
+  window.enableRab7naSound=function(){var C=window.AudioContext||window.webkitAudioContext;if(!C){toast('المتصفح لا يدعم صوت الإشعار');return}try{var c=window.__rab7naAudioContext||(window.__rab7naAudioContext=new C());c.resume();state.sound=true;localStorage.setItem('rab7naSoundEnabled','1');play();var b=id('soundEnableBtn');if(b)b.textContent='صوت الإشعار مفعّل';toast('تم تفعيل صوت الإشعار داخل الصفحة')}catch(e){toast('تعذر تفعيل الصوت؛ جرّب مرة أخرى')}};
   function pushIncoming(n){if(!n||!n.id)return;if(state.items.some(function(x){return String(x.id)===String(n.id)}))return;state.items.unshift(n);state.unread++;render();try{window.dispatchEvent(new CustomEvent('rab7na:notification',{detail:n}))}catch(e){}play();toast(n.title+(n.body?' — '+n.body:''));if(document.visibilityState==='hidden'&&window.Notification&&Notification.permission==='granted'){try{new Notification(n.title,{body:n.body||'',tag:'rab7na-'+n.id})}catch(e){}}}
   function openStream(){if(state.stream||!window.EventSource)return;try{state.stream=new EventSource('/api/notifications/stream');state.stream.onmessage=function(e){try{pushIncoming(JSON.parse(e.data))}catch(_){}};state.stream.onerror=function(){if(state.stream){state.stream.close();state.stream=null}setTimeout(function(){if(document.visibilityState!=='hidden')openStream()},10000)}}catch(e){state.stream=null}}
   window.toggleNotifications=function(){var p=id('notifPanel'),b=id('notifBtn');if(!p)return;var open=!p.classList.contains('open');p.classList.toggle('open',open);p.setAttribute('aria-hidden',open?'false':'true');if(b)b.setAttribute('aria-expanded',open?'true':'false');if(open){load();openStream()}};
   window.closeNotifications=function(){var p=id('notifPanel'),b=id('notifBtn');if(p)p.classList.remove('open');if(p)p.setAttribute('aria-hidden','true');if(b)b.setAttribute('aria-expanded','false')};
   window.markAllNotificationsRead=async function(){try{var r=await fetch('/api/notifications/read',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:'{}'});if(!r.ok)throw Error();state.items.forEach(function(n){n.readAt=n.readAt||new Date().toISOString()});state.unread=0;render()}catch(e){toast('تعذر تعليم الإشعارات كمقروءة')}};
   async function markOne(n){try{var r=await fetch('/api/notifications/read',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:n.id})});if(!r.ok)throw Error();if(!n.readAt){n.readAt=new Date().toISOString();state.unread=Math.max(0,state.unread-1);render()}if(n.url)location.href=n.url}catch(e){toast('تعذر تحديث الإشعار')}}
-  window.enableRab7naPush=async function(){var b=id('pushEnableBtn');try{var keyRes=await fetch('/api/push/vapid-public-key',{credentials:'include',cache:'no-store'}),key=await keyRes.json().catch(function(){return{}});if(!key.publicKey){toast('Push خارج الموقع غير مهيأ على الخادم بعد؛ الإشعارات داخل الموقع تعمل.');return}if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window))throw Error('المتصفح لا يدعم Push');if(Notification.permission==='denied')throw Error('السماح مرفوض؛ فعّله من إعدادات الموقع');if(b)b.disabled=true;var permission=Notification.permission==='granted'?'granted':await Notification.requestPermission();if(permission!=='granted')throw Error('لم يتم السماح بالإشعارات');var reg=await navigator.serviceWorker.register('/sw.js',{scope:'/'});var sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:(function(x){var p='='.repeat((4-x.length%4)%4),r=atob((x+p).replace(/-/g,'+').replace(/_/g,'/')),a=new Uint8Array(r.length);for(var i=0;i<r.length;i++)a[i]=r.charCodeAt(i);return a})(key.publicKey)});var r=await fetch('/api/notifications/register',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:sub.toJSON()})});if(!r.ok)throw Error('تعذر تسجيل جهازك');if(b){b.textContent='✅ إشعالات خارج الموقع مفعّلة';b.disabled=false}toast('تم تفعيل إشعارات النظام لهذا الجهاز')}catch(e){if(b)b.disabled=false;toast(e.message||'تعذر تفعيل Push')}};
+  window.enableRab7naPush=async function(){var b=id('pushEnableBtn');try{var keyRes=await fetch('/api/push/vapid-public-key',{credentials:'include',cache:'no-store'}),key=await keyRes.json().catch(function(){return{}});if(!key.publicKey){toast('Push خارج الموقع غير مهيأ على الخادم بعد؛ الإشعارات داخل الموقع تعمل.');return}if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window))throw Error('المتصفح لا يدعم Push');if(Notification.permission==='denied')throw Error('السماح مرفوض؛ فعّله من إعدادات الموقع');if(b)b.disabled=true;var permission=Notification.permission==='granted'?'granted':await Notification.requestPermission();if(permission!=='granted')throw Error('لم يتم السماح بالإشعارات');var reg=await navigator.serviceWorker.register('/sw.js',{scope:'/'});var sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:(function(x){var p='='.repeat((4-x.length%4)%4),r=atob((x+p).replace(/-/g,'+').replace(/_/g,'/')),a=new Uint8Array(r.length);for(var i=0;i<r.length;i++)a[i]=r.charCodeAt(i);return a})(key.publicKey)});var r=await fetch('/api/notifications/register',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:sub.toJSON()})});if(!r.ok)throw Error('تعذر تسجيل جهازك');if(b){b.textContent='إشعارات خارج الموقع مفعّلة';b.disabled=false}toast('تم تفعيل إشعارات النظام لهذا الجهاز')}catch(e){if(b)b.disabled=false;toast(e.message||'تعذر تفعيل Push')}};
   document.addEventListener('click',function(e){var n=e.target.closest&&e.target.closest('[data-notification-id]');if(n){var item=state.items.find(function(x){return String(x.id)===String(n.dataset.notificationId)});if(item)markOne(item);return}var p=id('notifPanel'),b=id('notifBtn');if(p&&p.classList.contains('open')&&e.target!==p&&!p.contains(e.target)&&e.target!==b&&!b.contains(e.target))window.closeNotifications()});
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){load();openStream()}});setInterval(function(){if(document.visibilityState==='visible')load(true)},15000);
   window.addEventListener('beforeunload',function(){if(state.stream)state.stream.close()});
-  state.sound=localStorage.getItem('rab7naSoundEnabled')==='1';if(id('soundEnableBtn')&&state.sound)id('soundEnableBtn').textContent='✅ صوت الإشعار مفعّل';load().then(function(ok){if(ok)openStream()});
+  state.sound=localStorage.getItem('rab7naSoundEnabled')==='1';if(id('soundEnableBtn')&&state.sound)id('soundEnableBtn').textContent='صوت الإشعار مفعّل';load().then(function(ok){if(ok)openStream()});
 })();
 </script>
 <script id="affiliate-pro-runtime">
@@ -1985,10 +1978,10 @@ body{
     document.getElementById('affiliateBalance').textContent=money(s.balance);document.getElementById('affiliateWalletBalance').textContent=money(s.balance);document.getElementById('affiliateTotalCommission').textContent=money(s.totalCommission);document.getElementById('affiliateDelivered').textContent=Number(s.deliveredOrders||0).toLocaleString('ar-EG');document.getElementById('affiliatePending').textContent=Number(s.pendingOrders||0).toLocaleString('ar-EG');document.getElementById('affiliateOrdersCount').textContent=state.orders.length.toLocaleString('ar-EG')+' طلب';document.getElementById('affiliateProfileName').textContent=u.name||'—';document.getElementById('affiliateProfileEmail').textContent=u.email||'—';document.getElementById('affiliateProfileCreated').textContent=date(u.created_at);document.getElementById('affiliateLastSync').innerHTML='<i></i> متصل — آخر تحديث '+new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
     var orders=document.getElementById('affiliateOrdersList');
     orders.innerHTML=state.orders.length?state.orders.map(function(o){
-      var st=getStatus(o.requestStatus||o.status), names=(o.products||[]).slice(0,2).join('، ')||'طلب منتجات', cancelButton=cancelableOrder(o)?`<button class="affiliate-cancel-order" type="button" onclick="openAffiliateCancellation('${esc(String(o.id||''))}')">إلغاء الطلب</button>`:'';
+      var st=getStatus(o.requestStatus||o.status), names=(o.products||[]).slice(0,2).map(uiText).join('، ')||'طلب منتجات', cancelButton=cancelableOrder(o)?`<button class="affiliate-cancel-order" type="button" onclick="openAffiliateCancellation('${esc(String(o.id||''))}')">إلغاء الطلب</button>`:'';
       var cancelNote=o.cancelReason?`<div class="affiliate-cancel-note">سبب الإلغاء: ${esc(o.cancelReason)}</div>`:'';
       return `<article class="affiliate-order"><div class="affiliate-order-top"><span>طلب #${esc(String(o.serial||o.id).slice(-8))}</span><span class="affiliate-status" style="background:${st[1]};color:${st[2]}">${esc(st[0])}</span></div><div style="font-size:12px;color:#71847a;margin-top:8px">${esc(names)}${o.products&&o.products.length>2?' …':''}</div><div class="affiliate-order-bottom"><span>${date(o.date)} · ${Number(o.items||0).toLocaleString('ar-EG')} منتج</span><b>عمولتك: ${money(o.commission)}</b></div>${cancelNote}${cancelButton}</article>`;
-    }).join(''):'<div class="affiliate-empty"><div style="font-size:34px">📦</div><b>لم تنشئ أي طلبات بعد</b><small>ابدأ من المنتجات وشارك عروضك مع عملائك.</small></div>';
+    }).join(''):'<div class="affiliate-empty"><div class="affiliate-empty-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><b>لم تنشئ أي طلبات بعد</b><small>ابدأ من المنتجات وشارك عروضك مع عملائك.</small></div>';
     var wd=document.getElementById('affiliateWithdrawalsList');
     wd.innerHTML=state.withdrawals.length?state.withdrawals.map(function(w){
       var pending=String(w.status).toLowerCase()==='pending'||w.status==='قيد المعالجة';
@@ -2032,7 +2025,21 @@ body{
 })();
 </script>
   <script src="/support-chat.js?v=1"></script>
-</body></html>
+<style id="rab7na-premium-ui">
+:root{--g:#059669;--gd:#047857;--gdd:#064e3b;--bg:#f8fafc;--card:#fff;--ink:#0f172a;--mut:#64748b;--line:#e2e8f0;--soft:#ecfdf5;--amber:#f59e0b;--danger:#ef4444;--rad:18px;--ease:cubic-bezier(.23,1,.32,1)}
+html{background:var(--bg);scroll-behavior:smooth}body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;overflow-x:hidden;padding-bottom:92px}button,input,select,textarea{font-family:inherit}button{transition:transform .16s var(--ease),box-shadow .16s var(--ease),border-color .16s var(--ease),background .16s var(--ease)}button:active{transform:scale(.97)}
+.hdr{min-height:72px;padding:12px max(16px,calc((100vw - 1200px)/2));gap:12px;background:rgba(255,255,255,.92);border-bottom:1px solid rgba(226,232,240,.75);box-shadow:0 4px 18px rgba(15,23,42,.05);backdrop-filter:blur(16px)}.logo{font-family:inherit;font-size:23px;letter-spacing:-.04em;color:#0f172a}.logo b{color:var(--g)}.ic{width:42px;height:42px;border-radius:13px;background:#f1f5f9;color:#334155;border:1px solid #e2e8f0;display:grid;place-items:center}.ic svg,.search>svg,.search-clear,.di svg,.dlog svg,.notif-tools svg,.sheet-title svg,.checkout-icon svg,.hero button svg,.add svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.ic:hover{background:var(--soft);color:var(--gd);border-color:#a7f3d0}.cbadge{top:-5px;left:-5px;background:var(--g);box-shadow:0 0 0 3px #fff;font-size:10px;height:19px;min-width:19px}.notif-badge{left:auto;right:-5px;background:var(--danger)}
+.search{position:relative;display:flex;align-items:center;flex:1;max-width:560px;margin-inline:auto}.search>svg{position:absolute;right:14px;color:#94a3b8;width:18px;height:18px;z-index:1}.search input{height:44px;padding:0 42px 0 42px;border:1px solid #e2e8f0;background:#f8fafc;border-radius:14px;color:#0f172a;font-size:13px;box-shadow:none}.search input::placeholder{color:#94a3b8}.search input:focus{background:#fff;border-color:#6ee7b7;box-shadow:0 0 0 4px rgba(16,185,129,.1)}.search-clear{position:absolute;left:8px;display:none;border:0;background:transparent;color:#94a3b8;font-size:20px;line-height:1}.search input:not(:placeholder-shown)+.search-clear{display:block}
+.hero{width:min(1200px,calc(100% - 32px));margin:24px auto 20px;border-radius:26px;padding:28px 32px;min-height:205px;background:radial-gradient(circle at 78% 18%,rgba(110,231,183,.28),transparent 28%),linear-gradient(120deg,#064e3b,#047857 66%,#059669);box-shadow:0 18px 42px -22px rgba(6,78,59,.55);overflow:hidden}.hero-copy{position:relative;z-index:1}.eyebrow{display:inline-flex;padding:5px 9px;border:1px solid rgba(255,255,255,.22);border-radius:999px;color:#d1fae5;font-size:10px;font-weight:700;margin-bottom:10px}.hero h2{font-size:clamp(24px,4vw,34px);letter-spacing:-.04em;margin-bottom:6px}.hero p{max-width:420px;color:#d1fae5;font-size:13px;line-height:1.8;margin-bottom:17px}.hero button{display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border-radius:12px;background:#fff;color:#065f46;font-size:12px;font-weight:700;box-shadow:0 8px 18px rgba(0,0,0,.12)}.hero button svg{width:16px;height:16px}.hero-art{position:relative;display:grid;place-items:center;width:170px;height:140px;border-radius:28px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);color:#d1fae5;transform:rotate(3deg)}.hero-art span{position:absolute;top:13px;right:16px;font-size:28px;font-weight:700;letter-spacing:-.09em}.hero-art svg{width:120px;fill:rgba(255,255,255,.12);stroke:#d1fae5;stroke-width:1.5;stroke-linejoin:round}.cats{width:min(1200px,calc(100% - 32px));margin:0 auto 18px;padding:0 0 6px;gap:8px;scroll-snap-type:x proximity}.cats button{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border-radius:12px;background:#fff;border:1px solid #e2e8f0;color:#64748b;font-size:11px;font-weight:600;scroll-snap-align:start}.cats button svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.cats button.on{background:var(--g);border-color:var(--g);color:#fff;box-shadow:0 7px 14px rgba(5,150,105,.18)}.sec{width:min(1200px,calc(100% - 32px));margin:4px auto 14px;padding:0;align-items:end}.sec h3{font-size:20px;letter-spacing:-.035em}.sec button{display:inline-flex;align-items:center;gap:6px;border:1px solid #cbd5e1;background:#fff;border-radius:11px;color:#475569;padding:9px 12px;font-size:11px;font-weight:700}.grid{width:min(1200px,calc(100% - 32px));margin:0 auto;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;padding:0}.card{border:1px solid #e2e8f0;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,.04);transition:transform .2s var(--ease),box-shadow .2s var(--ease);background:#fff}.card:hover{transform:translateY(-3px);box-shadow:0 16px 28px rgba(15,23,42,.08)}.card .img{background:#f1f5f9}.card .img img{aspect-ratio:1/1;object-fit:cover}.fav{width:34px;height:34px;border:1px solid rgba(226,232,240,.9);color:#64748b;background:rgba(255,255,255,.9);border-radius:11px;display:grid;place-items:center;backdrop-filter:blur(8px)}.fav svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8}.stk{top:10px;right:10px;bottom:auto;padding:5px 9px;font-size:10px;border-radius:8px}.bd{padding:13px;gap:8px}.nm{font-size:13px;font-weight:700;line-height:1.55;color:#1e293b}.price-meta{padding:9px;border:1px solid #f1f5f9;border-radius:12px;background:#f8fafc;gap:5px;color:#64748b;font-size:10px}.price-meta span{display:flex;justify-content:space-between;gap:7px}.price-meta b{font-weight:700;color:#334155}.price-meta .profit-line b{color:var(--g)}.pr{display:none}.add{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;background:var(--g);border-radius:12px;padding:11px;font-size:12px;box-shadow:0 7px 16px rgba(5,150,105,.16)}.add:hover{background:var(--gd);box-shadow:0 10px 20px rgba(5,150,105,.22)}.add svg{width:16px;height:16px}.card.out .add{background:#e2e8f0;color:#94a3b8;box-shadow:none}
+.bnav{width:min(520px,calc(100% - 24px));left:50%;right:auto;transform:translateX(-50%);bottom:12px;border:1px solid rgba(226,232,240,.9);border-radius:20px;padding:6px 7px calc(6px + env(safe-area-inset-bottom));background:rgba(255,255,255,.92);box-shadow:0 14px 32px rgba(15,23,42,.14);backdrop-filter:blur(18px);gap:3px}.bnav button{min-height:53px;border-radius:14px;padding:7px 3px;color:#64748b;font-size:10px;font-weight:600}.bnav button.on,.bnav button:hover{background:var(--soft);color:var(--gd)}.bnav .home-btn{background:var(--g);color:#fff;box-shadow:0 7px 16px rgba(5,150,105,.22)}.bnav .home-btn:hover{background:var(--gd);color:#fff}.bnav .bi,.bnav .home-icon{height:22px;display:grid;place-items:center}.bnav svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.bnav .cbadge{top:0;right:50%;left:auto;transform:translateX(50%)}
+.ovl{background:rgba(15,23,42,.42);backdrop-filter:blur(3px)}.drw{width:min(340px,88vw);box-shadow:-20px 0 60px rgba(15,23,42,.12);border-left:1px solid #e2e8f0}.drw .hd{text-align:right;padding:24px 22px 14px}.drw .x{left:auto;right:16px;top:16px;width:36px;height:36px;border:1px solid #e2e8f0;color:#64748b}.drw .hd .logo{margin-top:46px}.di{gap:10px;border:1px solid #e2e8f0;border-radius:13px;margin:7px 16px;padding:12px 13px;color:#334155;font-size:12px}.di svg{width:18px;height:18px;color:#64748b}.di.on{background:var(--soft);color:var(--gd);border-color:#a7f3d0}.di.on svg{color:var(--g)}.dlog{display:flex;align-items:flex-start;gap:9px;margin:16px;background:#f8fafc;border:1px solid #e2e8f0;color:#475569}.dlog svg{flex:none;color:var(--g)}.soc a{font-family:system-ui;font-size:11px;font-weight:700;color:#64748b;background:#f1f5f9}
+.notif-panel{top:82px;right:max(14px,calc((100vw - 1200px)/2));border:1px solid #e2e8f0;box-shadow:0 20px 60px rgba(15,23,42,.16)}.notif-tools button{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:10px;font-size:10px}.notif-tools svg{width:15px;height:15px}.notif-item{border-radius:13px}.notif-toast{bottom:110px}
+.sheet-title{display:flex;align-items:center;gap:9px;color:#0f172a}.sheet-title svg{color:var(--g);width:21px;height:21px}.mdl .box{width:min(560px,100%);border-radius:24px 24px 0 0}.checkout-page{background:rgba(248,250,252,.98)}.checkout-head,.checkout-card{border:1px solid #e2e8f0;box-shadow:0 6px 22px rgba(15,23,42,.04)}.checkout-title>span,.checkout-icon{background:var(--soft);color:var(--gd)}.checkout-icon svg{width:20px;height:20px}.checkout-title b{color:#0f172a}.checkout-title small{color:#94a3b8}.summary-profit{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border:1px solid #a7f3d0;color:#047857}.confirm-order{background:var(--g);position:sticky;bottom:8px;z-index:2}.confirm-order:hover{background:var(--gd)}
+.affiliate-top{background:rgba(255,255,255,.92);border-bottom:1px solid #e2e8f0}.affiliate-brand-mark{background:var(--g);box-shadow:0 8px 18px rgba(5,150,105,.18)}.affiliate-wrap{padding-top:26px}.affiliate-welcome{background:linear-gradient(120deg,#064e3b,#047857 70%,#059669);border-radius:24px}.affiliate-stat,.affiliate-card{border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,.04)}.affiliate-stat.green{background:var(--soft);border-color:#a7f3d0}.affiliate-action{background:#f8fafc;border-color:#e2e8f0}.affiliate-tabs button.active{background:var(--g);border-color:var(--g)}
+@media(max-width:900px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.hero{padding:25px 24px}.hero-art{width:145px;height:125px}}
+@media(max-width:640px){body{padding-bottom:94px}.hdr{min-height:64px;padding:10px 12px;gap:7px}.hdr .logo{font-size:20px}.hdr .ic{width:38px;height:38px;border-radius:12px}.search input{height:40px;font-size:12px;padding-inline:37px}.search>svg{right:12px}.hero{width:calc(100% - 24px);margin:14px auto 16px;padding:20px;border-radius:21px;min-height:176px}.hero h2{font-size:24px}.hero p{font-size:11px;line-height:1.7;max-width:245px}.hero-art{width:96px;height:92px;border-radius:21px}.hero-art span{font-size:19px;top:9px;right:11px}.hero-art svg{width:76px}.cats,.sec,.grid{width:calc(100% - 24px)}.cats{padding-bottom:4px}.cats button{padding:8px 11px;font-size:10px}.sec{margin-bottom:11px}.sec h3{font-size:17px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.card{border-radius:16px}.bd{padding:10px;gap:7px}.nm{font-size:11px}.price-meta{padding:7px;font-size:8px}.price-meta b{font-size:9px}.add{padding:10px 5px;font-size:10px}.add svg{width:14px;height:14px}.bnav{width:calc(100% - 16px);bottom:8px;border-radius:18px}.bnav button{font-size:9px;min-height:50px}.bnav svg{width:18px;height:18px}.affiliate-wrap{padding:18px 12px 110px}.affiliate-welcome{padding:18px}.affiliate-stats{gap:8px}.affiliate-stat{padding:11px}.affiliate-stat b{font-size:18px}.affiliate-stat .label{font-size:10px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:0!important;animation-duration:0!important}}
+</style></body></html>
 
 <style id="affiliate-live-indicator">
 .affiliate-live{display:inline-flex;align-items:center;gap:6px;color:#16824f!important;font-weight:800;white-space:nowrap}
