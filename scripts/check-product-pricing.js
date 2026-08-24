@@ -14,6 +14,7 @@ assert(server.includes('const effectiveCommission'), 'server must expose the adm
 assert(server.includes('function productWholesalePrice(base, priceUp)') && server.includes('const safeUp'), 'server must calculate the global admin percentage on the wholesale base');
 assert(server.includes('function productSuggestedSalePrice(raw, wholesale)'), 'server must keep the supplier suggested sale price separate');
 assert(server.includes('const base = productWholesalePrice(rawWholesale, priceUp)') && server.includes('rawWholesalePrice: rawWholesale'), 'server must expose adjusted wholesale and preserve the raw API price');
+assert(server.includes('raw.rawWholesalePrice, raw.sale_price, raw.basePrice') && server.includes('raw.wholesale_price, raw.cost'), 'the API sale_price field must take priority over alternate cost fields');
 assert(!server.includes('productSalePrice('), 'the global percentage must not be named or applied as a sale-price calculation');
 assert(!server.includes('raw.price != null ? raw.price') && !server.includes('source.price != null ? source.price'), 'sale price must not become the percentage base');
 assert(server.includes('const effectiveSale = lockedSale != null ? lockedSale : suggestedSale'), 'sale price must remain supplier-suggested unless explicitly locked by admin');

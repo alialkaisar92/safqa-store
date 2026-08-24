@@ -92,7 +92,7 @@ function sourceAvailable(product) {
 
 function wholesalePriceOf(value) {
   const raw = value || {};
-  const candidates = [raw.rawWholesalePrice, raw.basePrice, raw.base_price, raw.wholesalePrice, raw.wholesale_price, raw.cost, raw.sale_price];
+  const candidates = [raw.rawWholesalePrice, raw.sale_price, raw.basePrice, raw.base_price, raw.wholesalePrice, raw.wholesale_price, raw.cost];
   for (const candidate of candidates) {
     if (candidate !== undefined && candidate !== null && candidate !== '' && Number.isFinite(Number(candidate))) return Math.max(0, Number(candidate));
   }
