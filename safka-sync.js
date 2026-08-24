@@ -13,7 +13,8 @@ function headers() { return { 'api-safka-key': apiKey(), 'Content-Type': 'applic
 function mapStatus(value) {
   const s = String(value || '').trim().toLowerCase();
   const map = {
-    pending: 'قيد التأكيد', accepted: 'قيد التأكيد', processing: 'جاري التجهيز', preparing: 'جاري التجهيز', shipped: 'تم الشحن', confirmed: 'تم التأكيد', delivered: 'تم التسليم', completed: 'تم التسليم', cancelled: 'ملغي', canceled: 'ملغي', returned: 'مرتجع', rejected: 'مرفوض', failed: 'فشل'
+    pending: 'قيد التأكيد', accepted: 'قيد التأكيد', preparing: 'جاري التجهيز', processing: 'جاري التجهيز', printing: 'جاري التجهيز', shipped: 'تم الشحن', out_for_delivery: 'تم الشحن', available: 'تم التوصيل', delivered: 'تم التسليم', completed: 'تم التسليم', collected: 'تم التحصيل', skip: 'جارٍ الاسترجاع', holding: 'مؤجل', ask_to_exchange: 'طلب استبدال', returned_exchange: 'مرتجع استبدال', ask_to_return: 'طلب استرجاع', returned: 'مرتجع', returned1: 'مرتجع', returned2: 'مرتجع بعد التسليم', declined: 'ملغي', declined1: 'ملغي', declined2: 'ملغي بعد التجهيز', cancelled: 'ملغي', canceled: 'ملغي', rejected: 'مرفوض', failed: 'فشل',
+    'معلق': 'قيد التأكيد', 'جار التحضير': 'جاري التجهيز', 'جار الطباعة': 'جاري التجهيز', 'في الشحن': 'تم الشحن', 'تم التوصيل': 'تم التوصيل', 'تم التحصيل': 'تم التحصيل', 'جار الاسترجاع': 'جارٍ الاسترجاع', 'مؤجل': 'مؤجل', 'طلب العميل الإستبدال': 'طلب استبدال', 'مرتجع الإستبدال': 'مرتجع استبدال', 'طلب العميل الإسترجاع': 'طلب استرجاع', 'مرتجع': 'مرتجع', 'مرتجع بعد التسليم': 'مرتجع بعد التسليم', 'ملغي': 'ملغي', 'ملغي بعد التحضير': 'ملغي بعد التجهيز'
   };
   return map[s] || String(value || 'قيد المتابعة');
 }
@@ -144,9 +145,9 @@ function statusUrl(order) {
 }
 function supplierOrderRecord(payload) {
   const candidates = [payload && payload.data, payload && payload.order, payload];
-  return candidates.find(value => value && typeof value === 'object' && !Array.isArray(value) && (value._id || value.id || value.serial_number || value.serial || value.status || value.order_status)) || null;
+  return candidates.find(value => value && typeof value === 'object' && !Array.isArray(value) && (value._id || value.id || value.serial_number || value.serial || value.status || value.status_ar || value.order_status)) || null;
 }
-function supplierStatus(payload, record) { return String((record && (record.status || record.order_status)) || (payload && (payload.status || payload.order_status)) || '').trim(); }
+function supplierStatus(payload, record) { return String((record && (record.status || record.order_status || record.status_ar)) || (payload && (payload.status || payload.order_status || payload.status_ar)) || '').trim(); }
 function supplierShipping(payload, record) {
   const root = payload && typeof payload === 'object' ? payload : {};
   const candidates = [

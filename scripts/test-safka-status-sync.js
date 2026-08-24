@@ -18,13 +18,16 @@ const dbContext = { module: { exports: {} } };
 vm.runInNewContext(dbSource.slice(dbStart, dbEnd) + '\nmodule.exports = { webhookStatusDisplay, webhookShipmentFields };', dbContext);
 const { webhookStatusDisplay, webhookShipmentFields } = dbContext.module.exports;
 
-const payload = { data: { _id: 'supplier-123', status: 'shipped', serial_number: 'SK-123', shipment: { tracking_number: 'TRK-987', carrier: 'Safka Delivery' } } };
+const payload = { event: 'order.status.updated', order: { _id: 'supplier-123', status: 'shipped', status_ar: 'في الشحن', previous_status: 'preparing', serial_number: 'SK-123', shipment: { tracking_number: 'TRK-987', carrier: 'Safka Delivery' } } };
 const record = supplierOrderRecord(payload);
 assert.equal(record._id, 'supplier-123');
 assert.equal(supplierStatus(payload, record), 'shipped');
+assert.equal(supplierStatus({ order: { _id: 'supplier-124', status_ar: 'تم التوصيل' } }, { _id: 'supplier-124', status_ar: 'تم التوصيل' }), 'تم التوصيل');
 assert.deepEqual(supplierShipping(payload, record), { trackingNumber: 'TRK-987', carrier: 'Safka Delivery' });
 assert.equal(webhookStatusDisplay('shipped'), 'تم الشحن');
 assert.equal(webhookStatusDisplay('delivered'), 'تم التسليم');
+assert.equal(webhookStatusDisplay('في الشحن'), 'تم الشحن');
+assert.equal(webhookStatusDisplay('تم التوصيل'), 'تم التوصيل');
 assert.deepEqual(webhookShipmentFields(payload, record), { trackingNumber: 'TRK-987', carrier: 'Safka Delivery' });
 assert.equal(/ON CONFLICT \(event_key\) DO NOTHING/.test(dbSource), true);
 console.log('supplier status and shipment parsing: PASS');
