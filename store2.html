@@ -266,8 +266,8 @@ img{display:block}
 </section>
 <div class="cats" id="cats"></div>
 <div class="sec"><h3 id="ptitle">كل المنتجات</h3><button class="filter-trigger" type="button" onclick="toggleSort()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span>ترتيب العرض</span></button></div>
-<div class="grid" id="grid"></div>
-<!-- التنقل الأساسي موجود داخل القائمة الجانبية اليمنى؛ لا يوجد شريط سفلي يحجب محتوى المتجر. -->
+<div class="grid" id="grid"><div class="catalog-loading" aria-live="polite" aria-label="جارٍ تحميل المنتجات"><div class="skel-card"><span></span><i></i><i></i><b></b></div><div class="skel-card"><span></span><i></i><i></i><b></b></div><div class="skel-card"><span></span><i></i><i></i><b></b></div><div class="skel-card"><span></span><i></i><i></i><b></b></div></div></div>
+<!-- التنقل الأساسي موجود داخل القائمة الجانبية، وشريط المسوّق السفلي يظهر على الموبايل فقط. -->
 <div class="mdl" id="cartMdl"><div class="box">
   <button class="modal-x" type="button" aria-label="إغلاق السلة" onclick="closeModalById('cartMdl')">×</button>
   <h3 class="sheet-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l1.7 10.2A3 3 0 0 0 9.7 17H18a3 3 0 0 0 2.9-2.2L22 7H7.2l-.5-3H3Zm6 16a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm9 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>السلة</h3>

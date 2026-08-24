@@ -20,6 +20,7 @@ assert(html.includes('function uiText(') && html.includes('Extended_Pictographic
 assert(html.includes('categoryIcon(') && html.includes('<svg viewBox="0 0 24 24"'), 'SVG category/icon system is missing');
 assert(html.includes('سعر الجملة') && html.includes('سعر البيع المقترح') && html.includes('عمولتك المتوقعة'), 'product financial hierarchy is missing');
 assert(!html.includes('<nav class="bnav">') && html.includes('<nav class="affiliate-bottom-nav"') && ['data-bottom-tab="orders"','data-bottom-tab="wallet"','data-bottom-tab="support"','data-bottom-tab="profile"'].every(token => html.includes(token)) && html.includes('window.openWallet=function()'), 'marketer bottom navigation is incomplete');
+assert(html.includes('catalog-loading') && html.includes('skel-card'), 'homepage loading state is missing');
 assert(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(html), 'raw Unicode emoji remains in storefront source');
 assert(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(supportJs + supportCss), 'raw Unicode emoji remains in support chat source');
 assert(supportCss.includes('#rab7naSupportRoot .support-launch{left:auto;right:20px') && supportCss.includes('#rab7naSupportRoot .support-panel{left:auto;right:20px'), 'support chat is not placed on the right');
