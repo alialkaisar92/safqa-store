@@ -645,16 +645,16 @@ app.get('/api/pricing-policy', async (req, res) => {
 
 app.get('/api/products', async (req, res) => {
   const cachedOnly = String(req.query.cached || '') === '1';
-  const affiliate = await getAffiliateSnapshotFast(false);
-  const priceUp = Math.max(0, Math.min(200, Number(affiliate.priceUp) || 0));
   if (cachedOnly) {
     const cached = readSeoProducts();
     if (cached.length) {
       res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=600');
-      return res.json({ data: cached, priceUp, cached: true, pricePolicyUpdatedAt: affiliate.pricePolicyUpdatedAt || null });
+      return res.json({ data: cached, cached: true });
     }
     return res.status(404).json({ ok: false, error: 'لا يوجد كاش منتجات جاهز' });
   }
+  const affiliate = await getAffiliateSnapshotFast(false);
+  const priceUp = Math.max(0, Math.min(200, Number(affiliate.priceUp) || 0));
   const saved = Array.isArray(affiliate.products) ? affiliate.products : [];
   const savedById = new Map();
   saved.forEach(item => {
