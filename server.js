@@ -402,6 +402,14 @@ function productMedia(p, local) {
     mediaVideo: first(local && local.mediaVideo, local && local.media_video, local && local.video_url, local && local.drive_video, p && p.mediaVideo, p && p.media_video, p && p.video_url, p && p.drive_video)
   };
 }
+function wholesalePriceOf(value) {
+  const raw = value || {};
+  const candidates = [raw.basePrice, raw.base_price, raw.wholesalePrice, raw.wholesale_price, raw.cost, raw.sale_price];
+  for (const candidate of candidates) {
+    if (candidate !== undefined && candidate !== null && candidate !== '' && Number.isFinite(Number(candidate))) return Math.max(0, Number(candidate));
+  }
+  return 0;
+}
 function normalizePublicProduct(p, local, priceUp) {
   const raw = p || {};
   const prop = (raw.properties && raw.properties[0]) || {};
@@ -409,7 +417,7 @@ function normalizePublicProduct(p, local, priceUp) {
   const merged = Object.assign({}, raw, local || {});
   const media = productMedia(raw, local || {});
   const category = cat([raw.name, raw.title, raw.description, raw.desc, raw.note, raw.category].filter(Boolean).join(' '));
-  const base = Number(raw.basePrice != null ? raw.basePrice : (raw.sale_price != null ? raw.sale_price : (raw.price != null ? raw.price : 0)));
+  const base = wholesalePriceOf(raw);
   const note = raw.note || merged.note || '';
   const adminLocked = merged.adminPriceLocked === true || merged.admin_price_locked === true;
   const adminSale = Number(merged.adminSalePrice != null ? merged.adminSalePrice : merged.admin_sale_price);
@@ -1066,7 +1074,7 @@ app.post('/api/create-order', async (req,res)=>{
     if (sourceProps.length && requestedProperty && !matchedProperty) return res.status(409).json({error:'اختيار المنتج غير صالح حاليًا'});
     const sourceProp = matchedProperty || sourceProps[0] || {};
     // التوفر هو مصدر القرار الوحيد؛ stock الرقمي قديم/غير موجود في بيانات المورد ولا يُستخدم لمنع الطلب.
-    const base = Number(source.basePrice != null ? source.basePrice : (source.sale_price != null ? source.sale_price : (source.price != null ? source.price : 0)));
+    const base = wholesalePriceOf(source);
     if (!Number.isFinite(base) || base <= 0) return res.status(409).json({error:'سعر المنتج الأصلي غير متاح حاليًا'});
     const propertyAvailable = sourceProps.length ? sourceProp.is_available === true : source.is_available !== false;
     const productAvailable = source.is_active !== false && propertyAvailable && sourceAvailability(source) === true;

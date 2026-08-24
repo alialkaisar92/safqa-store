@@ -12,6 +12,8 @@ assert(server.includes('basePrice: base'), 'server must expose the wholesale/bas
 assert(server.includes('price: effectiveSale'), 'server must expose the admin-controlled sale price');
 assert(server.includes('const effectiveCommission'), 'server must expose the admin-controlled commission');
 assert(server.includes('function productSalePrice(note, base, priceUp)') && server.includes('const safeUp'), 'server must calculate the global admin percentage from the base price');
+assert(server.includes('function wholesalePriceOf(value)') && server.includes('const base = wholesalePriceOf(raw)') && server.includes('const base = wholesalePriceOf(source)'), 'server must derive the percentage from wholesale fields only');
+assert(!server.includes('raw.price != null ? raw.price') && !server.includes('source.price != null ? source.price'), 'sale price must not become the percentage base');
 assert(client.includes('function wholePriceOf(p)'), 'client must read the wholesale price from normalized data');
 assert(client.includes('function salePriceOf(p)'), 'client must read the suggested sale price from normalized data');
 assert(client.includes('function commissionOf(p)'), 'client must read the commission from normalized data');

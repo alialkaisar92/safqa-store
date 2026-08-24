@@ -88,9 +88,17 @@ function propertyAvailability(product) {
   return flags.some(Boolean);
 }
 
+function wholesalePriceOf(value) {
+  const raw = value || {};
+  const candidates = [raw.basePrice, raw.base_price, raw.wholesalePrice, raw.wholesale_price, raw.cost, raw.sale_price];
+  for (const candidate of candidates) {
+    if (candidate !== undefined && candidate !== null && candidate !== '' && Number.isFinite(Number(candidate))) return Math.max(0, Number(candidate));
+  }
+  return 0;
+}
 function mapSafkaProduct(product) {
   const value = product || {};
-  const base = Number(value.sale_price != null ? value.sale_price : (value.price || 0));
+  const base = wholesalePriceOf(value);
   const available = propertyAvailability(value);
   return {
     id: String(value._id || value.id || ('safka-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7))),
@@ -141,7 +149,7 @@ async function affiliateData() {
 
 function productWithPrice(product, priceUp) {
   const value = product || {};
-  const base = Number(value.basePrice != null ? value.basePrice : value.price) || 0;
+  const base = wholesalePriceOf(value);
   const locked = value.adminPriceLocked === true || value.admin_price_locked === true;
   const adminSale = Number(value.adminSalePrice != null ? value.adminSalePrice : value.admin_sale_price);
   const safeUp = Math.max(0, Math.min(200, Number(priceUp) || 0));
