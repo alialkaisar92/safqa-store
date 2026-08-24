@@ -803,7 +803,10 @@ app.post('/api/auth/register', async (req, res) => {
 });
 app.post('/api/auth/login', async (req, res) => {
   try { const result = await authService.login(Object.assign({}, req.body || {}, { ip: req.ip })); setSessionCookie(res, result.token); res.json({ ok: true, user: result.user }); }
-  catch (error) { const status = /محاولات كثيرة|مطلوبان|غير صحيحة/.test(error.message) ? 401 : 500; res.status(status).json({ error: status === 500 ? 'تعذر تسجيل الدخول حاليًا' : error.message }); }
+  catch (error) {
+    const status = ['ACCOUNT_BANNED', 'ACCOUNT_SUSPENDED'].includes(error.code) ? 403 : (/محاولات كثيرة|مطلوبان|غير صحيحة/.test(error.message) ? 401 : 500);
+    res.status(status).json({ error: status === 500 ? 'تعذر تسجيل الدخول حاليًا' : error.message });
+  }
 });
 app.post('/api/auth/logout', async (req, res) => { try { await authService.logout(authToken(req)); } catch (_) {} clearSessionCookie(res); res.json({ ok: true }); });
 app.get('/api/auth/me', async (req, res) => { try { const user = await authService.currentUser(authToken(req)); if (!user) return res.status(401).json({ error: 'غير مسجل الدخول' }); res.json({ ok: true, user }); } catch (_) { res.status(401).json({ error: 'غير مسجل الدخول' }); } });

@@ -52,7 +52,7 @@ async function requireAdmin(req, res, next) {
     const sessionUser = await authService.currentUser(tokenFrom(req));
     if (!sessionUser) return res.status(401).json({ error: 'يجب تسجيل الدخول أولاً' });
     const user = await store.getUser(sessionUser.id);
-    if (!user || user.banned) return res.status(403).json({ error: 'الحساب غير مسموح له بالدخول' });
+    if (!user || isAccountBlocked(user)) return res.status(403).json({ error: 'الحساب غير مسموح له بالدخول' });
     const allowedByEnv = envAllows(user);
     const allowedByRole = hasPermission(user, 'dashboard');
     if (!allowedByEnv && !allowedByRole) return res.status(403).json({ error: 'هذه الصفحة مخصصة لمدير المنصة فقط' });
@@ -66,15 +66,31 @@ async function requireAdmin(req, res, next) {
 
 global.requireAdmin = requireAdmin;
 
+function isTemporarilySuspended(user) {
+  if (!user || !user.suspended_until) return false;
+  const time = new Date(user.suspended_until).getTime();
+  return Number.isFinite(time) && time > Date.now();
+}
+function isAccountBlocked(user) { return Boolean(user && (user.banned || isTemporarilySuspended(user))); }
+function accountStatus(user) {
+  if (user && user.banned) return 'حظر دائم';
+  if (isTemporarilySuspended(user)) return 'حظر مؤقت';
+  return 'نشط';
+}
 function safeUser(user) {
   return {
     id: user.id,
     name: user.name || '',
     email: user.email || '',
+    emailVerified: Boolean(user.email_verified),
     balance: Number(user.balance || 0),
     role: user.role || 'user',
     permissions: Array.isArray(user.permissions) ? user.permissions : [],
     banned: Boolean(user.banned),
+    suspendedUntil: user.suspended_until || null,
+    banReason: user.ban_reason || '',
+    accountStatus: accountStatus(user),
+    passwordChangedAt: user.password_changed_at || null,
     created: user.created_at || user.created || null,
     lastSeen: user.last_login || user.lastSeen || null,
     online: Boolean(user.last_login && Date.now() - new Date(user.last_login).getTime() < 120000)
@@ -185,7 +201,7 @@ function permissionForPath(requestPath) {
   const p = String(requestPath || '');
   if (/^\/(orders|order-status|order-attempts|order-retry|order-review|order-hook-reviews)/.test(p)) return 'orders';
   if (/^\/(products|product|product-delete|price|price-up)/.test(p)) return 'products';
-  if (/^\/(users|user-ban)/.test(p)) return 'users';
+  if (/^\/(users|user-)/.test(p)) return 'users';
   if (/^\/(withdrawals|withdrawal-status)/.test(p)) return 'withdrawals';
   if (/^\/(chats|chat-reply|chat-stream)/.test(p)) return 'chats';
   if (/^\/(settings)/.test(p)) return 'settings';
@@ -450,15 +466,69 @@ module.exports = function mountAdmin(app) {
     } catch (error) { res.status(503).json({ error: 'تعذر حفظ إعداد الأسعار' }); }
   });
 
-  app.get('/api/admin/users', async (req, res) => { try { res.json((await store.getUsers()).map(safeUser)); } catch (error) { res.status(503).json({ error: 'تعذر تحميل المستخدمين' }); } });
+  app.get('/api/admin/users', async (req, res) => { try { res.set('Cache-Control', 'no-store'); res.json((await store.getUsers()).map(safeUser)); } catch (error) { res.status(503).json({ error: 'تعذر تحميل المستخدمين' }); } });
+  app.get('/api/admin/users/:id/actions', async (req, res) => {
+    try { res.set('Cache-Control', 'no-store'); res.json({ actions: await postgres.listAdminUserActions(req.params.id, req.query.limit) }); }
+    catch (error) { console.error('[admin user actions]:', error.message); res.status(503).json({ error: 'تعذر تحميل سجل الحساب' }); }
+  });
+  app.post('/api/admin/users', async (req, res) => {
+    try {
+      const user = await postgres.createAdminUser(req.body || {}, req.adminUser && req.adminUser.id);
+      res.status(201).json({ ok: true, user: safeUser(user) });
+    } catch (error) {
+      const status = ['INVALID_USER_NAME', 'INVALID_USER_EMAIL', 'INVALID_USER_PASSWORD', 'DUPLICATE_USER_EMAIL'].includes(error.code) ? 400 : 503;
+      console.error('[admin user create]:', error.code || error.message);
+      res.status(status).json({ error: status === 400 ? error.message : 'تعذر إنشاء الحساب حاليًا' });
+    }
+  });
+  app.patch('/api/admin/users/:id', async (req, res) => {
+    try {
+      const user = await postgres.updateAdminUser(req.params.id, req.body || {}, req.adminUser && req.adminUser.id);
+      if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
+      res.json({ ok: true, user: safeUser(user) });
+    } catch (error) {
+      const status = ['INVALID_USER_NAME', 'INVALID_USER_EMAIL', 'DUPLICATE_USER_EMAIL'].includes(error.code) ? 400 : 503;
+      console.error('[admin user update]:', error.code || error.message);
+      res.status(status).json({ error: status === 400 ? error.message : 'تعذر تعديل بيانات الحساب' });
+    }
+  });
+  app.post('/api/admin/users/:id/reset-password', async (req, res) => {
+    try {
+      const user = await postgres.resetAdminUserPassword(req.params.id, String(req.body && req.body.password || ''), req.adminUser && req.adminUser.id);
+      if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
+      if (global.notifyUser) await Promise.resolve(global.notifyUser(user.id, 'تم تحديث كلمة المرور', 'تم تغيير كلمة مرور حسابك بواسطة إدارة المنصة. سجّل الدخول بكلمة المرور الجديدة.', '/login', 'account', 'account-password:' + user.id + ':' + String(user.password_changed_at || Date.now()))).catch(() => null);
+      res.json({ ok: true, user: safeUser(user), sessionsRevoked: true });
+    } catch (error) {
+      const status = error.code === 'INVALID_USER_PASSWORD' ? 400 : 503;
+      console.error('[admin user password]:', error.code || error.message);
+      res.status(status).json({ error: status === 400 ? error.message : 'تعذر تحديث كلمة المرور' });
+    }
+  });
+  app.post('/api/admin/users/:id/access', async (req, res) => {
+    try {
+      const id = String(req.params.id || '').trim();
+      const mode = String(req.body && req.body.mode || '').trim().toLowerCase();
+      if (id === String(req.adminUser && req.adminUser.id) && mode !== 'active') return res.status(400).json({ error: 'لا يمكنك حظر حسابك الإداري من هنا' });
+      const user = await postgres.setUserAccessState(id, req.body || {}, req.adminUser && req.adminUser.id);
+      if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
+      const blocked = isAccountBlocked(user);
+      if (global.notifyUser) await Promise.resolve(global.notifyUser(user.id, blocked ? 'تم تقييد الحساب' : 'تمت استعادة الحساب', blocked ? (user.banned ? 'تم حظر حسابك نهائيًا بواسطة إدارة المنصة.' : 'تم إيقاف حسابك مؤقتًا بواسطة إدارة المنصة.') : 'تمت استعادة إمكانية الدخول إلى حسابك.', '/login', 'account', 'account-access:' + user.id + ':' + accountStatus(user) + ':' + String(user.updated_at || Date.now()))).catch(() => null);
+      res.json({ ok: true, user: safeUser(user), sessionsRevoked: blocked });
+    } catch (error) {
+      const status = ['INVALID_ACCESS_STATE', 'INVALID_SUSPENSION_DATE'].includes(error.code) ? 400 : 503;
+      console.error('[admin user access]:', error.code || error.message);
+      res.status(status).json({ error: status === 400 ? error.message : 'تعذر تحديث وصول الحساب' });
+    }
+  });
   app.post('/api/admin/user-ban', async (req, res) => {
     try {
       const id = String(req.body && req.body.id || '').trim();
       if (!id) return res.status(400).json({ error: 'معرّف المستخدم مطلوب' });
       const banned = Boolean(req.body && req.body.banned);
-      const user = await postgres.updateUserBanned(id, banned);
+      if (id === String(req.adminUser && req.adminUser.id) && banned) return res.status(400).json({ error: 'لا يمكنك حظر حسابك الإداري من هنا' });
+      const user = await postgres.setUserAccessState(id, banned ? { mode: 'permanent', reason: 'حظر من لوحة الإدارة' } : { mode: 'active', reason: '' }, req.adminUser && req.adminUser.id);
       if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
-      if (global.notifyUser) await Promise.resolve(global.notifyUser(user.id, banned ? 'تم تعليق الحساب' : 'تمت إعادة تفعيل الحساب', banned ? 'تم تعليق الوصول إلى حسابك بواسطة إدارة المنصة.' : 'تمت إعادة تفعيل الوصول إلى حسابك.', '/store', 'account', 'account-ban:' + user.id + ':' + banned)).catch(() => null);
+      if (global.notifyUser) await Promise.resolve(global.notifyUser(user.id, banned ? 'تم تعليق الحساب' : 'تمت إعادة تفعيل الحساب', banned ? 'تم تعليق الوصول إلى حسابك بواسطة إدارة المنصة.' : 'تمت إعادة تفعيل الوصول إلى حسابك.', '/login', 'account', 'account-ban:' + user.id + ':' + banned)).catch(() => null);
       res.json({ ok: true, user: safeUser(user) });
     } catch (error) { res.status(503).json({ error: 'تعذر تحديث حالة الحساب' }); }
   });

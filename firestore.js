@@ -48,7 +48,7 @@ async function replaceCollection(collection, values) {
   } finally { client.release(); }
 }
 
-const USER_FIELDS = 'id,email,password_hash,name,created_at,updated_at,email_verified,last_login,balance,welcome_bonus_granted,manual_credits,total_earned,sales_count,sales,role,permissions,banned';
+const USER_FIELDS = 'id,email,password_hash,name,created_at,updated_at,email_verified,last_login,balance,welcome_bonus_granted,manual_credits,total_earned,sales_count,sales,role,permissions,banned,suspended_until,ban_reason,password_changed_at';
 
 function normalizeUserRow(row) {
   if (!row) return null;

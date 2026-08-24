@@ -61,10 +61,12 @@ async function login({ email, password, ip }) {
   email = normalizeEmail(email);
   if (!allowed(`${ip || 'unknown'}:${email}`)) throw new Error('محاولات كثيرة؛ حاول بعد 15 دقيقة');
   if (!email || typeof password !== 'string') throw new Error('البريد وكلمة المرور مطلوبان');
-  const result = await query('SELECT id,name,email,password_hash,email_verified,created_at,last_login,balance,welcome_bonus_granted,manual_credits,total_earned,sales_count,sales FROM users WHERE LOWER(email)=LOWER($1) LIMIT 1', [email]);
+  const result = await query('SELECT id,name,email,password_hash,email_verified,created_at,last_login,balance,welcome_bonus_granted,manual_credits,total_earned,sales_count,sales,banned,suspended_until FROM users WHERE LOWER(email)=LOWER($1) LIMIT 1', [email]);
   const user = result.rows[0];
   const valid = user ? await bcrypt.compare(password, user.password_hash) : false;
   if (!valid) throw new Error('البريد أو كلمة المرور غير صحيحة');
+  if (user.banned) { const blocked = new Error('الحساب محظور نهائيًا؛ تواصل مع الإدارة'); blocked.code = 'ACCOUNT_BANNED'; throw blocked; }
+  if (user.suspended_until && new Date(user.suspended_until).getTime() > Date.now()) { const blocked = new Error('الحساب موقوف مؤقتًا حتى ' + new Date(user.suspended_until).toLocaleString('ar-EG')); blocked.code = 'ACCOUNT_SUSPENDED'; throw blocked; }
   await query('UPDATE users SET last_login=NOW(),updated_at=NOW() WHERE id=$1', [user.id]);
   const token = newToken();
   await query(`INSERT INTO auth_sessions(user_id,token_hash,expires_at) VALUES ($1,$2,NOW()+INTERVAL '${SESSION_DAYS} days')`, [user.id, tokenHash(token)]);
@@ -75,7 +77,9 @@ async function currentUser(token) {
   if (!token) return null;
   const result = await query(`SELECT u.id,u.name,u.email,u.email_verified,u.created_at,u.last_login,u.balance,u.welcome_bonus_granted,u.manual_credits,u.total_earned,u.sales_count,u.sales
     FROM auth_sessions s JOIN users u ON u.id=s.user_id
-    WHERE s.token_hash=$1 AND s.expires_at>NOW()`, [tokenHash(token)]);
+    WHERE s.token_hash=$1 AND s.expires_at>NOW()
+      AND u.banned IS NOT TRUE
+      AND (u.suspended_until IS NULL OR u.suspended_until<=NOW())`, [tokenHash(token)]);
   if (!result.rows[0]) return null;
   // لوحة المسوق قد تستدعي هذا المسار كل 5 ثوانٍ؛ لا نحتاج كتابة last_seen_at في كل polling.
   // هذا يحافظ على صلاحية الجلسة ويحدّث النشاط مرة واحدة تقريبًا كل دقيقة.
