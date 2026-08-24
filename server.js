@@ -17,7 +17,8 @@ try { easyordersDb.initDb(); } catch (e) { console.error('[easyorders] database 
 app.use('/api/easyorders', easyordersRoutes);
 
 app.get('/', (req, res) => {
-  res.redirect(302, '/store');
+  res.set({ 'Cache-Control': 'no-store, no-cache, max-age=0, must-revalidate', 'CDN-Cache-Control': 'no-store', Pragma: 'no-cache' });
+  res.sendFile(path.join(__dirname, 'landing.html'));
 });
 
 const crypto = require('crypto');
