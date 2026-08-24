@@ -84,14 +84,19 @@
     .price-line strong{min-width:86px;text-align:start}
     .product-add{margin-top:auto}
     .panel-card,.stat-card,.affiliate-order,.checkout-card{overflow:hidden}
+    @media (min-width:721px){
+      .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(230px,280px);gap:32px;align-items:center}
+      .hero-content{max-width:none;padding-inline-end:0}
+      .hero-card{position:static;inset:auto;transform:none;width:auto}
+      .hero h1{max-width:720px}
+    }
     @media (min-width:981px){
       .hero{padding-inline:46px}
-      .hero-content{padding-inline-end:250px}
       .product-media{aspect-ratio:1/1}
     }
     @media (max-width:980px) and (min-width:721px){
-      .hero{min-height:310px;padding:34px}
-      .hero-content{padding-inline-end:245px}
+      .hero{min-height:310px;padding:34px;grid-template-columns:minmax(0,1fr) 230px;gap:22px}
+      .hero h1{font-size:clamp(30px,4vw,42px)}
       .product-body{min-height:222px}
     }
     @media (max-width:720px){
