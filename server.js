@@ -151,7 +151,7 @@ function stopOrderQueueWorker() {
   if (orderQueueWorkerTimer) { clearInterval(orderQueueWorkerTimer); orderQueueWorkerTimer = null; }
 }
 function authReqToken(req){const h=String(req.headers.authorization||'');return String(req.headers['x-auth-token']||req.headers['x-sq-token']||(h.toLowerCase().indexOf('bearer ')===0?h.slice(7):'')||'').trim();}
-async function currentAuthUser(req){const token=authToken(req);if(!token)return null;try{const user=await authService.currentUser(token);if(user)return user;}catch(e){}try{const jwt=global.verifyJWT&&global.verifyJWT(token);if(jwt)return await firestore.getUser(jwt.uid);}catch(e){}try{const rec=await firestore.getToken(token);return rec?await firestore.getUser(rec.uid):null;}catch(e){return null;}}
+async function currentAuthUser(req){const token=authToken(req);if(!token)return null;try{return await authService.currentUser(token);}catch(e){return null;}}
 
 let webpush = null;
 try { webpush = require('web-push'); } catch (_) {}
@@ -294,7 +294,8 @@ function isPublicStaticPath(requestPath) {
   if (slash > 0 && PUBLIC_STATIC_DIRS.has(relative.slice(0, slash))) return true;
   return PUBLIC_STATIC_FILES.has(relative);
 }
-const safeStatic = (req, res, next) => isPublicStaticPath(req.path) ? express.static(__dirname, { dotfiles: 'deny', index: false, fallthrough: true })(req, res, next) : next();
+const publicStatic = express.static(__dirname, { dotfiles: 'deny', index: false, fallthrough: true });
+const safeStatic = (req, res, next) => isPublicStaticPath(req.path) ? publicStatic(req, res, next) : next();
 
 // Uploaded files are private: a signed-in user can retrieve only files bearing their own user prefix.
 app.get('/uploads/:file', async (req, res) => {
