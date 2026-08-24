@@ -277,7 +277,39 @@ app.get('/api/health',async function(req,res){
 app.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
 
 
-app.use(express.static(__dirname));
+// Serve only the frontend assets that are intentionally public. Never expose source, database, logs, backups, or runtime files via express.static.
+const PUBLIC_STATIC_FILES = new Set([
+  'landing.html', 'store2.html', 'login.html', 'reset-password.html', 'admin.html', 'dashboard.html', 'orders.html', 'admin-categories.html', 'marketer.html', 'storefront.html', 'gate.html', 'index.html',
+  'theme-emerald.css', 'polish.css', 'support-chat.css', 'support-chat.js', 'store-enh.css', 'store-enh.js', 'store-app.js', 'auth-ui.js', 'orders-system.js',
+  'sw.js', 'manifest.json', 'OneSignalSDKWorker.js', 'OneSignalSDKUpdaterWorker.js'
+]);
+const PUBLIC_STATIC_DIRS = new Set(['icons']);
+function isPublicStaticPath(requestPath) {
+  let value;
+  try { value = decodeURIComponent(String(requestPath || '').split('?')[0]); } catch (_) { return false; }
+  if (!value || value.includes('\0') || value.includes('..')) return false;
+  const relative = value.replace(/^\/+/, '');
+  if (!relative || relative.startsWith('api/') || relative.startsWith('uploads/')) return false;
+  const slash = relative.indexOf('/');
+  if (slash > 0 && PUBLIC_STATIC_DIRS.has(relative.slice(0, slash))) return true;
+  return PUBLIC_STATIC_FILES.has(relative);
+}
+const safeStatic = (req, res, next) => isPublicStaticPath(req.path) ? express.static(__dirname, { dotfiles: 'deny', index: false, fallthrough: true })(req, res, next) : next();
+
+// Uploaded files are private: a signed-in user can retrieve only files bearing their own user prefix.
+app.get('/uploads/:file', async (req, res) => {
+  const user = await currentUser(req);
+  if (!user) return res.status(401).json({ error: 'يجب تسجيل الدخول لعرض الملف' });
+  let file;
+  try { file = decodeURIComponent(String(req.params.file || '')); } catch (_) { return res.status(404).end(); }
+  if (!/^[A-Za-z0-9._-]+$/.test(file) || !file.startsWith('u' + String(user.id) + '-')) return res.status(404).end();
+  const filePath = path.join(__dirname, 'uploads', file);
+  return res.sendFile(filePath, { headers: { 'Cache-Control': 'private, no-store' } }, error => {
+    if (error && !res.headersSent) res.status(error.statusCode === 403 ? 403 : 404).end();
+  });
+});
+
+app.use(safeStatic);
 app.get('/login',(req,res)=>res.sendFile(require('path').join(__dirname,'login.html')));
 // ===== Modern store (store2) =====
 
@@ -297,7 +329,6 @@ app.get('/robots.txt', (req, res) => {
 app.get('/sitemap.xml', (req, res) => {
   res.sendFile(path.join(__dirname, 'sitemap.xml'));
 });
-app.use(express.static(__dirname));
 
 
 
