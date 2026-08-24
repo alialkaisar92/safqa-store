@@ -1289,7 +1289,7 @@ async function submitOrder(){
       if(existingState==='confirmed'){
         orderSucceeded=true;clearPendingOrder(d.order.id);clearOrderIdempotencyKey();showSuccessfulOrder(d.order,d.message||'تم تأكيد الطلب بنجاح');cart=[];upd();setTimeout(function(){closeCheckout();resetOrderMessage();},3600);
       }else{
-        activeTrackedOrderId=String(d.order.id);cart=[];upd();rememberPendingOrder(d.order,body.idempotency_key,orderFingerprint);showQueuedOrder(d.order,existingState==='accepted'?'تم استلام الطلب من المورد':'تم استلام طلبك بنجاح',d.message||'تم تسجيل الطلب وبدأت متابعته');orderQueued=false;trackQueuedOrder(d.order.id);
+        activeTrackedOrderId=String(d.order.id);cart=[];upd();rememberPendingOrder(d.order,body.idempotency_key,orderFingerprint);clearOrderIdempotencyKey();showQueuedOrder(d.order,existingState==='accepted'?'تم استلام الطلب من المورد':'تم استلام طلبك بنجاح',d.message||'تم تسجيل الطلب وبدأت متابعته');orderQueued=false;trackQueuedOrder(d.order.id);
       }
       return;
     }

@@ -34,6 +34,7 @@ assert(html.includes('هنتابع مع عميلك لحد ما يستلم'), 'cu
 assert(html.includes('showQueuedOrder') && html.includes('تم استلام طلبك بنجاح'), 'queued order acknowledgement is missing');
 assert(html.includes('trackQueuedOrder') && html.includes('fetchQueuedOrderStatus'), 'queued order status polling is missing');
 assert(html.includes('sessionStorage.getItem(\'rab7na_order_idempotency_key\')'), 'refresh-safe idempotency storage is missing');
+assert(submitBlock.includes('rememberPendingOrder(d.order,body.idempotency_key,orderFingerprint);clearOrderIdempotencyKey();'), 'successful queued orders must release the idempotency key for the next order');
 assert(html.includes('rab7na_pending_orders_v2') && html.includes('readPendingOrders'), 'multiple pending orders must be retained safely');
 assert(submitBlock.includes("X-Idempotency-Key"), 'idempotency header is missing');
 assert(html.includes('finalPrice:Number(c.price||0)'), 'admin-controlled sale price must be sent as finalPrice');
