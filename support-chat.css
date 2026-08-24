@@ -24,10 +24,10 @@
 @media(prefers-reduced-motion:reduce){.support-launch,.support-panel{animation:none;transition:none}.support-messages{scroll-behavior:auto}.support-typing i{animation:none}}
 
 /* Premium storefront placement: human support lives on the left. */
-#rab7naSupportRoot .support-launch{left:20px;right:auto;bottom:96px;border-radius:16px}
-#rab7naSupportRoot .support-panel{left:20px;right:auto;bottom:160px}
+#rab7naSupportRoot .support-launch{display:none!important}
+#rab7naSupportRoot .support-panel{left:auto;right:20px;bottom:94px}
 #rab7naSupportRoot .support-launch-icon svg,#rab7naSupportRoot .support-panel-mark svg,#rab7naSupportRoot .support-login-icon svg,#rab7naSupportRoot .support-send svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 @media(max-width:540px){
-  #rab7naSupportRoot .support-launch{left:13px;right:auto;bottom:calc(80px + env(safe-area-inset-bottom));}
-  #rab7naSupportRoot .support-panel{left:8px;right:auto;bottom:calc(142px + env(safe-area-inset-bottom));height:min(650px,calc(100dvh - 164px));}
+  #rab7naSupportRoot .support-launch{display:none!important}
+  #rab7naSupportRoot .support-panel{left:8px;right:8px;bottom:calc(78px + env(safe-area-inset-bottom));height:min(650px,calc(100dvh - 100px));}
 }
