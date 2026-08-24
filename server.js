@@ -609,8 +609,31 @@ app.get('/api/chat/messages', readCurrentChat);
 app.post('/api/chat', appendCurrentChat);
 app.post('/api/chat/send', appendCurrentChat);
 
-app.post('/api/upload',(req,res)=>{const pl=global.verifyJWT?global.verifyJWT(req.headers['x-auth-token']||''):null;if(!pl)return res.status(401).json({error:'login'});const b=req.body||{};if(typeof b.data!=='string'||b.data.indexOf('data:')!==0)return res.json({error:'صورة غير صالحة'});try{const fs=require('fs'),pt=require('path');const dir=pt.join(__dirname,'uploads');if(!fs.existsSync(dir))fs.mkdirSync(dir);const mt=(b.data.match(/^data:([^;]+);/)||[])[1]||'image/png';const ext=((mt.split('/')[1])||'png').replace(/[^a-z0-9]/gi,'')||'png';const fn='t'+Date.now()+'-'+Math.random().toString(36).slice(2,6)+'.'+ext;fs.writeFileSync(pt.join(dir,fn),Buffer.from((b.data.split(',')[1])||'','base64'));res.json({ok:true,url:'/uploads/'+fn});}catch(e){res.json({error:'فشل الرفع'});}});
-app.get('/api/theme/:id',async (req,res)=>{try{const u=await firestore.getUser(req.params.id);res.json({ok:true,theme:(u&&u.theme)||null,name:u?u.name:''});}catch(e){res.json({ok:true,theme:null,name:''});}});
+app.post('/api/upload', async (req, res) => {
+  const user = await currentUser(req);
+  if (!user) return res.status(401).json({ error: 'يجب تسجيل الدخول أولًا' });
+  const body = req.body || {};
+  if (typeof body.data !== 'string' || body.data.indexOf('data:') !== 0 || body.data.length > 8 * 1024 * 1024) return res.status(400).json({ error: 'صورة غير صالحة' });
+  try {
+    const dir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+    const mime = (body.data.match(/^data:([^;]+);/) || [])[1] || 'image/png';
+    const ext = ((mime.split('/')[1]) || 'png').replace(/[^a-z0-9]/gi, '') || 'png';
+    const fileName = 'u' + String(user.id) + '-' + crypto.randomBytes(18).toString('hex') + '.' + ext;
+    fs.writeFileSync(path.join(dir, fileName), Buffer.from((body.data.split(',')[1]) || '', 'base64'));
+    res.json({ ok: true, url: '/uploads/' + fileName });
+  } catch (error) { console.error('[upload] failed:', error.message); res.status(503).json({ error: 'فشل الرفع' }); }
+});
+app.get('/api/theme/:id', async (req, res) => {
+  const user = await currentUser(req);
+  if (!user) return res.status(401).json({ error: 'يجب تسجيل الدخول أولًا' });
+  if (String(req.params.id) !== String(user.id)) return res.status(403).json({ error: 'لا يسمح بالوصول إلى بيانات مستخدم آخر' });
+  try {
+    const owner = await firestore.getUser(user.id);
+    res.set('Cache-Control', 'private, no-store');
+    res.json({ ok: true, theme: (owner && owner.theme) || null });
+  } catch (error) { console.error('[theme read] failed:', error.message); res.status(503).json({ error: 'تعذر تحميل إعدادات الحساب' }); }
+});
 app.post('/api/my/theme',async (req,res)=>{const u=await currentUser(req);if(!u)return res.status(401).json({error:'login'});try{u.theme=req.body||{};await firestore.saveUser(u);res.json({ok:true});}catch(e){res.json({error:'فشل الحفظ'});}});
 app.get('/premium.js',(req,res)=>res.sendFile(require('path').join(__dirname,'themes','premium.js')));
 app.get('/premium.css',(req,res)=>res.sendFile(require('path').join(__dirname,'themes','premium.css')));

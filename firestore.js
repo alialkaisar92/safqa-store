@@ -86,15 +86,16 @@ async function saveUser(user) {
   const values = [id, email, name, Boolean(user && user.email_verified), user && user.last_login || null, Number(user && user.balance || 0), Boolean(user && user.welcome_bonus_granted), Number(user && user.manualCredits || 0), Number(user && user.totalEarned || 0), Number(user && user.salesCount || 0), JSON.stringify(Array.isArray(user && user.sales) ? user.sales : []), String(user && user.role || 'user'), JSON.stringify(Array.isArray(user && user.permissions) ? user.permissions : []), Boolean(user && user.banned)];
 
   // Public session objects intentionally do not contain password_hash. Update
-  // only the mutable profile/affiliate fields in that case, preserving auth data.
+  // only mutable affiliate/profile fields; never let a public object rewrite
+  // email, role, permissions, banned, suspension, or password metadata.
   if (!user || !user.password_hash) {
     if (!id) throw new Error('user id is required');
     const result = await query(`UPDATE users SET
-      name=COALESCE(NULLIF($2,''),name), email_verified=$3, last_login=COALESCE($4,last_login),
-      balance=$5, welcome_bonus_granted=$6, manual_credits=$7, total_earned=$8,
-      sales_count=$9, sales=$10::jsonb, role=$11, permissions=$12::jsonb, banned=$13, updated_at=NOW()
+      name=COALESCE(NULLIF($2,''),name), last_login=COALESCE($3,last_login),
+      balance=$4, welcome_bonus_granted=$5, manual_credits=$6, total_earned=$7,
+      sales_count=$8, sales=$9::jsonb, updated_at=NOW()
       WHERE id=$1 RETURNING ${USER_FIELDS}`,
-      [id, name, values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13]]);
+      [id, name, values[4], values[5], values[6], values[7], values[8], values[9], values[10]]);
     return normalizeUserRow(result.rows[0]);
   }
 
