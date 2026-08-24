@@ -147,6 +147,33 @@ function supplierOrderRecord(payload) {
   return candidates.find(value => value && typeof value === 'object' && !Array.isArray(value) && (value._id || value.id || value.serial_number || value.serial || value.status || value.order_status)) || null;
 }
 function supplierStatus(payload, record) { return String((record && (record.status || record.order_status)) || (payload && (payload.status || payload.order_status)) || '').trim(); }
+function supplierShipping(payload, record) {
+  const root = payload && typeof payload === 'object' ? payload : {};
+  const candidates = [
+    record,
+    record && record.shipment,
+    record && record.shipping,
+    root.shipment,
+    root.shipping,
+    root.data && root.data.shipment,
+    root.data && root.data.shipping,
+    root.order && root.order.shipment,
+    root.order && root.order.shipping
+  ].filter(value => value && typeof value === 'object');
+  const first = keys => {
+    for (const source of candidates) {
+      for (const key of keys) {
+        const value = source[key];
+        if (value !== undefined && value !== null && String(value).trim() !== '') return String(value).trim();
+      }
+    }
+    return '';
+  };
+  return {
+    trackingNumber: first(['tracking_number', 'trackingNumber', 'tracking_no', 'trackingNo', 'waybill', 'awb', 'shipment_id', 'shipmentId']),
+    carrier: first(['carrier', 'courier', 'shipping_company', 'shippingCompany', 'delivery_company', 'deliveryCompany'])
+  };
+}
 function supplierErrors(payload) {
   const out = [];
   [payload && payload.errors, payload && payload.data && payload.data.errors, payload && payload.order && payload.order.errors].forEach(list => {
@@ -164,6 +191,9 @@ function supplierOutcome(response, payload) {
   const falseFlag = [payload && payload.success, payload && payload.ok, nested.success, nested.ok].some(value => value === false || String(value).toLowerCase() === 'false');
   const terminalFailure = ['failed', 'rejected', 'cancelled', 'canceled', 'مرفوض', 'ملغي', 'ملغى', 'فشل'].includes(String(rawStatus || '').toLowerCase());
   return { accepted: Boolean(response && response.ok) && !falseFlag && !terminalFailure && !errors.length && Boolean(externalId), indeterminate: Boolean(response && response.ok) && !falseFlag && !terminalFailure && !errors.length && !externalId, record, rawStatus, externalId: externalId ? String(externalId) : '', errors };
+}
+function terminalOrderStatus(value) {
+  return ['تم التسليم', 'تم التوصيل', 'تم التحصيل', 'تم إلغاء الطلب', 'ملغي', 'ملغى', 'مرتجع', 'مرفوض', 'فشل', 'delivered', 'completed', 'cancelled', 'canceled', 'returned', 'rejected', 'failed'].includes(String(value || '').trim().toLowerCase());
 }
 function retryableStatus(status) { return [500, 502, 503, 504].includes(Number(status)); }
 function maxAttempts() { return Math.max(1, Math.min(20, Number(process.env.ORDER_QUEUE_MAX_ATTEMPTS) || 5)); }
@@ -331,16 +361,19 @@ async function reconcileAffiliateOrderQueue(limit = 50) {
     try {
       const url = template.replace(/\{id\}|:id/g, encodeURIComponent(String(externalId)));
       const body = await requestJson(url, undefined, 8000);
-      const raw = body.status || (body.data && (body.data.status || body.data.order_status)) || (body.order && body.order.status);
+      const record = supplierOrderRecord(body);
+      const raw = supplierStatus(body, record);
+      const shipping = supplierShipping(body, record);
       if (!raw) continue;
       const next = mapStatus(raw);
+      const shipmentPatch = Object.assign({}, shipping.trackingNumber ? { trackingNumber: shipping.trackingNumber } : {}, shipping.carrier ? { carrier: shipping.carrier } : {});
       if (next === 'قيد التأكيد' || next === 'جاري التجهيز') {
-        const updated = await postgres.updateAffiliateOrderStatus(order.id || order.serial, { status: next, safkaStatus: raw, statusSyncedAt: new Date().toISOString(), requestStatus: 'accepted' });
+        const updated = await postgres.updateAffiliateOrderStatus(order.id || order.serial, Object.assign({ status: next, safkaStatus: raw, statusSyncedAt: new Date().toISOString(), requestStatus: 'accepted' }, shipmentPatch));
         if (updated && updated.statusChanged) await notifyOrderChange({ order_id: order.id || order.serial, user_id: order.userId }, 'accepted', 'تم تحديث حالة طلبك: ' + next);
         continue;
       }
       const requestStatus = ['تم التأكيد', 'تم التاكيد', 'تم التسليم', 'تم التوصيل', 'delivered', 'completed'].includes(String(next).toLowerCase()) ? 'confirmed' : (next === 'فشل' || next === 'مرفوض' ? 'failed' : 'accepted');
-      const updated = await postgres.updateAffiliateOrderStatus(order.id || order.serial, { status: next, safkaStatus: raw, statusSyncedAt: new Date().toISOString(), requestStatus });
+      const updated = await postgres.updateAffiliateOrderStatus(order.id || order.serial, Object.assign({ status: next, safkaStatus: raw, statusSyncedAt: new Date().toISOString(), requestStatus }, shipmentPatch));
       if (updated && updated.statusChanged) await notifyOrderChange({ order_id: order.id || order.serial, user_id: order.userId }, requestStatus, 'تم تحديث حالة طلبك: ' + next);
       console.log('[order-queue] order_reconciled', { order_id: order.id, user_id: order.userId, supplier_order_id: externalId, status: next });
     } catch (error) { console.warn('[order-queue] reconciliation skipped', { order_id: order.id, error: error.message }); }
@@ -357,13 +390,17 @@ async function syncOrderStatuses() {
     while (true) {
       const order = orders[cursor++];
       if (!order) return;
+      if (terminalOrderStatus(order.status) || terminalOrderStatus(order.requestStatus)) continue;
       if (!statusUrl(order)) continue;
       try {
         const body = await requestJson(statusUrl(order));
-        const raw = body.status || (body.data && (body.data.status || body.data.order_status)) || (body.order && body.order.status);
+        const record = supplierOrderRecord(body);
+        const raw = supplierStatus(body, record);
+        const shipping = supplierShipping(body, record);
+        const shipmentPatch = Object.assign({}, shipping.trackingNumber ? { trackingNumber: shipping.trackingNumber } : {}, shipping.carrier ? { carrier: shipping.carrier } : {});
         const next = mapStatus(raw);
         if (!raw || next === order.status) continue;
-        const updated = await postgres.updateAffiliateOrderStatus(order.id || order.serial, { status: next, safkaStatus: raw, statusSyncedAt: new Date().toISOString() });
+        const updated = await postgres.updateAffiliateOrderStatus(order.id || order.serial, Object.assign({ status: next, safkaStatus: raw, statusSyncedAt: new Date().toISOString() }, shipmentPatch));
         if (!updated) continue;
         changed++;
         if (updated.delivered) delivered++;
@@ -388,4 +425,4 @@ async function runSync(options) {
   await saveMeta({ lastRunAt: new Date().toISOString(), lastResult: result });
   return result;
 }
-module.exports = { syncProducts, syncOrderStatuses, runSync, fetchAllProducts, processAffiliateOrderByKey, processAffiliateOrderQueue, processAffiliateOrderJob, reconcileAffiliateOrderQueue };
+module.exports = { syncProducts, syncOrderStatuses, runSync, fetchAllProducts, processAffiliateOrderByKey, processAffiliateOrderQueue, processAffiliateOrderJob, reconcileAffiliateOrderQueue, supplierOrderRecord, supplierStatus, supplierShipping, terminalOrderStatus };

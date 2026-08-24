@@ -22,9 +22,10 @@ assert(postgres.includes('last_manual_retry_at') && postgres.includes('manual_re
 assert(postgres.includes('async function listAffiliateOrderAttemptsForAdmin'), 'admin attempt reader is missing');
 assert(postgres.includes("String(row.status || '') !== 'failed'") && postgres.includes('ORDER_RETRY_UNSAFE'), 'manual retry must reject non-failed or supplier-acknowledged orders');
 assert(postgres.includes("status='unknown' AND $2 IN ('pending','retry','processing')") && postgres.includes("WHERE status IN ('pending','retry')") && postgres.includes('reviewAffiliateOrderRequest'), 'unknown state must be blocked from automatic retry and support explicit review only');
-assert(postgres.includes('CREATE TABLE IF NOT EXISTS affiliate_order_webhook_events') && postgres.includes('applySafkaOrderWebhook'), 'supplier webhook dedupe and handler are missing');
+assert(postgres.includes('CREATE TABLE IF NOT EXISTS affiliate_order_webhook_events') && postgres.includes('applySafkaOrderWebhook') && postgres.includes('webhookShipmentFields'), 'supplier webhook dedupe, handler, and shipment storage are missing');
 assert(server.includes("ORDER_QUEUE_RUNNER_ENABLED") && server.includes("app.post('/api/internal/order-queue'"), 'queue runner safety switch is missing');
 assert(server.includes("app.post('/api/webhooks/safka/order-status'") && server.includes('SAFKA_ORDER_HOOK_TOKEN') && server.includes('constantTimeSecretMatch'), 'protected Safka orderHook receiver is missing');
+assert(worker.includes('supplierShipping') && worker.includes('terminalOrderStatus(order.status)'), 'status sync must persist shipment data and skip terminal orders');
 assert(worker.includes('function maxAttempts()'), 'configurable max attempts are missing');
 assert(worker.includes('[60000, 120000, 300000, 600000, 1800000]'), 'retry backoff is not minute-scale');
 assert(worker.includes('retryableStatus(status) { return [500, 502, 503, 504]'), 'transient HTTP statuses are incomplete');
