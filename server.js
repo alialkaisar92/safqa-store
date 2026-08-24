@@ -380,11 +380,21 @@ function extractSuggestedSalePrice(note, base) {
   const value = Number(match[1]);
   return Number.isFinite(value) && value >= Number(base || 0) ? value : 0;
 }
-function productSalePrice(note, base, priceUp) {
-  // السعر العام مصدره سياسة الأدمن فقط؛ لا نسمح لسعر مقترح قديم من ملاحظة المورد بتجاوزها.
+function productWholesalePrice(base, priceUp) {
+  // نسبة الأدمن تغيّر سعر الجملة القادم من API فقط؛ لا تُطبّق على سعر البيع المقترح.
   const safeBase = Math.max(0, Number(base || 0));
   const safeUp = Math.max(0, Math.min(200, Number(priceUp) || 0));
   return Math.round(safeBase * (1 + safeUp / 100));
+}
+function productSuggestedSalePrice(raw, wholesale) {
+  const value = raw || {};
+  const floor = Math.max(0, Number(wholesale || 0));
+  const candidates = [value.suggestedSalePrice, value.suggested_sale_price, value.recommendedSalePrice, value.recommended_sale_price];
+  for (const candidate of candidates) {
+    if (candidate !== undefined && candidate !== null && candidate !== '' && Number.isFinite(Number(candidate))) return Math.max(floor, Math.round(Number(candidate)));
+  }
+  const fromNote = extractSuggestedSalePrice(value.note || '', floor);
+  return Math.max(floor, Math.round(Number(fromNote) || 0));
 }
 
 function sourceAvailability(p) {
@@ -404,7 +414,7 @@ function productMedia(p, local) {
 }
 function wholesalePriceOf(value) {
   const raw = value || {};
-  const candidates = [raw.basePrice, raw.base_price, raw.wholesalePrice, raw.wholesale_price, raw.cost, raw.sale_price];
+  const candidates = [raw.rawWholesalePrice, raw.basePrice, raw.base_price, raw.wholesalePrice, raw.wholesale_price, raw.cost, raw.sale_price];
   for (const candidate of candidates) {
     if (candidate !== undefined && candidate !== null && candidate !== '' && Number.isFinite(Number(candidate))) return Math.max(0, Number(candidate));
   }
@@ -417,21 +427,25 @@ function normalizePublicProduct(p, local, priceUp) {
   const merged = Object.assign({}, raw, local || {});
   const media = productMedia(raw, local || {});
   const category = cat([raw.name, raw.title, raw.description, raw.desc, raw.note, raw.category].filter(Boolean).join(' '));
-  const base = wholesalePriceOf(raw);
+  const rawWholesale = wholesalePriceOf(raw);
+  const base = productWholesalePrice(rawWholesale, priceUp);
   const note = raw.note || merged.note || '';
+  const suggestedSale = productSuggestedSalePrice(Object.assign({}, raw, { note }), base);
   const adminLocked = merged.adminPriceLocked === true || merged.admin_price_locked === true;
   const adminSale = Number(merged.adminSalePrice != null ? merged.adminSalePrice : merged.admin_sale_price);
   const lockedSale = adminLocked && Number.isFinite(adminSale) && adminSale >= base ? Math.round(adminSale) : null;
   const adminCommission = Number(merged.adminCommission != null ? merged.adminCommission : merged.admin_commission);
-  const effectiveSale = lockedSale != null ? lockedSale : productSalePrice(note, base, priceUp);
+  const effectiveSale = lockedSale != null ? lockedSale : suggestedSale;
   const effectiveCommission = adminLocked && Number.isFinite(adminCommission) && adminCommission >= 0 ? adminCommission : Math.max(0, effectiveSale - base);
   return Object.assign(merged, {
     id: raw.id || raw._id || (local && (local.id || local._id)),
     name: raw.name || raw.title || '',
     category,
     cat: category,
+    rawWholesalePrice: rawWholesale,
     basePrice: base,
-    cost: raw.cost != null ? raw.cost : (raw.sale_price != null ? raw.sale_price : base),
+    cost: base,
+    suggestedSalePrice: suggestedSale,
     price: effectiveSale,
     image: raw.image || (raw.images && raw.images[0]) || merged.image || '',
     desc: raw.description || raw.desc || '',
@@ -1074,24 +1088,26 @@ app.post('/api/create-order', async (req,res)=>{
     if (sourceProps.length && requestedProperty && !matchedProperty) return res.status(409).json({error:'اختيار المنتج غير صالح حاليًا'});
     const sourceProp = matchedProperty || sourceProps[0] || {};
     // التوفر هو مصدر القرار الوحيد؛ stock الرقمي قديم/غير موجود في بيانات المورد ولا يُستخدم لمنع الطلب.
-    const base = wholesalePriceOf(source);
-    if (!Number.isFinite(base) || base <= 0) return res.status(409).json({error:'سعر المنتج الأصلي غير متاح حاليًا'});
+    const rawWholesale = wholesalePriceOf(source);
+    const base = productWholesalePrice(rawWholesale, priceUp);
+    if (!Number.isFinite(base) || base <= 0) return res.status(409).json({error:'سعر الجملة الأصلي غير متاح حاليًا'});
     const propertyAvailable = sourceProps.length ? sourceProp.is_available === true : source.is_available !== false;
     const productAvailable = source.is_active !== false && propertyAvailable && sourceAvailability(source) === true;
     if (!productAvailable) return res.status(409).json({error:'المنتج غير متاح حاليًا'});
     const note=clean(source.note || '');
+    const suggestedSale = productSuggestedSalePrice(Object.assign({}, source, { note }), base);
     const adminLocked = source.adminPriceLocked === true || source.admin_price_locked === true;
     const adminSale = Number(source.adminSalePrice != null ? source.adminSalePrice : source.admin_sale_price);
     const configuredPrice = adminLocked && Number.isFinite(adminSale) && adminSale >= base
       ? Math.round(adminSale)
-      : productSalePrice(note, base, priceUp);
+      : suggestedSale;
     const finalPrice=Math.round(configuredPrice*100)/100;
     if (!Number.isFinite(finalPrice) || finalPrice < base) return res.status(409).json({error:'سعر المنتج الإداري غير متاح حاليًا'});
     // السعر والعمولة مصدرهما سياسة الأدمن المحفوظة على الخادم؛ لا نعتمد على سعر أرسله المتصفح.
     const commission=Math.max(0, Math.round((finalPrice-base)*100)/100);
     const property=(matchedProperty && (matchedProperty._id || matchedProperty.id || matchedProperty.key)) || item.property || source.propId || sourceProp._id || sourceProp.id || sourceProp.key || '';
     if (!property) return res.status(409).json({error:'خاصية المنتج غير متاحة حاليًا'});
-    normalizedItems.push({product:String(item.product),property:String(property),qty:String(item.qty),name:String(source.name || source.title || item.product),originalPrice:base,finalPrice,commission});
+    normalizedItems.push({product:String(item.product),property:String(property),qty:String(item.qty),name:String(source.name || source.title || item.product),originalPrice:rawWholesale,wholesalePrice:base,suggestedSalePrice:suggestedSale,finalPrice,commission});
   }
   let shippingCost=0;
   try{
@@ -1108,7 +1124,7 @@ app.post('/api/create-order', async (req,res)=>{
   const requestKey=clean(req.headers['x-idempotency-key'] || b.idempotency_key);
   if(requestKey.length<16||requestKey.length>160)return res.status(400).json({error:'تعذر التحقق من مفتاح الطلب، أعد المحاولة من المتجر'});
   const localOrderId='rb_'+crypto.createHash('sha256').update(String(affiliateUser.id)+':'+requestKey).digest('hex').slice(0,32);
-  const affiliateOrder={id:localOrderId,serial:'R7-'+localOrderId.slice(-8).toUpperCase(),requestKey,userId:affiliateUser.id,products:normalizedItems.map(item=>item.name),items:normalizedItems,client_name:clientName,client_phone1:clientPhone,client_address:clientAddress,status:'قيد المتابعة',requestStatus:'pending',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:shippingCost,originalMerchandiseTotal:normalizedItems.reduce((sum,x)=>sum+Number(x.originalPrice||0)*Number(x.qty),0),finalMerchandiseTotal:merchandiseTotal};
+  const affiliateOrder={id:localOrderId,serial:'R7-'+localOrderId.slice(-8).toUpperCase(),requestKey,userId:affiliateUser.id,products:normalizedItems.map(item=>item.name),items:normalizedItems,client_name:clientName,client_phone1:clientPhone,client_address:clientAddress,status:'قيد المتابعة',requestStatus:'pending',date:new Date().toISOString(),commission,total,adjustedTotal:total,shipping:shippingCost,originalMerchandiseTotal:normalizedItems.reduce((sum,x)=>sum+Number(x.originalPrice||0)*Number(x.qty),0),wholesaleMerchandiseTotal:normalizedItems.reduce((sum,x)=>sum+Number(x.wholesalePrice||0)*Number(x.qty),0),finalMerchandiseTotal:merchandiseTotal};
   const requestData={userId:String(affiliateUser.id),supplierPayload,affiliateOrder};
   let queued;
   try { queued=await postgres.createQueuedAffiliateOrder(affiliateUser.id,requestKey,requestData,affiliateOrder); }

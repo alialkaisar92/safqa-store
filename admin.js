@@ -90,11 +90,27 @@ function propertyAvailability(product) {
 
 function wholesalePriceOf(value) {
   const raw = value || {};
-  const candidates = [raw.basePrice, raw.base_price, raw.wholesalePrice, raw.wholesale_price, raw.cost, raw.sale_price];
+  const candidates = [raw.rawWholesalePrice, raw.basePrice, raw.base_price, raw.wholesalePrice, raw.wholesale_price, raw.cost, raw.sale_price];
   for (const candidate of candidates) {
     if (candidate !== undefined && candidate !== null && candidate !== '' && Number.isFinite(Number(candidate))) return Math.max(0, Number(candidate));
   }
   return 0;
+}
+function productSuggestedSalePrice(value, wholesale) {
+  const raw = value || {};
+  const floor = Math.max(0, Number(wholesale || 0));
+  const candidates = [raw.suggestedSalePrice, raw.suggested_sale_price, raw.recommendedSalePrice, raw.recommended_sale_price];
+  for (const candidate of candidates) {
+    if (candidate !== undefined && candidate !== null && candidate !== '' && Number.isFinite(Number(candidate))) return Math.max(floor, Math.round(Number(candidate)));
+  }
+  const note = String(raw.note || '').replace(/,/g, '');
+  const match = note.match(/سعر\s*البيع\s*المقترح\s*[:\-]?\s*(\d+(?:\.\d+)?)/i) || note.match(/suggested\s*sale\s*price\s*[:\-]?\s*(\d+(?:\.\d+)?)/i);
+  return Math.max(floor, match && Number.isFinite(Number(match[1])) ? Math.round(Number(match[1])) : floor);
+}
+function productWholesalePrice(base, priceUp) {
+  const safeBase = Math.max(0, Number(base || 0));
+  const safeUp = Math.max(0, Math.min(200, Number(priceUp) || 0));
+  return Math.round(safeBase * (1 + safeUp / 100));
 }
 function mapSafkaProduct(product) {
   const value = product || {};
@@ -108,10 +124,12 @@ function mapSafkaProduct(product) {
     description: value.description || value.desc || value.note || '',
     image: (Array.isArray(value.images) && value.images[0]) || value.image || '',
     images: Array.isArray(value.images) ? value.images : [],
-    price: Math.round(base),
+    rawWholesalePrice: base,
+    price: productSuggestedSalePrice(value, base),
     cost: base,
     basePrice: base,
-    commission: 0,
+    suggestedSalePrice: productSuggestedSalePrice(value, base),
+    commission: Math.max(0, productSuggestedSalePrice(value, base) - base),
     stock: null,
     available,
     active: available && value.is_active !== false,
@@ -149,12 +167,15 @@ async function affiliateData() {
 
 function productWithPrice(product, priceUp) {
   const value = product || {};
-  const base = wholesalePriceOf(value);
+  const rawWholesale = wholesalePriceOf(value);
+  const safeUp = Math.max(0, Math.min(200, Number(priceUp) || 0));
+  const base = productWholesalePrice(rawWholesale, safeUp);
+  const suggestedSale = productSuggestedSalePrice(value, base);
   const locked = value.adminPriceLocked === true || value.admin_price_locked === true;
   const adminSale = Number(value.adminSalePrice != null ? value.adminSalePrice : value.admin_sale_price);
-  const safeUp = Math.max(0, Math.min(200, Number(priceUp) || 0));
-  const price = locked && Number.isFinite(adminSale) && adminSale >= base ? Math.round(adminSale) : Math.round(base * (1 + safeUp / 100));
-  return Object.assign({}, value, { basePrice: base, price, adminPriceLocked: locked, adminSalePrice: locked && Number.isFinite(adminSale) ? adminSale : null });
+  const price = locked && Number.isFinite(adminSale) && adminSale >= base ? Math.round(adminSale) : suggestedSale;
+  const commission = locked && Number.isFinite(Number(value.adminCommission != null ? value.adminCommission : value.admin_commission)) ? Math.max(0, Number(value.adminCommission != null ? value.adminCommission : value.admin_commission)) : Math.max(0, price - base);
+  return Object.assign({}, value, { rawWholesalePrice: rawWholesale, basePrice: base, cost: base, suggestedSalePrice: suggestedSale, price, commission, adminPriceLocked: locked, adminSalePrice: locked && Number.isFinite(adminSale) ? adminSale : null });
 }
 
 function allowedStatus(status) { return ORDER_STATUSES.includes(String(status || '')); }
@@ -370,8 +391,11 @@ module.exports = function mountAdmin(app) {
       body.adminPriceLocked = locked;
       body.adminSalePrice = locked && Number.isFinite(salePrice) ? salePrice : null;
       body.adminCommission = locked && Number.isFinite(commission) ? commission : null;
-      const basePrice = Number(body.basePrice != null ? body.basePrice : body.cost);
-      if (locked && Number.isFinite(salePrice) && Number.isFinite(basePrice) && salePrice < basePrice) return res.status(400).json({ error: 'سعر البيع لا يمكن أن يقل عن سعر التكلفة' });
+      const rawWholesale = Number(body.rawWholesalePrice != null ? body.rawWholesalePrice : (body.basePrice != null ? body.basePrice : body.cost));
+      const pricing = await affiliateData();
+      const adjustedWholesale = productWholesalePrice(rawWholesale, pricing.priceUp);
+      if (locked && Number.isFinite(salePrice) && Number.isFinite(adjustedWholesale) && salePrice < adjustedWholesale) return res.status(400).json({ error: 'سعر البيع لا يمكن أن يقل عن سعر الجملة المعتمد' });
+      body.basePrice = Number.isFinite(rawWholesale) ? rawWholesale : 0;
       const before = (await affiliateData()).products.find(item => String(item.id || item.sourceId || '') === id) || {};
       const saved = await postgres.saveAffiliateProduct(Object.assign({}, body, { id, updatedAt: new Date().toISOString() }));
       const sqlPricing = await postgres.setAdminProductPricing(id, { locked, salePrice: body.adminSalePrice, commission: body.adminCommission }, req.adminUser && req.adminUser.id);
@@ -379,7 +403,7 @@ module.exports = function mountAdmin(app) {
         await Promise.resolve(global.notifyBroadcast({ title: 'تحديث سعر منتج', body: 'تم تحديث سعر منتج في الكتالوج؛ راجع مركز الإشعارات لمعرفة التفاصيل.', url: '/store', type: 'price', eventKey: 'product-price:' + id + ':' + salePrice })).catch(() => null);
       }
       res.json({ ok: true, product: Object.assign({}, saved, sqlPricing || {}, { adminPriceLocked: locked, adminSalePrice: body.adminSalePrice, adminCommission: body.adminCommission }) });
-    } catch (error) { console.error('[admin product]:', error.message); res.status(error.message === 'سعر البيع لا يمكن أن يقل عن سعر التكلفة' ? 400 : 503).json({ error: error.message === 'سعر البيع لا يمكن أن يقل عن سعر التكلفة' ? error.message : 'تعذر حفظ المنتج' }); }
+    } catch (error) { console.error('[admin product]:', error.message); res.status(error.message === 'سعر البيع لا يمكن أن يقل عن سعر الجملة المعتمد' ? 400 : 503).json({ error: error.message === 'سعر البيع لا يمكن أن يقل عن سعر الجملة المعتمد' ? error.message : 'تعذر حفظ المنتج' }); }
   });
 
   app.post('/api/admin/product-delete', async (req, res) => {

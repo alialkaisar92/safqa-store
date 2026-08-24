@@ -798,11 +798,11 @@ function setCat(c){curCat=c;renderCats();renderGrid();}
 function doSearch(q){curQ=uiText(q);try{renderGrid();}catch(e){console.warn('[store] search render failed',e&&e.message||e);}}
 function vis(){var needle=curQ.toLowerCase();return P.filter(function(p){var category=uiText(p.category||p.cat||'عام')||'عام';return (curCat==='الكل'||category===curCat)&&(!needle||uiText(p.name).toLowerCase().indexOf(needle)>-1);});}
 function wholePriceOf(p){
-  var value=p&&p.basePrice!=null?p.basePrice:(p&&p.cost!=null?p.cost:(p&&p.sale_price!=null?p.sale_price:(p&&p.price||0)));
+  var value=p&&p.basePrice!=null?p.basePrice:(p&&p.cost!=null?p.cost:(p&&p.adjustedWholesalePrice!=null?p.adjustedWholesalePrice:0));
   return Math.max(0,Number(value)||0);
 }
 function salePriceOf(p){
-  var value=p&&p.price!=null?p.price:(p&&p.suggestedSalePrice!=null?p.suggestedSalePrice:(p&&p.sale_price!=null?p.sale_price:wholePriceOf(p)));
+  var value=p&&p.suggestedSalePrice!=null?p.suggestedSalePrice:(p&&p.price!=null?p.price:wholePriceOf(p));
   return Math.max(0,Number(value)||0);
 }
 function commissionOf(p){
@@ -894,14 +894,14 @@ function showPriceModal(){
        '<img src="'+img+'">'+
        '<div>'+
          '<div class="price-product-name">'+name+'</div>'+
-         '<div class="price-product-cost">سعر الجملة من المصنع: <b>'+selectedBase.toLocaleString('ar-EG')+' ج.م</b></div>'+
+         '<div class="price-product-cost">سعر الجملة المعتمد: <b>'+selectedBase.toLocaleString('ar-EG')+' ج.م</b></div>'+
        '</div>'+
      '</div>'+
 
      '<div class="price-section">'+
-       '<label>سعر البيع المعتمد من الإدارة <small style="font-weight:600;color:#0f766e">(لا يمكن تغييره من حساب المسوّق)</small></label>'+
+       '<label>سعر البيع المقترح من المورد <small style="font-weight:600;color:#0f766e">(لا يمكن تغييره من حساب المسوّق)</small></label>'+
        '<div class="price-input-wrap">'+
-         '<input id="salePriceInput" type="number" value="'+selectedSale+'" min="'+selectedBase+'" readonly aria-readonly="true" aria-label="سعر البيع المعتمد من الإدارة">'+
+         '<input id="salePriceInput" type="number" value="'+selectedSale+'" min="'+selectedBase+'" readonly aria-readonly="true" aria-label="سعر البيع المقترح من المورد">'+
          '<span>ج.م</span>'+
        '</div>'+
        '<div id="priceError" class="price-error"></div>'+
@@ -1066,7 +1066,7 @@ function openCart(){
    var unitPrice=Number(c.price||0);
    var unitCost=Number(c.cost||0);
    var unitProfit=Math.max(0,unitPrice-unitCost);
-   var edit='<div class="cart-price-locked" role="note">سعر البيع المعتمد من الإدارة — لا يمكن تغييره إلا من لوحة الأدمن</div>';
+   var edit='<div class="cart-price-locked" role="note">سعر البيع المقترح من المورد — لا يمكن تغييره إلا من لوحة الأدمن</div>';
    return '<article class="ci cart-item">'
     +'<img class="cart-item-image" src="'+(c.image||'')+'" alt="">'
     +'<div class="cart-item-main">'
@@ -1349,9 +1349,9 @@ function parseNote(p){var n=String(p&&p.note||'').replace(/,/g,'');
  var cm=n.match(/عمولتك[^\d]{0,6}(\d+(?:\.\d+)?)/i);
  return{sugg:s?+s[1]:0,comm:cm?+cm[1]:0};}
 function openP(i){var p=P[i];if(!p)return;
- var np=parseNote(p);var price=wholePriceOf(p);
- var sugg=Math.max(price,salePriceOf(p),np.sugg||0);
- var comm=commissionOf(p)>0?commissionOf(p):Math.max(0,sugg-price);
+  var np=parseNote(p);var price=wholePriceOf(p);
+  var sugg=Math.max(price,salePriceOf(p),np.sugg||0);
+  var comm=Math.max(0,Number(p&&p.commission!=null?p.commission:sugg-price)||0);
  var st=stockOf(p);
  document.getElementById('pImg').src=p.image||((p.images&&p.images[0])||'');
  document.getElementById('pName').textContent=uiText(p.name||'');
