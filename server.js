@@ -18,7 +18,7 @@ app.use('/api/easyorders', easyordersRoutes);
 
 app.get('/', (req, res) => {
   res.set({ 'Cache-Control': 'no-store, no-cache, max-age=0, must-revalidate', 'CDN-Cache-Control': 'no-store', Pragma: 'no-cache' });
-  res.sendFile(path.join(__dirname, 'landing.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 const crypto = require('crypto');
@@ -766,8 +766,11 @@ app.get('/products.js',(req,res)=>{res.type('js').sendFile(require('path').join(
 
 
 
-app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dashboard.html'));
+app.get('/dashboard', async (req, res) => {
+  let user = null;
+  try { user = await currentUser(req); } catch (_) {}
+  if (!user) return res.redirect(302, '/login?return=' + encodeURIComponent('/store#affiliate'));
+  res.redirect(302, '/store#affiliate');
 });
 
 app.get('/api/affiliate/ai/history', async (req, res) => {
@@ -812,8 +815,11 @@ app.post('/api/affiliate/ai/chat', async (req, res) => {
   }
 });
 
-app.get('/orders', (req, res) => {
-  res.sendFile(path.join(__dirname, 'orders.html'));
+app.get('/orders', async (req, res) => {
+  let user = null;
+  try { user = await currentUser(req); } catch (_) {}
+  if (!user) return res.redirect(302, '/login?return=' + encodeURIComponent('/store#orders'));
+  res.redirect(302, '/store#orders');
 });
 function affiliateOrderForUser(order, userId) {
   if (!order || String(order.userId) !== String(userId)) return null;

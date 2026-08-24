@@ -1,97 +1,47 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>تسجيل الدخول | Rab7na</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:Cairo,Tajawal,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
-body{min-height:100vh;background:linear-gradient(160deg,#0a3d2a,#0b5d3b 55%,#16a34a);display:flex;align-items:center;justify-content:center;padding:20px}
-.box{width:100%;max-width:420px;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 24px 60px -20px rgba(0,0,0,.4)}
-.top{background:linear-gradient(135deg,#0a3d2a,#16a34a);color:#fff;text-align:center;padding:26px 20px}
-.top .lg{font-size:26px;font-weight:900}.top .lg b{color:#86efac}
-.top p{font-size:13px;opacity:.9;margin-top:4px}
-.tabs{display:flex}.tabs button{flex:1;padding:14px;border:none;background:#f2f6f3;font-weight:800;font-size:14px;color:#8aa094;cursor:pointer}
-.tabs button.on{background:#fff;color:#0b5d3b;box-shadow:0 -3px 0 #16a34a inset}
-form{padding:22px;display:none;flex-direction:column;gap:12px}
-form.on{display:flex}
-.fld label{display:block;font-size:12px;font-weight:800;color:#0b5d3b;margin-bottom:5px}
-.fld input{width:100%;border:1.5px solid #e6eee9;border-radius:14px;padding:13px 14px;font-size:14px;outline:none;background:#f9fcfa}
-.fld input:focus{border-color:#16a34a;box-shadow:0 0 0 4px #d1fae5}
-.go{width:100%;background:linear-gradient(135deg,#0b5d3b,#16a34a);color:#fff;font-weight:900;font-size:15px;padding:15px;border:none;border-radius:14px;cursor:pointer;box-shadow:0 8px 20px -8px rgba(22,163,74,.5)}
-.go:active{transform:scale(.98)}
-.msg{font-size:13px;text-align:center;min-height:18px;font-weight:700}
-.msg.err{color:#dc2626}.msg.ok{color:#16a34a}
-.back{text-align:center;padding:0 0 18px}.back a{color:#0b5d3b;font-weight:700;font-size:13px;text-decoration:none}.forgot-link{border:0;background:none;color:#0b5d3b;font-size:12px;font-weight:800;cursor:pointer;text-align:right;padding:0}.forgot-panel{display:none;background:#f3faf5;border:1px solid #d8eee0;border-radius:14px;padding:13px;gap:8px}.forgot-panel.on{display:flex;flex-direction:column}.forgot-panel p{font-size:12px;line-height:1.7;color:#607268}.forgot-panel input{width:100%;border:1px solid #d9e8df;border-radius:10px;padding:10px;background:#fff;direction:ltr;text-align:left}.forgot-btn{border:0;border-radius:10px;padding:10px;background:#d9f4e1;color:#0b5d3b;font-weight:900;cursor:pointer}
-</style><link rel="stylesheet" href="/polish.css?v=2">
-</head><body>
-<div class="box">
-  <div class="top"><div class="lg">Rab<b>7na</b></div><p>منصة التسويق بالعمولة — سوق واربح</p></div>
-  <div class="tabs">
-    <button id="tLogin" class="on" onclick="tab('login')">تسجيل الدخول</button>
-    <button id="tReg" onclick="tab('reg')">إنشاء حساب</button>
-  </div>
-  <form id="fLogin" class="on" onsubmit="doLogin(event)">
-    <div class="fld"><label>البريد الإلكتروني</label><input id="lEmail" type="email" placeholder="name@example.com" autocomplete="email" required></div>
-    <div class="fld"><label>كلمة المرور</label><input id="lPass" type="password" placeholder="••••••••" required></div>
-    <button type="button" class="forgot-link" onclick="toggleForgot()">نسيت كلمة المرور؟</button>
-    <div id="forgotPanel" class="forgot-panel">
-      <p>اكتب بريدك وسنرسل لك رابطًا آمنًا لإعادة تعيين كلمة المرور إذا كان الحساب موجودًا.</p>
-      <input id="forgotEmail" type="email" placeholder="name@example.com" autocomplete="email">
-      <button type="button" class="forgot-btn" onclick="doForgot()">إرسال رابط الاستعادة</button>
-      <div class="msg" id="forgotMsg" aria-live="polite"></div>
-    </div>
-    <div class="msg" id="lMsg"></div>
-    <button class="go">دخول ←</button>
-  </form>
-  <form id="fReg" onsubmit="doReg(event)">
-    <div class="fld"><label>الاسم الكامل</label><input id="rName" placeholder="اسمك" required></div>
-    <div class="fld"><label>البريد الإلكتروني</label><input id="rEmail" type="email" placeholder="name@example.com" autocomplete="email" required></div>
-    <div class="fld"><label>كلمة المرور</label><input id="rPass" type="password" placeholder="٨ أحرف على الأقل" minlength="8" required></div>
-    <div class="msg" id="rMsg"></div>
-    <button class="go">إنشاء الحساب ✓</button>
-  </form>
-  <div class="back"><a href="/store">← متابعة التسوق بدون حساب</a></div>
-</div>
-<script>
-function tab(m){
-  document.getElementById('tLogin').classList.toggle('on',m==='login');
-  document.getElementById('tReg').classList.toggle('on',m==='reg');
-  document.getElementById('fLogin').classList.toggle('on',m==='login');
-  document.getElementById('fReg').classList.toggle('on',m==='reg');
-}
-if(location.hash==='#register')tab('reg');
-if(new URLSearchParams(location.search).get('reset')==='1'){document.getElementById('lMsg').className='msg ok';document.getElementById('lMsg').textContent='✅ تم تغيير كلمة المرور، سجّل الدخول الآن';}
-function toggleForgot(){var panel=document.getElementById('forgotPanel');panel.classList.toggle('on');if(panel.classList.contains('on')){var email=document.getElementById('forgotEmail');if(!email.value)email.value=document.getElementById('lEmail').value;email.focus();}}
-async function doForgot(){var email=document.getElementById('forgotEmail').value.trim();var m=document.getElementById('forgotMsg');m.className='msg';m.textContent='جارٍ الإرسال...';try{var r=await fetch('/api/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,return:safeReturnPath()})});var d=await r.json();if(!r.ok)throw new Error(d.error||'تعذر إرسال الطلب');m.className='msg ok';m.textContent=d.message||'إذا كان البريد مسجلًا ستصلك الرسالة خلال دقائق.';}catch(err){m.className='msg err';m.textContent=err.message||'تعذر إرسال الطلب حاليًا';}}
-function save(){
-  // جلسة المصادقة تُدار عبر HttpOnly cookie من الخادم، لا عبر localStorage.
-}
-function safeReturnPath(){
-  var value=new URLSearchParams(location.search).get('return')||'/store';
-  return value.startsWith('/')&&!value.startsWith('//')?value:'/store';
-}
-async function doLogin(e){e.preventDefault();var m=document.getElementById('lMsg');m.className='msg';m.textContent='⏳ ...';
-  try{var r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:lEmail.value,password:lPass.value})});
-    var d=await r.json();
-    if(r.ok&&(d.token||d.data&&d.data.token||d.ok)){save(d);m.className='msg ok';m.textContent='✅ تم الدخول';setTimeout(function(){location.href=safeReturnPath()},700);}
-    else{m.className='msg err';m.textContent='⚠️ '+(d.error||d.message||'بيانات غير صحيحة');}
-  }catch(err){m.className='msg err';m.textContent='⚠️ خطأ في الاتصال';}
-}
-async function doReg(e){e.preventDefault();var m=document.getElementById('rMsg');m.className='msg';m.textContent='⏳ ...';
-  try{var r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:rName.value,email:rEmail.value,password:rPass.value})});
-    var d=await r.json();
-    if(r.ok&&(d.token||d.data&&d.data.token||d.ok)){save(d);m.className='msg ok';m.textContent='✅ تم إنشاء الحساب';setTimeout(function(){location.href=safeReturnPath()},700);}
-    else{m.className='msg err';m.textContent='⚠️ '+(d.error||d.message||'فشل التسجيل');}
-  }catch(err){m.className='msg err';m.textContent='⚠️ خطأ في الاتصال';}
-}
-</script>
-
-
-<style>
-.benefits{display:flex;flex-direction:column;gap:8px;margin:0 0 12px}
-.benefits div{background:#e9f5ee;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700;color:#0b5d3b}
-.eye{position:absolute;left:12px;top:38px;border:none;background:none;font-size:16px;cursor:pointer}
-.fld{position:relative}
-</style>
-
-
-
-</body></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#064E3B">
+  <title>الدخول إلى Rab7na</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root{--forest:#064E3B;--green:#087A5A;--mint:#EAF7F1;--ink:#14201C;--muted:#68756F;--line:#E0EBE5;--danger:#C94A4A;--gold:#E9B949;--bg:#F6F8F6}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{min-height:100%;margin:0}body{font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:var(--ink);background:var(--bg);display:grid;place-items:center;padding:20px;overflow-x:hidden}button,input{font:inherit}button{cursor:pointer}a{text-decoration:none;color:inherit}:focus-visible{outline:3px solid rgba(8,122,90,.22);outline-offset:2px}
+    .auth-shell{width:min(100%,980px);display:grid;grid-template-columns:1fr 1.03fr;min-height:620px;overflow:hidden;border:1px solid rgba(255,255,255,.7);border-radius:28px;background:#fff;box-shadow:0 24px 70px rgba(18,63,45,.13)}
+    .brand-side{position:relative;overflow:hidden;padding:46px 42px;background:linear-gradient(145deg,#064E3B,#087A5A 68%,#0d9870);color:#fff}.brand-side::before,.brand-side::after{content:'';position:absolute;border:1px solid rgba(255,255,255,.12);border-radius:50%}.brand-side::before{width:460px;height:460px;top:-250px;inset-inline-end:-220px}.brand-side::after{width:330px;height:330px;bottom:-210px;inset-inline-start:-160px}.brand-content{position:relative;z-index:1;height:100%;display:flex;flex-direction:column}.auth-logo{font-size:27px;font-weight:700;letter-spacing:-1px}.auth-logo strong{color:#D4F1E2}.brand-side h1{margin:76px 0 13px;font-size:38px;line-height:1.3;letter-spacing:-1px}.brand-side p{margin:0;color:#D4F1E2;font-size:14px;line-height:1.9;max-width:330px}.benefits{display:grid;gap:12px;margin-top:auto;padding-top:34px}.benefit{display:flex;align-items:center;gap:10px;color:#E1F5EA;font-size:12px;font-weight:600}.benefit i{width:25px;height:25px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.13);font-style:normal;color:#FFE6A0}
+    .form-side{padding:42px 48px;display:flex;flex-direction:column;justify-content:center}.form-head{margin-bottom:24px}.form-head h2{margin:0 0 5px;font-size:25px;letter-spacing:-.4px}.form-head p{margin:0;color:var(--muted);font-size:12px}.tabs{display:flex;gap:6px;padding:4px;border-radius:13px;background:#F3F7F4;margin-bottom:21px}.tab{flex:1;min-height:43px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-weight:700;font-size:12px}.tab.active{background:#fff;color:var(--green);box-shadow:0 4px 13px rgba(20,55,42,.08)}.auth-form{display:none;gap:13px}.auth-form.active{display:grid}.field{display:grid;gap:6px}.field label{color:var(--ink);font-size:11px;font-weight:700}.field input{width:100%;min-height:48px;border:1px solid var(--line);border-radius:12px;background:#FBFDFC;color:var(--ink);padding:10px 13px;outline:0;font-size:14px}.field input:focus{border-color:#91CDB1;box-shadow:0 0 0 3px rgba(8,122,90,.1)}.password-wrap{position:relative}.password-wrap input{padding-inline-end:45px}.toggle-password{position:absolute;inset-inline-end:7px;top:7px;width:34px;height:34px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-size:15px}.form-row{display:flex;justify-content:space-between;gap:10px;align-items:center}.link-button{border:0;background:none;padding:0;color:var(--green);font-size:11px;font-weight:700}.submit{min-height:50px;margin-top:3px;border:0;border-radius:13px;background:var(--green);color:#fff;font-size:14px;font-weight:700;box-shadow:0 9px 20px rgba(8,122,90,.17);transition:.18s}.submit:hover{background:var(--forest)}.submit:disabled{opacity:.65;cursor:wait}.message{min-height:20px;margin:0;color:var(--muted);font-size:11px;text-align:center;font-weight:600}.message.ok{color:var(--green)}.message.error{color:var(--danger)}.google-area{min-height:42px;margin:0 0 6px}.divider{display:flex;align-items:center;gap:9px;color:#96A49D;font-size:10px;margin:5px 0 1px}.divider::before,.divider::after{content:'';height:1px;flex:1;background:var(--line)}.verify-box{display:none;gap:12px;padding:15px;border:1px solid #CFEBDD;border-radius:15px;background:var(--mint)}.verify-box.open{display:grid}.verify-box p{margin:0;color:#4E7161;font-size:11px;line-height:1.7}.verify-box input{width:100%;min-height:48px;border:1px solid #B9DCCB;border-radius:11px;background:#fff;text-align:center;direction:ltr;letter-spacing:6px;font-weight:700}.resend{border:0;background:none;color:var(--green);font-size:11px;font-weight:700}.back-link{display:inline-flex;justify-content:center;margin-top:23px;color:var(--muted);font-size:11px;font-weight:600}.back-link:hover{color:var(--green)}.forgot-box{display:none;gap:10px;margin-top:4px;padding:15px;border:1px solid var(--line);border-radius:15px;background:#FBFDFC}.forgot-box.open{display:grid}.forgot-box p{margin:0;color:var(--muted);font-size:11px;line-height:1.7}.forgot-box button{min-height:42px;border:0;border-radius:10px;background:var(--mint);color:var(--green);font-size:11px;font-weight:700}
+    @media(max-width:760px){body{padding:0;display:block}.auth-shell{width:100%;min-height:100dvh;display:block;border:0;border-radius:0;box-shadow:none}.brand-side{min-height:245px;padding:26px 22px 25px}.brand-side h1{margin:35px 0 8px;font-size:28px}.brand-side p{font-size:12px;line-height:1.75}.benefits{display:flex;gap:13px;flex-wrap:wrap;padding-top:22px}.benefit{font-size:10px}.benefit i{width:21px;height:21px}.form-side{padding:27px 20px 35px}.form-head h2{font-size:22px}.auth-form{gap:12px}}
+  </style>
+</head>
+<body>
+  <main class="auth-shell">
+    <section class="brand-side"><div class="brand-content"><a class="auth-logo" href="/store">Rab<strong>7na</strong></a><h1>خلّي كل طلب<br>خطوة لربح جديد.</h1><p>منصة واحدة تساعدك تختار منتجات، تحدد سعر البيع، وتتابع طلباتك وعمولاتك بوضوح.</p><div class="benefits"><div class="benefit"><i>✓</i><span>تسجيل مجاني وبياناتك محمية</span></div><div class="benefit"><i>✓</i><span>متابعة حالة الطلب لحظة بلحظة</span></div><div class="benefit"><i>✓</i><span>سحب أرباحك بعد الطلبات المكتملة</span></div></div></div></section>
+    <section class="form-side"><div class="form-head"><h2 id="formTitle">أهلًا بك في Rab7na</h2><p id="formSubtitle">سجّل دخولك لمتابعة طلباتك وأرباحك.</p></div><div class="tabs"><button class="tab active" id="loginTab" type="button">تسجيل الدخول</button><button class="tab" id="registerTab" type="button">إنشاء حساب</button></div>
+      <form class="auth-form active" id="loginForm"><div class="google-area" id="loginGoogle"></div><div class="divider">أو باستخدام البريد الإلكتروني</div><div class="field"><label for="loginEmail">البريد الإلكتروني</label><input id="loginEmail" type="email" autocomplete="email" placeholder="name@example.com" required></div><div class="field"><label for="loginPassword">كلمة المرور</label><div class="password-wrap"><input id="loginPassword" type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور" required><button class="toggle-password" type="button" data-toggle="loginPassword" aria-label="إظهار كلمة المرور">◉</button></div></div><div class="form-row"><button class="link-button" id="forgotToggle" type="button">نسيت كلمة المرور؟</button><span></span></div><div class="forgot-box" id="forgotBox"><p>اكتب بريدك، ولو الحساب موجود هيوصلك رابط آمن لإعادة التعيين.</p><input class="field-input" id="forgotEmail" type="email" autocomplete="email" placeholder="name@example.com"><button type="button" id="forgotSubmit">إرسال رابط الاستعادة</button><div class="message" id="forgotMessage"></div></div><div class="message" id="loginMessage" role="status" aria-live="polite"></div><button class="submit" type="submit">دخول</button></form>
+      <form class="auth-form" id="registerForm"><div class="google-area" id="registerGoogle"></div><div class="divider">أو سجّل ببياناتك</div><div class="field"><label for="registerName">الاسم الكامل</label><input id="registerName" autocomplete="name" placeholder="اكتب اسمك" required></div><div class="field"><label for="registerEmail">البريد الإلكتروني</label><input id="registerEmail" type="email" autocomplete="email" placeholder="name@example.com" required></div><div class="field"><label for="registerPassword">كلمة المرور</label><div class="password-wrap"><input id="registerPassword" type="password" autocomplete="new-password" placeholder="8 أحرف على الأقل" minlength="8" required><button class="toggle-password" type="button" data-toggle="registerPassword" aria-label="إظهار كلمة المرور">◉</button></div></div><div class="message" id="registerMessage" role="status" aria-live="polite"></div><button class="submit" type="submit">إنشاء الحساب</button><div class="verify-box" id="verifyBox"><p>لو ظهر لك تحقق بالبريد، اكتب الرمز المكوّن من 6 أرقام المرسل إلى بريدك.</p><input id="verifyCode" inputmode="numeric" maxlength="6" placeholder="000000"><button class="submit" type="button" id="verifySubmit">تفعيل الحساب</button><button class="resend" type="button" id="resendCode">إعادة إرسال الرمز</button></div></form>
+      <a class="back-link" href="/store">العودة للمتجر بدون حساب</a>
+    </section>
+  </main>
+  <script>
+    (()=>{const $=id=>document.getElementById(id),returnPath=()=>{const v=new URLSearchParams(location.search).get('return')||'/store';return v.startsWith('/')&&!v.startsWith('//')?v:'/store'};let pendingEmail='',resendTimer=0;
+      function tab(kind){const login=kind==='login';$('loginTab').classList.toggle('active',login);$('registerTab').classList.toggle('active',!login);$('loginForm').classList.toggle('active',login);$('registerForm').classList.toggle('active',!login);$('formTitle').textContent=login?'أهلًا بك في Rab7na':'ابدأ رحلتك مع Rab7na';$('formSubtitle').textContent=login?'سجّل دخولك لمتابعة طلباتك وأرباحك.':'اعمل حسابك المجاني وابدأ التسويق فورًا.';if(!login)renderGoogle('registerGoogle');}
+      function message(id,text,kind=''){const el=$(id);el.textContent=text||'';el.className='message '+kind}
+      function busy(form,on,label){const b=form.querySelector('.submit');if(!b)return;b.disabled=on;b.textContent=on?'جاري التنفيذ...':label}
+      async function post(url,body){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(body)});const d=await r.json().catch(()=>({}));return {r,d}}
+      $('loginTab').addEventListener('click',()=>tab('login'));$('registerTab').addEventListener('click',()=>tab('register'));qsa('[data-toggle]').forEach(b=>b.addEventListener('click',()=>{const i=$(b.dataset.toggle);i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'◉':'◌'}));
+      $('loginForm').addEventListener('submit',async e=>{e.preventDefault();message('loginMessage','جارٍ التحقق...');busy(e.currentTarget,true,'دخول');try{const {r,d}=await post('/api/auth/login',{email:$('loginEmail').value.trim(),password:$('loginPassword').value});if(!r.ok)throw Error(d.error||'بيانات الدخول غير صحيحة');message('loginMessage','تم تسجيل الدخول بنجاح','ok');setTimeout(()=>location.href=returnPath(),450)}catch(err){message('loginMessage',err.message||'تعذر تسجيل الدخول حاليًا','error')}finally{busy(e.currentTarget,false,'دخول')}});
+      $('registerForm').addEventListener('submit',async e=>{e.preventDefault();message('registerMessage','جارٍ إنشاء الحساب...');busy(e.currentTarget,true,'إنشاء الحساب');try{const body={name:$('registerName').value.trim(),email:$('registerEmail').value.trim(),password:$('registerPassword').value};const {r,d}=await post('/api/auth/register',body);if(!r.ok)throw Error(d.error||'تعذر إنشاء الحساب حاليًا');if(d.verificationRequired){pendingEmail=d.email||body.email;$('verifyBox').classList.add('open');message('registerMessage',d.message||'تم إرسال رمز التحقق إلى بريدك','ok');startResend()}else{const login=await post('/api/auth/login',{email:body.email,password:body.password});if(login.r.ok&&login.d.ok){message('registerMessage','تم إنشاء الحساب وتسجيل الدخول بنجاح','ok');setTimeout(()=>location.href=returnPath(),500)}else{message('registerMessage','تم إنشاء الحساب. سجّل الدخول للمتابعة.','ok')}}}catch(err){message('registerMessage',err.message||'تعذر إنشاء الحساب حاليًا','error')}finally{busy(e.currentTarget,false,'إنشاء الحساب')}});
+      $('verifySubmit').addEventListener('click',async()=>{const code=$('verifyCode').value.trim();if(!/^\d{6}$/.test(code))return message('registerMessage','اكتب الرمز المكوّن من 6 أرقام','error');const b=$('verifySubmit');b.disabled=true;try{const {r,d}=await post('/api/auth/email/verify',{email:pendingEmail,code});if(!r.ok||!d.ok)throw Error(d.error||'الرمز غير صحيح');message('registerMessage','تم تفعيل الحساب بنجاح','ok');setTimeout(()=>location.href=returnPath(),500)}catch(err){message('registerMessage',err.message||'تعذر التحقق من الرمز','error')}finally{b.disabled=false}});
+      function startResend(){clearInterval(resendTimer);let left=60,b=$('resendCode');b.disabled=true;b.textContent='إعادة الإرسال بعد 60 ثانية';resendTimer=setInterval(()=>{left--;if(left<=0){clearInterval(resendTimer);b.disabled=false;b.textContent='إعادة إرسال الرمز'}else b.textContent='إعادة الإرسال بعد '+left+' ثانية'},1000)}
+      $('resendCode').addEventListener('click',async()=>{if(!pendingEmail)return;const b=$('resendCode');b.disabled=true;try{const {r,d}=await post('/api/auth/email/resend',{email:pendingEmail});if(!r.ok)throw Error(d.error||'تعذر إعادة الإرسال');message('registerMessage',d.message||'تم إرسال رمز جديد','ok');startResend()}catch(err){message('registerMessage',err.message||'تعذر إعادة إرسال الرمز','error');b.disabled=false}});
+      $('forgotToggle').addEventListener('click',()=>{const box=$('forgotBox');box.classList.toggle('open');if(box.classList.contains('open')){$('forgotEmail').value=$('loginEmail').value;$('forgotEmail').focus()}});$('forgotSubmit').addEventListener('click',async()=>{const email=$('forgotEmail').value.trim();message('forgotMessage','جاري الإرسال...');try{const {r,d}=await post('/api/auth/forgot-password',{email,return:returnPath()});if(!r.ok)throw Error();message('forgotMessage',d.message||'إذا كان البريد مسجلًا ستصلك الرسالة خلال دقائق.','ok')}catch(_){message('forgotMessage','حصلت مشكلة مؤقتة، جرّب مرة تانية.','error')}});
+      let googleClientId='';function renderGoogle(id){const box=$(id);if(!box||!googleClientId||!window.google?.accounts?.id)return;if(box.dataset.rendered)return;box.dataset.rendered='1';google.accounts.id.initialize({client_id:googleClientId,callback:async response=>{try{const {r,d}=await post('/api/auth/google',{credential:response.credential});if(!r.ok||!d.ok)throw Error(d.error||'تعذر الدخول عبر Google');location.href=returnPath()}catch(err){message('loginMessage',err.message||'تعذر الدخول عبر Google','error')}}});google.accounts.id.renderButton(box,{theme:'outline',size:'large',width:330,text:'continue_with',shape:'rectangular',logo_alignment:'center'})}async function loadGoogle(){try{const r=await fetch('/api/auth/google-config');const d=await r.json();googleClientId=d.clientId||'';renderGoogle('loginGoogle');renderGoogle('registerGoogle')}catch(_){} }function qsa(s){return Array.from(document.querySelectorAll(s))}if(location.hash==='#register')tab('register');loadGoogle();
+    })();
+  </script>
+</body>
+</html>
