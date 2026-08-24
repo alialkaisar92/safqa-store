@@ -19,7 +19,7 @@ form.on{display:flex}
 .go:active{transform:scale(.98)}
 .msg{font-size:13px;text-align:center;min-height:18px;font-weight:700}
 .msg.err{color:#dc2626}.msg.ok{color:#16a34a}
-.back{text-align:center;padding:0 0 18px}.back a{color:#0b5d3b;font-weight:700;font-size:13px;text-decoration:none}
+.back{text-align:center;padding:0 0 18px}.back a{color:#0b5d3b;font-weight:700;font-size:13px;text-decoration:none}.forgot-link{border:0;background:none;color:#0b5d3b;font-size:12px;font-weight:800;cursor:pointer;text-align:right;padding:0}.forgot-panel{display:none;background:#f3faf5;border:1px solid #d8eee0;border-radius:14px;padding:13px;gap:8px}.forgot-panel.on{display:flex;flex-direction:column}.forgot-panel p{font-size:12px;line-height:1.7;color:#607268}.forgot-panel input{width:100%;border:1px solid #d9e8df;border-radius:10px;padding:10px;background:#fff;direction:ltr;text-align:left}.forgot-btn{border:0;border-radius:10px;padding:10px;background:#d9f4e1;color:#0b5d3b;font-weight:900;cursor:pointer}
 </style><link rel="stylesheet" href="/polish.css?v=2">
 </head><body>
 <div class="box">
@@ -31,13 +31,20 @@ form.on{display:flex}
   <form id="fLogin" class="on" onsubmit="doLogin(event)">
     <div class="fld"><label>البريد الإلكتروني</label><input id="lEmail" type="email" placeholder="name@example.com" autocomplete="email" required></div>
     <div class="fld"><label>كلمة المرور</label><input id="lPass" type="password" placeholder="••••••••" required></div>
+    <button type="button" class="forgot-link" onclick="toggleForgot()">نسيت كلمة المرور؟</button>
+    <div id="forgotPanel" class="forgot-panel">
+      <p>اكتب بريدك وسنرسل لك رابطًا آمنًا لإعادة تعيين كلمة المرور إذا كان الحساب موجودًا.</p>
+      <input id="forgotEmail" type="email" placeholder="name@example.com" autocomplete="email">
+      <button type="button" class="forgot-btn" onclick="doForgot()">إرسال رابط الاستعادة</button>
+      <div class="msg" id="forgotMsg" aria-live="polite"></div>
+    </div>
     <div class="msg" id="lMsg"></div>
     <button class="go">دخول ←</button>
   </form>
   <form id="fReg" onsubmit="doReg(event)">
     <div class="fld"><label>الاسم الكامل</label><input id="rName" placeholder="اسمك" required></div>
     <div class="fld"><label>البريد الإلكتروني</label><input id="rEmail" type="email" placeholder="name@example.com" autocomplete="email" required></div>
-    <div class="fld"><label>كلمة المرور</label><input id="rPass" type="password" placeholder="٦ أحرف على الأقل" minlength="6" required></div>
+    <div class="fld"><label>كلمة المرور</label><input id="rPass" type="password" placeholder="٨ أحرف على الأقل" minlength="8" required></div>
     <div class="msg" id="rMsg"></div>
     <button class="go">إنشاء الحساب ✓</button>
   </form>
@@ -51,6 +58,9 @@ function tab(m){
   document.getElementById('fReg').classList.toggle('on',m==='reg');
 }
 if(location.hash==='#register')tab('reg');
+if(new URLSearchParams(location.search).get('reset')==='1'){document.getElementById('lMsg').className='msg ok';document.getElementById('lMsg').textContent='✅ تم تغيير كلمة المرور، سجّل الدخول الآن';}
+function toggleForgot(){var panel=document.getElementById('forgotPanel');panel.classList.toggle('on');if(panel.classList.contains('on')){var email=document.getElementById('forgotEmail');if(!email.value)email.value=document.getElementById('lEmail').value;email.focus();}}
+async function doForgot(){var email=document.getElementById('forgotEmail').value.trim();var m=document.getElementById('forgotMsg');m.className='msg';m.textContent='جارٍ الإرسال...';try{var r=await fetch('/api/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,return:safeReturnPath()})});var d=await r.json();if(!r.ok)throw new Error(d.error||'تعذر إرسال الطلب');m.className='msg ok';m.textContent=d.message||'إذا كان البريد مسجلًا ستصلك الرسالة خلال دقائق.';}catch(err){m.className='msg err';m.textContent=err.message||'تعذر إرسال الطلب حاليًا';}}
 function save(){
   // جلسة المصادقة تُدار عبر HttpOnly cookie من الخادم، لا عبر localStorage.
 }

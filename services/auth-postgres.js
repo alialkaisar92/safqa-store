@@ -90,4 +90,4 @@ async function currentUser(token) {
 async function logout(token) { if (token) await query('DELETE FROM auth_sessions WHERE token_hash=$1', [tokenHash(token)]); }
 async function logoutAll(userId) { await query('DELETE FROM auth_sessions WHERE user_id=$1', [userId]); }
 
-module.exports = { register, login, currentUser, logout, logoutAll, publicUser, newToken, tokenHash, normalizeEmail };
+module.exports = { register, login, currentUser, logout, logoutAll, publicUser, newToken, tokenHash, normalizeEmail, validatePassword };

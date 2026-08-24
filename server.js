@@ -31,6 +31,85 @@ function readCookie(req, name) { const raw = String(req.headers.cookie || ''); c
 function authToken(req) { return authReqToken(req) || readCookie(req, SESSION_COOKIE); }
 function setSessionCookie(res, token) { const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''; res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; Max-Age=2592000; HttpOnly; SameSite=Lax${secure}`); }
 function clearSessionCookie(res) { res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`); }
+const passwordResetAttempts = new Map();
+const PASSWORD_RESET_WINDOW_MS = 15 * 60 * 1000;
+const PASSWORD_RESET_MAX_ATTEMPTS = 5;
+function normalizePublicSiteUrl() {
+  const candidate = String(process.env.PUBLIC_SITE_URL || 'https://rab7na-store.vercel.app').trim().replace(/\/+$/, '');
+  try {
+    const parsed = new URL(candidate);
+    if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('invalid protocol');
+    return parsed.toString().replace(/\/$/, '');
+  } catch (_) {
+    return 'https://rab7na-store.vercel.app';
+  }
+}
+function safeResetReturnPath(value) {
+  const pathValue = String(value || '/store').trim();
+  return pathValue.startsWith('/') && !pathValue.startsWith('//') ? pathValue.slice(0, 200) : '/store';
+}
+function passwordResetRateAllowed(req, email) {
+  const now = Date.now();
+  const keys = [`ip:${String(req.ip || 'unknown')}`, `email:${String(email || '').toLowerCase()}`];
+  for (const key of keys) {
+    const current = passwordResetAttempts.get(key);
+    if (current && now - current.startedAt < PASSWORD_RESET_WINDOW_MS && current.count >= PASSWORD_RESET_MAX_ATTEMPTS) return false;
+  }
+  for (const key of keys) {
+    const current = passwordResetAttempts.get(key);
+    if (!current || now - current.startedAt >= PASSWORD_RESET_WINDOW_MS) passwordResetAttempts.set(key, { startedAt: now, count: 1 });
+    else current.count += 1;
+  }
+  if (passwordResetAttempts.size > 5000) {
+    for (const [key, value] of passwordResetAttempts) if (now - value.startedAt >= PASSWORD_RESET_WINDOW_MS) passwordResetAttempts.delete(key);
+  }
+  return true;
+}
+function resetUrl(token, returnPath) {
+  const url = new URL('/reset-password', normalizePublicSiteUrl());
+  url.searchParams.set('token', token);
+  url.searchParams.set('return', safeResetReturnPath(returnPath));
+  return url.toString();
+}
+function escapeEmailHtml(value) { return String(value || '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]); }
+async function sendPasswordResetEmail({ to, name, url }) {
+  const resendKey = String(process.env.RESEND_API_KEY || '').trim();
+  const resendFrom = String(process.env.RESEND_FROM || '').trim();
+  const smtpHost = String(process.env.EMAIL_HOST || '').trim();
+  const smtpUser = String(process.env.EMAIL_USER || '').trim();
+  const smtpPassword = String(process.env.EMAIL_PASSWORD || '').trim();
+  const smtpFrom = String(process.env.EMAIL_FROM || smtpUser).trim();
+  const subject = 'استعادة كلمة مرور حسابك في Rab7na';
+  const greeting = String(name || '').trim() || 'مرحبًا';
+  const greetingHtml = escapeEmailHtml(greeting);
+  const text = `${greeting}،
+
+طلبنا استعادة كلمة المرور لحسابك في Rab7na. افتح الرابط التالي خلال 30 دقيقة لإنشاء كلمة مرور جديدة:
+${url}
+
+إذا لم تطلب ذلك، يمكنك تجاهل هذه الرسالة. لن نطلب منك إرسال كلمة المرور أو رمز الاستعادة لأي شخص.`;
+  const html = `<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.8;color:#18352a;max-width:560px;margin:auto"><h2 style="color:#0b5d3b">استعادة كلمة المرور</h2><p>${greetingHtml}،</p><p>وصلنا طلب لاستعادة كلمة مرور حسابك في Rab7na. اضغط الزر التالي خلال <strong>30 دقيقة</strong> لإنشاء كلمة مرور جديدة:</p><p><a href="${url}" style="display:inline-block;background:#0b5d3b;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:bold">إنشاء كلمة مرور جديدة</a></p><p style="word-break:break-all;color:#51645a">إذا لم يعمل الزر، انسخ هذا الرابط إلى المتصفح:<br>${url}</p><p>إذا لم تطلب الاستعادة، تجاهل الرسالة. لن نطلب منك إرسال كلمة المرور أو رمز الاستعادة لأي شخص.</p></div>`;
+  if (resendKey && resendFrom) {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json', 'User-Agent': 'rab7na-store/1.0' },
+      body: JSON.stringify({ from: resendFrom, to: [to], subject, html, text })
+    });
+    if (!response.ok) { const error = new Error('Resend rejected password reset email'); error.code = `RESEND_${response.status}`; throw error; }
+    return 'resend';
+  }
+  if (smtpHost && smtpUser && smtpPassword && smtpFrom) {
+    const nodemailer = require('nodemailer');
+    const port = Number(process.env.EMAIL_PORT || 587);
+    const secure = String(process.env.EMAIL_SECURE || '').toLowerCase() === 'true' || port === 465;
+    const transporter = nodemailer.createTransport({ host: smtpHost, port, secure, requireTLS: !secure, auth: { user: smtpUser, pass: smtpPassword } });
+    await transporter.sendMail({ from: smtpFrom, to, subject, text, html });
+    return 'smtp';
+  }
+  const error = new Error('Password reset mail transport is not configured');
+  error.code = 'MAIL_NOT_CONFIGURED';
+  throw error;
+}
 let postgresStatus = process.env.DATABASE_URL ? 'configured' : 'not_configured';
 async function initializePostgres() {
   if (!process.env.DATABASE_URL) return;
@@ -820,6 +899,7 @@ app.post(['/api/affiliate/withdraw','/api/withdraw','/api/my/withdraw'], async (
 });
 
 app.get(['/login', '/register'], (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
+app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'reset-password.html')));
 app.post('/api/auth/register', async (req, res) => {
   try { const user = await authService.register(req.body || {}); res.status(201).json({ ok: true, user: authService.publicUser(user) }); }
   catch (error) { const status = /مستخدم بالفعل|صحيح|مطلوب|8 أحرف/.test(error.message) ? 400 : 500; res.status(status).json({ error: status === 500 ? 'تعذر إنشاء الحساب حاليًا' : error.message }); }
@@ -833,8 +913,41 @@ app.post('/api/auth/login', async (req, res) => {
 });
 app.post('/api/auth/logout', async (req, res) => { try { await authService.logout(authToken(req)); } catch (_) {} clearSessionCookie(res); res.json({ ok: true }); });
 app.get('/api/auth/me', async (req, res) => { try { const user = await authService.currentUser(authToken(req)); if (!user) return res.status(401).json({ error: 'غير مسجل الدخول' }); res.json({ ok: true, user }); } catch (_) { res.status(401).json({ error: 'غير مسجل الدخول' }); } });
-app.post('/api/auth/forgot-password', (req, res) => res.status(501).json({ error: 'استعادة كلمة المرور بالبريد غير مفعلة حاليًا؛ لا يتم إرسال رموز أو إنشاء رابط وهمي.' }));
-app.post('/api/auth/reset-password', (req, res) => res.status(501).json({ error: 'استعادة كلمة المرور بالبريد غير مفعلة حاليًا.' }));
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const generic = { ok: true, message: 'إذا كان البريد مسجلًا، ستصلك رسالة تحتوي على رابط استعادة خلال دقائق.' };
+  const body = req.body && typeof req.body === 'object' ? req.body : {};
+  const email = String(body.email || '').trim().toLowerCase();
+  if (!passwordResetRateAllowed(req, email) || !/^\S+@\S+\.\S+$/.test(email)) return res.json(generic);
+  try {
+    await postgresReady;
+    const issued = await postgres.issuePasswordResetToken(email);
+    if (!issued.found) return res.json(generic);
+    try {
+      await sendPasswordResetEmail({ to: issued.user.email, name: issued.user.name, url: resetUrl(issued.token, body.return) });
+    } catch (error) {
+      await postgres.revokePasswordResetToken(issued.token).catch(() => null);
+      console.error('[auth] password reset email failed:', error.code || 'transport_error');
+    }
+  } catch (error) {
+    console.error('[auth] password reset request failed:', error.code || 'database_error');
+  }
+  return res.json(generic);
+});
+app.post('/api/auth/reset-password', async (req, res) => {
+  const body = req.body && typeof req.body === 'object' ? req.body : {};
+  const token = String(body.token || '').trim();
+  const password = body.password;
+  if (token.length < 40 || token.length > 200 || !authService.validatePassword(password)) return res.status(400).json({ error: 'أدخل رابط استعادة صالحًا وكلمة مرور بين 8 و128 حرفًا' });
+  try {
+    await postgresReady;
+    await postgres.consumePasswordResetToken(token, password);
+    res.json({ ok: true, message: 'تم تغيير كلمة المرور. سجّل الدخول بالكلمة الجديدة.' });
+  } catch (error) {
+    if (error.code === 'INVALID_PASSWORD_RESET') return res.status(400).json({ error: error.message });
+    console.error('[auth] password reset consume failed:', error.code || 'database_error');
+    res.status(503).json({ error: 'تعذر تغيير كلمة المرور حاليًا؛ حاول مرة أخرى.' });
+  }
+});
 // Admin routes use the same HttpOnly session cookie as the rest of the app.
 // The module performs server-side role/allowlist authorization before returning data.
 require('./admin.js')(app);
