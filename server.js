@@ -1314,15 +1314,28 @@ app.post('/api/create-order', async (req,res)=>{
     return res.status(503).json({error:'تعذر حفظ الطلب حاليًا، لم يتم إرساله للمورد'});
   }
   const row=queued.row || {};
-  const savedOrder=queued.mode==='created' ? affiliateOrder : (row.order_id===localOrderId ? affiliateOrder : {});
-  const payload=queueStatusPayload(row,savedOrder);
-  console.log('[order-queue] order_created', {order_id:payload.id,user_id:affiliateUser.id,idempotency_key:requestKey,attempt_number:0});
+  const savedOrder=row.order_id===localOrderId ? affiliateOrder : {};
+  let dispatchResult=null;
+  let responseRow=row;
+  // Vercel Functions لا تحتفظ بعامل background بعد انتهاء request؛ نعالج أول claim هنا.
+  // claimAffiliateOrderJobByKey يقفل المفتاح ذريًا، لذلك الضغط المتوازي لا يرسل الطلب مرتين.
+  if (queued.mode==='created' || queued.mode==='in_progress') {
+    try {
+      dispatchResult=await safkaSync.processAffiliateOrderByKey(requestKey);
+      if (dispatchResult && dispatchResult.processed) responseRow=await postgres.getAffiliateOrderStatus(affiliateUser.id, localOrderId) || row;
+    } catch (error) { console.error('[order-queue] inline dispatch failed:', error.message); }
+  }
+  const responseOrder=responseRow.order_data && typeof responseRow.order_data==='object' ? responseRow.order_data : savedOrder;
+  const payload=queueStatusPayload(responseRow,responseOrder);
+  console.log('[order-queue] order_created', {order_id:payload.id,user_id:affiliateUser.id,idempotency_key:requestKey,attempt_number:0,dispatch:dispatchResult && dispatchResult.status || 'not_attempted'});
   if(queued.mode==='created') {
     Promise.resolve(notifyUser(affiliateUser.id, 'تم تسجيل طلبك', 'تم حفظ الطلب بنجاح وبدأت متابعته. رقم الطلب: #' + String(payload.serial || payload.id).slice(-14), '/store', 'order-created', 'order-created:' + localOrderId)).catch(error => console.warn('[notifications] order-created skipped:', error.message));
-    return res.status(202).json({ok:true,queued:true,pending:true,order:payload,status:'pending',message:'تم تسجيل الطلب بنجاح وبدأت متابعته',retry_after_ms:1500});
   }
-  if(queued.mode==='in_progress')return res.status(202).json({ok:true,queued:true,pending:true,duplicate:true,order:payload,status:String(row.status||'pending'),message:payload.message,retry_after_ms:1500});
-  return res.status(200).json({ok:true,duplicate:true,queued:true,order:payload,status:String(row.status||'pending'),message:payload.message});
+  if(queued.mode==='created' || queued.mode==='in_progress') {
+    const status=String(responseRow.status||'pending');
+    return res.status(202).json({ok:true,queued:true,pending:true,duplicate:queued.mode!=='created',order:payload,status,message:payload.message,retry_after_ms:status==='unknown'?null:1500});
+  }
+  return res.status(200).json({ok:true,duplicate:true,queued:true,order:payload,status:String(responseRow.status||'pending'),message:payload.message});
 });
 
 app.get('/api/affiliate/order-status/:id', async (req,res)=>{

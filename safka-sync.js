@@ -302,6 +302,14 @@ async function processAffiliateOrderJob(job) {
   }
 }
 
+async function processAffiliateOrderByKey(requestKey) {
+  if (typeof postgres.claimAffiliateOrderJobByKey !== 'function') return { status: 'not_claimed', processed: 0 };
+  const job = await postgres.claimAffiliateOrderJobByKey(requestKey);
+  if (!job) return { status: 'not_claimed', processed: 0 };
+  const result = await processAffiliateOrderJob(job);
+  return Object.assign({ processed: 1 }, result);
+}
+
 async function processAffiliateOrderQueue(limit = 5) {
   const jobs = await postgres.claimAffiliateOrderJobs(limit);
   if (!jobs.length) return { scanned: 0, processed: 0 };
@@ -380,4 +388,4 @@ async function runSync(options) {
   await saveMeta({ lastRunAt: new Date().toISOString(), lastResult: result });
   return result;
 }
-module.exports = { syncProducts, syncOrderStatuses, runSync, fetchAllProducts, processAffiliateOrderQueue, processAffiliateOrderJob, reconcileAffiliateOrderQueue };
+module.exports = { syncProducts, syncOrderStatuses, runSync, fetchAllProducts, processAffiliateOrderByKey, processAffiliateOrderQueue, processAffiliateOrderJob, reconcileAffiliateOrderQueue };

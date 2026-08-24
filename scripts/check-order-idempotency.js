@@ -18,6 +18,7 @@ const orderRoute = server.slice(routeStart, routeEnd);
 assert(server.includes("const affiliateUser=await currentAuthUser(req);"), 'orders must use the authenticated affiliate session');
 assert(server.includes('postgres.createQueuedAffiliateOrder(affiliateUser.id,requestKey,requestData,affiliateOrder)'), 'orders must be saved to the database queue before supplier work');
 assert(postgres.includes('canonicalOrderId') && postgres.includes('ON CONFLICT (collection,doc_id) DO NOTHING') && postgres.includes('order_id IS NULL'), 'duplicate queue rows must repair missing order/document linkage');
+assert(postgres.includes('async function claimAffiliateOrderJobByKey') && worker.includes('async function processAffiliateOrderByKey') && orderRoute.includes('safkaSync.processAffiliateOrderByKey(requestKey)'), 'new orders must trigger the queue worker immediately on serverless Production');
 assert(orderRoute.includes("res.status(202).json({ok:true,queued:true,pending:true"), 'new orders must return an immediate queued response');
 assert(!orderRoute.includes("fetch(BASE_URL+'/orders'"), 'supplier POST must not block the storefront request');
 assert(orderRoute.includes("if (!productAvailable) return res.status(409).json({error:'المنتج غير متاح حاليًا'})"), 'order validation must block unavailable products');
