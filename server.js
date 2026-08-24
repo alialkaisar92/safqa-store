@@ -89,25 +89,33 @@ ${url}
 
 إذا لم تطلب ذلك، يمكنك تجاهل هذه الرسالة. لن نطلب منك إرسال كلمة المرور أو رمز الاستعادة لأي شخص.`;
   const html = `<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.8;color:#18352a;max-width:560px;margin:auto"><h2 style="color:#0b5d3b">استعادة كلمة المرور</h2><p>${greetingHtml}،</p><p>وصلنا طلب لاستعادة كلمة مرور حسابك في Rab7na. اضغط الزر التالي خلال <strong>30 دقيقة</strong> لإنشاء كلمة مرور جديدة:</p><p><a href="${url}" style="display:inline-block;background:#0b5d3b;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:bold">إنشاء كلمة مرور جديدة</a></p><p style="word-break:break-all;color:#51645a">إذا لم يعمل الزر، انسخ هذا الرابط إلى المتصفح:<br>${url}</p><p>إذا لم تطلب الاستعادة، تجاهل الرسالة. لن نطلب منك إرسال كلمة المرور أو رمز الاستعادة لأي شخص.</p></div>`;
+  let resendFailure = '';
   if (resendKey && resendFrom) {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json', 'User-Agent': 'rab7na-store/1.0' },
       body: JSON.stringify({ from: resendFrom, to: [to], subject, html, text })
     });
-    if (!response.ok) { const error = new Error('Resend rejected password reset email'); error.code = `RESEND_${response.status}`; throw error; }
-    return 'resend';
+    if (response.ok) return 'resend';
+    resendFailure = `RESEND_${response.status}`;
   }
   if (smtpHost && smtpUser && smtpPassword && smtpFrom) {
-    const nodemailer = require('nodemailer');
-    const port = Number(process.env.EMAIL_PORT || 587);
-    const secure = String(process.env.EMAIL_SECURE || '').toLowerCase() === 'true' || port === 465;
-    const transporter = nodemailer.createTransport({ host: smtpHost, port, secure, requireTLS: !secure, auth: { user: smtpUser, pass: smtpPassword } });
-    await transporter.sendMail({ from: smtpFrom, to, subject, text, html });
-    return 'smtp';
+    try {
+      const nodemailer = require('nodemailer');
+      const port = Number(process.env.EMAIL_PORT || 587);
+      const secure = String(process.env.EMAIL_SECURE || '').toLowerCase() === 'true' || port === 465;
+      const transporter = nodemailer.createTransport({ host: smtpHost, port, secure, requireTLS: !secure, auth: { user: smtpUser, pass: smtpPassword } });
+      await transporter.sendMail({ from: smtpFrom, to, subject, text, html });
+      return 'smtp';
+    } catch (smtpError) {
+      const error = new Error('SMTP rejected password reset email');
+      error.code = `SMTP_${smtpError && smtpError.code ? String(smtpError.code).replace(/[^A-Z0-9_-]/gi, '').slice(0, 40) : 'SEND_FAILED'}`;
+      if (resendFailure) error.code = `${resendFailure}_${error.code}`;
+      throw error;
+    }
   }
   const error = new Error('Password reset mail transport is not configured');
-  error.code = 'MAIL_NOT_CONFIGURED';
+  error.code = resendFailure || 'MAIL_NOT_CONFIGURED';
   throw error;
 }
 let postgresStatus = process.env.DATABASE_URL ? 'configured' : 'not_configured';

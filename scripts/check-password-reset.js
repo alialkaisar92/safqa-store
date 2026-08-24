@@ -15,6 +15,7 @@ assert(server.includes('RESEND_API_KEY') && server.includes('RESEND_FROM'), 'Res
 assert(server.includes('EMAIL_HOST') && server.includes('EMAIL_PASSWORD'), 'SMTP fallback transport is missing');
 assert(server.includes("https://api.resend.com/emails"), 'Resend endpoint is missing');
 assert(server.includes("'User-Agent': 'rab7na-store/1.0'"), 'direct Resend calls must identify the client');
+assert(server.includes('let resendFailure') && server.includes('if (smtpHost && smtpUser && smtpPassword && smtpFrom)'), 'SMTP fallback after Resend failure is missing');
 assert(server.includes('passwordResetRateAllowed'), 'forgot-password rate limiting is missing');
 assert(server.includes('const generic = { ok: true'), 'forgot-password response must be generic');
 assert(server.includes('revokePasswordResetToken'), 'failed email delivery must invalidate its token');
