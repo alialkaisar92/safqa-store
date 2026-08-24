@@ -644,8 +644,17 @@ app.get('/api/pricing-policy', async (req, res) => {
 });
 
 app.get('/api/products', async (req, res) => {
-  const affiliate = await getAffiliateSnapshotFast(true);
+  const cachedOnly = String(req.query.cached || '') === '1';
+  const affiliate = await getAffiliateSnapshotFast(false);
   const priceUp = Math.max(0, Math.min(200, Number(affiliate.priceUp) || 0));
+  if (cachedOnly) {
+    const cached = readSeoProducts();
+    if (cached.length) {
+      res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=600');
+      return res.json({ data: cached, priceUp, cached: true, pricePolicyUpdatedAt: affiliate.pricePolicyUpdatedAt || null });
+    }
+    return res.status(404).json({ ok: false, error: 'لا يوجد كاش منتجات جاهز' });
+  }
   const saved = Array.isArray(affiliate.products) ? affiliate.products : [];
   const savedById = new Map();
   saved.forEach(item => {
@@ -656,7 +665,7 @@ app.get('/api/products', async (req, res) => {
     const stockUpdatedAt = new Date().toISOString();
     const normalized = live.map(raw => Object.assign(normalizePublicProduct(raw, savedById.get(String(raw.id || raw._id)) || {}, priceUp), { stockUpdatedAt }));
     res.set('Cache-Control', 'no-store');
-    res.json(Object.assign({ data: normalized }, { priceUp, pricePolicyUpdatedAt: affiliate.pricePolicyUpdatedAt || null }));
+    res.json(Object.assign({ data: normalized }, { priceUp, cached: false, pricePolicyUpdatedAt: affiliate.pricePolicyUpdatedAt || null }));
   } catch (error) {
     console.error('Live products unavailable:', error.message);
     res.status(503).json({ ok: false, error: 'تعذر جلب المنتجات الأصلية حاليًا' });
