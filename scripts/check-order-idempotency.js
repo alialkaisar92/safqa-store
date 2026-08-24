@@ -22,11 +22,11 @@ assert(postgres.includes('async function claimAffiliateOrderJobByKey') && worker
 assert(orderRoute.includes("res.status(202).json({ok:true,queued:true,pending:true"), 'new orders must return an immediate queued response');
 assert(!orderRoute.includes("fetch(BASE_URL+'/orders'"), 'supplier POST must not block the storefront request');
 assert(orderRoute.includes("if (!productAvailable) return res.status(409).json({error:'المنتج غير متاح حاليًا'})"), 'order validation must block unavailable products');
-assert(orderRoute.includes('const adminLocked') && orderRoute.includes('const configuredPrice') && orderRoute.includes('productWholesalePrice(rawWholesale, priceUp)') && orderRoute.includes('productSuggestedSalePrice'), 'server must derive adjusted wholesale and supplier sale price server-side');
-assert(!orderRoute.includes('selectedPrice > 0 ? selectedPrice : suggestedPrice'), 'server must not trust a marketer-selected final price');
-assert(orderRoute.includes('finalPrice-base') && orderRoute.includes('wholesalePrice:base') && orderRoute.includes('originalPrice:rawWholesale') && orderRoute.includes('سعر المنتج الإداري غير متاح حاليًا'), 'commission must reflect the supplier sale price above adjusted wholesale and preserve the raw API base');
-assert(client.includes('selectedCommission=cart.reduce') && client.includes('commission:Math.round(selectedCommission*100)/100'), 'checkout must send the admin-controlled margin, not a fixed commission rate');
-assert(client.includes('سعر البيع المقترح من المورد') && client.includes('readonly aria-readonly="true"'), 'client must not expose an editable sale-price control');
+assert(orderRoute.includes('const requestedFinalPrice') && orderRoute.includes('const finalPrice=Math.round(item.requestedFinalPrice*100)/100') && orderRoute.includes('productWholesalePrice(rawWholesale, priceUp)') && orderRoute.includes('productSuggestedSalePrice'), 'server must validate marketer sale price against adjusted wholesale');
+assert(orderRoute.includes('item.requestedFinalPrice') && orderRoute.includes('finalPrice < base'), 'server must accept a marketer-selected price only after a wholesale floor check');
+assert(orderRoute.includes('finalPrice-base') && orderRoute.includes('wholesalePrice:base') && orderRoute.includes('originalPrice:rawWholesale') && orderRoute.includes('سعر البيع يجب ألا يقل عن سعر الجملة'), 'commission must reflect the marketer sale price above adjusted wholesale and preserve the raw API base');
+assert(client.includes('selectedCommission=cart.reduce') && client.includes('commission:Math.round(selectedCommission*100)/100'), 'checkout must send the calculated marketer margin, not a fixed commission rate');
+assert(client.includes('سعر البيع للعميل') && client.includes('updatePricePreview()') && !client.includes('readonly'), 'client must expose an editable sale-price control');
 assert(!client.includes('commission:Math.round(t*0.1)'), 'fixed ten percent commission must not be sent');
 assert(orderRoute.includes("notifyUser(affiliateUser.id, 'تم تسجيل طلبك'") && orderRoute.includes("queued.mode==='created'"), 'new orders must notify after local save');
 assert(!orderRoute.includes("item.qty > stock") && !orderRoute.includes("الكمية المطلوبة أكبر من المخزون الأصلي"), 'numeric stock must not reject an available product');
@@ -63,7 +63,7 @@ assert(client.includes('affiliateCancelMdl') && client.includes('affiliateCancel
 assert(client.includes("/api/affiliate/order-cancel") && client.includes('setInterval(refreshAffiliateLive,5000)'), 'affiliate dashboard must refresh live and post cancellation safely');
 assert(authPostgres.includes("last_seen_at < NOW() - INTERVAL '1 minute'"), 'session activity writes must be throttled below the 5-second dashboard polling rate');
 assert(client.includes("r.status===202&&d.ok") || client.includes("d.ok&&d.queued"), 'checkout must accept the immediate queued contract');
-assert(client.includes('readonly aria-readonly="true"') && client.includes('syncCartPricesFromInputs'), 'supplier suggested sale must remain locked without a marketer save action');
+assert(client.includes('cart-price-input') && client.includes('syncCartPricesFromInputs') && !client.includes('readonly'), 'marketer sale price must be editable and synchronized before order confirmation');
 assert(!client.includes('saveAllCartPrices') && !client.includes('cartPriceBulkActions'), 'separate price save action must remain removed');
 assert(worker.includes('notifyOrderChange') && worker.includes("'order-status'"), 'worker status changes must notify the affiliate');
 console.log('order reliability checks: PASS');

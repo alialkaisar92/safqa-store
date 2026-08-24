@@ -18,15 +18,15 @@ assert(addBlock.includes('closeCart();'), 'addCart must close the cart after add
 assert(!addBlock.includes('showPriceModal();'), 'addCart must not force the old price modal');
 assert(html.includes('function openCart()'), 'openCart function is missing');
 assert(html.includes('سعر الجملة'), 'cart must show the wholesale price');
-assert(html.includes('سعر البيع للعميل') && html.includes('سعر البيع المقترح من المورد'), 'cart must show the supplier suggested sale price');
+assert(html.includes('سعر البيع للعميل') && html.includes('السعر المقترح للبدء'), 'cart must show the editable sale price and its suggested starting value');
 assert(html.includes('سعر الجملة الإجمالي'), 'cart totals must show wholesale total');
 assert(html.includes('ربحك المتوقع'), 'cart must show expected profit');
-assert(html.includes('cart-price-locked'), 'cart admin-price lock notice is missing');
-assert(!html.includes('cartPriceInput') && !html.includes('oninput="updateCartPriceFromInput('), 'marketer must not edit the admin-controlled cart price');
+assert(!html.includes('cart-price-locked'), 'old marketer price lock notice must be removed');
+assert(html.includes('cart-price-input') && html.includes('data-cart-price-index') && html.includes('updateCartPriceFromInput('), 'marketer sale price editor is missing');
 assert(html.includes('function syncCartPricesFromInputs()'), 'checkout price validation is missing');
 assert(!html.includes('saveAllCartPrices'), 'separate cart price save flow must be removed');
 assert(!html.includes('cartPriceBulkActions'), 'separate cart price save UI must be removed');
-assert(html.includes('readonly aria-readonly="true"'), 'supplier suggested sale price must be readonly for marketers');
+assert(!html.includes('readonly'), 'sale price must be editable for marketers');
 assert(html.includes("window.openCheckout=function(){") && html.includes("if(typeof recalc==='function')recalc();"), 'checkout must recalculate totals after modal navigation opens it');
 assert(submitBlock.includes("if(r.ok&&d.ok)"), 'success must depend on a successful server response');
 assert(html.includes('order-success-title'), 'order success message is missing');
@@ -42,7 +42,7 @@ assert(html.includes('originalPrice:Number(c.cost||0)'), 'adjusted wholesale cos
 
 console.log('cart flow checks: PASS');
 console.log('direct add toast and close cart: YES');
-console.log('admin-controlled cart price: YES');
+console.log('editable marketer sale price: YES');
 console.log('server-gated order success message: YES');
 console.log('immediate acknowledgement and status polling: YES');
 console.log('idempotency key preserved across refresh: YES');

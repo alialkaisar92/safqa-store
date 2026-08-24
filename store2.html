@@ -856,6 +856,7 @@ function addCart(i){
      name:p.name,
      price:price,
      cost:base,
+     suggestedSalePrice:Math.max(base,salePriceOf(p)),
      profit:price-base,
      image:p.image||((p.images&&p.images[0])||''),
      qty:1
@@ -899,9 +900,9 @@ function showPriceModal(){
      '</div>'+
 
      '<div class="price-section">'+
-       '<label>سعر البيع المقترح من المورد <small style="font-weight:600;color:#0f766e">(لا يمكن تغييره من حساب المسوّق)</small></label>'+
+       '<label>سعر البيع للعميل <small style="font-weight:600;color:#0f766e">(عدّله حسب اتفاقك مع العميل)</small></label>'+
        '<div class="price-input-wrap">'+
-         '<input id="salePriceInput" type="number" value="'+selectedSale+'" min="'+selectedBase+'" readonly aria-readonly="true" aria-label="سعر البيع المقترح من المورد">'+
+         '<input id="salePriceInput" type="number" value="'+selectedSale+'" min="'+selectedBase+'" step="0.01" inputmode="decimal" oninput="updatePricePreview()" aria-label="سعر البيع للعميل">'+
          '<span>ج.م</span>'+
        '</div>'+
        '<div id="priceError" class="price-error"></div>'+
@@ -953,16 +954,16 @@ function updatePricePreview(){
 
  if(!input)return;
 
- var price=Number(input.value)||0;
+ var price=Number(String(input.value==null?'':input.value).replace(',','.'));
 
- if(price<selectedBase){
+ if(!Number.isFinite(price)||price<selectedBase){
 
    error.textContent='أقل سعر مسموح '+selectedBase.toLocaleString('ar-EG')+' ج.م';
 
    profit.textContent='0 ج.م';
    total.textContent='—';
 
-   return;
+   return false;
  }
 
  error.textContent='';
@@ -976,6 +977,7 @@ function updatePricePreview(){
 
  total.textContent=
    (price*selectedQty).toLocaleString('ar-EG')+' ج.م';
+ return true;
 }
 
 function changeSelectedQty(d){
@@ -1003,9 +1005,11 @@ function closePriceModal(){
 
 function confirmAddCart(){
 
- var price=salePriceOf(selectedProduct);
+ var input=document.getElementById('salePriceInput');
+ var price=Number(String(input&&input.value==null?'':input.value).replace(',','.'));
+ if(!updatePricePreview())return;
 
- if(price<selectedBase){
+ if(!Number.isFinite(price)||price<selectedBase){
 
    var e=document.getElementById('priceError');
 
@@ -1035,6 +1039,7 @@ function confirmAddCart(){
      name:p.name,
      price:price,
      cost:selectedBase,
+     suggestedSalePrice:Math.max(selectedBase,salePriceOf(p)),
      profit:price-selectedBase,
      image:p.image||((p.images&&p.images[0])||''),
      qty:selectedQty
@@ -1066,7 +1071,8 @@ function openCart(){
    var unitPrice=Number(c.price||0);
    var unitCost=Number(c.cost||0);
    var unitProfit=Math.max(0,unitPrice-unitCost);
-   var edit='<div class="cart-price-locked" role="note">سعر البيع المقترح من المورد — لا يمكن تغييره إلا من لوحة الأدمن</div>';
+   var suggested=Math.max(unitCost,Number(c.suggestedSalePrice||unitPrice)||unitPrice);
+   var edit='<label class="cart-sale-editor"><span>سعر البيع للعميل</span><input class="cart-price-input" data-cart-price-index="'+i+'" type="number" value="'+unitPrice+'" min="'+unitCost+'" step="0.01" inputmode="decimal" oninput="updateCartPriceFromInput('+i+',this.value)" aria-label="سعر البيع للعميل"></label><small class="cart-sale-hint">السعر المقترح للبدء: '+fmt(suggested)+'</small><div class="cart-price-error" id="cartPriceError'+i+'" role="alert"></div>';
    return '<article class="ci cart-item">'
     +'<img class="cart-item-image" src="'+(c.image||'')+'" alt="">'
     +'<div class="cart-item-main">'
@@ -1117,11 +1123,24 @@ function refreshCartPriceSummary(i){
  if(totalEl){var subtotal=cart.reduce(function(a,x){return a+Number(x.price||0)*Number(x.qty||0)},0),wholesale=cart.reduce(function(a,x){return a+Number(x.cost||0)*Number(x.qty||0)},0),gain=cart.reduce(function(a,x){return a+Math.max(0,Number(x.price||0)-Number(x.cost||0))*Number(x.qty||0)},0);totalEl.innerHTML='<span class="cart-total-label">إجمالي البيع</span> <b>'+fmt(subtotal)+'</b><br><small class="cart-total-cost">سعر الجملة الإجمالي: '+fmt(wholesale)+'</small><br><small class="cart-total-profit">ربحك المتوقع: '+fmt(gain)+'</small>';}
 }
 function updateCartPriceFromInput(i,value){
- var error=document.getElementById('cartPriceError'+i);
- if(error)error.textContent='سعر البيع محدد من الإدارة ولا يمكن تغييره من حساب المسوّق';
- return false;
+ var c=cart[i],error=document.getElementById('cartPriceError'+i);
+ if(!c)return false;
+ var price=Number(String(value==null?'':value).replace(',','.')),cost=Number(c.cost||0);
+ if(!Number.isFinite(price)||price<cost){
+   if(error)error.textContent='سعر البيع لا يمكن أن يكون أقل من سعر الجملة ('+fmt(cost)+')';
+   return false;
+ }
+ c.price=Math.round(price*100)/100;
+ c.profit=Math.max(0,c.price-cost);
+ if(error)error.textContent='';
+ refreshCartPriceSummary(i);
+ return true;
 }
-function syncCartPricesFromInputs(){return true;}
+function syncCartPricesFromInputs(){
+ var inputs=document.querySelectorAll('input[data-cart-price-index]'),valid=true;
+ inputs.forEach(function(input){if(!updateCartPriceFromInput(Number(input.getAttribute('data-cart-price-index')),input.value))valid=false;});
+ return valid;
+}
 
 function closeCart(options){
   closeModalById('cartMdl',options);
@@ -2276,7 +2295,7 @@ body.modal-open #rab7naSupportRoot{display:none!important}
 @media(max-width:760px){body{padding-bottom:82px}.affiliate-bottom-nav{position:fixed;right:10px;bottom:max(10px,env(safe-area-inset-bottom));left:10px;z-index:240;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:7px;border:1px solid rgba(218,233,225,.95);border-radius:21px;background:rgba(255,255,255,.97);box-shadow:0 16px 36px rgba(18,63,45,.18);direction:rtl}.affiliate-bottom-nav button{display:flex;min-width:0;min-height:57px;align-items:center;justify-content:center;gap:4px;flex-direction:column;border:0;border-radius:15px;background:transparent;color:#647a70;font:800 9px Cairo,Tajawal,sans-serif;cursor:pointer;touch-action:manipulation}.affiliate-bottom-nav button:active{transform:scale(.97)}.affiliate-bottom-nav button:hover,.affiliate-bottom-nav button:focus-visible,.affiliate-bottom-nav button.active{background:#0b8f65;color:#fff;outline:none}.affiliate-bottom-nav svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.affiliate-dashboard-head h2{font-size:22px}.affiliate-dashboard-head p{font-size:10px}.affiliate-order-stats{grid-template-columns:repeat(2,1fr);gap:8px}.affiliate-order-stat{padding:12px;border-radius:15px}.affiliate-order-stat b{font-size:19px}.affiliate-order-stat span,.affiliate-order-stat small{font-size:9px}.affiliate-orders-card{padding:13px}.affiliate-wrap{padding:18px 12px 32px}.affiliate-order-top,.affiliate-order-bottom{align-items:flex-start;flex-direction:column;gap:6px}.affiliate-order-bottom b{align-self:flex-start}.affiliate-status{align-self:flex-start}}
 @media(min-width:761px){.affiliate-dashboard-head{max-width:760px}.affiliate-order-stats{max-width:900px}}
 body.modal-open .affiliate-bottom-nav{display:none!important}
-.cart-price-locked{margin-top:10px;padding:10px 11px;border:1px solid #cfe9dc;border-radius:11px;background:#effaf4;color:#2d6b52;font-size:11px;font-weight:800;line-height:1.6}
+.cart-sale-editor{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;color:#315449;font-size:11px;font-weight:900}.cart-sale-editor input{width:112px;box-sizing:border-box;padding:8px 9px;border:1px solid #b9ded0;border-radius:10px;background:#fbfffd;color:#0f766e;font:900 13px Cairo,Tajawal,sans-serif;text-align:center;outline:none}.cart-sale-editor input:focus{border-color:#0b8f65;box-shadow:0 0 0 3px rgba(11,143,101,.12)}.cart-sale-hint{display:block;margin-top:5px;color:#81958b;font-size:10px}.cart-price-error{min-height:17px;margin-top:4px;color:#b4233c;font-size:10px;font-weight:800}
 </style>
 <script>document.documentElement.classList.add('rab7na-ready');</script>
 </body>

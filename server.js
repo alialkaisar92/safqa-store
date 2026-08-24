@@ -1278,16 +1278,16 @@ app.post('/api/create-order', async (req,res)=>{
     const suggestedSale = productSuggestedSalePrice(Object.assign({}, source, { note }), base);
     const adminLocked = source.adminPriceLocked === true || source.admin_price_locked === true;
     const adminSale = Number(source.adminSalePrice != null ? source.adminSalePrice : source.admin_sale_price);
-    const configuredPrice = adminLocked && Number.isFinite(adminSale) && adminSale >= base
+    const suggestedForOrder = adminLocked && Number.isFinite(adminSale) && adminSale >= base
       ? Math.round(adminSale)
       : suggestedSale;
-    const finalPrice=Math.round(configuredPrice*100)/100;
-    if (!Number.isFinite(finalPrice) || finalPrice < base) return res.status(409).json({error:'سعر المنتج الإداري غير متاح حاليًا'});
-    // السعر والعمولة مصدرهما سياسة الأدمن المحفوظة على الخادم؛ لا نعتمد على سعر أرسله المتصفح.
+    // سعر البيع يحدده المسوّق حسب اتفاقه مع العميل؛ الخادم يتحقق فقط من أنه صالح ولا يقل عن سعر الجملة.
+    const finalPrice=Math.round(item.requestedFinalPrice*100)/100;
+    if (!Number.isFinite(finalPrice) || finalPrice < base) return res.status(409).json({error:'سعر البيع يجب ألا يقل عن سعر الجملة'});
     const commission=Math.max(0, Math.round((finalPrice-base)*100)/100);
     const property=(matchedProperty && (matchedProperty._id || matchedProperty.id || matchedProperty.key)) || item.property || source.propId || sourceProp._id || sourceProp.id || sourceProp.key || '';
     if (!property) return res.status(409).json({error:'خاصية المنتج غير متاحة حاليًا'});
-    normalizedItems.push({product:String(item.product),property:String(property),qty:String(item.qty),name:String(source.name || source.title || item.product),originalPrice:rawWholesale,wholesalePrice:base,suggestedSalePrice:suggestedSale,finalPrice,commission});
+    normalizedItems.push({product:String(item.product),property:String(property),qty:String(item.qty),name:String(source.name || source.title || item.product),originalPrice:rawWholesale,wholesalePrice:base,suggestedSalePrice:suggestedForOrder,finalPrice,commission});
   }
   let shippingCost=0;
   try{
