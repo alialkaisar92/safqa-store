@@ -89,9 +89,10 @@ export default function ProductPage({
           </div>
 
           {product.description && (
-            <p className="mt-5 leading-8 text-gray-600">
-              {product.description}
-            </p>
+            <div
+              className="mt-5 leading-8 text-gray-600 prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: product.description }}
+            />
           )}
 
           <button
