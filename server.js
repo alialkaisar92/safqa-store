@@ -1101,7 +1101,7 @@ app.post('/api/webhooks/safka/order-status', async (req, res) => {
   try {
     const result = await postgres.applySafkaOrderWebhook(req.body || {});
     if (result.matched && result.userId != null && global.notifyUser) {
-      await Promise.resolve(global.notifyUser(result.userId, 'تحديث من المورد', 'تم تحديث حالة طلبك: ' + String(result.displayStatus || result.status || 'قيد المتابعة'), '/store', 'order-status', 'safka-webhook:' + result.orderId + ':' + result.status)).catch(() => null);
+      await Promise.resolve(global.notifyUser(result.userId, 'تحديث حالة الطلب', 'تم تحديث حالة طلبك: ' + String(result.displayStatus || result.status || 'قيد المتابعة'), '/store', 'order-status', 'safka-webhook:' + result.orderId + ':' + result.status)).catch(() => null);
     }
     res.set('Cache-Control', 'no-store');
     res.status(200).json({ ok: true, duplicate: Boolean(result.duplicate), matched: Boolean(result.matched), reviewRequired: Boolean(result.reviewRequired), eventKey: result.eventKey, status: result.status });
@@ -1219,24 +1219,26 @@ function supplierResponseAccepted(httpResponse, payload) {
 function queueStatusMessage(status) {
   const messages = {
     pending: 'تم استلام طلبك، جاري تجهيز الإرسال',
-    processing: 'جاري تأكيد الطلب من المورد',
-    retry: 'المورد مشغول، ستتم إعادة المحاولة تلقائيًا',
+    processing: 'جاري تأكيد الطلب',
+    retry: 'جاري إعادة تجهيز الطلب تلقائيًا',
     unknown: 'تم استلام طلبك، وجاري التحقق من حالته. لا تقم بإرسال الطلب مرة أخرى.',
-    accepted: 'تم إرسال الطلب للمورد وجارٍ تأكيده',
+    accepted: 'تم تسجيل الطلب وجارٍ تأكيده',
     confirmed: 'تم تأكيد الطلب بنجاح',
     cancel_requested: 'تم استلام طلب الإلغاء وجارٍ مراجعته',
     cancelled: 'تم إلغاء الطلب',
-    failed: 'تعذر تأكيد الطلب من المورد؛ راجع البيانات وأنشئ طلبًا جديدًا'
+    failed: 'تعذر تأكيد الطلب؛ راجع البيانات وأنشئ طلبًا جديدًا'
   };
   return messages[String(status || '').toLowerCase()] || 'جاري متابعة الطلب';
 }
 function queueStatusPayload(row, order) {
   const status = String(row && row.status || 'pending').toLowerCase();
   const safeOrder = order || {};
+  const rawDisplayStatus = String(safeOrder.status || '').trim();
+  const publicStatus = /المورد|safka|supplier/i.test(rawDisplayStatus) ? (status === 'confirmed' ? 'تم التأكيد' : 'قيد المتابعة') : rawDisplayStatus;
   return {
     id: safeOrder.id || row.order_id,
     serial: safeOrder.serial || safeOrder.id || row.order_id,
-    status: safeOrder.status || (status === 'confirmed' || status === 'accepted' ? 'قيد التأكيد' : 'قيد المتابعة'),
+    status: publicStatus || (status === 'confirmed' || status === 'accepted' ? 'قيد التأكيد' : 'قيد المتابعة'),
     requestStatus: status,
     total: Number(safeOrder.total || 0),
     commission: Number(safeOrder.commission || 0),
@@ -1252,7 +1254,7 @@ function queueStatusPayload(row, order) {
     manualReviewAt: row.manual_review_at || safeOrder.manualReviewAt || null,
     manualReviewBy: row.manual_review_by || safeOrder.manualReviewBy || null,
     manualReviewReason: row.manual_review_reason || safeOrder.manualReviewReason || null,
-    failureReason: ['failed', 'unknown'].includes(status) ? String(row.failure_reason || safeOrder.failureReason || '') : ''
+    failureReason: status === 'unknown' ? queueStatusMessage('unknown') : status === 'failed' ? queueStatusMessage('failed') : ''
   };
 }
 

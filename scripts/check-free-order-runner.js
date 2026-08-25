@@ -30,7 +30,7 @@ assert(worker.includes('function maxAttempts()'), 'configurable max attempts are
 assert(worker.includes('[60000, 120000, 300000, 600000, 1800000]'), 'retry backoff is not minute-scale');
 assert(worker.includes('retryableStatus(status) { return [500, 502, 503, 504]'), 'transient HTTP statuses are incomplete');
 assert(worker.includes('supplierContacted') && worker.includes('QUEUE_PRE_SUBMIT_TRANSIENT'), 'supplier-contact certainty marker is missing');
-assert(worker.includes("const unknownMessage = 'وصل رد خطأ من المورد بعد بدء الاتصال"), '5xx after supplier contact must enter unknown/manual review');
+assert(worker.includes("const unknownMessage = 'وصل رد خطأ بعد بدء الاتصال"), '5xx after supplier contact must enter unknown/manual review');
 assert(!worker.includes("retryableStatus(result.response.status) && attempt < maxAttempts()"), 'ambiguous supplier 5xx must not be automatically retried');
 assert(workflow.includes("cron: '*/5 * * * *'"), 'five-minute schedule is missing');
 assert(workflow.includes('id-token: write'), 'workflow OIDC permission is missing');

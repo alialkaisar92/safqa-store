@@ -207,9 +207,9 @@ async function recordAttempt(job, attempt, details) {
 }
 function safeFailureMessage(status, error) {
   const source = String(error || '').toLowerCase();
-  if (source.includes('محظور') || source.includes('سلوكه') || source.includes('blocked')) return 'تعذر تأكيد الطلب لأن رقم العميل غير مقبول لدى المورد';
-  if (Number(status) >= 400 && Number(status) < 500) return 'بيانات الطلب غير مقبولة لدى المورد؛ راجع بيانات العميل وحاول بطلب جديد';
-  return 'تعذر تأكيد الطلب من المورد حاليًا';
+  if (source.includes('محظور') || source.includes('سلوكه') || source.includes('blocked')) return 'تعذر تأكيد الطلب لأن رقم العميل غير مقبول';
+  if (Number(status) >= 400 && Number(status) < 500) return 'بيانات الطلب غير مقبولة؛ راجع بيانات العميل وحاول بطلب جديد';
+  return 'تعذر تأكيد الطلب حاليًا';
 }
 async function postSupplierOrder(job) {
   const data = job && job.request_data || {};
@@ -273,12 +273,12 @@ async function processAffiliateOrderJob(job) {
       const queueState = ['تم التأكيد', 'تم التاكيد', 'confirmed', 'تم التسليم', 'تم التوصيل', 'delivered', 'completed'].includes(String(displayStatus).toLowerCase()) ? 'confirmed' : (trackingSaved ? 'accepted' : 'accepted_untracked');
       attemptLog = { requestStatus: queueState, httpStatus: result.response.status, supplierStatus: outcome.rawStatus || null, supplierContacted: true };
       await postgres.updateAffiliateOrderQueueState(key, queueState, { supplierResponse, supplierOrderId: outcome.externalId, failureReason: trackingSaved ? null : 'تعذر حفظ سجل المتابعة بعد قبول المورد' });
-      await notifyOrderChange(job, queueState, queueState === 'confirmed' ? 'تم تأكيد الطلب بنجاح.' : 'تم قبول الطلب وبدأت متابعته مع المورد.');
+      await notifyOrderChange(job, queueState, queueState === 'confirmed' ? 'تم تأكيد الطلب بنجاح.' : 'تم قبول الطلب وبدأت متابعته.');
       console.log('[order-queue] order_accepted', { order_id: job.order_id, user_id: job.user_id, idempotency_key: key, supplier_order_id: outcome.externalId, attempt_number: attempt });
       return { status: 'accepted', supplierOrderId: outcome.externalId };
     }
     if (outcome.indeterminate) {
-      const message = 'تم استلام رد غير مكتمل من المورد، وجارٍ التحقق من حالة الطلب؛ لا تعيد إرساله مرة أخرى';
+      const message = 'تم استلام تحديث غير مكتمل، وجارٍ التحقق من حالة الطلب؛ لا تعيد إرساله مرة أخرى';
       attemptLog = { requestStatus: 'unknown', httpStatus: result.response.status, supplierStatus: outcome.rawStatus || null, errorMessage: message, supplierContacted: true };
       await postgres.updateAffiliateOrderQueueState(key, 'unknown', { supplierResponse: { httpStatus: result.response.status }, failureReason: message });
       await postgres.updateAffiliateOrder(job.order_id, { status: 'قيد التحقق', requestStatus: 'unknown', failureReason: message, statusSyncedAt: new Date().toISOString() });
@@ -288,7 +288,7 @@ async function processAffiliateOrderJob(job) {
     }
     const message = safeFailureMessage(result.response.status, result.body && (result.body.message || result.body.error || outcome.errors.join('، ')));
     if (retryableStatus(result.response.status)) {
-      const unknownMessage = 'وصل رد خطأ من المورد بعد بدء الاتصال؛ جارٍ التحقق من حالة الطلب، لا تعيد إرساله مرة أخرى';
+      const unknownMessage = 'وصل رد خطأ بعد بدء الاتصال؛ جارٍ التحقق من حالة الطلب، لا تعيد إرساله مرة أخرى';
       attemptLog = { requestStatus: 'unknown', httpStatus: result.response.status, errorMessage: unknownMessage, supplierContacted: true };
       await postgres.updateAffiliateOrderQueueState(key, 'unknown', { supplierResponse: { httpStatus: result.response.status }, failureReason: unknownMessage });
       await postgres.updateAffiliateOrder(job.order_id, { status: 'قيد التحقق', requestStatus: 'unknown', failureReason: unknownMessage, statusSyncedAt: new Date().toISOString() });
@@ -305,7 +305,7 @@ async function processAffiliateOrderJob(job) {
   } catch (error) {
     const supplierContacted = !(error && error.supplierContacted === false);
     if (error && (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || error.name === 'FetchError')) {
-      const message = 'تم استلام الطلب، وجارٍ التحقق من حالة المورد؛ لا تعيد إرساله مرة أخرى';
+      const message = 'تم استلام الطلب، وجارٍ التحقق من الحالة؛ لا تعيد إرساله مرة أخرى';
       attemptLog = { requestStatus: 'unknown', errorMessage: message, supplierContacted };
       await postgres.updateAffiliateOrderQueueState(key, 'unknown', { failureReason: message });
       await postgres.updateAffiliateOrder(job.order_id, { status: 'قيد التحقق', requestStatus: 'unknown', failureReason: message, statusSyncedAt: new Date().toISOString() });

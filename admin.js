@@ -352,7 +352,7 @@ module.exports = function mountAdmin(app) {
       if (global.notifyUser) {
         const db = await affiliateData();
         const order = (db.orders || []).find(item => String(item.id || item.serial) === orderId);
-        if (order && order.userId != null) await Promise.resolve(global.notifyUser(order.userId, 'تحديث مراجعة الطلب', decision === 'supplier_received' ? 'تم ربط الطلب بحالة المورد ومتابعته.' : 'تمت مراجعة حالة الطلب ويحتاج إجراء تجهيز منفصل.', '/store', 'order-status', 'order-review:' + orderId + ':' + String(result.manual_review_at || ''))).catch(() => null);
+        if (order && order.userId != null) await Promise.resolve(global.notifyUser(order.userId, 'تحديث مراجعة الطلب', decision === 'supplier_received' ? 'تمت مراجعة الطلب وربطه بحالته ومتابعته.' : 'تمت مراجعة حالة الطلب ويحتاج إجراء تجهيز منفصل.', '/store', 'order-status', 'order-review:' + orderId + ':' + String(result.manual_review_at || ''))).catch(() => null);
       }
       res.json({ ok: true, queue: result });
     } catch (error) {
