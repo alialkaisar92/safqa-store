@@ -8,6 +8,7 @@ try{const _f=require('fs');const _ep=require('path').join(__dirname,'.env');if(_
 const API_KEY = process.env.SAFKA_API_KEY || '';
 const BASE_URL='https://api.safka-eg.com/api/v1/public';
 const safkaSync = require('./safka-sync');
+const { getProductStock, getProductStockState } = require('./stock-utils');
 const { availableBalance, commissionEligibleStatus } = require('./balance');
 const easyordersDb = require('./services/db');
 const easyordersRoutes = require('./routes/easyorders.routes');
@@ -361,6 +362,9 @@ function productAvailability(p){return p.available===false || p.is_active===fals
 
 let productsCache = [], priceListCache = [], lastFetch = 0;
 let stockProbeLoggedAt = 0;
+let stockSnapshot = [];
+let stockSnapshotAt = 0;
+let stockSnapshotPromise = null;
 let affiliateSnapshot = null, affiliateSnapshotAt = 0;
 async function getAffiliateSnapshotFast(force) {
   if (!force && affiliateSnapshot && Date.now() - affiliateSnapshotAt < 15000) return affiliateSnapshot;
@@ -462,19 +466,7 @@ async function getPriceList() {
 }
 
 function sourceStock(p) {
-  const prop = (p && p.properties && p.properties[0]) || {};
-  const inventory = p && p.inventory;
-  const candidates = [
-    prop.stock, prop.quantity, prop.available_qty, prop.availableQuantity,
-    p && p.stock, p && p.quantity, p && p.available_qty,
-    p && p.availableQuantity, p && p.inventory_quantity,
-    inventory && inventory.stock, inventory && inventory.quantity, inventory && inventory.available,
-    inventory && inventory.available_qty
-  ];
-  for (const value of candidates) {
-    if (value !== undefined && value !== null && value !== '' && Number.isFinite(Number(value))) return Math.max(0, Number(value));
-  }
-  return null;
+  return getProductStock(p).quantity;
 }
 function extractCommission(note) {
   if (!note) return 0;
@@ -545,7 +537,8 @@ function wholesalePriceOf(value) {
 function normalizePublicProduct(p, local, priceUp) {
   const raw = p || {};
   const prop = (raw.properties && raw.properties[0]) || {};
-  const stock = sourceStock(raw);
+  const stockState = getProductStockState(raw);
+  const stock = stockState.quantity;
   const merged = Object.assign({}, raw, local || {});
   const media = productMedia(raw, local || {});
   const category = cat([raw.name, raw.title, raw.description, raw.desc, raw.note, raw.category].filter(Boolean).join(' '));
@@ -577,7 +570,10 @@ function normalizePublicProduct(p, local, priceUp) {
     propId: raw.propId || prop._id || '',
     propKey: raw.propKey || prop.key || '',
     stock,
-    available: sourceAvailability(raw),
+    stockQuantity: stock,
+    inStock: stockState.inStock,
+    stockSourcePath: stockState.path,
+    available: stockState.available === true,
     stockSource: 'safka'
   }, media);
 }
@@ -607,6 +603,28 @@ async function fetchLivePublicProducts() {
   return first.rows.concat(...rest.map(x => x.rows));
 }
 let liveProductsPromise = null;
+async function getLiveStockSnapshot() {
+  if (stockSnapshot.length && Date.now() - stockSnapshotAt < 60000) return stockSnapshot;
+  if (stockSnapshotPromise) return stockSnapshotPromise;
+  stockSnapshotPromise = fetchLivePublicProducts().then(live => {
+    const checkedAt = new Date(lastFetch || Date.now()).toISOString();
+    stockSnapshot = live.map(raw => {
+      const state = getProductStockState(raw);
+      return {
+        id: String(raw && (raw.id || raw._id) || ''),
+        stockQuantity: state.quantity,
+        inStock: state.inStock,
+        available: state.available === true,
+        stockUpdatedAt: checkedAt,
+        stockSourcePath: state.path
+      };
+    }).filter(item => item.id);
+    stockSnapshotAt = Date.now();
+    return stockSnapshot;
+  }).finally(() => { stockSnapshotPromise = null; });
+  return stockSnapshotPromise;
+}
+
 async function getLivePublicProductsCached(force) {
   const cacheAge = Date.now() - lastFetch;
   if (!force && productsCache.length && cacheAge < 600000) return productsCache;
@@ -642,6 +660,17 @@ app.get('/api/pricing-policy', async (req, res) => {
   } catch (error) {
     console.error('[pricing policy] read failed:', error.message);
     res.status(503).json({ error: 'تعذر قراءة سياسة الأسعار حاليًا' });
+  }
+});
+
+app.get('/api/products/stock', async (req, res) => {
+  try {
+    const data = await getLiveStockSnapshot();
+    res.set('Cache-Control', 'no-store');
+    res.json({ data, stockUpdatedAt: data[0]?.stockUpdatedAt || null, cachedForMs: 60000 });
+  } catch (error) {
+    console.error('[stock-api] live snapshot failed:', error.message);
+    res.status(503).json({ ok: false, error: 'تعذر قراءة المخزون الحالي من صفقة' });
   }
 });
 
@@ -1291,6 +1320,9 @@ app.post('/api/create-order', async (req,res)=>{
     const propertyAvailable = sourceProps.length ? sourceProp.is_available === true : source.is_available !== false;
     const productAvailable = source.is_active !== false && propertyAvailable && sourceAvailability(source) === true;
     if (!productAvailable) return res.status(409).json({error:'المنتج غير متاح حاليًا'});
+    const rawStock = source.stockQuantity ?? source.stock_quantity ?? source.stock;
+    const numericStock = rawStock === null || rawStock === undefined || rawStock === '' ? null : Number(rawStock);
+    if (Number.isFinite(numericStock) && numericStock >= 0 && item.qty > Math.floor(numericStock)) return res.status(409).json({error:`الكمية المتاحة حاليًا ${Math.floor(numericStock)} فقط`});
     const note=clean(source.note || '');
     const suggestedSale = productSuggestedSalePrice(Object.assign({}, source, { note }), base);
     const adminLocked = source.adminPriceLocked === true || source.admin_price_locked === true;

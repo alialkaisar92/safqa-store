@@ -4,6 +4,7 @@ const path = require('path');
 const store = require('./firestore');
 const postgres = require('./lib/postgres');
 const authService = require('./services/auth-postgres');
+const { getProductStockState } = require('./stock-utils');
 
 const SESSION_COOKIE = 'rab7na_session';
 const ADMIN_PERMISSIONS = ['dashboard', 'orders', 'products', 'users', 'withdrawals', 'chats', 'settings', 'admins', 'notifications', 'rewards'];
@@ -131,11 +132,14 @@ function productWholesalePrice(base, priceUp) {
 function mapSafkaProduct(product) {
   const value = product || {};
   const base = wholesalePriceOf(value);
-  const available = propertyAvailability(value);
+  const stockState = getProductStockState(value);
+  const sourceId = String(value._id || value.id || ('safka-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7)));
+  const updatedAt = new Date().toISOString();
   return {
-    id: String(value._id || value.id || ('safka-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7))),
+    id: sourceId,
     source: 'safka',
-    sourceId: String(value._id || value.id || ''),
+    sourceId,
+    source_product_id: sourceId,
     name: value.name || value.title || 'منتج',
     description: value.description || value.desc || value.note || '',
     image: (Array.isArray(value.images) && value.images[0]) || value.image || '',
@@ -146,14 +150,18 @@ function mapSafkaProduct(product) {
     basePrice: base,
     suggestedSalePrice: productSuggestedSalePrice(value, base),
     commission: Math.max(0, productSuggestedSalePrice(value, base) - base),
-    stock: null,
-    available,
-    active: available && value.is_active !== false,
+    stock: stockState.quantity,
+    stock_quantity: stockState.quantity,
+    in_stock: stockState.inStock,
+    stock_updated_at: updatedAt,
+    stock_source_path: stockState.path,
+    available: stockState.available === true,
+    active: stockState.available === true && value.is_active !== false,
     cat: value.category || value._cat || 'أخرى',
     barcode: value.barcode || '',
     note: value.note || '',
     raw: value,
-    updatedAt: new Date().toISOString()
+    updatedAt
   };
 }
 

@@ -3,6 +3,7 @@ const path = require('path');
 const fetch = require('node-fetch');
 const store = require('./firestore');
 const postgres = require('./lib/postgres');
+const { getProductStock, getProductStockState } = require('./stock-utils');
 
 const BASE_URL = process.env.SAFKA_PUBLIC_BASE_URL || 'https://api.safka-eg.com/api/v1/public';
 const CACHE_FILE = path.join(__dirname, 'products-cache.json');
@@ -68,19 +69,7 @@ async function notifyOrderChange(job, status, message) {
   await Promise.resolve(global.notifyUser(job.user_id, 'تحديث طلبك', message, '/store', 'order-status', 'order-status:' + orderId + ':' + String(status || 'updated'))).catch(error => console.warn('[notifications] order status skipped:', error.message));
 }
 function productStock(product) {
-  const prop = (product && product.properties && product.properties[0]) || {};
-  const inventory = product && product.inventory;
-  const candidates = [
-    prop.stock, prop.quantity, prop.available_qty, prop.availableQuantity,
-    product && product.stock, product && product.quantity, product && product.available_qty,
-    product && product.availableQuantity, product && product.inventory_quantity,
-    inventory && inventory.stock, inventory && inventory.quantity, inventory && inventory.available,
-    inventory && inventory.available_qty
-  ];
-  for (const value of candidates) {
-    if (value !== undefined && value !== null && value !== '' && Number.isFinite(Number(value))) return Math.max(0, Math.floor(Number(value)));
-  }
-  return null;
+  return getProductStock(product).quantity;
 }
 
 function sourceAvailable(product) {
@@ -100,14 +89,21 @@ function wholesalePriceOf(value) {
   return 0;
 }
 function dbProduct(product) {
-  const stock = productStock(product);
+  const stockState = getProductStockState(product);
   const base = wholesalePriceOf(product);
+  const sourceProductId = String(product.id || product._id || '').trim();
+  const stockUpdatedAt = new Date().toISOString();
   return Object.assign({}, product, {
-    external_id: product.id || product._id,
-    stock,
+    external_id: sourceProductId,
+    source_product_id: sourceProductId,
+    stock: stockState.quantity,
+    stock_quantity: stockState.quantity,
+    in_stock: stockState.inStock,
+    stock_updated_at: stockUpdatedAt,
+    stock_source_path: stockState.path,
     active: product.is_active !== false,
     basePrice: Number.isFinite(base) ? base : 0,
-    available: sourceAvailable(product)
+    available: stockState.available === true
   });
 }
 
@@ -128,8 +124,16 @@ async function syncProducts(options) {
   let database = null;
   try { database = await postgres.upsertProducts(prepared); }
   catch (e) { console.warn('Safka PostgreSQL stock import skipped:', e.message); }
-  const missingStock = prepared.filter(product => product.stock === null);
-  if (missingStock.length) console.warn('[stock-sync] Missing explicit stock field for ' + missingStock.length + ' products; stored as unavailable instead of using a guessed quantity. Sample IDs: ' + missingStock.slice(0, 5).map(product => String(product.external_id || '')).join(', '));
+  const missingStock = prepared.filter(product => product.stock_quantity === null);
+  const numericStock = prepared.filter(product => Number.isInteger(product.stock_quantity));
+  console.log('[stock-sync] summary:', JSON.stringify({
+    total: prepared.length,
+    numericStock: numericStock.length,
+    missingStock: missingStock.length,
+    inStock: prepared.filter(product => product.in_stock === true).length,
+    syncedAt: prepared[0] && prepared[0].stock_updated_at || new Date().toISOString()
+  }));
+  if (missingStock.length) console.warn('[stock-sync] Missing explicit stock field for ' + missingStock.length + ' products; preserving last DB value and never guessing from properties.value/min. Sample IDs: ' + missingStock.slice(0, 5).map(product => String(product.external_id || '')).join(', '));
   try { fs.writeFileSync(CACHE_FILE, JSON.stringify(prepared)); } catch (e) { console.warn('Safka cache write skipped:', e.message); }
   await saveMeta({ productIds: products.map(p => String(p._id || p.id)).filter(Boolean), productCount: products.length, productsSyncedAt: new Date().toISOString(), stockImportedAt: new Date().toISOString(), stockImported: database || { inserted: 0, updated: 0 } });
   if (newProducts.length && options && options.notify !== false) {
@@ -426,4 +430,4 @@ async function runSync(options) {
   await saveMeta({ lastRunAt: new Date().toISOString(), lastResult: result });
   return result;
 }
-module.exports = { syncProducts, syncOrderStatuses, runSync, fetchAllProducts, processAffiliateOrderByKey, processAffiliateOrderQueue, processAffiliateOrderJob, reconcileAffiliateOrderQueue, supplierOrderRecord, supplierStatus, supplierShipping, terminalOrderStatus };
+module.exports = { syncProducts, syncOrderStatuses, runSync, fetchAllProducts, getProductStock, getProductStockState, processAffiliateOrderByKey, processAffiliateOrderQueue, processAffiliateOrderJob, reconcileAffiliateOrderQueue, supplierOrderRecord, supplierStatus, supplierShipping, terminalOrderStatus };
