@@ -153,6 +153,7 @@ function mapSafkaProduct(product) {
     stock: stockState.quantity,
     stock_quantity: stockState.quantity,
     in_stock: stockState.inStock,
+    stock_details: stockState.details || [],
     stock_updated_at: updatedAt,
     stock_source_path: stockState.path,
     available: stockState.available === true,

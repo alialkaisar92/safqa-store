@@ -512,11 +512,7 @@ function productSuggestedSalePrice(raw, wholesale) {
 }
 
 function sourceAvailability(p) {
-  if (!p || p.is_active === false) return false;
-  if (typeof p.is_available === 'boolean') return p.is_available;
-  const props = Array.isArray(p.properties) ? p.properties : [];
-  const flags = props.map(item => item && item.is_available).filter(value => typeof value === 'boolean');
-  return flags.some(Boolean);
+  return getProductStockState(p).available === true;
 }
 function productMedia(p, local) {
   const first = (...values) => values.find(v => v !== undefined && v !== null && String(v).trim()) || '';
@@ -572,9 +568,10 @@ function normalizePublicProduct(p, local, priceUp) {
     stock,
     stockQuantity: stock,
     inStock: stockState.inStock,
+    stockDetails: stockState.details || [],
     stockSourcePath: stockState.path,
     available: stockState.available === true,
-    stockSource: 'safka'
+    stockSource: stockState.source || 'safka'
   }, media);
 }
 async function fetchLivePublicProducts() {
@@ -615,8 +612,10 @@ async function getLiveStockSnapshot() {
         stockQuantity: state.quantity,
         inStock: state.inStock,
         available: state.available === true,
+        stockDetails: state.details || [],
         stockUpdatedAt: checkedAt,
-        stockSourcePath: state.path
+        stockSourcePath: state.path,
+        stockSource: state.source || 'safka'
       };
     }).filter(item => item.id);
     stockSnapshotAt = Date.now();
@@ -1312,15 +1311,15 @@ app.post('/api/create-order', async (req,res)=>{
     const requestedProperty = String(item.property || '');
     const matchedProperty = sourceProps.find(prop => requestedProperty && [prop && prop._id, prop && prop.id, prop && prop.key].filter(Boolean).map(String).includes(requestedProperty));
     if (sourceProps.length && requestedProperty && !matchedProperty) return res.status(409).json({error:'اختيار المنتج غير صالح حاليًا'});
-    const sourceProp = matchedProperty || sourceProps[0] || {};
-    // التوفر هو مصدر القرار الوحيد؛ stock الرقمي قديم/غير موجود في بيانات المورد ولا يُستخدم لمنع الطلب.
+    const sourceProp = matchedProperty || sourceProps.find(prop => prop && prop.is_available === true) || sourceProps[0] || {};
+    // التوفر هو مصدر القرار الوحيد؛ عند اختيار خاصية نفحص الخاصية نفسها، وإلا نستخدم أي خاصية متاحة.
     const rawWholesale = wholesalePriceOf(source);
     const base = productWholesalePrice(rawWholesale, priceUp);
     if (!Number.isFinite(base) || base <= 0) return res.status(409).json({error:'سعر الجملة الأصلي غير متاح حاليًا'});
-    const propertyAvailable = sourceProps.length ? sourceProp.is_available === true : source.is_available !== false;
+    const propertyAvailable = sourceProps.length ? (matchedProperty ? matchedProperty.is_available === true : sourceProps.some(prop => prop && prop.is_available === true)) : source.is_available !== false;
     const productAvailable = source.is_active !== false && propertyAvailable && sourceAvailability(source) === true;
     if (!productAvailable) return res.status(409).json({error:'المنتج غير متاح حاليًا'});
-    const rawStock = source.stockQuantity ?? source.stock_quantity ?? source.stock;
+    const rawStock = sourceProps.length ? sourceProp.value : (source.stockQuantity ?? source.stock_quantity ?? source.stock);
     const numericStock = rawStock === null || rawStock === undefined || rawStock === '' ? null : Number(rawStock);
     if (Number.isFinite(numericStock) && numericStock >= 0 && item.qty > Math.floor(numericStock)) return res.status(409).json({error:`الكمية المتاحة حاليًا ${Math.floor(numericStock)} فقط`});
     const note=clean(source.note || '');

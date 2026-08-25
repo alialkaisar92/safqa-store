@@ -73,11 +73,7 @@ function productStock(product) {
 }
 
 function sourceAvailable(product) {
-  if (!product || product.is_active === false) return false;
-  if (typeof product.is_available === 'boolean') return product.is_available;
-  const props = Array.isArray(product.properties) ? product.properties : [];
-  const flags = props.map(item => item && item.is_available).filter(value => typeof value === 'boolean');
-  return flags.some(Boolean);
+  return getProductStockState(product).available === true;
 }
 
 function wholesalePriceOf(value) {
@@ -99,6 +95,7 @@ function dbProduct(product) {
     stock: stockState.quantity,
     stock_quantity: stockState.quantity,
     in_stock: stockState.inStock,
+    stock_details: stockState.details || [],
     stock_updated_at: stockUpdatedAt,
     stock_source_path: stockState.path,
     active: product.is_active !== false,
@@ -133,7 +130,7 @@ async function syncProducts(options) {
     inStock: prepared.filter(product => product.in_stock === true).length,
     syncedAt: prepared[0] && prepared[0].stock_updated_at || new Date().toISOString()
   }));
-  if (missingStock.length) console.warn('[stock-sync] Missing explicit stock field for ' + missingStock.length + ' products; preserving last DB value and never guessing from properties.value/min. Sample IDs: ' + missingStock.slice(0, 5).map(product => String(product.external_id || '')).join(', '));
+  if (missingStock.length) console.warn('[stock-sync] Missing numeric stock value for ' + missingStock.length + ' products; preserving last DB value. Sample IDs: ' + missingStock.slice(0, 5).map(product => String(product.external_id || '')).join(', '));
   try { fs.writeFileSync(CACHE_FILE, JSON.stringify(prepared)); } catch (e) { console.warn('Safka cache write skipped:', e.message); }
   await saveMeta({ productIds: products.map(p => String(p._id || p.id)).filter(Boolean), productCount: products.length, productsSyncedAt: new Date().toISOString(), stockImportedAt: new Date().toISOString(), stockImported: database || { inserted: 0, updated: 0 } });
   if (newProducts.length && options && options.notify !== false) {
