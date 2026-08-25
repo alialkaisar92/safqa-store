@@ -836,6 +836,23 @@ app.delete('/api/affiliate/ai/history', async (req, res) => {
   }
 });
 
+app.post('/api/affiliate/ai/analyze-product', async (req, res) => {
+  const user = await requireAffiliateAiUser(req, res);
+  const limit = aiRateLimit(user.id);
+  res.set('X-AI-RateLimit-Remaining', String(limit.remaining));
+  res.set('X-AI-RateLimit-Reset', String(Math.ceil(limit.resetAt / 1000)));
+  try {
+    const body = req.body || {};
+    const name = String(body.name || '').trim();
+    const result = await aiAssistant.analyzeProduct({ name, description: body.description || '', price: body.price });
+    res.set('Cache-Control', 'no-store');
+    res.json({ ok: true, answer: result.answer });
+  } catch (error) {
+    console.error('[affiliate ai analyze-product] failed:', error.code || error.message);
+    res.status(aiErrorStatus(error)).json({ error: error.code === 'PROVIDER_UNAVAILABLE' ? 'المساعد غير مفعّل حاليًا على الخادم.' : 'حصلت مشكلة مؤقتة في المساعد. جرّب مرة أخرى.' });
+  }
+});
+
 app.post('/api/affiliate/ai/chat', async (req, res) => {
   const user = await requireAffiliateAiUser(req, res);
   if (!user) return;

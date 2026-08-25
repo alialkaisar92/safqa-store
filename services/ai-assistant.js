@@ -667,4 +667,41 @@ async function clearConversation(userId) {
   return postgres.clearAiConversation(userId);
 }
 
-module.exports = { chat, history, clearConversation, MAX_MESSAGE_CHARS };
+
+async function analyzeProduct({ name, description, price }) {
+  const provider = providerConfig();
+  const model = await pickModel(provider);
+  const productName = text(name, 200);
+  const productDesc = stripHtml(description, 1200);
+  const productPrice = price != null ? String(price) : '';
+
+  const systemPrompt = [
+    'انت خبير تسويق وبيع بالعمولة في السوق المصري عندك خبرة عشرين سنة في البيع اونلاين وعلى فيسبوك.',
+    'مهمتك: تحليل منتج واحد وطلوعلك خطة تسويق كاملة وعملية، بالعامية المصرية، بدون مبالغة او ادعاءات كاذبة.',
+    'رجّع الرد بالتنسيق ده بالظبط بعناوين واضحة:',
+    '## الزتونة',
+    '(نقطة البيع الأقوى في المنتج ده في سطرين أو تلاتة، الحاجة اللي تخلي العميل يشتري فورا)',
+    '## أفكار بوستات',
+    '(3 أفكار بوستات مختلفة لفيسبوك، كل واحدة بعنوان جذاب ونص قصير جاهز للنشر)',
+    '## أفكار ترويج وبيدج',
+    '(3 نصايح عملية للترويج للمنتج ده تحديدا: استهداف، توقيت نشر، نوع محتوى فيديو/صورة)',
+    '## لو العميل قال غالي',
+    '(رد جاهز مقنع بالعامية يرد بيه المسوق لما عميل يقول السعر غالي)',
+    '## لو العميل كان زعلان أو غير مؤدب',
+    '(رد جاهز هادئ ومحترف يرد بيه المسوق على عميل غاضب أو فظ من غير ما يخسره)'
+  ].join('\n');
+
+  const userPrompt = 'اسم المنتج: ' + (productName || 'غير محدد') +
+    (productPrice ? '\nالسعر: ' + productPrice + ' جنيه' : '') +
+    '\nوصف المنتج: ' + (productDesc || 'لا يوجد وصف متاح');
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userPrompt }
+  ];
+  const result = await callModel(provider, model, messages, false);
+  const answer = assistantText(result);
+  return { answer, provider: provider.name, model };
+}
+
+module.exports = { chat, history, clearConversation, analyzeProduct, MAX_MESSAGE_CHARS };
