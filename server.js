@@ -267,6 +267,8 @@ app.get('/store', (req, res) => {
   res.sendFile(path.join(__dirname, 'store2.html'));
 });
 
+// Keep legacy storefront links from opening the retired UI.
+app.get(['/s', '/storefront', '/storefront.html'], (req, res) => res.redirect(302, '/store'));
 app.get('/shop', (req, res) => res.redirect(302, '/store'));
 
 app.get('/api/health',async function(req,res){
@@ -279,7 +281,7 @@ app.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
 
 // Serve only the frontend assets that are intentionally public. Never expose source, database, logs, backups, or runtime files via express.static.
 const PUBLIC_STATIC_FILES = new Set([
-  'landing.html', 'store2.html', 'login.html', 'reset-password.html', 'admin.html', 'dashboard.html', 'orders.html', 'admin-categories.html', 'marketer.html', 'storefront.html', 'gate.html', 'index.html',
+  'landing.html', 'store2.html', 'login.html', 'reset-password.html', 'admin.html', 'dashboard.html', 'orders.html', 'admin-categories.html', 'marketer.html', 'gate.html', 'index.html',
   'theme-emerald.css', 'polish.css', 'support-chat.css', 'support-chat.js', 'store-enh.css', 'store-enh.js', 'store-app.js', 'auth-ui.js', 'orders-system.js',
   'sw.js', 'manifest.json', 'OneSignalSDKWorker.js', 'OneSignalSDKUpdaterWorker.js'
 ]);
