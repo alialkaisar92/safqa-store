@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1"><style id="rab7na-first-paint-guard">html:not(.rab7na-ready) body{visibility:hidden!important}html.rab7na-ready body{visibility:visible}</style>
 <title>rab7na | منصة التسويق بالعمولة في مصر</title>
 <meta name="description" content="rab7na منصة تسويق بالعمولة في مصر تساعدك على اختيار منتجات جاهزة للتسويق، مشاركة روابطك، ومتابعة أرباحك من الطلبات المكتملة.">
 <meta name="robots" content="index,follow,max-image-preview:large">
@@ -135,6 +135,7 @@ footer{background:#10251D;color:#fff;padding:56px 0 24px}
 
 <link rel="stylesheet" href="/theme-emerald.css?v=4">
 <link rel="stylesheet" href="/polish.css?v=2">
+  <link rel="stylesheet" href="/support-chat.css?v=1">
 </head>
 <body>
 
@@ -221,7 +222,7 @@ footer{background:#10251D;color:#fff;padding:56px 0 24px}
   <h2 class="h2">أسئلة شائعة</h2>
   <div class="faq-item"><div class="faq-q">هل محتاج رأس مال عشان أبدأ؟</div><div class="faq-a">لا، التسجيل والتسويق مجاني تماماً، إنت بس بتشارك رابطك.</div></div>
   <div class="faq-item"><div class="faq-q">إمتى أقبض عمولتي؟</div><div class="faq-a">بعد ما يتم توصيل الطلب للعميل وتأكيد الدفع، تظهر عمولتك في لوحة التحكم.</div></div>
-  <div class="faq-item"><div class="faq-q">هل ينفع أسوّق من غير متابعين كتير؟</div><div class="faq-a">أكيد، تقدر تبعت الرابط في جروبات أو لأصدقائك مباشرة على واتساب.</div></div>
+  <div class="faq-item"><div class="faq-q">هل ينفع أسوّق من غير متابعين كتير؟</div><div class="faq-a">أكيد، تقدر تبعت الرابط في جروبات أو لأصدقائك مباشرة عبر شات الدعم.</div></div>
 </section>
 
 <footer><div class="wrap">
@@ -266,8 +267,6 @@ fetch('/api/products').then(function(r){return r.json()}).then(function(d){
 var startBtn=document.getElementById('startBtn');
 if(startBtn){startBtn.textContent='تصفح المتجر';startBtn.href='/store';startBtn.removeAttribute('onclick');}
 </script>
-<style>.landing-wa-help{position:relative;display:flex;flex-direction:column;gap:4px;margin-top:12px;padding:11px 34px 11px 12px;border:1px solid #B9E7CA;border-radius:13px;background:#F0FCF5;color:#176B43;font-size:.74rem;line-height:1.55;text-align:right}.landing-wa-help span{color:#4A7761;font-weight:600}.landing-wa-help a{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;padding:9px 10px;border-radius:10px;background:#25D366;color:#fff;text-decoration:none;font-weight:800}.landing-wa-close{position:absolute;top:6px;right:7px;width:22px;height:22px;border:0;border-radius:50%;background:#D9F4E3;color:#176B43;font-size:16px;line-height:20px;cursor:pointer}.rab7na-wa-public{position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:90;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#25D366;color:#fff;font-size:25px;box-shadow:0 10px 24px rgba(0,0,0,.2);text-decoration:none;transition:transform .2s ease}.rab7na-wa-public:hover{transform:scale(1.06)}@media(min-width:800px){.rab7na-wa-public{right:28px;bottom:28px}}</style><a class="rab7na-wa-public" href="#" target="_blank" rel="noopener" aria-label="الدعم عبر واتساب">💬</a>
-<script>(function(){var a=document.querySelector(".rab7na-wa-public");if(!a)return;fetch("/api/support/whatsapp").then(function(r){return r.json()}).then(function(d){var n=String(d.number||"");if(!/^\d{10,15}$/.test(n)){a.style.display="none";return}a.href="https://wa.me/"+n+"?text="+encodeURIComponent("مرحباً، أريد الاستفسار عن المنصة")}).catch(function(){a.style.display="none"})})()</script>
 
 <style>
 .wa-float {
@@ -315,15 +314,7 @@ if(startBtn){startBtn.textContent='تصفح المتجر';startBtn.href='/store'
   .wa-float svg { width: 28px !important; height: 28px !important; }
 }
 </style>
-<a href="https://wa.me/201092876053?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%B9%D8%A7%D9%8A%D8%B2%20%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%B1%20%D8%B9%D9%86..." 
-   target="_blank" 
-   rel="noopener"
-   class="wa-float"
-   aria-label="تواصل واتساب">
-  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path fill="white" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-  </svg>
-</a>
+
 
 
 <script id="landing-wire">
@@ -334,5 +325,7 @@ document.addEventListener('click',function(e){
   else if(/تصفح المتجر/.test(x)){e.preventDefault();location.href='/store';}
 });
 </script>
+  <script src="/support-chat.js?v=1"></script>
+<script>document.documentElement.classList.add('rab7na-ready');</script>
 </body>
 </html>

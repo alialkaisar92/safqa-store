@@ -16,7 +16,20 @@ function tokenHash(token) { return crypto.createHash('sha256').update(token).dig
 function newToken() { return crypto.randomBytes(32).toString('hex'); }
 function publicUser(row) {
   if (!row) return null;
-  return { id: row.id, name: row.name, email: row.email, email_verified: Boolean(row.email_verified), created_at: row.created_at, last_login: row.last_login, balance: Number(row.balance || 0), welcome_bonus_granted: Boolean(row.welcome_bonus_granted) };
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    email_verified: Boolean(row.email_verified),
+    created_at: row.created_at,
+    last_login: row.last_login,
+    balance: Number(row.balance || 0),
+    welcome_bonus_granted: Boolean(row.welcome_bonus_granted),
+    manualCredits: Number(row.manual_credits ?? row.manualCredits ?? 0),
+    totalEarned: Number(row.total_earned ?? row.totalEarned ?? 0),
+    salesCount: Number(row.sales_count ?? row.salesCount ?? 0),
+    sales: Array.isArray(row.sales) ? row.sales : []
+  };
 }
 function allowed(key) {
   const now = Date.now();
@@ -36,7 +49,7 @@ async function register({ name, email, password }) {
   try {
     const result = await query(`INSERT INTO users(name,email,password_hash,email_verified,balance,welcome_bonus_granted)
       VALUES ($1,$2,$3,FALSE,70.00,TRUE)
-      RETURNING id,name,email,email_verified,created_at,last_login,balance,welcome_bonus_granted`, [name, email, passwordHash]);
+      RETURNING id,name,email,email_verified,created_at,last_login,balance,welcome_bonus_granted,manual_credits,total_earned,sales_count,sales`, [name, email, passwordHash]);
     return result.rows[0];
   } catch (error) {
     if (error && error.code === '23505') throw new Error('هذا البريد مستخدم بالفعل');
@@ -48,10 +61,12 @@ async function login({ email, password, ip }) {
   email = normalizeEmail(email);
   if (!allowed(`${ip || 'unknown'}:${email}`)) throw new Error('محاولات كثيرة؛ حاول بعد 15 دقيقة');
   if (!email || typeof password !== 'string') throw new Error('البريد وكلمة المرور مطلوبان');
-  const result = await query('SELECT id,name,email,password_hash,email_verified,created_at,last_login,balance,welcome_bonus_granted FROM users WHERE LOWER(email)=LOWER($1) LIMIT 1', [email]);
+  const result = await query('SELECT id,name,email,password_hash,email_verified,created_at,last_login,balance,welcome_bonus_granted,manual_credits,total_earned,sales_count,sales,banned,suspended_until FROM users WHERE LOWER(email)=LOWER($1) LIMIT 1', [email]);
   const user = result.rows[0];
   const valid = user ? await bcrypt.compare(password, user.password_hash) : false;
   if (!valid) throw new Error('البريد أو كلمة المرور غير صحيحة');
+  if (user.banned) { const blocked = new Error('الحساب محظور نهائيًا؛ تواصل مع الإدارة'); blocked.code = 'ACCOUNT_BANNED'; throw blocked; }
+  if (user.suspended_until && new Date(user.suspended_until).getTime() > Date.now()) { const blocked = new Error('الحساب موقوف مؤقتًا حتى ' + new Date(user.suspended_until).toLocaleString('ar-EG')); blocked.code = 'ACCOUNT_SUSPENDED'; throw blocked; }
   await query('UPDATE users SET last_login=NOW(),updated_at=NOW() WHERE id=$1', [user.id]);
   const token = newToken();
   await query(`INSERT INTO auth_sessions(user_id,token_hash,expires_at) VALUES ($1,$2,NOW()+INTERVAL '${SESSION_DAYS} days')`, [user.id, tokenHash(token)]);
@@ -60,14 +75,19 @@ async function login({ email, password, ip }) {
 
 async function currentUser(token) {
   if (!token) return null;
-  const result = await query(`SELECT u.id,u.name,u.email,u.email_verified,u.created_at,u.last_login,u.balance,u.welcome_bonus_granted
+  const result = await query(`SELECT u.id,u.name,u.email,u.email_verified,u.created_at,u.last_login,u.balance,u.welcome_bonus_granted,u.manual_credits,u.total_earned,u.sales_count,u.sales
     FROM auth_sessions s JOIN users u ON u.id=s.user_id
-    WHERE s.token_hash=$1 AND s.expires_at>NOW()`, [tokenHash(token)]);
+    WHERE s.token_hash=$1 AND s.expires_at>NOW()
+      AND u.banned IS NOT TRUE
+      AND (u.suspended_until IS NULL OR u.suspended_until<=NOW())`, [tokenHash(token)]);
   if (!result.rows[0]) return null;
-  await query('UPDATE auth_sessions SET last_seen_at=NOW() WHERE token_hash=$1', [tokenHash(token)]);
+  // لوحة المسوق قد تستدعي هذا المسار كل 5 ثوانٍ؛ لا نحتاج كتابة last_seen_at في كل polling.
+  // هذا يحافظ على صلاحية الجلسة ويحدّث النشاط مرة واحدة تقريبًا كل دقيقة.
+  await query(`UPDATE auth_sessions SET last_seen_at=NOW()
+    WHERE token_hash=$1 AND last_seen_at < NOW() - INTERVAL '1 minute'`, [tokenHash(token)]);
   return publicUser(result.rows[0]);
 }
 async function logout(token) { if (token) await query('DELETE FROM auth_sessions WHERE token_hash=$1', [tokenHash(token)]); }
 async function logoutAll(userId) { await query('DELETE FROM auth_sessions WHERE user_id=$1', [userId]); }
 
-module.exports = { register, login, currentUser, logout, logoutAll, publicUser, newToken, tokenHash, normalizeEmail };
+module.exports = { register, login, currentUser, logout, logoutAll, publicUser, newToken, tokenHash, normalizeEmail, validatePassword };

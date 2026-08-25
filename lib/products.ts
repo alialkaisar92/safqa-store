@@ -8,7 +8,10 @@ export type Product = {
   category: string;
   rating: number;
   reviews: number;
-  stock?: number;
+  stock?: number | null;
+  stockQuantity?: number | null;
+  inStock?: boolean | null;
+  stockUpdatedAt?: string | null;
   description?: string;
 };
 
@@ -91,12 +94,22 @@ export function normalizeProduct(raw: any, index = 0): Product {
       raw?.ratings_count,
       0
     ),
-    stock: numberValue(
-      raw?.stock ??
-      raw?.quantity ??
-      raw?.available_quantity,
-      0
-    ),
+    stock: raw?.stockQuantity != null
+      ? numberValue(raw.stockQuantity, 0)
+      : raw?.stock_quantity != null
+      ? numberValue(raw.stock_quantity, 0)
+      : raw?.stock != null
+      ? numberValue(raw.stock, 0)
+      : null,
+    stockQuantity: raw?.stockQuantity != null
+      ? numberValue(raw.stockQuantity, 0)
+      : raw?.stock_quantity != null
+      ? numberValue(raw.stock_quantity, 0)
+      : raw?.stock != null
+      ? numberValue(raw.stock, 0)
+      : null,
+    inStock: typeof raw?.inStock === "boolean" ? raw.inStock : typeof raw?.in_stock === "boolean" ? raw.in_stock : null,
+    stockUpdatedAt: raw?.stockUpdatedAt ?? raw?.stock_updated_at ?? null,
     description:
       stringValue(
         raw?.description ??

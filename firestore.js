@@ -48,28 +48,63 @@ async function replaceCollection(collection, values) {
   } finally { client.release(); }
 }
 
+const USER_FIELDS = 'id,email,password_hash,name,created_at,updated_at,email_verified,last_login,balance,welcome_bonus_granted,manual_credits,total_earned,sales_count,sales,role,permissions,banned,suspended_until,ban_reason,password_changed_at';
+
+function normalizeUserRow(row) {
+  if (!row) return null;
+  return Object.assign({}, row, {
+    balance: Number(row.balance || 0),
+    manualCredits: Number(row.manual_credits || 0),
+    totalEarned: Number(row.total_earned || 0),
+    salesCount: Number(row.sales_count || 0),
+    sales: Array.isArray(row.sales) ? row.sales : [],
+    role: String(row.role || 'user'),
+    permissions: Array.isArray(row.permissions) ? row.permissions : [],
+    banned: Boolean(row.banned)
+  });
+}
+
 async function getUsers() {
-  const result = await query('SELECT id,email,password_hash,name,created_at,updated_at,email_verified,last_login FROM users ORDER BY id DESC');
-  return result.rows;
+  const result = await query(`SELECT ${USER_FIELDS} FROM users ORDER BY id DESC`);
+  return result.rows.map(normalizeUserRow);
 }
 async function getUser(id) {
-  const result = await query('SELECT id,email,password_hash,name,created_at,updated_at,email_verified,last_login FROM users WHERE id=$1', [String(id)]);
-  return result.rows[0] || null;
+  const result = await query(`SELECT ${USER_FIELDS} FROM users WHERE id=$1`, [String(id)]);
+  return normalizeUserRow(result.rows[0]);
 }
 async function findUserByEmail(email) {
   const value = String(email || '').trim().toLowerCase();
   if (!value) return null;
-  const result = await query('SELECT id,email,password_hash,name,created_at,updated_at,email_verified,last_login FROM users WHERE LOWER(email)=LOWER($1) LIMIT 1', [value]);
-  return result.rows[0] || null;
+  const result = await query(`SELECT ${USER_FIELDS} FROM users WHERE LOWER(email)=LOWER($1) LIMIT 1`, [value]);
+  return normalizeUserRow(result.rows[0]);
 }
 async function findUserByContact(contact) { return findUserByEmail(contact); }
 async function saveUser(user) {
-  const result = await query(`INSERT INTO users(id,email,password_hash,name,email_verified,last_login,updated_at)
-    VALUES ($1,$2,$3,$4,$5,$6,NOW())
-    ON CONFLICT (id) DO UPDATE SET email=EXCLUDED.email,password_hash=EXCLUDED.password_hash,name=EXCLUDED.name,email_verified=EXCLUDED.email_verified,last_login=EXCLUDED.last_login,updated_at=NOW()
-    RETURNING id,email,password_hash,name,created_at,updated_at,email_verified,last_login`,
-    [user.id || null, String(user.email).trim().toLowerCase(), user.password_hash, user.name || user.display_name || '', Boolean(user.email_verified), user.last_login || null]);
-  return result.rows[0];
+  const id = user && user.id != null ? String(user.id) : '';
+  const email = String(user && user.email || '').trim().toLowerCase();
+  const name = String(user && (user.name || user.display_name) || '');
+  const values = [id, email, name, Boolean(user && user.email_verified), user && user.last_login || null, Number(user && user.balance || 0), Boolean(user && user.welcome_bonus_granted), Number(user && user.manualCredits || 0), Number(user && user.totalEarned || 0), Number(user && user.salesCount || 0), JSON.stringify(Array.isArray(user && user.sales) ? user.sales : []), String(user && user.role || 'user'), JSON.stringify(Array.isArray(user && user.permissions) ? user.permissions : []), Boolean(user && user.banned)];
+
+  // Public session objects intentionally do not contain password_hash. Update
+  // only mutable affiliate/profile fields; never let a public object rewrite
+  // email, role, permissions, banned, suspension, or password metadata.
+  if (!user || !user.password_hash) {
+    if (!id) throw new Error('user id is required');
+    const result = await query(`UPDATE users SET
+      name=COALESCE(NULLIF($2,''),name), last_login=COALESCE($3,last_login),
+      balance=$4, welcome_bonus_granted=$5, manual_credits=$6, total_earned=$7,
+      sales_count=$8, sales=$9::jsonb, updated_at=NOW()
+      WHERE id=$1 RETURNING ${USER_FIELDS}`,
+      [id, name, values[4], values[5], values[6], values[7], values[8], values[9], values[10]]);
+    return normalizeUserRow(result.rows[0]);
+  }
+
+  const result = await query(`INSERT INTO users(id,email,password_hash,name,email_verified,last_login,balance,welcome_bonus_granted,manual_credits,total_earned,sales_count,sales,role,permissions,banned,updated_at)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,$13,$14::jsonb,$15,NOW())
+    ON CONFLICT (id) DO UPDATE SET email=EXCLUDED.email,password_hash=EXCLUDED.password_hash,name=EXCLUDED.name,email_verified=EXCLUDED.email_verified,last_login=EXCLUDED.last_login,balance=EXCLUDED.balance,welcome_bonus_granted=EXCLUDED.welcome_bonus_granted,manual_credits=EXCLUDED.manual_credits,total_earned=EXCLUDED.total_earned,sales_count=EXCLUDED.sales_count,sales=EXCLUDED.sales,role=EXCLUDED.role,permissions=EXCLUDED.permissions,banned=EXCLUDED.banned,updated_at=NOW()
+    RETURNING ${USER_FIELDS}`,
+    [id || null, email, user.password_hash, name, values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13]]);
+  return normalizeUserRow(result.rows[0]);
 }
 async function saveUsers(users) { for (const user of users || []) await saveUser(user); }
 
@@ -90,10 +125,10 @@ async function purgeAuthCollections() {
 async function getAffiliateData() {
   const [orders, products, withdrawals, tickets, meta] = await Promise.all([
     all('orders'), all('affiliateProducts'), all('withdrawals'), all('tickets'),
-    query("SELECT data FROM app_documents WHERE collection='affiliateMeta' AND doc_id='main'")
+    query("SELECT data, updated_at FROM app_documents WHERE collection='affiliateMeta' AND doc_id='main'")
   ]);
   const m = meta.rows[0] ? meta.rows[0].data : {};
-  return { orders, withdrawals, products, tickets, priceUp: m.priceUp || 0, settings: m.settings || {} };
+  return { orders, withdrawals, products, tickets, priceUp: m.priceUp || 0, pricePolicyUpdatedAt: meta.rows[0] && meta.rows[0].updated_at ? new Date(meta.rows[0].updated_at).toISOString() : null, settings: m.settings || {} };
 }
 async function saveAffiliateData(data) {
   await Promise.all([

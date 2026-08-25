@@ -2,22 +2,30 @@ function deliveredStatus(status) {
   return ['تم التسليم', 'تم التوصيل', 'delivered', 'completed'].includes(String(status || '').trim().toLowerCase());
 }
 
+function commissionEligibleStatus(status) {
+  return ['تم التأكيد', 'تم التاكيد', 'confirmed', 'تم التسليم', 'تم التوصيل', 'delivered', 'completed'].includes(String(status || '').trim().toLowerCase());
+}
+
 function rejectedStatus(status) {
   return ['rejected', 'مرفوض', 'رفض'].includes(String(status || '').trim().toLowerCase());
 }
 
-function availableBalance(user, affiliate) {
-  const uid = String(user && user.id != null ? user.id : '');
-  const orders = (affiliate && affiliate.orders) || [];
-  const withdrawals = (affiliate && affiliate.withdrawals) || [];
-  const deliveredCommission = orders
-    .filter(o => String(o.userId) === uid && deliveredStatus(o.status))
-    .reduce((sum, o) => sum + Math.max(0, Number(o.commission) || 0), 0);
-  const manualCredits = Math.max(0, Number(user && user.manualCredits) || 0);
-  const withdrawn = withdrawals
-    .filter(w => String(w.userId) === uid && !rejectedStatus(w.status))
-    .reduce((sum, w) => sum + Math.max(0, Number(w.amount) || 0), 0);
+function availableBalanceFromRecords(user, orders, withdrawals) {
+  const deliveredCommission = (Array.isArray(orders) ? orders : [])
+    .filter(o => commissionEligibleStatus(o && o.status))
+    .reduce((sum, o) => sum + Math.max(0, Number(o && o.commission) || 0), 0);
+  const manualCredits = Math.max(0, Number(user && (user.manualCredits != null ? user.manualCredits : user.manual_credits)) || 0);
+  const withdrawn = (Array.isArray(withdrawals) ? withdrawals : [])
+    .filter(w => !rejectedStatus(w && w.status))
+    .reduce((sum, w) => sum + Math.max(0, Number(w && w.amount) || 0), 0);
   return Math.max(0, manualCredits + deliveredCommission - withdrawn);
 }
 
-module.exports = { deliveredStatus, rejectedStatus, availableBalance };
+function availableBalance(user, affiliate) {
+  const uid = String(user && user.id != null ? user.id : '');
+  const orders = ((affiliate && affiliate.orders) || []).filter(o => String(o && o.userId) === uid);
+  const withdrawals = ((affiliate && affiliate.withdrawals) || []).filter(w => String(w && w.userId) === uid);
+  return availableBalanceFromRecords(user, orders, withdrawals);
+}
+
+module.exports = { deliveredStatus, commissionEligibleStatus, rejectedStatus, availableBalanceFromRecords, availableBalance };

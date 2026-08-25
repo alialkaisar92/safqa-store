@@ -112,8 +112,6 @@ main{max-width:640px;margin:0 auto;padding:16px}
 .empty{grid-column:1/-1;text-align:center;padding:40px 10px;color:var(--muted)}
 
 /* ---- floating whatsapp ---- */
-#waFloat{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:16px;z-index:60;width:52px;height:52px;border-radius:50%;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 8px 20px rgba(0,0,0,.2);text-decoration:none}
-
 /* ---- marketer side navigation ---- */
 .menu-btn{position:relative;z-index:75;flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:var(--mint);color:var(--forest-d);display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:900;pointer-events:auto;touch-action:manipulation;-webkit-user-select:none;user-select:none}
 .side-overlay{position:fixed;inset:0;background:rgba(11,31,23,.48);z-index:180;display:none}
@@ -973,6 +971,7 @@ footer{
 }
 </style>
 
+  <link rel="stylesheet" href="/support-chat.css?v=1">
 </head>
 <body>
 
@@ -998,7 +997,7 @@ footer{
   </div>
 </main>
 
-<a id="waFloat" target="_blank">💬</a>
+
 
 
 <div class="side-overlay" id="sideOverlay" onclick="closeSidebar()"></div>
@@ -1012,13 +1011,13 @@ footer{
   <button class="side-item" onclick="closeSidebar();openCart()"><span class="side-ic">🛒</span><span>السلة <small id="sideCartCount"></small></span></button>
   <div class="side-group">خدمات المتجر</div>
   <button class="side-item" onclick="closeSidebar();openShippingRates()"><span class="side-ic">🚚</span><span>أسعار الشحن حسب المحافظة</span></button>
-  <button class="side-item" onclick="closeSidebar();document.getElementById('waFloat').click()"><span class="side-ic">💬</span><span>الدعم عبر واتساب</span></button>
+  <button class="side-item" onclick="closeSidebar();Rab7naSupport.open()"><span class="side-ic">💬</span><span>شات الدعم</span></button>
   <button class="side-item" onclick="closeSidebar();toggleTheme()"><span class="side-ic">✨</span><span>تبديل مظهر المتجر</span></button>
 </aside>
 
 <footer>
     <div class="logo"><span style="color:var(--forest);font-family:Lalezar">Rab<span style="color:var(--ink)">7na</span></span></div>
-  <div>شحن لكل محافظات مصر • الدفع عند الاستلام • دعم عبر واتساب</div>
+  <div>شحن لكل محافظات مصر • الدفع عند الاستلام • دعم داخل المنصة</div>
 </footer>
 
 <nav class="bottom-nav" aria-label="التنقل السريع">
@@ -1282,10 +1281,6 @@ function submitOrder(){
   }).catch(function(){m.textContent='⚠️ حصل خطأ، جرب تاني';m.className='msg err';});
 }
 
-function setupWA(){
-  var a=document.getElementById('waFloat'); if(!a)return;
-  fetch('/api/support/whatsapp').then(function(r){return r.json()}).then(function(d){var n=String(d.number||'');if(!/^\d{10,15}$/.test(n)){a.style.display='none';return;}a.href='https://wa.me/'+n+'?text='+encodeURIComponent('مرحباً، أريد الاستفسار عن المنتجات');}).catch(function(){a.style.display='none'});
-}
 function openM(id){document.getElementById(id).classList.add('on')}
 function closeM(id){document.getElementById(id).classList.remove('on')}
 function openSidebar(ev){if(ev){ev.preventDefault();ev.stopPropagation();}refreshRab7naAuth();var overlay=document.getElementById('sideOverlay'),drawer=document.getElementById('sideDrawer'),btn=document.getElementById('menuBtn');if(!overlay||!drawer)return;overlay.classList.add('on');drawer.classList.add('on');if(btn)btn.setAttribute('aria-expanded','true');document.body.style.overflow='hidden'}
@@ -1332,7 +1327,7 @@ function toggleTheme(){
 }
 applyTheme(localStorage.getItem('earnify_theme')||'default');
 
-loadProducts(); startStockRefresh(); setupWA();
+loadProducts(); startStockRefresh();
 var menuBtn=document.getElementById('menuBtn');
 if(menuBtn){menuBtn.addEventListener('click',function(ev){openSidebar(ev);},{passive:false});menuBtn.addEventListener('touchend',function(ev){openSidebar(ev);},{passive:false});}
 </script>
@@ -1383,16 +1378,9 @@ if(menuBtn){menuBtn.addEventListener('click',function(ev){openSidebar(ev);},{pas
   .wa-float svg { width: 28px !important; height: 28px !important; }
 }
 </style>
-<a href="https://wa.me/201092876053?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%B9%D8%A7%D9%8A%D8%B2%20%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%B1%20%D8%B9%D9%86..." 
-   target="_blank" 
-   rel="noopener"
-   class="wa-float"
-   aria-label="تواصل واتساب">
-  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path fill="white" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-  </svg>
-</a>
 
+
+  <script src="/support-chat.js?v=1"></script>
 </body>
 </html>
 

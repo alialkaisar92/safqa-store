@@ -73,7 +73,7 @@ window.THEME = {
       +'<div class="dr-item" onclick="closeDrawer2();openCart()">🛒 السلة</div>'
       +'<div class="dr-sec">خدمات المتجر</div>'
       +'<div class="dr-item" onclick="closeDrawer2();openShip&&openShip()">🚚 أسعار الشحن حسب المحافظة</div>'
-      +'<div class="dr-item" onclick="closeDrawer2();openWA&&openWA()">💬 الدعم عبر واتساب</div>'
+      +'<div class="dr-item" onclick="closeDrawer2();Rab7naSupport&&Rab7naSupport.open()">💬 شات الدعم</div>'
       +'<div class="dr-login">👤 تسجيل الدخول / إنشاء حساب<br><small style="font-weight:400">للاستفادة من جميع الميزات</small></div>'
       +'<div class="dr-foot"><div class="soc"><a>📘</a><a>📸</a><a>💬</a><a>✈️</a></div>جميع الحقوق محفوظة © Rab7na 2025</div>'
       +'</aside>';
@@ -122,4 +122,4 @@ window.addDirect=function(i){
 };
 window.openDrawer2=function(){var d=document.getElementById('dr2'),o=document.getElementById('ov2');if(d)d.classList.add('open');if(o)o.classList.add('open');};
 window.closeDrawer2=function(){var d=document.getElementById('dr2'),o=document.getElementById('ov2');if(d)d.classList.remove('open');if(o)o.classList.remove('open');};
-window.openWA=function(){location.href='https://wa.me/201092876053';};
+window.openWA=function(){if(window.Rab7naSupport)Rab7naSupport.open();};
