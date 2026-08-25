@@ -669,7 +669,7 @@ app.get('/api/products/stock', async (req, res) => {
     res.json({ data, stockUpdatedAt: data[0]?.stockUpdatedAt || null, cachedForMs: 60000 });
   } catch (error) {
     console.error('[stock-api] live snapshot failed:', error.message);
-    res.status(503).json({ ok: false, error: 'تعذر قراءة المخزون الحالي من صفقة' });
+    res.status(503).json({ ok: false, error: 'تعذر قراءة المخزون الحالي حاليًا' });
   }
 });
 
@@ -698,7 +698,7 @@ app.get('/api/products', async (req, res) => {
     res.json(Object.assign({ data: normalized }, { priceUp, cached: false, pricePolicyUpdatedAt: affiliate.pricePolicyUpdatedAt || null }));
   } catch (error) {
     console.error('Live products unavailable:', error.message);
-    res.status(503).json({ ok: false, error: 'تعذر جلب المنتجات الأصلية حاليًا' });
+    res.status(503).json({ ok: false, error: 'تعذر جلب المنتجات حاليًا' });
   }
 });
 
@@ -1302,13 +1302,38 @@ app.post('/api/create-order', async (req,res)=>{
   try { sourceRows = await postgres.getProductsByExternalIds(items.map(item=>item.product)); }
   catch (error) { console.error('[order] local product verification failed:', error.message); return res.status(503).json({error:'تعذر قراءة بيانات المنتج حاليًا، حاول مرة أخرى'}); }
   const sourceById = new Map();
-  sourceRows.forEach(p => { [p && p.id, p && p._id].filter(Boolean).forEach(id => sourceById.set(String(id), p)); });
+  sourceRows.forEach(p => { [p && p.id, p && p._id, p && p.sourceProductId].filter(Boolean).forEach(id => sourceById.set(String(id), p)); });
   let priceUp = 0;
-  try { const snapshot = await postgres.getAffiliateCatalogData(); priceUp = Math.max(0, Math.min(200, Number(snapshot && snapshot.priceUp) || 0)); } catch (_) {}
+  let affiliateSnapshotForOrder = null;
+  try { affiliateSnapshotForOrder = await getAffiliateSnapshotFast(false); priceUp = Math.max(0, Math.min(200, Number(affiliateSnapshotForOrder && affiliateSnapshotForOrder.priceUp) || 0)); } catch (_) {}
+  const missingSourceIds = items.map(item => String(item.product)).filter(id => !sourceById.has(id));
+  if (missingSourceIds.length) {
+    try {
+      const liveProducts = await getLivePublicProductsCached(false);
+      const savedById = new Map();
+      (Array.isArray(affiliateSnapshotForOrder && affiliateSnapshotForOrder.products) ? affiliateSnapshotForOrder.products : []).forEach(item => {
+        [item && item.id, item && item._id, item && item.productId, item && item.safkaId].filter(Boolean).forEach(id => savedById.set(String(id), item));
+      });
+      liveProducts.forEach(raw => {
+        const id = String(raw && (raw.id || raw._id) || '');
+        if (!id || !missingSourceIds.includes(id)) return;
+        const local = savedById.get(id) || {};
+        sourceById.set(id, Object.assign({}, raw, {
+          id,
+          _id: id,
+          adminPriceLocked: local.adminPriceLocked === true || local.admin_price_locked === true,
+          adminSalePrice: local.adminSalePrice != null ? local.adminSalePrice : local.admin_sale_price,
+          adminCommission: local.adminCommission != null ? local.adminCommission : local.admin_commission
+        }));
+      });
+    } catch (error) {
+      console.warn('[order] live catalog fallback unavailable:', error.message);
+    }
+  }
   const normalizedItems=[];
   for (const item of items) {
     const source = sourceById.get(String(item.product));
-    if (!source) return res.status(409).json({error:'المنتج غير متاح حاليًا من المصدر الأصلي'});
+    if (!source) return res.status(409).json({error:'المنتج غير متاح حاليًا'});
     const sourceProps = Array.isArray(source.properties) ? source.properties : [];
     const requestedProperty = String(item.property || '');
     const matchedProperty = sourceProps.find(prop => requestedProperty && [prop && prop._id, prop && prop.id, prop && prop.key].filter(Boolean).map(String).includes(requestedProperty));
@@ -1361,7 +1386,7 @@ app.post('/api/create-order', async (req,res)=>{
   catch(error){
     if(error.code==='IDEMPOTENCY_CONFLICT')return res.status(409).json({error:'مفتاح الطلب مستخدم لحساب آخر'});
     console.error('[order] queue create failed:',error.message);
-    return res.status(503).json({error:'تعذر حفظ الطلب حاليًا، لم يتم إرساله للمورد'});
+    return res.status(503).json({error:'تعذر حفظ الطلب حاليًا، لم يتم تسجيله'});
   }
   const row=queued.row || {};
   const savedOrder=row.order_id===localOrderId ? affiliateOrder : {};
