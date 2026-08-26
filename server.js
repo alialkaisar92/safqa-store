@@ -839,15 +839,23 @@ app.delete('/api/affiliate/ai/history', async (req, res) => {
 
 app.post('/api/affiliate/ai/analyze-product', async (req, res) => {
   const user = await requireAffiliateAiUser(req, res);
+  if (!user) return;
   const limit = aiRateLimit(user.id);
   res.set('X-AI-RateLimit-Remaining', String(limit.remaining));
   res.set('X-AI-RateLimit-Reset', String(Math.ceil(limit.resetAt / 1000)));
+  if (!limit.allowed) return res.status(429).json({ error: 'وصلت للحد المؤقت للتحليل. جرّب مرة أخرى بعد دقائق.' });
   try {
     const body = req.body || {};
     const name = String(body.name || '').trim();
-    const result = await aiAssistant.analyzeProduct({ name, description: body.description || '', price: body.price });
+    const result = await aiAssistant.analyzeProduct({
+      name,
+      description: body.description || '',
+      price: body.price,
+      category: body.category,
+      properties: body.properties
+    });
     res.set('Cache-Control', 'no-store');
-    res.json({ ok: true, answer: result.answer });
+    res.json({ ok: true, answer: result.answer, provider: result.provider, model: result.model });
   } catch (error) {
     console.error('[affiliate ai analyze-product] failed:', error.code || error.message);
     res.status(aiErrorStatus(error)).json({ error: error.code === 'PROVIDER_UNAVAILABLE' ? 'المساعد غير مفعّل حاليًا على الخادم.' : 'حصلت مشكلة مؤقتة في المساعد. جرّب مرة أخرى.' });

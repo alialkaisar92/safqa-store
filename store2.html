@@ -465,14 +465,20 @@
       $('aiAnalyzeButton').addEventListener('click',async()=>{
         const name=$('aiProductName').value.trim();
         const description=$('aiProductDesc').value.trim();
+        const selected=state.products.find(p=>productId(p)===$('aiProductSelect').value)||{};
         const msg=$('aiAssistantMessage'),resultBox=$('aiAssistantResult'),btn=$('aiAnalyzeButton');
-        msg.textContent='';resultBox.textContent='';btn.disabled=true;btn.textContent='جارٍ التحليل...';
+        msg.textContent='';resultBox.textContent='';
+        if(!name){msg.textContent='اكتب اسم المنتج أو اختاره من القائمة الأول';return}
+        btn.disabled=true;btn.textContent='جاري تجهيز التحليل...';
         try{
-          const res=await fetch('/api/affiliate/ai/analyze-product',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,description})});
+          const res=await fetch('/api/affiliate/ai/analyze-product',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,description,price:selected.price??selected.basePrice??selected.cost,category:selected.category||selected.cat,properties:Array.isArray(selected.properties)?selected.properties:[]})});
           const data=await res.json().catch(()=>({}));
-          resultBox.textContent=data.answer||'';
+          if(res.status===401){location.href='/login?return=%2Fstore';return}
+          if(!res.ok)throw new Error(data.error||'تعذر تحليل المنتج حاليًا');
+          if(!data.answer)throw new Error('لم يصل تحليل صالح من المساعد');
+          resultBox.textContent=data.answer;
         }catch(e){
-          msg.textContent='فشل الاتصال بالمساعد، تأكد من الإنترنت وجرّب تاني';
+          msg.textContent=e.message||'حصلت مشكلة في التحليل، جرّب تاني';
         }finally{
           btn.disabled=false;btn.textContent='حلل المنتج';
         }

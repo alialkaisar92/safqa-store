@@ -2,6 +2,7 @@
 
 const fetch = require('node-fetch');
 const postgres = require('../lib/postgres');
+const gemini = require('../lib/gemini');
 
 const MAX_HISTORY = 18;
 const MAX_MESSAGE_CHARS = 4000;
@@ -668,39 +669,36 @@ async function clearConversation(userId) {
 }
 
 
-async function analyzeProduct({ name, description, price }) {
-  const provider = providerConfig();
-  const model = await pickModel(provider);
+async function analyzeProduct({ name, description, price, category, properties }) {
   const productName = text(name, 200);
-  const productDesc = stripHtml(description, 1200);
-  const productPrice = price != null ? String(price) : '';
-
+  if (!productName) throw Object.assign(new Error('اكتب اسم المنتج أولًا'), { code: 'INVALID_INPUT' });
+  const product = {
+    name: productName,
+    description: stripHtml(description, 1200),
+    price: price != null ? price : null,
+    category: text(category, 120),
+    properties: Array.isArray(properties) ? properties.slice(0, 20) : []
+  };
+  if (String(process.env.GEMINI_API_KEY || '').trim()) {
+    const result = await gemini.generateProductAnalysis(product);
+    return { answer: result.answer, provider: 'gemini', model: result.model };
+  }
+  const provider = providerConfig();
+  if (!provider) throw Object.assign(new Error('AI provider غير مضبوط'), { code: 'PROVIDER_UNAVAILABLE' });
+  const model = await pickModel(provider);
   const systemPrompt = [
     'انت خبير تسويق وبيع بالعمولة في السوق المصري عندك خبرة عشرين سنة في البيع اونلاين وعلى فيسبوك.',
-    'مهمتك: تحليل منتج واحد وطلوعلك خطة تسويق كاملة وعملية، بالعامية المصرية، بدون مبالغة او ادعاءات كاذبة.',
-    'رجّع الرد بالتنسيق ده بالظبط بعناوين واضحة:',
-    '## الزتونة',
-    '(نقطة البيع الأقوى في المنتج ده في سطرين أو تلاتة، الحاجة اللي تخلي العميل يشتري فورا)',
-    '## أفكار بوستات',
-    '(3 أفكار بوستات مختلفة لفيسبوك، كل واحدة بعنوان جذاب ونص قصير جاهز للنشر)',
-    '## أفكار ترويج وبيدج',
-    '(3 نصايح عملية للترويج للمنتج ده تحديدا: استهداف، توقيت نشر، نوع محتوى فيديو/صورة)',
-    '## لو العميل قال غالي',
-    '(رد جاهز مقنع بالعامية يرد بيه المسوق لما عميل يقول السعر غالي)',
-    '## لو العميل كان زعلان أو غير مؤدب',
-    '(رد جاهز هادئ ومحترف يرد بيه المسوق على عميل غاضب أو فظ من غير ما يخسره)'
-  ].join('\n');
-
-  const userPrompt = 'اسم المنتج: ' + (productName || 'غير محدد') +
-    (productPrice ? '\nالسعر: ' + productPrice + ' جنيه' : '') +
-    '\nوصف المنتج: ' + (productDesc || 'لا يوجد وصف متاح');
-
-  const messages = [
+    'مهمتك: تحليل منتج واحد وكتابة خطة تسويق كاملة وعملية بالعامية المصرية، بدون مبالغة أو ادعاءات كاذبة.',
+    'استخدم بيانات المنتج فقط، ولا تخترع مواصفات أو نتائج أو ضمانات.',
+    'استخدم عناوين واضحة: الزتونة، أفكار بوستات، أفكار ترويج وبيدج، لو العميل قال غالي، لو العميل زعلان.'
+  ].join(' ');
+  const userPrompt = 'بيانات المنتج بصيغة JSON:\n' + JSON.stringify(product);
+  const result = await callModel(provider, model, [
     { role: 'system', content: systemPrompt },
     { role: 'user', content: userPrompt }
-  ];
-  const result = await callModel(provider, model, messages, false);
+  ], false);
   const answer = assistantText(result);
+  if (!answer) throw Object.assign(new Error('لم يصل رد صالح من المساعد'), { code: 'EMPTY_RESPONSE' });
   return { answer, provider: provider.name, model };
 }
 
