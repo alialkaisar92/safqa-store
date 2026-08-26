@@ -470,7 +470,7 @@ module.exports = function mountAdmin(app) {
       res.json({ ok: true, productId: id, description: saved.description, model: generated.model, updatedAt: saved.descriptionUpdatedAt });
     } catch (error) {
       const status = error.code === 'GEMINI_PRODUCT_NAME_REQUIRED' ? 400 : error.code === 'GEMINI_NOT_CONFIGURED' ? 503 : error.code === 'GEMINI_UPSTREAM_ERROR' || error.code === 'GEMINI_NETWORK_ERROR' || error.code === 'GEMINI_EMPTY_RESPONSE' ? 502 : 503;
-      console.error('[admin ai-description]:', error.code || error.message);
+      console.error('[admin ai-description]:', error.code || error.message, error.code === 'GEMINI_UPSTREAM_ERROR' ? { status: error.status || null, reason: error.reason || null } : '');
       res.status(status).json({ error: error.message && /^مفتاح Gemini|^ميزة توليد|^اسم المنتج|^تم الوصول|^تعذر توليد|^انتهى وقت|^تعذر الاتصال|^لم ينتج/.test(error.message) ? error.message : 'تعذر توليد وصف المنتج حاليًا' });
     }
   });
