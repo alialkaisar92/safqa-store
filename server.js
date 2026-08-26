@@ -537,7 +537,7 @@ function normalizePublicProduct(p, local, priceUp) {
   const stock = stockState.quantity;
   const merged = Object.assign({}, raw, local || {});
   const media = productMedia(raw, local || {});
-  const category = cat([raw.name, raw.title, raw.description, raw.desc, raw.note, raw.category].filter(Boolean).join(' '));
+  const category = cat([raw.name, raw.title, merged.description, raw.description, raw.desc, raw.note, raw.category].filter(Boolean).join(' '));
   const rawWholesale = wholesalePriceOf(raw);
   const base = productWholesalePrice(rawWholesale, priceUp);
   const note = raw.note || merged.note || '';
@@ -559,7 +559,8 @@ function normalizePublicProduct(p, local, priceUp) {
     suggestedSalePrice: suggestedSale,
     price: effectiveSale,
     image: raw.image || (raw.images && raw.images[0]) || merged.image || '',
-    desc: raw.description || raw.desc || '',
+    description: merged.description || raw.description || raw.desc || '',
+    desc: merged.description || raw.description || raw.desc || '',
     barcode: raw.barcode || merged.barcode || '',
     note,
     commission: effectiveCommission,

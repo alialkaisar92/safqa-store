@@ -5,6 +5,7 @@ const store = require('./firestore');
 const postgres = require('./lib/postgres');
 const authService = require('./services/auth-postgres');
 const { getProductStockState } = require('./stock-utils');
+const { generateProductDescription } = require('./lib/gemini');
 
 const SESSION_COOKIE = 'rab7na_session';
 const ADMIN_PERMISSIONS = ['dashboard', 'orders', 'products', 'users', 'withdrawals', 'chats', 'settings', 'admins', 'notifications', 'rewards'];
@@ -20,6 +21,7 @@ const ORDER_STATUSES = ['جديد', 'قيد التأكيد', 'تم التأكي�
 const WITHDRAWAL_STATUSES = ['pending', 'approved', 'rejected', 'paid', 'قيد المراجعة', 'مقبول', 'مرفوض', 'مدفوع'];
 const ADMIN_ROLES = ['owner', 'admin', 'manager', 'support', 'finance', 'products'];
 const SAFKA_BASE_URL = String(process.env.SAFKA_PUBLIC_BASE_URL || 'https://api.safka-eg.com/api/v1/public').replace(/\/$/, '');
+const aiDescriptionRate = new Map();
 
 function readCookie(req, name) {
   const raw = String(req.headers.cookie || '');
@@ -40,6 +42,20 @@ function hasPermission(user, permission) {
   if (!user) return false;
   if (user.__envAdmin || ['owner', 'admin'].includes(String(user.role || '').toLowerCase())) return true;
   return rolePermissions(user.role).includes(permission) || (Array.isArray(user.permissions) && user.permissions.includes(permission));
+}
+function allowAiDescription(userId) {
+  const key = String(userId || 'unknown');
+  const now = Date.now();
+  const windowMs = 10 * 60 * 1000;
+  const max = 20;
+  const record = aiDescriptionRate.get(key);
+  if (!record || now - record.startedAt >= windowMs) {
+    aiDescriptionRate.set(key, { startedAt: now, count: 1 });
+    return true;
+  }
+  if (record.count >= max) return false;
+  record.count += 1;
+  return true;
 }
 
 function envAllows(user) {
@@ -422,6 +438,11 @@ module.exports = function mountAdmin(app) {
       if (locked && Number.isFinite(salePrice) && Number.isFinite(adjustedWholesale) && salePrice < adjustedWholesale) return res.status(400).json({ error: 'سعر البيع لا يمكن أن يقل عن سعر الجملة المعتمد' });
       body.basePrice = Number.isFinite(rawWholesale) ? rawWholesale : 0;
       const before = (await affiliateData()).products.find(item => String(item.id || item.sourceId || '') === id) || {};
+      if (before.aiDescription === true || before.descriptionSource === 'gemini-2.5-flash-lite') {
+        body.aiDescription = true;
+        body.descriptionSource = before.descriptionSource || 'gemini-2.5-flash-lite';
+        body.descriptionUpdatedAt = before.descriptionUpdatedAt || null;
+      }
       const saved = await postgres.saveAffiliateProduct(Object.assign({}, body, { id, updatedAt: new Date().toISOString() }));
       const sqlPricing = await postgres.setAdminProductPricing(id, { locked, salePrice: body.adminSalePrice, commission: body.adminCommission }, req.adminUser && req.adminUser.id);
       if (locked && Number.isFinite(salePrice) && Number(before.adminSalePrice) !== salePrice && global.notifyBroadcast) {
@@ -429,6 +450,29 @@ module.exports = function mountAdmin(app) {
       }
       res.json({ ok: true, product: Object.assign({}, saved, sqlPricing || {}, { adminPriceLocked: locked, adminSalePrice: body.adminSalePrice, adminCommission: body.adminCommission }) });
     } catch (error) { console.error('[admin product]:', error.message); res.status(error.message === 'سعر البيع لا يمكن أن يقل عن سعر الجملة المعتمد' ? 400 : 503).json({ error: error.message === 'سعر البيع لا يمكن أن يقل عن سعر الجملة المعتمد' ? error.message : 'تعذر حفظ المنتج' }); }
+  });
+
+  app.post('/api/admin/products/:id/ai-description', async (req, res) => {
+    try {
+      const id = String(req.params.id || '').trim();
+      if (!id) return res.status(400).json({ error: 'معرّف المنتج مطلوب' });
+      if (!allowAiDescription(req.adminUser && req.adminUser.id)) return res.status(429).json({ error: 'تم الوصول لحد التوليد المؤقت، حاول بعد دقائق.' });
+      const localData = await affiliateData();
+      let product = (Array.isArray(localData.products) ? localData.products : []).find(item => [item && item.id, item && item.sourceId, item && item.source_product_id].filter(Boolean).map(String).includes(id));
+      if (!product) {
+        const catalog = await postgres.getAffiliateCatalogData();
+        product = (Array.isArray(catalog.products) ? catalog.products : []).find(item => [item && item.id, item && item.sourceId, item && item.sourceProductId].filter(Boolean).map(String).includes(id));
+      }
+      if (!product) return res.status(404).json({ error: 'المنتج غير موجود' });
+      const generated = await generateProductDescription(product);
+      const saved = await postgres.saveAiProductDescription(id, generated.description, { model: generated.model, generatedBy: req.adminUser && req.adminUser.id ? String(req.adminUser.id) : null }, product);
+      res.set('Cache-Control', 'no-store');
+      res.json({ ok: true, productId: id, description: saved.description, model: generated.model, updatedAt: saved.descriptionUpdatedAt });
+    } catch (error) {
+      const status = error.code === 'GEMINI_PRODUCT_NAME_REQUIRED' ? 400 : error.code === 'GEMINI_NOT_CONFIGURED' ? 503 : error.code === 'GEMINI_UPSTREAM_ERROR' || error.code === 'GEMINI_NETWORK_ERROR' || error.code === 'GEMINI_EMPTY_RESPONSE' ? 502 : 503;
+      console.error('[admin ai-description]:', error.code || error.message);
+      res.status(status).json({ error: error.message && /^مفتاح Gemini|^ميزة توليد|^اسم المنتج|^تم الوصول|^تعذر توليد|^انتهى وقت|^تعذر الاتصال|^لم ينتج/.test(error.message) ? error.message : 'تعذر توليد وصف المنتج حاليًا' });
+    }
   });
 
   app.post('/api/admin/product-delete', async (req, res) => {
