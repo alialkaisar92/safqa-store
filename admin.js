@@ -438,7 +438,7 @@ module.exports = function mountAdmin(app) {
       if (locked && Number.isFinite(salePrice) && Number.isFinite(adjustedWholesale) && salePrice < adjustedWholesale) return res.status(400).json({ error: 'سعر البيع لا يمكن أن يقل عن سعر الجملة المعتمد' });
       body.basePrice = Number.isFinite(rawWholesale) ? rawWholesale : 0;
       const before = (await affiliateData()).products.find(item => String(item.id || item.sourceId || '') === id) || {};
-      if (before.aiDescription === true || before.descriptionSource === 'gemini-2.5-flash-lite') {
+      if (before.aiDescription === true || (typeof before.descriptionSource === 'string' && before.descriptionSource.startsWith('gemini-'))) {
         body.aiDescription = true;
         body.descriptionSource = before.descriptionSource || 'gemini-2.5-flash-lite';
         body.descriptionUpdatedAt = before.descriptionUpdatedAt || null;
