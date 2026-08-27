@@ -218,10 +218,27 @@ async function notifyBroadcast(input) {
   const push = await sendNativePushToUsers(userIds, { title: value.title, body: value.body, url: value.url, tag: value.eventKey || 'rab7na-broadcast' });
   return Object.assign(created, { push });
 }
+async function notifyProductCatalogChanges(changes) {
+  const rows = Array.isArray(changes) ? changes.filter(item => item && item.id && item.fingerprint) : [];
+  if (!rows.length || !global.notifyBroadcast) return { skipped: true, count: 0 };
+  const unique = [...new Map(rows.map(item => [String(item.id) + ':' + String(item.fingerprint), { id: String(item.id), name: String(item.name || 'منتج').trim().slice(0, 120), kind: item.kind === 'added' ? 'added' : 'updated', fingerprint: String(item.fingerprint) }])).values()];
+  const added = unique.filter(item => item.kind === 'added');
+  const updated = unique.filter(item => item.kind === 'updated');
+  const names = unique.slice(0, 2).map(item => item.name).filter(Boolean).join('، ');
+  const title = added.length && !updated.length ? 'منتج جديد جاهز للتسويق' : 'تحديث جديد في المنتجات';
+  let body;
+  if (unique.length === 1) body = (added.length ? 'اتضاف منتج جديد' : 'اتحدّث منتج') + (names ? `: ${names}` : '') + '. افتح الكتالوج وشوف التفاصيل.';
+  else body = `اتضاف ${added.length} منتج واتحدّث ${updated.length} منتج في الكتالوج.` + (names ? ` مثال: ${names}.` : '') + ' افتح الكتالوج لمراجعة آخر التحديثات.';
+  const eventKey = 'product-catalog:' + crypto.createHash('sha256').update(JSON.stringify(unique.map(item => [item.id, item.kind, item.fingerprint]).sort())).digest('hex').slice(0, 32);
+  return global.notifyBroadcast({ title, body, url: '/store', type: 'product-catalog', eventKey });
+}
+
 global.notifyUser = notifyUser;
 global.notifyBroadcast = notifyBroadcast;
+global.notifyProductCatalogChanges = notifyProductCatalogChanges;
 global.publishNotification = publishNotification;
 global.sendNativePushToUsers = sendNativePushToUsers;
+global.notifyProductCatalogChanges = notifyProductCatalogChanges;
 
 app.get('/api/notifications', async (req, res) => {
   const user = await currentAuthUser(req);

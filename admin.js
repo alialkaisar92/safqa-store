@@ -206,6 +206,19 @@ async function affiliateData() {
   return store.getAffiliateData();
 }
 
+async function notifyProductChange(product, kind) {
+  if (!global.notifyProductCatalogChanges || !postgres.productNotificationFingerprint) return;
+  const value = product && typeof product === 'object' ? product : {};
+  const id = String(value.id || value.sourceId || value.source_product_id || '').trim();
+  if (!id) return;
+  await Promise.resolve(global.notifyProductCatalogChanges([{
+    id,
+    name: value.name || value.title || 'منتج',
+    kind: kind === 'added' ? 'added' : 'updated',
+    fingerprint: postgres.productNotificationFingerprint(value)
+  }])).catch(error => console.warn('[notifications] product change skipped:', error.message));
+}
+
 function productWithPrice(product, priceUp) {
   const value = product || {};
   const rawWholesale = wholesalePriceOf(value);
@@ -445,10 +458,9 @@ module.exports = function mountAdmin(app) {
       }
       const saved = await postgres.saveAffiliateProduct(Object.assign({}, body, { id, updatedAt: new Date().toISOString() }));
       const sqlPricing = await postgres.setAdminProductPricing(id, { locked, salePrice: body.adminSalePrice, commission: body.adminCommission }, req.adminUser && req.adminUser.id);
-      if (locked && Number.isFinite(salePrice) && Number(before.adminSalePrice) !== salePrice && global.notifyBroadcast) {
-        await Promise.resolve(global.notifyBroadcast({ title: 'تحديث سعر منتج', body: 'تم تحديث سعر منتج في الكتالوج؛ راجع مركز الإشعارات لمعرفة التفاصيل.', url: '/store', type: 'price', eventKey: 'product-price:' + id + ':' + salePrice })).catch(() => null);
-      }
-      res.json({ ok: true, product: Object.assign({}, saved, sqlPricing || {}, { adminPriceLocked: locked, adminSalePrice: body.adminSalePrice, adminCommission: body.adminCommission }) });
+      const responseProduct = Object.assign({}, saved, sqlPricing || {}, { id, adminPriceLocked: locked, adminSalePrice: body.adminSalePrice, adminCommission: body.adminCommission });
+      await notifyProductChange(responseProduct, before && (before.id || before.sourceId) ? 'updated' : 'added');
+      res.json({ ok: true, product: responseProduct });
     } catch (error) { console.error('[admin product]:', error.message); res.status(error.message === 'سعر البيع لا يمكن أن يقل عن سعر الجملة المعتمد' ? 400 : 503).json({ error: error.message === 'سعر البيع لا يمكن أن يقل عن سعر الجملة المعتمد' ? error.message : 'تعذر حفظ المنتج' }); }
   });
 
@@ -466,6 +478,7 @@ module.exports = function mountAdmin(app) {
       if (!product) return res.status(404).json({ error: 'المنتج غير موجود' });
       const generated = await generateProductDescription(product);
       const saved = await postgres.saveAiProductDescription(id, generated.description, { model: generated.model, generatedBy: req.adminUser && req.adminUser.id ? String(req.adminUser.id) : null }, product);
+      await notifyProductChange(Object.assign({}, product, { id, name: product.name, description: saved.description, descriptionSource: generated.model, aiDescription: true }), 'updated');
       res.set('Cache-Control', 'no-store');
       res.json({ ok: true, productId: id, description: saved.description, model: generated.model, updatedAt: saved.descriptionUpdatedAt });
     } catch (error) {
@@ -488,8 +501,9 @@ module.exports = function mountAdmin(app) {
   app.post('/api/admin/products/import', async (req, res) => {
     try {
       const incoming = (await fetchSafkaProducts()).map(mapSafkaProduct);
-      const result = await postgres.upsertAffiliateProducts(incoming);
-      res.json({ ok: true, fetched: incoming.length, added: result.inserted, updated: result.updated, total: incoming.length });
+      const result = await postgres.upsertAffiliateProducts(incoming, { trackChanges: true });
+      if (result.changes && result.changes.length) await Promise.resolve(global.notifyProductCatalogChanges && global.notifyProductCatalogChanges(result.changes)).catch(error => console.warn('[notifications] product import skipped:', error.message));
+      res.json({ ok: true, fetched: incoming.length, added: result.inserted, updated: result.updated, changed: result.changes ? result.changes.length : 0, total: incoming.length });
     } catch (error) {
       console.error('[admin products import]:', error.message);
       res.status(502).json({ ok: false, error: error.message === 'مفتاح المنتجات غير مضبوط' ? error.message : 'تعذر استيراد المنتجات حاليًا' });

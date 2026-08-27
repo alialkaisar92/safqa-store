@@ -119,7 +119,7 @@ async function syncProducts(options) {
     available: prepared.find(item => String(item.external_id) === String(product && (product.id || product._id)))?.available === true
   }))));
   let database = null;
-  try { database = await postgres.upsertProducts(prepared); }
+  try { database = await postgres.upsertProducts(prepared, { trackChanges: initialized && (!options || options.notify !== false) }); }
   catch (e) { console.warn('Safka PostgreSQL stock import skipped:', e.message); }
   const missingStock = prepared.filter(product => product.stock_quantity === null);
   const numericStock = prepared.filter(product => Number.isInteger(product.stock_quantity));
@@ -133,10 +133,15 @@ async function syncProducts(options) {
   if (missingStock.length) console.warn('[stock-sync] Missing numeric stock value for ' + missingStock.length + ' products; preserving last DB value. Sample IDs: ' + missingStock.slice(0, 5).map(product => String(product.external_id || '')).join(', '));
   try { fs.writeFileSync(CACHE_FILE, JSON.stringify(prepared)); } catch (e) { console.warn('Safka cache write skipped:', e.message); }
   await saveMeta({ productIds: products.map(p => String(p._id || p.id)).filter(Boolean), productCount: products.length, productsSyncedAt: new Date().toISOString(), stockImportedAt: new Date().toISOString(), stockImported: database || { inserted: 0, updated: 0 } });
-  if (newProducts.length && options && options.notify !== false) {
-    await notifyAll('منتجات جديدة على rab7na', 'تمت إضافة ' + newProducts.length + ' منتج جديد متاح للتسويق.', 'new-product', 'new-products:' + products.map(p => String(p && (p._id || p.id) || '')).filter(Boolean).sort().join(',').slice(-1800));
+  if (options && options.notify !== false) {
+    const changes = database && Array.isArray(database.changes) ? database.changes : [];
+    if (changes.length && global.notifyProductCatalogChanges) {
+      await Promise.resolve(global.notifyProductCatalogChanges(changes)).catch(error => console.warn('[notifications] product sync skipped:', error.message));
+    } else if (newProducts.length) {
+      await notifyAll('منتجات جديدة على Rab7na', 'تمت إضافة ' + newProducts.length + ' منتج جديد متاح للتسويق.', 'new-product', 'new-products:' + products.map(p => String(p && (p._id || p.id) || '')).filter(Boolean).sort().join(',').slice(-1800));
+    }
   }
-  return { ok: true, products: products.length, newProducts: newProducts.length, stockImported: database || { inserted: 0, updated: 0 } };
+  return { ok: true, products: products.length, newProducts: newProducts.length, stockImported: database || { inserted: 0, updated: 0 }, productChanges: database && Array.isArray(database.changes) ? database.changes.length : 0 };
 }
 function statusUrl(order) {
   const template = String(process.env.SAFKA_ORDER_STATUS_URL || '').trim();
