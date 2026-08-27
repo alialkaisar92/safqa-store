@@ -812,7 +812,7 @@ async function appendCurrentChat(req, res) {
   try {
     await postgres.appendChatMessage(chatKeyForUser(user), message);
     if (global.notifyChat) global.notifyChat();
-    await notifySupport({ title: 'رسالة جديدة للدعم', body: 'وصلت رسالة جديدة من مسوق وتحتاج متابعة من مركز الدعم.', type: 'support-message', priority: 'high', userId: user.id, entityType: 'chat', entityId: chatKeyForUser(user), eventKey: 'support:chat:' + chatKeyForUser(user) + ':' + message.id, payload: { messageType: message.type || 'text' } });
+    await notifySupport({ title: 'رسالة جديدة للدعم', body: 'وصلت رسالة جديدة من عميل وتحتاج متابعة من مركز الدعم.', type: 'support-message', priority: 'high', userId: user.id, entityType: 'chat', entityId: chatKeyForUser(user), eventKey: 'support:chat:' + chatKeyForUser(user) + ':' + message.id, payload: { messageType: message.type || 'text' } });
     res.status(201).json({ ok: true, message, m: message });
   } catch (error) {
     console.error('[chat append]:', error.message);
