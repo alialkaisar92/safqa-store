@@ -113,6 +113,10 @@ function safeUser(user) {
     online: Boolean(user.last_login && Date.now() - new Date(user.last_login).getTime() < 120000)
   };
 }
+function supportUserSummary(user) {
+  const safe = safeUser(user);
+  return { id: safe.id, name: safe.name, email: safe.email, emailVerified: safe.emailVerified, accountStatus: safe.accountStatus, lastSeen: safe.lastSeen, online: safe.online };
+}
 
 function propertyAvailability(product) {
   if (product && typeof product.is_available === 'boolean') return product.is_available;
@@ -692,7 +696,14 @@ module.exports = function mountAdmin(app) {
     } catch (error) { console.error('[admin withdrawal-status]:', error.message); res.status(503).json({ error: 'تعذر تحديث طلب السحب حاليًا' }); }
   });
 
-  app.get('/api/admin/chats', async (req, res) => { try { res.json(await store.getChats()); } catch (error) { res.status(503).json({ error: 'تعذر تحميل محادثات الدعم' }); } });
+  app.get('/api/admin/chats', async (req, res) => {
+    try {
+      const [chats, users] = await Promise.all([store.getChats(), store.getUsers()]);
+      const byKey = Object.fromEntries(users.map(user => ['u' + String(user.id), supportUserSummary(user)]));
+      res.set('Cache-Control', 'private, no-store');
+      res.json({ conversations: chats, users: byKey });
+    } catch (error) { res.status(503).json({ error: 'تعذر تحميل محادثات الدعم' }); }
+  });
   app.post('/api/admin/chat-reply', async (req, res) => {
     try {
       const key = String(req.body && req.body.key || '').trim();
