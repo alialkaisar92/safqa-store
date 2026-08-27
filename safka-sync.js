@@ -63,10 +63,17 @@ async function notifyAll(title, body, type, eventKey) {
   await Promise.all(users.filter(u => u && u.id).map(u => global.notifyUser(u.id, title, body, '/store', type, eventKey || type + ':' + body).catch(() => null)));
 }
 async function notifyOrderChange(job, status, message) {
-  if (!global.notifyUser || !job || job.user_id == null) return;
+  if (!job) return;
   const orderId = String(job.order_id || job.request_key || '').trim();
   if (!orderId) return;
-  await Promise.resolve(global.notifyUser(job.user_id, 'تحديث طلبك', message, '/store', 'order-status', 'order-status:' + orderId + ':' + String(status || 'updated'))).catch(error => console.warn('[notifications] order status skipped:', error.message));
+  const normalizedStatus = String(status || 'updated').trim() || 'updated';
+  if (global.notifyUser && job.user_id != null) await Promise.resolve(global.notifyUser(job.user_id, 'تحديث طلبك', message, '/store', 'order-status', 'order-status:' + orderId + ':' + normalizedStatus)).catch(error => console.warn('[notifications] order status skipped:', error.message));
+  if (global.notifySupport) {
+    const urgent = ['unknown', 'failed'].includes(normalizedStatus);
+    const title = normalizedStatus === 'unknown' ? 'طلب يحتاج مراجعة فورية' : normalizedStatus === 'failed' ? 'فشل إرسال طلب' : normalizedStatus === 'retry' ? 'إعادة محاولة تجهيز طلب' : 'تحديث طابور طلب';
+    const body = normalizedStatus === 'unknown' ? 'حالة الطلب غير مؤكدة؛ قد يكون وصل للمورد، ويجب التحقق قبل أي إعادة إرسال.' : normalizedStatus === 'failed' ? 'فشل إرسال الطلب ويحتاج مراجعة من الدعم.' : normalizedStatus === 'retry' ? 'تعذر التجهيز قبل الإرسال وسيتم فحص الطلب مرة أخرى.' : 'تم تحديث حالة إرسال طلب في النظام.';
+    await Promise.resolve(global.notifySupport({ title, body, type: 'order-queue-' + normalizedStatus, priority: urgent ? 'critical' : 'normal', userId: job.user_id, entityType: 'order', entityId: orderId, eventKey: 'support:order-queue:' + orderId + ':' + normalizedStatus + ':' + String(job.retry_count || 0), payload: { status: normalizedStatus, attempt: Number(job.retry_count || 0) } })).catch(error => console.warn('[support-events] order status skipped:', error.message));
+  }
 }
 function productStock(product) {
   return getProductStock(product).quantity;

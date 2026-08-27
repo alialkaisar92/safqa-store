@@ -165,6 +165,17 @@ if (nativePushReady) {
   catch (error) { console.error('[push] VAPID configuration rejected:', error.message); }
 }
 const notificationStreams = new Map();
+const supportEventStreams = new Set();
+function streamSupportEvent(event) {
+  if (!event) return;
+  const packet = 'data: ' + JSON.stringify(event) + '\n\n';
+  for (const write of supportEventStreams) { try { write(packet); } catch (_) {} }
+}
+function registerSupportEventStream(write) {
+  if (typeof write !== 'function') return () => {};
+  supportEventStreams.add(write);
+  return () => supportEventStreams.delete(write);
+}
 function streamNotification(userId, notification) {
   const set = notificationStreams.get(String(userId));
   if (!set) return;
@@ -218,6 +229,24 @@ async function notifyBroadcast(input) {
   const push = await sendNativePushToUsers(userIds, { title: value.title, body: value.body, url: value.url, tag: value.eventKey || 'rab7na-broadcast' });
   return Object.assign(created, { push });
 }
+async function notifySupport(input) {
+  if (!postgres.createSupportEvent) return { created: false, event: null, skipped: true };
+  try {
+    const result = await postgres.createSupportEvent(input);
+    if (!result.created || !result.event) return result;
+    streamSupportEvent(result.event);
+    let push = { configured: nativePushReady, delivered: 0, removed: 0 };
+    try {
+      const admins = await postgres.query("SELECT id FROM users WHERE banned IS NOT TRUE AND role IN ('owner','admin','manager','support') ORDER BY id");
+      push = await sendNativePushToUsers(admins.rows.map(row => row.id), { title: result.event.title, body: result.event.body, url: '/admin', tag: 'support-event:' + result.event.id });
+    } catch (_) {}
+    return Object.assign({}, result, { push });
+  } catch (error) {
+    console.warn('[support-events] skipped:', error.message);
+    return { created: false, event: null, skipped: true };
+  }
+}
+
 async function notifyProductCatalogChanges(changes) {
   const rows = Array.isArray(changes) ? changes.filter(item => item && item.id && item.fingerprint) : [];
   if (!rows.length || !global.notifyBroadcast) return { skipped: true, count: 0 };
@@ -230,12 +259,16 @@ async function notifyProductCatalogChanges(changes) {
   if (unique.length === 1) body = (added.length ? 'اتضاف منتج جديد' : 'اتحدّث منتج') + (names ? `: ${names}` : '') + '. افتح الكتالوج وشوف التفاصيل.';
   else body = `اتضاف ${added.length} منتج واتحدّث ${updated.length} منتج في الكتالوج.` + (names ? ` مثال: ${names}.` : '') + ' افتح الكتالوج لمراجعة آخر التحديثات.';
   const eventKey = 'product-catalog:' + crypto.createHash('sha256').update(JSON.stringify(unique.map(item => [item.id, item.kind, item.fingerprint]).sort())).digest('hex').slice(0, 32);
-  return global.notifyBroadcast({ title, body, url: '/store', type: 'product-catalog', eventKey });
+  const result = await global.notifyBroadcast({ title, body, url: '/store', type: 'product-catalog', eventKey });
+  await notifySupport({ title, body, type: 'product-catalog', priority: added.length ? 'high' : 'normal', entityType: 'product', entityId: unique.length === 1 ? unique[0].id : null, eventKey: 'support:' + eventKey, payload: { added: added.length, updated: updated.length, productIds: unique.slice(0, 100).map(item => item.id) } });
+  return result;
 }
 
 global.notifyUser = notifyUser;
 global.notifyBroadcast = notifyBroadcast;
 global.notifyProductCatalogChanges = notifyProductCatalogChanges;
+global.notifySupport = notifySupport;
+global.registerSupportEventStream = registerSupportEventStream;
 global.publishNotification = publishNotification;
 global.sendNativePushToUsers = sendNativePushToUsers;
 global.notifyProductCatalogChanges = notifyProductCatalogChanges;
@@ -773,6 +806,7 @@ async function appendCurrentChat(req, res) {
   try {
     await postgres.appendChatMessage(chatKeyForUser(user), message);
     if (global.notifyChat) global.notifyChat();
+    await notifySupport({ title: 'رسالة جديدة للدعم', body: 'وصلت رسالة جديدة من مسوق وتحتاج متابعة من مركز الدعم.', type: 'support-message', priority: 'high', userId: user.id, entityType: 'chat', entityId: chatKeyForUser(user), eventKey: 'support:chat:' + chatKeyForUser(user) + ':' + message.id, payload: { messageType: message.type || 'text' } });
     res.status(201).json({ ok: true, message, m: message });
   } catch (error) {
     console.error('[chat append]:', error.message);
@@ -1018,6 +1052,7 @@ app.post(['/api/affiliate/withdraw','/api/withdraw','/api/my/withdraw'], async (
   try {
     const result = await postgres.createAffiliateWithdrawal({ userId: user.id, amount, method, details, requestKey });
     if (result.duplicate) return res.status(200).json({ ok: true, duplicate: true, message: 'تم تسجيل طلب السحب مسبقًا', balance: result.balance });
+    await notifySupport({ title: 'طلب سحب جديد', body: 'وصل طلب سحب جديد من مسوق ويحتاج مراجعة.', type: 'withdrawal-created', priority: 'high', userId: user.id, entityType: 'withdrawal', entityId: result.withdrawal && result.withdrawal.id, eventKey: 'support:withdrawal-created:' + user.id + ':' + requestKey, payload: { amount, method } });
     res.status(201).json({ ok: true, message: 'تم استلام طلب السحب وسيتم مراجعته قريبًا', balance: result.balance });
   } catch (error) {
     if (error.code === 'INSUFFICIENT_BALANCE') return res.status(400).json({ error: error.message });
@@ -1029,7 +1064,7 @@ app.post(['/api/affiliate/withdraw','/api/withdraw','/api/my/withdraw'], async (
 app.get(['/login', '/register'], (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
 app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'reset-password.html')));
 app.post('/api/auth/register', async (req, res) => {
-  try { const user = await authService.register(req.body || {}); res.status(201).json({ ok: true, user: authService.publicUser(user) }); }
+  try { const user = await authService.register(req.body || {}); await notifySupport({ title: 'مسوق جديد سجّل في Rab7na', body: 'تم إنشاء حساب مسوق جديد ويمكن متابعته من إدارة المستخدمين.', type: 'account-created', priority: 'normal', userId: user.id, entityType: 'user', entityId: user.id, eventKey: 'support:account-created:' + user.id, payload: { emailVerified: Boolean(user.email_verified) } }); res.status(201).json({ ok: true, user: authService.publicUser(user) }); }
   catch (error) { const status = /مستخدم بالفعل|صحيح|مطلوب|8 أحرف/.test(error.message) ? 400 : 500; res.status(status).json({ error: status === 500 ? 'تعذر إنشاء الحساب حاليًا' : error.message }); }
 });
 app.post('/api/auth/login', async (req, res) => {
@@ -1143,6 +1178,9 @@ app.post('/api/webhooks/safka/order-status', async (req, res) => {
   catch (error) { console.error('[safka-order-hook] database unavailable:', error.message); return res.status(503).json({ error: 'تعذر حفظ تحديث المورد حاليًا' }); }
   try {
     const result = await postgres.applySafkaOrderWebhook(req.body || {});
+    if (result.matched && !result.duplicate && global.notifySupport) {
+      await notifySupport({ title: 'تحديث حالة من المورد', body: 'وصل تحديث جديد لحالة طلب من المورد ويحتاج مراجعة في لوحة الطلبات.', type: 'supplier-status', priority: 'high', userId: result.userId, entityType: 'order', entityId: result.orderId, eventKey: 'support:safka-webhook:' + String(result.eventKey || result.orderId + ':' + result.status), payload: { status: result.status, matched: Boolean(result.matched), reviewRequired: Boolean(result.reviewRequired) } });
+    }
     if (result.matched && result.userId != null && global.notifyUser) {
       await Promise.resolve(global.notifyUser(result.userId, 'تحديث حالة الطلب', 'تم تحديث حالة طلبك: ' + String(result.displayStatus || result.status || 'قيد المتابعة'), '/store', 'order-status', 'safka-webhook:' + result.orderId + ':' + result.status)).catch(() => null);
     }
@@ -1448,6 +1486,7 @@ app.post('/api/create-order', async (req,res)=>{
   console.log('[order-queue] order_created', {order_id:payload.id,user_id:affiliateUser.id,idempotency_key:requestKey,attempt_number:0,dispatch:dispatchResult && dispatchResult.status || 'not_attempted'});
   if(queued.mode==='created') {
     Promise.resolve(notifyUser(affiliateUser.id, 'تم تسجيل طلبك', 'تم حفظ الطلب بنجاح وبدأت متابعته. رقم الطلب: #' + String(payload.serial || payload.id).slice(-14), '/store', 'order-created', 'order-created:' + localOrderId)).catch(error => console.warn('[notifications] order-created skipped:', error.message));
+    await notifySupport({ title: 'طلب جديد يحتاج متابعة', body: 'تم تسجيل طلب جديد في Rab7na ويحتاج متابعة من لوحة الطلبات.', type: 'order-created', priority: 'high', userId: affiliateUser.id, entityType: 'order', entityId: localOrderId, eventKey: 'support:order-created:' + localOrderId, payload: { items: normalizedItems.length, total: Number(total) } });
   }
   if(queued.mode==='created' || queued.mode==='in_progress') {
     const status=String(responseRow.status||'pending');
@@ -1481,6 +1520,7 @@ app.post('/api/affiliate/order-cancel', async (req,res)=>{
   if(reason.length>500)return res.status(400).json({error:'سبب الإلغاء طويل جدًا'});
   try{
     const result=await postgres.cancelAffiliateOrder(user.id,orderId,reason);
+    if (!result.duplicate) await notifySupport({ title: 'طلب إلغاء جديد', body: 'طلب العميل إلغاء طلب ويحتاج مراجعة من الدعم.', type: 'order-cancel', priority: 'high', userId: user.id, entityType: 'order', entityId: orderId, eventKey: 'support:order-cancel:' + orderId + ':' + crypto.createHash('sha256').update(reason).digest('hex').slice(0, 12), payload: { reasonLength: reason.length } });
     res.set('Cache-Control','no-store');
     res.json({ok:true,status:result.status,cancelRequested:Boolean(result.cancelRequested),duplicate:Boolean(result.duplicate),message:result.duplicate?(result.cancelRequested?'تم تسجيل طلب الإلغاء مسبقًا وجارٍ مراجعته':'تم إلغاء الطلب مسبقًا'): (result.cancelRequested?'تم استلام طلب الإلغاء وجارٍ مراجعته':'تم إلغاء الطلب بنجاح'),order:result.order});
   }catch(error){

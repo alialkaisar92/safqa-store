@@ -241,7 +241,7 @@ function permissionForPath(requestPath) {
   if (/^\/(products|product|product-delete|price|price-up)/.test(p)) return 'products';
   if (/^\/(users|user-)/.test(p)) return 'users';
   if (/^\/(withdrawals|withdrawal-status)/.test(p)) return 'withdrawals';
-  if (/^\/(chats|chat-reply|chat-stream)/.test(p)) return 'chats';
+  if (/^\/(chats|chat-reply|chat-stream|support-events)/.test(p)) return 'chats';
   if (/^\/(settings)/.test(p)) return 'settings';
   if (/^\/(admins)/.test(p)) return 'admins';
   if (/^\/(notifications)/.test(p)) return 'notifications';
@@ -267,6 +267,21 @@ module.exports = function mountAdmin(app) {
   app.get('/api/admin/notifications', async (req, res) => {
     try { res.set('Cache-Control', 'no-store'); res.json({ notifications: await postgres.listRecentNotifications(req.query.limit) }); }
     catch (error) { console.error('[admin notifications]:', error.message); res.status(503).json({ error: 'تعذر تحميل سجل الإشعارات' }); }
+  });
+
+  app.get('/api/admin/support-events', async (req, res) => {
+    try { res.set('Cache-Control', 'private, no-store'); res.json({ events: await postgres.listSupportEvents({ limit: req.query.limit }) }); }
+    catch (error) { console.error('[admin support-events]:', error.message); res.status(503).json({ error: 'تعذر تحميل تنبيهات الدعم' }); }
+  });
+
+  app.get('/api/admin/support-events/stream', (req, res) => {
+    if (!global.registerSupportEventStream) return res.status(503).end();
+    res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache, no-store', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
+    res.flushHeaders();
+    res.write('event: ready\\ndata: {}\\n\\n');
+    const unregister = global.registerSupportEventStream(packet => res.write(packet));
+    const heartbeat = setInterval(() => { try { res.write(': heartbeat\\n\\n'); } catch (_) {} }, 25000);
+    req.on('close', () => { clearInterval(heartbeat); unregister(); });
   });
 
   app.post('/api/admin/notifications/send', async (req, res) => {
@@ -318,6 +333,7 @@ module.exports = function mountAdmin(app) {
       const reward = await postgres.grantAffiliateReward(Object.assign({}, body, { rewardKey: body.rewardKey || 'admin-' + Date.now() }), req.adminUser && req.adminUser.id);
       if (reward.duplicate) return res.status(409).json({ ok: false, duplicate: true, error: 'هذه المكافأة تم تنفيذها بالفعل بنفس المفتاح' });
       for (const notification of reward.notifications || []) { if (global.publishNotification) global.publishNotification(notification); }
+      if (global.notifySupport) await global.notifySupport({ title: 'تمت إضافة مكافأة', body: 'تم إنشاء مكافأة جديدة وإشعار المستفيدين بها من لوحة الإدارة.', type: 'reward-created', priority: 'normal', entityType: 'reward', entityId: reward.reward && reward.reward.reward_key, eventKey: 'support:reward-created:' + String(reward.reward && reward.reward.reward_key || Date.now()), payload: { granted: reward.granted, amount: reward.reward && reward.reward.amount } });
       const push = global.sendNativePushToUsers && reward.userIds && reward.userIds.length ? await Promise.resolve(global.sendNativePushToUsers(reward.userIds, { title: reward.notificationTitle, body: reward.notificationBody, url: '/store', tag: 'reward:' + reward.reward.reward_key })).catch(() => ({ configured: false, delivered: 0 })) : { configured: false, delivered: 0 };
       res.status(201).json({ ok: true, granted: reward.granted, amount: reward.reward.amount, total: reward.reward.total_granted, push });
     } catch (error) {
@@ -350,6 +366,7 @@ module.exports = function mountAdmin(app) {
       const result = await postgres.updateAffiliateOrderStatus(id, { status, adminUpdatedAt: new Date().toISOString() });
       if (!result) return res.status(404).json({ error: 'الطلب غير موجود' });
       if (global.notifyUser && result.statusChanged && result.order.userId != null) await Promise.resolve(global.notifyUser(result.order.userId, 'تحديث حالة طلب', 'حالة طلبك الآن: ' + status, '/store', 'order-status', 'order-status:' + id + ':' + status)).catch(() => null);
+      if (result.statusChanged && global.notifySupport) await global.notifySupport({ title: 'تحديث حالة طلب', body: 'تم تغيير حالة طلب من لوحة الإدارة ويحتاج متابعة إذا كان هناك إجراء مطلوب.', type: 'order-status', priority: 'normal', userId: result.order.userId, entityType: 'order', entityId: id, eventKey: 'support:admin-order-status:' + id + ':' + status, payload: { status } });
       res.json({ ok: true, order: result.order });
     } catch (error) { console.error('[admin order-status]:', error.message); res.status(503).json({ error: 'تعذر تحديث الطلب حاليًا' }); }
   });
@@ -494,6 +511,7 @@ module.exports = function mountAdmin(app) {
       if (!id) return res.status(400).json({ error: 'معرّف المنتج مطلوب' });
       const deleted = await postgres.deleteAffiliateProduct(id);
       if (!deleted) return res.status(404).json({ error: 'المنتج غير موجود' });
+      if (global.notifySupport) await global.notifySupport({ title: 'تم حذف منتج', body: 'تم حذف منتج من الكتالوج بواسطة الإدارة.', type: 'product-deleted', priority: 'high', entityType: 'product', entityId: id, eventKey: 'support:product-deleted:' + id + ':' + Date.now(), payload: {} });
       res.json({ ok: true });
     } catch (error) { res.status(503).json({ error: 'تعذر حذف المنتج' }); }
   });
@@ -528,6 +546,7 @@ module.exports = function mountAdmin(app) {
       await postgres.updateAffiliateMeta({ priceUp: up });
       const after = await affiliateData();
       if (global.notifyBroadcast) await Promise.resolve(global.notifyBroadcast({ title: 'تحديث أسعار المنتجات', body: 'تم تحديث أسعار البيع بواسطة إدارة المنصة.', url: '/store', type: 'price', eventKey: 'global-price-up:' + up })).catch(() => null);
+      if (global.notifySupport) await global.notifySupport({ title: 'تحديث سياسة الأسعار', body: 'تم تعديل نسبة الزيادة العامة على أسعار الجملة من لوحة الإدارة.', type: 'price-policy', priority: 'high', entityType: 'catalog', entityId: 'main', eventKey: 'support:price-policy:' + up, payload: { priceUp: up } });
       res.set('Cache-Control', 'no-store');
       res.json({ ok: true, up, updatedAt: after.pricePolicyUpdatedAt || new Date().toISOString(), changed: true });
     } catch (error) { res.status(503).json({ error: 'تعذر حفظ إعداد الأسعار' }); }
@@ -541,6 +560,7 @@ module.exports = function mountAdmin(app) {
   app.post('/api/admin/users', async (req, res) => {
     try {
       const user = await postgres.createAdminUser(req.body || {}, req.adminUser && req.adminUser.id);
+      if (global.notifySupport) await global.notifySupport({ title: 'تم إنشاء حساب من الإدارة', body: 'تم إنشاء حساب مستخدم جديد من لوحة الإدارة.', type: 'account-created', priority: 'normal', userId: user.id, entityType: 'user', entityId: user.id, eventKey: 'support:admin-account-created:' + user.id + ':' + String(user.created_at || Date.now()), payload: {} });
       res.status(201).json({ ok: true, user: safeUser(user) });
     } catch (error) {
       const status = ['INVALID_USER_NAME', 'INVALID_USER_EMAIL', 'INVALID_USER_PASSWORD', 'DUPLICATE_USER_EMAIL'].includes(error.code) ? 400 : 503;
@@ -552,6 +572,7 @@ module.exports = function mountAdmin(app) {
     try {
       const user = await postgres.updateAdminUser(req.params.id, req.body || {}, req.adminUser && req.adminUser.id);
       if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
+      if (global.notifySupport) await global.notifySupport({ title: 'تعديل بيانات مستخدم', body: 'تم تعديل بيانات حساب من لوحة الإدارة.', type: 'account-updated', priority: 'normal', userId: user.id, entityType: 'user', entityId: user.id, eventKey: 'support:account-updated:' + user.id + ':' + String(user.updated_at || Date.now()), payload: {} });
       res.json({ ok: true, user: safeUser(user) });
     } catch (error) {
       const status = ['INVALID_USER_NAME', 'INVALID_USER_EMAIL', 'DUPLICATE_USER_EMAIL'].includes(error.code) ? 400 : 503;
@@ -564,6 +585,7 @@ module.exports = function mountAdmin(app) {
       const user = await postgres.resetAdminUserPassword(req.params.id, String(req.body && req.body.password || ''), req.adminUser && req.adminUser.id);
       if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
       if (global.notifyUser) await Promise.resolve(global.notifyUser(user.id, 'تم تحديث كلمة المرور', 'تم تغيير كلمة مرور حسابك بواسطة إدارة المنصة. سجّل الدخول بكلمة المرور الجديدة.', '/login', 'account', 'account-password:' + user.id + ':' + String(user.password_changed_at || Date.now()))).catch(() => null);
+      if (global.notifySupport) await global.notifySupport({ title: 'تغيير كلمة مرور مستخدم', body: 'تم تحديث كلمة مرور حساب بواسطة الإدارة.', type: 'account-security', priority: 'high', userId: user.id, entityType: 'user', entityId: user.id, eventKey: 'support:password-reset:' + user.id + ':' + String(user.password_changed_at || Date.now()), payload: {} });
       res.json({ ok: true, user: safeUser(user), sessionsRevoked: true });
     } catch (error) {
       const status = error.code === 'INVALID_USER_PASSWORD' ? 400 : 503;
@@ -580,6 +602,7 @@ module.exports = function mountAdmin(app) {
       if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
       const blocked = isAccountBlocked(user);
       if (global.notifyUser) await Promise.resolve(global.notifyUser(user.id, blocked ? 'تم تقييد الحساب' : 'تمت استعادة الحساب', blocked ? (user.banned ? 'تم حظر حسابك نهائيًا بواسطة إدارة المنصة.' : 'تم إيقاف حسابك مؤقتًا بواسطة إدارة المنصة.') : 'تمت استعادة إمكانية الدخول إلى حسابك.', '/login', 'account', 'account-access:' + user.id + ':' + accountStatus(user) + ':' + String(user.updated_at || Date.now()))).catch(() => null);
+      if (global.notifySupport) await global.notifySupport({ title: blocked ? 'تم تقييد حساب مستخدم' : 'تمت استعادة حساب مستخدم', body: blocked ? 'تم تغيير وصول حساب بواسطة الإدارة.' : 'تمت استعادة وصول حساب بواسطة الإدارة.', type: 'account-access', priority: 'high', userId: user.id, entityType: 'user', entityId: user.id, eventKey: 'support:account-access:' + user.id + ':' + accountStatus(user) + ':' + String(user.updated_at || Date.now()), payload: {} });
       res.json({ ok: true, user: safeUser(user), sessionsRevoked: blocked });
     } catch (error) {
       const status = ['INVALID_ACCESS_STATE', 'INVALID_SUSPENSION_DATE'].includes(error.code) ? 400 : 503;
@@ -596,6 +619,7 @@ module.exports = function mountAdmin(app) {
       const user = await postgres.setUserAccessState(id, banned ? { mode: 'permanent', reason: 'حظر من لوحة الإدارة' } : { mode: 'active', reason: '' }, req.adminUser && req.adminUser.id);
       if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
       if (global.notifyUser) await Promise.resolve(global.notifyUser(user.id, banned ? 'تم تعليق الحساب' : 'تمت إعادة تفعيل الحساب', banned ? 'تم تعليق الوصول إلى حسابك بواسطة إدارة المنصة.' : 'تمت إعادة تفعيل الوصول إلى حسابك.', '/login', 'account', 'account-ban:' + user.id + ':' + banned)).catch(() => null);
+      if (global.notifySupport) await global.notifySupport({ title: banned ? 'تم حظر مستخدم' : 'تمت إعادة تفعيل مستخدم', body: banned ? 'تم تعليق وصول حساب بواسطة الإدارة.' : 'تمت إعادة تفعيل وصول حساب بواسطة الإدارة.', type: 'account-access', priority: 'high', userId: user.id, entityType: 'user', entityId: user.id, eventKey: 'support:account-ban:' + user.id + ':' + banned });
       res.json({ ok: true, user: safeUser(user) });
     } catch (error) { res.status(503).json({ error: 'تعذر تحديث حالة الحساب' }); }
   });
@@ -617,6 +641,7 @@ module.exports = function mountAdmin(app) {
       const permissions = Array.isArray(body.permissions) ? body.permissions.filter(item => ADMIN_PERMISSIONS.includes(item)) : rolePermissions(role);
       const updated = await postgres.updateUserAdminFields(target.id, { role, permissions, banned: target.banned });
       if (updated && global.notifyUser) await Promise.resolve(global.notifyUser(updated.id, 'تحديث صلاحيات الحساب', 'تم تحديث دورك الإداري إلى: ' + role, '/admin', 'admin-role', 'admin-role:' + updated.id + ':' + role)).catch(() => null);
+      if (updated && global.notifySupport) await global.notifySupport({ title: 'تحديث صلاحيات إدارية', body: 'تم تحديث دور أو صلاحيات مستخدم من لوحة الإدارة.', type: 'admin-role', priority: 'high', userId: updated.id, entityType: 'user', entityId: updated.id, eventKey: 'support:admin-role:' + updated.id + ':' + role, payload: { role } });
       res.json({ ok: true, admin: safeUser(updated) });
     } catch (error) { console.error('[admin add]:', error.message); res.status(503).json({ error: 'تعذر إضافة المدير' }); }
   });
@@ -631,6 +656,7 @@ module.exports = function mountAdmin(app) {
       const permissions = Array.isArray(body.permissions) ? body.permissions.filter(item => ADMIN_PERMISSIONS.includes(item)) : (role === 'user' ? [] : rolePermissions(role));
       const updated = await postgres.updateUserAdminFields(target.id, { role, permissions, banned: typeof body.banned === 'boolean' ? body.banned : target.banned });
       if (updated && global.notifyUser) await Promise.resolve(global.notifyUser(updated.id, 'تحديث صلاحيات الحساب', role === 'user' ? 'تمت إزالة الدور الإداري من حسابك.' : 'تم تحديث دورك الإداري إلى: ' + role, role === 'user' ? '/store' : '/admin', 'admin-role', 'admin-role:' + updated.id + ':' + role)).catch(() => null);
+      if (updated && global.notifySupport) await global.notifySupport({ title: 'تحديث صلاحيات إدارية', body: role === 'user' ? 'تمت إزالة دور إداري من حساب.' : 'تم تعديل صلاحيات حساب إداري.', type: 'admin-role', priority: 'high', userId: updated.id, entityType: 'user', entityId: updated.id, eventKey: 'support:admin-role:' + updated.id + ':' + role, payload: { role } });
       res.json({ ok: true, admin: safeUser(updated) });
     } catch (error) { res.status(503).json({ error: 'تعذر تحديث صلاحيات المدير' }); }
   });
@@ -645,6 +671,7 @@ module.exports = function mountAdmin(app) {
       const result = await postgres.updateAffiliateWithdrawalStatus(id, status);
       if (!result) return res.status(404).json({ error: 'طلب السحب غير موجود' });
       if (global.notifyUser && result.changed && result.withdrawal.userId != null) await Promise.resolve(global.notifyUser(result.withdrawal.userId, 'تحديث طلب السحب', 'حالة طلب السحب الآن: ' + status, '/store', 'withdrawal-status', 'withdrawal-status:' + id + ':' + status)).catch(() => null);
+      if (result.changed && global.notifySupport) await global.notifySupport({ title: 'تحديث طلب سحب', body: 'تم تحديث حالة طلب سحب من لوحة الإدارة.', type: 'withdrawal-status', priority: 'normal', userId: result.withdrawal.userId, entityType: 'withdrawal', entityId: id, eventKey: 'support:admin-withdrawal-status:' + id + ':' + status, payload: { status } });
       res.json({ ok: true, withdrawal: result.withdrawal, balance: result.balance });
     } catch (error) { console.error('[admin withdrawal-status]:', error.message); res.status(503).json({ error: 'تعذر تحديث طلب السحب حاليًا' }); }
   });
