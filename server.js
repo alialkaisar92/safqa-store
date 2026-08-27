@@ -237,7 +237,13 @@ async function notifySupport(input) {
     streamSupportEvent(result.event);
     let push = { configured: nativePushReady, delivered: 0, removed: 0 };
     try {
-      const admins = await postgres.query("SELECT id FROM users WHERE banned IS NOT TRUE AND role IN ('owner','admin','manager','support') ORDER BY id");
+      const adminEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+      const adminUserId = String(process.env.ADMIN_USER_ID || '').trim();
+      const recipientClauses = ["role IN ('owner','admin','manager','support')"];
+      const recipientParams = [];
+      if (adminEmail) { recipientParams.push(adminEmail); recipientClauses.push(`LOWER(email)=$${recipientParams.length}`); }
+      if (adminUserId && /^\d+$/.test(adminUserId)) { recipientParams.push(adminUserId); recipientClauses.push(`id=$${recipientParams.length}`); }
+      const admins = await postgres.query(`SELECT id FROM users WHERE banned IS NOT TRUE AND (${recipientClauses.join(' OR ')}) ORDER BY id`, recipientParams);
       push = await sendNativePushToUsers(admins.rows.map(row => row.id), { title: result.event.title, body: result.event.body, url: '/admin', tag: 'support-event:' + result.event.id });
     } catch (_) {}
     return Object.assign({}, result, { push });
