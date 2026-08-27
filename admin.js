@@ -241,7 +241,7 @@ function permissionForPath(requestPath) {
   if (/^\/(products|product|product-delete|price|price-up)/.test(p)) return 'products';
   if (/^\/(users|user-)/.test(p)) return 'users';
   if (/^\/(withdrawals|withdrawal-status)/.test(p)) return 'withdrawals';
-  if (/^\/(chats|chat-reply|chat-stream|support-events)/.test(p)) return 'chats';
+  if (/^\/(chats|chat-reply|chat-stream|support-events|push-status|push-test)/.test(p)) return 'chats';
   if (/^\/(settings)/.test(p)) return 'settings';
   if (/^\/(admins)/.test(p)) return 'admins';
   if (/^\/(notifications)/.test(p)) return 'notifications';
@@ -282,6 +282,22 @@ module.exports = function mountAdmin(app) {
     const unregister = global.registerSupportEventStream(packet => res.write(packet));
     const heartbeat = setInterval(() => { try { res.write(': heartbeat\\n\\n'); } catch (_) {} }, 25000);
     req.on('close', () => { clearInterval(heartbeat); unregister(); });
+  });
+
+  app.get('/api/admin/push-status', async (req, res) => {
+    try {
+      const subscriptions = await postgres.listPushSubscriptions(req.adminUser.id);
+      res.set('Cache-Control', 'private, no-store');
+      res.json({ configured: Boolean(global.sendNativePushToUsers), subscriptions: subscriptions.length, lastRegisteredAt: subscriptions[0] && subscriptions[0].updated_at ? subscriptions[0].updated_at : null, failures: subscriptions.reduce((sum, item) => sum + Number(item.failure_count || 0), 0) });
+    } catch (error) { console.error('[admin push status]:', error.message); res.status(503).json({ error: 'تعذر قراءة حالة تنبيهات الجهاز' }); }
+  });
+
+  app.post('/api/admin/push-test', async (req, res) => {
+    try {
+      if (!global.sendNativePushToUsers) return res.status(503).json({ error: 'خدمة Push غير مهيأة على الخادم' });
+      const push = await global.sendNativePushToUsers([req.adminUser.id], { title: 'اختبار تنبيهات الدعم', body: 'لو وصلك الإشعار، يبقى جهازك جاهز لاستقبال تنبيهات الدعم خارج الموقع.', url: '/admin', tag: 'support-push-test' });
+      res.json({ ok: Boolean(push && push.delivered > 0), configured: Boolean(push && push.configured), delivered: Number(push && push.delivered || 0), removed: Number(push && push.removed || 0) });
+    } catch (error) { console.error('[admin push test]:', error.message); res.status(503).json({ error: 'تعذر إرسال اختبار التنبيه حاليًا' }); }
   });
 
   app.post('/api/admin/notifications/send', async (req, res) => {
