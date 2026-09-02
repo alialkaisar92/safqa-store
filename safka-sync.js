@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 const store = require('./firestore');
 const postgres = require('./lib/postgres');
 const { getProductStock, getProductStockState } = require('./stock-utils');
+const { productMedia } = require('./lib/product-media');
 
 const BASE_URL = process.env.SAFKA_PUBLIC_BASE_URL || 'https://api.safka-eg.com/api/v1/public';
 const CACHE_FILE = path.join(__dirname, 'products-cache.json');
@@ -93,10 +94,11 @@ function wholesalePriceOf(value) {
 }
 function dbProduct(product) {
   const stockState = getProductStockState(product);
+  const media = productMedia(product);
   const base = wholesalePriceOf(product);
   const sourceProductId = String(product.id || product._id || '').trim();
   const stockUpdatedAt = new Date().toISOString();
-  return Object.assign({}, product, {
+  return Object.assign({}, product, media, {
     external_id: sourceProductId,
     source_product_id: sourceProductId,
     stock: stockState.quantity,
